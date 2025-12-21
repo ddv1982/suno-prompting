@@ -8,6 +8,7 @@ export const APP_CONSTANTS = {
         TIMEOUT_MS: 30000,
         DEFAULT_MODEL: 'openai/gpt-oss-120b',
         DEFAULT_USE_SUNO_TAGS: true,
+        DEFAULT_DEBUG_MODE: false,
         AVAILABLE_MODELS: [
             { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B' },
             { id: 'moonshotai/kimi-k2-instruct-0905', name: 'Kimi K2 Instruct' },

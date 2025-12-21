@@ -59,11 +59,11 @@ export class StorageManager {
         await this.saveHistory(filtered);
     }
 
-    async getConfig(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean }> {
+    async getConfig(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean }> {
         try {
             const file = Bun.file(this.configPath);
             if (!(await file.exists())) {
-                return { apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS };
+                return { apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE };
             }
             const config = await file.json();
             if (config.apiKey) {
@@ -78,14 +78,15 @@ export class StorageManager {
                 apiKey: config.apiKey ?? null,
                 model: config.model ?? APP_CONSTANTS.AI.DEFAULT_MODEL,
                 useSunoTags: config.useSunoTags ?? APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS,
+                debugMode: config.debugMode ?? APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
             };
         } catch (error) {
             console.error('Failed to read config:', error);
-            return { apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS };
+            return { apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE };
         }
     }
 
-    async saveConfig(config: Partial<{ apiKey: string | null; model: string; useSunoTags: boolean }>) {
+    async saveConfig(config: Partial<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean }>) {
         try {
             const existing = await this.getConfig();
             const toSave = { ...existing, ...config };

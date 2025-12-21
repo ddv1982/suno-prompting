@@ -1,19 +1,5 @@
-// --- Utilities ---
-function pickRandom<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-function shuffle<T>(arr: readonly T[]): T[] {
-  const result = [...arr];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j]!, result[i]!];
-  }
-  return result;
-}
-
-// --- Harmonic Styles ---
-const HARMONIC_STYLES = {
+// Harmonic style definitions
+export const HARMONIC_STYLES = {
   lydian_dominant: {
     name: 'Lydian Dominant',
     keywords: ['dominant', '7#11', 'jazzy', 'fusion', 'funk'],
@@ -81,36 +67,8 @@ const HARMONIC_STYLES = {
 
 export type HarmonicStyle = keyof typeof HARMONIC_STYLES;
 
-const HARMONIC_PRIORITY: HarmonicStyle[] = ['lydian_dominant', 'lydian_augmented', 'lydian_sharp_two', 'lydian'];
-
-export function detectHarmonic(description: string): HarmonicStyle | null {
-  const lower = description.toLowerCase();
-  for (const style of HARMONIC_PRIORITY) {
-    if (HARMONIC_STYLES[style].keywords.some(kw => lower.includes(kw))) {
-      return style;
-    }
-  }
-  return null;
-}
-
-export function getHarmonicGuidance(style: HarmonicStyle): string {
-  const s = HARMONIC_STYLES[style];
-  const chars = shuffle(s.characteristics).slice(0, 3);
-  const prog = pickRandom(s.progressions);
-
-  return [
-    `HARMONIC STYLE (${s.name}):`,
-    s.description,
-    `Chord: ${s.chordType}`,
-    `Formula: ${s.formula}`,
-    ...chars.map(c => `- ${c}`),
-    `Suggested Progression: ${prog}`,
-    `Examples: ${s.keyExamples}`,
-  ].join('\n');
-}
-
-// --- Rhythmic Styles ---
-const RHYTHMIC_STYLES = {
+// Rhythmic style definitions
+export const RHYTHMIC_STYLES = {
   polyrhythm: {
     name: 'Polyrhythm',
     keywords: ['polyrhythm', 'poly rhythm', 'poly-rhythm', 'cross rhythm', 'cross-rhythm', '2:3', '3:4', '4:3', '5:4', '7:4', 'interlocking rhythm'],
@@ -129,76 +87,40 @@ const RHYTHMIC_STYLES = {
 
 export type RhythmicStyle = keyof typeof RHYTHMIC_STYLES;
 
-const RHYTHMIC_PRIORITY: RhythmicStyle[] = ['polyrhythm'];
-
-export function detectRhythmic(description: string): RhythmicStyle | null {
-  const lower = description.toLowerCase();
-  for (const style of RHYTHMIC_PRIORITY) {
-    if (RHYTHMIC_STYLES[style].keywords.some(kw => lower.includes(kw))) {
-      return style;
-    }
-  }
-  return null;
-}
-
-export function getRhythmicGuidance(style: RhythmicStyle): string {
-  const s = RHYTHMIC_STYLES[style];
-  const chars = shuffle(s.characteristics).slice(0, 3);
-  return [
-    `RHYTHMIC STYLE (${s.name}):`,
-    s.description,
-    `Common ratios: ${s.commonRatios}`,
-    `Suggested elements: ${s.instruments}`,
-    ...chars.map(c => `- ${c}`),
-  ].join('\n');
-}
-
-// --- Genre Instruments ---
-const GENRE_INSTRUMENTS = {
+// Genre instrument definitions
+export const GENRE_INSTRUMENTS = {
   ambient: {
     name: 'Ambient',
     keywords: ['ambient', 'atmospheric', 'soundscape'],
     description: 'Warm, intimate, emotional soundscapes with gentle movement',
     instruments: [
-      'Felt piano / soft grand piano',
+      'Soft-pedal acoustic piano - slow, sustained, intimate',
       'Fender Rhodes - warm, electric piano tone',
-      'Nord Stage-style keys (piano + pad blends)',
+      'Nord Stage-style keys (synth + pad blends)',
       'Analog synth pads (Prophet / OB / Juno-ish) - slow attack, long release',
       'Breathy wind synths / EWI-like leads - expressive, floating',
       'Bowed vibraphone',
+      'Marimba with long, atmospheric decay',
       'Glassy bells, not melodies',
+      'Ethnic rattles, shakers, and gourds - subtle rhythmic layers',
       'Textural synth layers',
       'Looped tape textures / tape-hiss-saturated soundscapes',
       'Briefcase modular synth (Synthi AKS-style)',
       'Early digital FM synths (DX7-style) - glassy, cold, but evolving',
-      'Wordless vocal loops / ethereal choir pads',
+      'Synclavier-style digital textures - crystalline, evolving',
       'Sound-on-sound tape delays (Echoplex-style)',
       'VCS 3-style patchboard synth textures',
       'Generative melodic loops with differing lengths',
+      'Ethereal electric guitar - processed with lush chorus and deep reverb',
+      'Muted trumpet with deep atmospheric reverb',
+      'Pulsing string ensembles - slow, rhythmic swells',
+      'Wavetable synth textures - complex, evolving, and metallic',
+      'Warm analog leads - smooth, singing quality',
+      'Early digital pads (Triton-style) - lush, orchestral-like',
+      'Ambient guitar loops - layered, rhythmic, and melodic',
+      'Hybrid electronic-acoustic grooves - subtle, pulsing foundations',
     ],
   },
 } as const;
 
 export type Genre = keyof typeof GENRE_INSTRUMENTS;
-
-const GENRE_PRIORITY: Genre[] = ['ambient'];
-
-export function detectGenre(description: string): Genre | null {
-  const lower = description.toLowerCase();
-  for (const style of GENRE_PRIORITY) {
-    if (GENRE_INSTRUMENTS[style].keywords.some(kw => lower.includes(kw))) {
-      return style;
-    }
-  }
-  return null;
-}
-
-export function getGenreInstruments(genre: Genre): string {
-  const g = GENRE_INSTRUMENTS[genre];
-  const selectedInstruments = shuffle(g.instruments).slice(0, 5);
-  return [
-    `SUGGESTED INSTRUMENTS (${g.name}):`,
-    g.description,
-    ...selectedInstruments.map(i => `- ${i}`),
-  ].join('\n');
-}

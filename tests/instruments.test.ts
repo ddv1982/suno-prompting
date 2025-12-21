@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { detectHarmonic, getHarmonicGuidance, detectRhythmic, detectGenre } from '../src/bun/instruments';
+import { detectHarmonic, getHarmonicGuidance, detectRhythmic, detectGenre, getGenreInstruments } from '../src/bun/instruments';
 
 describe('detectHarmonic', () => {
   test('detects lydian_dominant for jazzy/fusion keywords', () => {
@@ -63,27 +63,26 @@ describe('detectGenre', () => {
   });
 });
 
-import { getGenreInstruments } from '../src/bun/instruments';
-
 describe('getGenreInstruments', () => {
-  test('includes ambient instruments and picks 5', () => {
+  test('includes genre header and description', () => {
     const guidance = getGenreInstruments('ambient');
     expect(guidance).toContain('SUGGESTED INSTRUMENTS (Ambient)');
-    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
-    expect(lines.length).toBe(5);
+    expect(guidance).toContain('Warm, intimate, emotional soundscapes');
   });
 
-  test('can pick from the expanded ambient instrument list', () => {
-    // Run multiple times to increase chance of hitting a new instrument
-    const instruments = new Set<string>();
-    for (let i = 0; i < 20; i++) {
-      const guidance = getGenreInstruments('ambient');
-      const lines = guidance.split('\n').filter(l => l.startsWith('- '));
-      lines.forEach(l => instruments.add(l.replace('- ', '')));
+  test('picks 4 or 5 random instruments', () => {
+    const guidance = getGenreInstruments('ambient');
+    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    expect(lines.length).toBeGreaterThanOrEqual(4);
+    expect(lines.length).toBeLessThanOrEqual(5);
+  });
+
+  test('returns different instruments on multiple calls (random)', () => {
+    const results = new Set<string>();
+    for (let i = 0; i < 10; i++) {
+      results.add(getGenreInstruments('ambient'));
     }
-    
-    expect(instruments.has('Looped tape textures / tape-hiss-saturated soundscapes')).toBe(true);
-    expect(instruments.has('Briefcase modular synth (Synthi AKS-style)')).toBe(true);
-    expect(instruments.has('Early digital FM synths (DX7-style) - glassy, cold, but evolving')).toBe(true);
+    // With random selection, we expect variation
+    expect(results.size).toBeGreaterThan(1);
   });
 });

@@ -1,12 +1,12 @@
 import { createRoot } from "react-dom/client";
 import { lazy, Suspense } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { Header } from "./components/app-header";
-import { HistorySidebar } from "./components/history-sidebar";
-import { PromptEditor } from "./components/prompt-editor";
-import { ErrorBoundary } from "./components/error-boundary";
-import { AppProvider, useAppContext } from "./context/AppContext";
-import { APP_CONSTANTS } from "../shared/constants";
+import { Header } from "@/components/app-header";
+import { HistorySidebar } from "@/components/history-sidebar";
+import { PromptEditor } from "@/components/prompt-editor";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { AppProvider, useAppContext } from "@/context/AppContext";
+import { APP_CONSTANTS } from "@shared/constants";
 
 const SettingsModal = lazy(() => import("./components/settings-modal").then(m => ({ default: m.SettingsModal })));
 
@@ -22,6 +22,7 @@ function App() {
     settingsOpen,
     streamingPrompt,
     currentModel,
+    debugInfo,
     setSettingsOpen,
     selectSession,
     newProject,
@@ -59,6 +60,7 @@ function App() {
               onRemix={handleRemix}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
               currentModel={currentModel}
+              debugInfo={debugInfo}
             />
           </main>
         </SidebarInset>

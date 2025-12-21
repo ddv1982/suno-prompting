@@ -3,24 +3,24 @@ import { createHandlers } from "@bun/handlers";
 import { type AIEngine } from "@bun/ai-engine";
 import { type StorageManager } from "@bun/storage";
 import { type PromptSession } from "@shared/types";
+import { APP_CONSTANTS } from "@shared/constants";
 
-type MockAIEngine = Pick<AIEngine, 'generateInitial' | 'refinePrompt' | 'setApiKey' | 'initialize'>;
+type MockAIEngine = Pick<AIEngine, 'generateInitial' | 'refinePrompt' | 'setApiKey'>;
 type MockStorageManager = Pick<StorageManager, 'getHistory' | 'saveSession' | 'deleteSession' | 'getConfig' | 'saveConfig' | 'initialize'>;
 
 describe("RPC Handlers", () => {
     test("generateInitial should call aiEngine and return validation", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => "Generated Prompt"),
-            refinePrompt: mock(async () => ""),
+            generateInitial: mock(async () => ({ text: "Generated Prompt", debugInfo: undefined })),
+            refinePrompt: mock(async () => ({ text: "", debugInfo: undefined })),
             setApiKey: mock(),
-            initialize: mock(async () => {})
         };
 
         const mockStorage: MockStorageManager = {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ apiKey: null })),
+            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -37,17 +37,16 @@ describe("RPC Handlers", () => {
 
     test("refinePrompt should call aiEngine with feedback", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => ""),
-            refinePrompt: mock(async () => "Refined Prompt"),
+            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            refinePrompt: mock(async () => ({ text: "Refined Prompt", debugInfo: undefined })),
             setApiKey: mock(),
-            initialize: mock(async () => {})
         };
 
         const mockStorage: MockStorageManager = {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ apiKey: null })),
+            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };

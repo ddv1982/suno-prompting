@@ -3,7 +3,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type PromptSession } from "../../shared/types";
+import { type PromptSession } from "@shared/types";
 
 type HistorySidebarProps = {
   sessions: PromptSession[];

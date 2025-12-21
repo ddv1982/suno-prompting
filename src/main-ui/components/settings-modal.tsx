@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, Eye, EyeOff, Settings } from "lucide-react";
+import { AlertCircle, Bug, Eye, EyeOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,8 @@ type SettingsModalProps = {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("");
-  const [useSunoTags, setUseSunoTags] = useState(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
+  const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
+  const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,11 +30,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     if (isOpen) {
       setError(null);
       setLoading(true);
-      Promise.all([api.getApiKey(), api.getModel(), api.getSunoTags()])
-        .then(([key, savedModel, savedUseSunoTags]) => {
+      Promise.all([api.getApiKey(), api.getModel(), api.getSunoTags(), api.getDebugMode()])
+        .then(([key, savedModel, savedUseSunoTags, savedDebugMode]) => {
           setApiKey(key);
           setModel(savedModel || APP_CONSTANTS.AI.DEFAULT_MODEL);
           setUseSunoTags(savedUseSunoTags);
+          setDebugMode(savedDebugMode);
         })
         .catch((err) => {
           console.error("Failed to fetch settings", err);
@@ -50,6 +52,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       await api.setApiKey(apiKey.trim());
       await api.setModel(model);
       await api.setSunoTags(useSunoTags);
+      await api.setDebugMode(debugMode);
       onClose();
     } catch (e) {
       console.error("Failed to save settings", e);
@@ -141,6 +144,31 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </label>
             <p className="text-[10px] text-muted-foreground italic">
               When enabled, prompts include Suno V5 section and performance tags
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+              <Bug className="w-3 h-3" />
+              Debug Mode
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={debugMode}
+                onClick={() => setDebugMode(!debugMode)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${debugMode ? 'bg-primary' : 'bg-input'}`}
+              >
+                <span
+                  className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${debugMode ? 'translate-x-5' : 'translate-x-0'}`}
+                />
+              </button>
+              <span className="text-sm">
+                Show AI prompts sent to Groq
+              </span>
+            </label>
+            <p className="text-[10px] text-muted-foreground italic">
+              When enabled, displays the system and user prompts sent to the AI model
             </p>
           </div>
         </div>

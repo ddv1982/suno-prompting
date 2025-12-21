@@ -3,12 +3,85 @@ import { generateText, streamText } from 'ai';
 import { detectGenre, getGenreInstruments, detectHarmonic, getHarmonicGuidance, detectRhythmic, getRhythmicGuidance } from '@bun/instruments';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
+import type { DebugInfo } from '@shared/types';
+
+export type GenerationResult = {
+  text: string;
+  debugInfo?: DebugInfo;
+};
+
+const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
+
+function buildSystemPrompt(useSunoTags: boolean): string {
+  const songStructure = useSunoTags ? `
+OUTPUT FORMAT (Top-Anchor Strategy):
+
+[Mood], [Genre/Era], Key: [key/mode]
+
+Genre: [specific genre name]
+Mood: [2-3 evocative mood descriptors]
+Instruments: [with CHARACTER adjectives]
+
+[INTRO] [Sparse instrumentation, set the mood]
+[VERSE] [Specific instruments + emotional arc]
+[CHORUS] [Full arrangement, peak energy]
+[BRIDGE] [Contrasting texture, optional]
+[OUTRO] [Resolution style]
+
+SECTION TIP: Specify instruments per section
+
+PERFORMANCE TAGS: (breathy), (belt), (whisper), (ad-lib), (hold)` : '';
+
+  return `You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
+${songStructure}
+STRICT CONSTRAINTS:
+- Output MUST be under ${MAX_CHARS} characters.
+- Output ONLY the prompt itself - no explanations or extra text.`;
+}
+
+function buildContextualPrompt(description: string): string {
+  const parts = [`Generate a studio-grade Suno V5 prompt for: ${description}`];
+  
+  const genre = detectGenre(description);
+  if (genre) parts.push(getGenreInstruments(genre));
+  
+  const harmonic = detectHarmonic(description);
+  if (harmonic) parts.push(getHarmonicGuidance(harmonic));
+  
+  const rhythmic = detectRhythmic(description);
+  if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
+  
+  return parts.join('\n\n');
+}
+
+function formatRequestBody(body: unknown): string {
+  if (typeof body === 'string') {
+    try {
+      return JSON.stringify(JSON.parse(body), null, 2);
+    } catch {
+      return body;
+    }
+  }
+  return JSON.stringify(body, null, 2);
+}
+
+function truncateToLimit(text: string, limit: number = MAX_CHARS): string {
+  if (text.length <= limit) return text;
+  
+  // Try to truncate at a natural break point
+  const truncated = text.slice(0, limit - 3);
+  const lastNewline = truncated.lastIndexOf('\n');
+  const lastComma = truncated.lastIndexOf(',');
+  const breakPoint = Math.max(lastNewline, lastComma);
+  
+  return (breakPoint > limit * 0.7 ? truncated.slice(0, breakPoint) : truncated) + '...';
+}
 
 export class AIEngine {
-  private systemPrompt: string = '';
   private apiKey: string | null = null;
   private model: string = APP_CONSTANTS.AI.DEFAULT_MODEL;
   private useSunoTags: boolean = APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS;
+  private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
 
   setApiKey(key: string) {
     this.apiKey = key;
@@ -20,153 +93,93 @@ export class AIEngine {
 
   setUseSunoTags(value: boolean) {
     this.useSunoTags = value;
-    this.systemPrompt = '';
   }
 
-  async initialize() {
-    const songStructure = this.useSunoTags ? `
-OUTPUT FORMAT (Top-Anchor Strategy):
-
-[Vocal Persona], [Mood], [Genre/Era], Key: [key/mode]
-
-Genre: [specific genre name]
-Mood: [2-3 evocative mood descriptors]
-Instruments: [with CHARACTER adjectives]
-Vocals: [vocal tone/texture description or "none"]
-
-[INTRO] [Sparse instrumentation, set the mood]
-[VERSE] [Specific instruments + emotional arc]
-[CHORUS] [Full arrangement, peak energy]
-[BRIDGE] [Contrasting texture, optional]
-[OUTRO] [Resolution style]
-
-SECTION TIP: Specify instruments per section
-
-PERFORMANCE TAGS: (breathy), (belt), (whisper), (ad-lib), (hold)` : `OUTPUT FORMAT (Top-Anchor Strategy):
-`;
-
-    this.systemPrompt = `
-You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
-${songStructure}
-STRICT CONSTRAINTS:
-- Output MUST be under ${APP_CONSTANTS.MAX_PROMPT_CHARS} characters.
-- Output ONLY the prompt itself - no explanations or extra text.
-`;
+  setDebugMode(value: boolean) {
+    this.debugMode = value;
   }
 
   private getGroqModel() {
-    const groq = createGroq({
-      apiKey: this.apiKey || process.env.GROQ_API_KEY,
-    });
-    
-    return groq(this.model);
+    return createGroq({ apiKey: this.apiKey || process.env.GROQ_API_KEY })(this.model);
   }
 
-  async condenseIfNeeded(text: string): Promise<string> {
-    const maxChars = APP_CONSTANTS.MAX_PROMPT_CHARS;
-    
-    if (text.length <= maxChars) {
-      return text;
-    }
-
-    let result = text;
-    let attempts = 0;
-    const maxAttempts = APP_CONSTANTS.AI.MAX_LENGTH_RETRIES;
-
-    while (result.length > maxChars && attempts < maxAttempts) {
-      attempts++;
-      console.log(`Bun: Condensing attempt ${attempts} - ${result.length} chars`);
-      try {
-        result = await this.retryForLength(result);
-      } catch (error) {
-        console.error(`Bun: Condense attempt ${attempts} failed:`, error);
-        break;
-      }
-    }
-
-    // Hard truncation fallback if still over limit
-    if (result.length > maxChars) {
-      console.log(`Bun: Truncating from ${result.length} to ${maxChars} chars`);
-      result = result.slice(0, maxChars - 3) + '...';
-    }
-
-    console.log(`Bun: Final length: ${result.length} chars`);
-    return result;
+  private get systemPrompt(): string {
+    return buildSystemPrompt(this.useSunoTags);
   }
 
-  private async retryForLength(text: string): Promise<string> {
-    if (!this.systemPrompt) {
-      await this.initialize();
-    }
-
-    const maxChars = APP_CONSTANTS.MAX_PROMPT_CHARS;
-    const targetChars = maxChars - 20; // Small buffer, truncation is fallback
+  private async condense(text: string): Promise<string> {
+    const targetChars = MAX_CHARS - 50;
     
-    const { text: condensed } = await generateText({
-      model: this.getGroqModel(),
-      system: `You condense music prompts while preserving quality. Output ONLY the condensed prompt.`,
-      prompt: `Condense to under ${targetChars} characters (current: ${text.length}). Preserve all musical details - genre, mood, key, instruments, structure. Only remove redundant words:\n\n${text}`,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-    });
-    return condensed.trim();
-  }
-
-  private buildPromptWithGenre(description: string): string {
-    const genre = detectGenre(description);
-    const harmonic = detectHarmonic(description);
-    const rhythmic = detectRhythmic(description);
-    
-    let context = '';
-    if (genre) context += `\n\n${getGenreInstruments(genre)}`;
-    if (harmonic) context += `\n\n${getHarmonicGuidance(harmonic)}`;
-    if (rhythmic) context += `\n\n${getRhythmicGuidance(rhythmic)}`;
-    
-    return `Generate a studio-grade Suno V5 prompt for: ${description}${context}`;
-  }
-
-  async generateInitial(description: string): Promise<string> {
-    if (!this.systemPrompt) {
-        await this.initialize();
-    }
-
     try {
-      const { text } = await generateText({
+      const { text: condensed } = await generateText({
         model: this.getGroqModel(),
-        system: this.systemPrompt,
-        prompt: this.buildPromptWithGenre(description),
+        system: 'You condense music prompts while preserving quality. Output ONLY the condensed prompt.',
+        prompt: `Condense to under ${targetChars} characters (current: ${text.length}). Preserve musical details - genre, mood, key, instruments, structure. Remove redundant words:\n\n${text}`,
+        maxRetries: 2,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+      return condensed.trim();
+    } catch {
+      // If condensing fails, fall back to truncation
+      return truncateToLimit(text);
+    }
+  }
+
+  private async ensureLength(text: string): Promise<string> {
+    if (text.length <= MAX_CHARS) return text;
+    
+    // Try AI condensing once
+    const condensed = await this.condense(text);
+    if (condensed.length <= MAX_CHARS) return condensed;
+    
+    // Fall back to truncation
+    return truncateToLimit(condensed);
+  }
+
+  async generateInitial(description: string): Promise<GenerationResult> {
+    const userPrompt = buildContextualPrompt(description);
+    const systemPrompt = this.systemPrompt;
+    
+    try {
+      const genResult = await generateText({
+        model: this.getGroqModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
 
-      if (!text || text.trim().length === 0) {
+      if (!genResult.text?.trim()) {
         throw new AIGenerationError('Empty response from AI model');
       }
 
-      let result = text.trim();
-      if (result.length > APP_CONSTANTS.MAX_PROMPT_CHARS) {
-        result = await this.condenseIfNeeded(result);
-      }
-
-      return result;
+      const result = await this.ensureLength(genResult.text.trim());
+      
+      return {
+        text: result,
+        debugInfo: this.debugMode ? {
+          systemPrompt,
+          userPrompt,
+          model: this.model,
+          timestamp: new Date().toISOString(),
+          requestBody: formatRequestBody(genResult.request.body),
+        } : undefined,
+      };
     } catch (error) {
       if (error instanceof AIGenerationError) throw error;
-      const message = error instanceof Error ? error.message : 'Unknown AI error';
-      throw new AIGenerationError(`Failed to generate initial prompt: ${message}`, 
-          error instanceof Error ? error : undefined);
+      throw new AIGenerationError(
+        `Failed to generate prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
   async *generateInitialStream(description: string): AsyncIterable<string> {
-    if (!this.systemPrompt) {
-        await this.initialize();
-    }
-
     try {
       const result = await streamText({
         model: this.getGroqModel(),
         system: this.systemPrompt,
-        prompt: this.buildPromptWithGenre(description),
+        prompt: buildContextualPrompt(description),
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
@@ -175,21 +188,21 @@ STRICT CONSTRAINTS:
         yield chunk;
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown AI error';
-      throw new AIGenerationError(`Failed to stream initial prompt: ${message}`, 
-          error instanceof Error ? error : undefined);
+      throw new AIGenerationError(
+        `Failed to stream prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
-  async refinePrompt(currentPrompt: string, feedback: string): Promise<string> {
-    if (!this.systemPrompt) {
-        await this.initialize();
-    }
-
+  async refinePrompt(currentPrompt: string, feedback: string): Promise<GenerationResult> {
+    const systemPrompt = this.systemPrompt;
+    const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
+    
     try {
-      const { text } = await generateText({
+      const genResult = await generateText({
         model: this.getGroqModel(),
-        system: this.systemPrompt,
+        system: systemPrompt,
         messages: [
           { role: 'assistant', content: currentPrompt },
           { role: 'user', content: feedback },
@@ -198,29 +211,32 @@ STRICT CONSTRAINTS:
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
 
-      if (!text || text.trim().length === 0) {
+      if (!genResult.text?.trim()) {
         throw new AIGenerationError('Empty response from AI model during refinement');
       }
 
-      let result = text.trim();
-      if (result.length > APP_CONSTANTS.MAX_PROMPT_CHARS) {
-        result = await this.condenseIfNeeded(result);
-      }
-
-      return result;
+      const result = await this.ensureLength(genResult.text.trim());
+      
+      return {
+        text: result,
+        debugInfo: this.debugMode ? {
+          systemPrompt,
+          userPrompt,
+          model: this.model,
+          timestamp: new Date().toISOString(),
+          requestBody: formatRequestBody(genResult.request.body),
+        } : undefined,
+      };
     } catch (error) {
       if (error instanceof AIGenerationError) throw error;
-      const message = error instanceof Error ? error.message : 'Unknown AI error';
-      throw new AIGenerationError(`Failed to refine prompt: ${message}`, 
-          error instanceof Error ? error : undefined);
+      throw new AIGenerationError(
+        `Failed to refine prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
   async *refinePromptStream(currentPrompt: string, feedback: string): AsyncIterable<string> {
-    if (!this.systemPrompt) {
-        await this.initialize();
-    }
-
     try {
       const result = await streamText({
         model: this.getGroqModel(),
@@ -237,9 +253,10 @@ STRICT CONSTRAINTS:
         yield chunk;
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown AI error';
-      throw new AIGenerationError(`Failed to stream refined prompt: ${message}`, 
-          error instanceof Error ? error : undefined);
+      throw new AIGenerationError(
+        `Failed to stream refined prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 }

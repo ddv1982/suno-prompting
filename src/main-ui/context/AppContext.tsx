@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { api, setStreamCallback, setCondensingCallback } from '@/services/rpc';
-import { type PromptSession, type PromptVersion } from '@shared/types';
+import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/types';
 import { type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { sortByUpdated } from '@shared/session-utils';
@@ -15,6 +15,7 @@ interface AppContextType {
     settingsOpen: boolean;
     streamingPrompt: string;
     currentModel: string;
+    debugInfo: DebugInfo | undefined;
     
     setSettingsOpen: (open: boolean) => void;
     setValidation: (v: ValidationResult) => void;
@@ -61,6 +62,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [streamingPrompt, setStreamingPrompt] = useState("");
     const [currentModel, setCurrentModel] = useState("");
+    const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
 
     const loadModel = useCallback(async () => {
         try {
@@ -161,6 +163,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 throw new Error("Invalid result received from generation");
             }
 
+            setDebugInfo(result.debugInfo);
             const now = new Date().toISOString();
             const newVersion: PromptVersion = {
                 id: result.versionId || generateId(),
@@ -243,6 +246,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 throw new Error("Invalid result received from remix");
             }
 
+            setDebugInfo(result.debugInfo);
             const now = new Date().toISOString();
             const newVersion: PromptVersion = {
                 id: result.versionId || generateId(),
@@ -300,6 +304,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             settingsOpen,
             streamingPrompt,
             currentModel,
+            debugInfo,
             setSettingsOpen,
             setValidation,
             loadHistory,

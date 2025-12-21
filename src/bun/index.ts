@@ -54,6 +54,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             setModel: handlers.setModel,
             getSunoTags: handlers.getSunoTags,
             setSunoTags: handlers.setSunoTags,
+            getDebugMode: handlers.getDebugMode,
+            setDebugMode: handlers.setDebugMode,
         }
     }
 });
@@ -71,6 +73,9 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
     }
     if (config.useSunoTags !== undefined) {
         aiEngine.setUseSunoTags(config.useSunoTags);
+    }
+    if (config.debugMode !== undefined) {
+        aiEngine.setDebugMode(config.debugMode);
     }
     console.log('Bun: Backend initialized, launching window');
 

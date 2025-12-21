@@ -1,5 +1,5 @@
 import { type RPCSchema } from 'electrobun';
-import { type ValidationResult } from './validation';
+import { type ValidationResult } from '@shared/validation';
 
 export type PromptVersion = {
     id: string;
@@ -17,12 +17,22 @@ export type PromptSession = {
     updatedAt: string;
 };
 
+export type DebugInfo = {
+    systemPrompt: string;
+    userPrompt: string;
+    model: string;
+    timestamp: string;
+    requestBody: string;
+};
+
 // Request/Response type definitions for RPC
 export type GenerateInitialParams = { description: string };
-export type GenerateInitialResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type GenerateInitialResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
 
 export type RefinePromptParams = { currentPrompt: string; feedback: string };
-export type RefinePromptResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type RefinePromptResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
+
+export type SetDebugModeParams = { debugMode: boolean };
 
 export type GetHistoryResponse = { sessions: PromptSession[] };
 export type SaveSessionParams = { session: PromptSession };
@@ -35,6 +45,7 @@ export type AppConfig = {
     apiKey: string | null;
     model: string;
     useSunoTags: boolean;
+    debugMode: boolean;
 };
 
 // Handler function types for backend implementation
@@ -50,6 +61,8 @@ export type RPCHandlers = {
     setModel: (params: SetModelParams) => Promise<{ success: boolean }>;
     getSunoTags: (params: Record<string, never>) => Promise<{ useSunoTags: boolean }>;
     setSunoTags: (params: SetSunoTagsParams) => Promise<{ success: boolean }>;
+    getDebugMode: (params: Record<string, never>) => Promise<{ debugMode: boolean }>;
+    setDebugMode: (params: SetDebugModeParams) => Promise<{ success: boolean }>;
 };
 
 export type SunoRPCSchema = {
@@ -97,6 +110,14 @@ export type SunoRPCSchema = {
             };
             setSunoTags: {
                 params: SetSunoTagsParams;
+                response: { success: boolean };
+            };
+            getDebugMode: {
+                params: Record<string, never>;
+                response: { debugMode: boolean };
+            };
+            setDebugMode: {
+                params: SetDebugModeParams;
                 response: { success: boolean };
             };
         };

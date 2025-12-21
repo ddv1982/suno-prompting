@@ -11,13 +11,11 @@ export function createHandlers(
         generateInitial: async ({ description }) => {
             console.log('Bun: Received generateInitial request', { description });
             try {
-                // Generate prompt (includes auto-condensing if needed)
-                let fullPrompt = await aiEngine.generateInitial(description);
-
+                const result = await aiEngine.generateInitial(description);
                 const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(fullPrompt);
-                console.log('Bun: Generated initial prompt', { versionId, isValid: validation.isValid, promptLength: fullPrompt.length });
-                return { prompt: fullPrompt, versionId, validation };
+                const validation = validatePrompt(result.text);
+                console.log('Bun: Generated initial prompt', { versionId, isValid: validation.isValid, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
             } catch (error) {
                 console.error('Bun: Error in generateInitial', error);
                 throw error;
@@ -26,13 +24,11 @@ export function createHandlers(
         refinePrompt: async ({ currentPrompt, feedback }) => {
             console.log('Bun: Received refinePrompt request', { feedback });
             try {
-                // Refine prompt (includes auto-condensing if needed)
-                let fullPrompt = await aiEngine.refinePrompt(currentPrompt, feedback);
-
+                const result = await aiEngine.refinePrompt(currentPrompt, feedback);
                 const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(fullPrompt);
-                console.log('Bun: Refined prompt', { versionId, isValid: validation.isValid, promptLength: fullPrompt.length });
-                return { prompt: fullPrompt, versionId, validation };
+                const validation = validatePrompt(result.text);
+                console.log('Bun: Refined prompt', { versionId, isValid: validation.isValid, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
             } catch (error) {
                 console.error('Bun: Error in refinePrompt', error);
                 throw error;
@@ -85,6 +81,17 @@ export function createHandlers(
             console.log('Bun: Received setSunoTags request', { useSunoTags });
             await storage.saveConfig({ useSunoTags });
             aiEngine.setUseSunoTags(useSunoTags);
+            return { success: true };
+        },
+        getDebugMode: async () => {
+            console.log('Bun: Received getDebugMode request');
+            const config = await storage.getConfig();
+            return { debugMode: config.debugMode };
+        },
+        setDebugMode: async ({ debugMode }) => {
+            console.log('Bun: Received setDebugMode request', { debugMode });
+            await storage.saveConfig({ debugMode });
+            aiEngine.setDebugMode(debugMode);
             return { success: true };
         }
     };

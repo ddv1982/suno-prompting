@@ -13,6 +13,39 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 - **Secure API Key Management**: Manage Groq API keys within the app.
 - **Shadcn UI**: A professional, component-based interface with dark mode support.
 
+## Contextual Enhancement System
+
+The app automatically detects musical characteristics from your description and injects expert guidance into the AI prompt.
+
+### Genre Detection
+
+Scans for keywords like "ambient", "atmospheric", "soundscape" and suggests 4-5 curated instruments with character adjectives (e.g., "Fender Rhodes - warm, electric piano tone", "VCS 3-style patchboard synth textures").
+
+**Currently Supported:** Ambient
+
+### Harmonic Style Detection
+
+Detects advanced harmonic vocabulary and provides chord theory guidance:
+
+| Style | Keywords | Character |
+|-------|----------|-----------|
+| Lydian Dominant | jazzy, fusion, funk | Playful, mischievous |
+| Lydian Augmented | mysterious, alien, space | Otherworldly, floating |
+| Lydian #2 | exotic, enchanted, magic | Cinematic, evocative |
+| Pure Lydian | lydian, #11 | Bright, ethereal |
+
+Each style includes: chord type, formula, characteristics, suggested progressions, and key examples.
+
+### Rhythmic Style Detection
+
+Detects complex rhythmic patterns:
+
+| Style | Keywords | Character |
+|-------|----------|-----------|
+| Polyrhythm | polyrhythm, cross-rhythm, 3:4, 5:4 | Hypnotic, interlocking |
+
+Includes common ratios (2:3, 3:4, 4:3, 5:4, 7:4) and suggested instruments for layered percussion.
+
 ## Tech Stack
 
 - **Runtime**: [Electrobun](https://electrobun.dev/) - Native desktop application framework.

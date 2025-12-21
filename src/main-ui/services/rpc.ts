@@ -6,12 +6,12 @@ const rpc = Electroview.defineRPC<SunoRPCSchema>({
     handlers: {
         requests: {},
         messages: {
-            onStreamChunk: ({ chunk }) => {
+            onStreamChunk: ({ chunk }: { chunk: string }) => {
                 if (streamCallback) {
                     streamCallback(chunk);
                 }
             },
-            onCondensing: ({ status }) => {
+            onCondensing: ({ status }: { status: 'start' | 'done' }) => {
                 if (condensingCallback) {
                     condensingCallback(status);
                 }
@@ -82,5 +82,14 @@ export const api = {
 
     async setSunoTags(useSunoTags: boolean): Promise<void> {
         await rpc.request.setSunoTags({ useSunoTags });
+    },
+
+    async getDebugMode(): Promise<boolean> {
+        const { debugMode } = await rpc.request.getDebugMode({});
+        return debugMode;
+    },
+
+    async setDebugMode(debugMode: boolean): Promise<void> {
+        await rpc.request.setDebugMode({ debugMode });
     }
 };

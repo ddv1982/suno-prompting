@@ -1,4 +1,4 @@
-import { type PromptSession } from "./types";
+import { type PromptSession } from "@shared/types";
 
 export function upsertSessionList(
   sessions: PromptSession[],

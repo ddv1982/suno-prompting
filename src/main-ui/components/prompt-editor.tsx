@@ -6,10 +6,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type ChatMessage } from "../lib/chat-utils";
-import { type ValidationResult } from "../../shared/validation";
+import { type ChatMessage } from "@/lib/chat-utils";
+import { type ValidationResult } from "@shared/validation";
+import { type DebugInfo } from "@shared/types";
 import DOMPurify from "dompurify";
 
 type PromptEditorProps = {
@@ -23,6 +24,7 @@ type PromptEditorProps = {
   onRemix: () => void;
   maxChars?: number;
   currentModel?: string;
+  debugInfo?: DebugInfo;
 };
 
 export function PromptEditor({
@@ -36,9 +38,11 @@ export function PromptEditor({
   onRemix,
   maxChars = 1000,
   currentModel = "",
+  debugInfo,
 }: PromptEditorProps) {
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState(false);
+  const [debugExpanded, setDebugExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { charCount, promptOverLimit, inputOverLimit } = useMemo(() => ({
@@ -152,6 +156,8 @@ export function PromptEditor({
         </Card>
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />
+
+        {debugInfo && <DebugPanel debugInfo={debugInfo} expanded={debugExpanded} onToggle={() => setDebugExpanded(!debugExpanded)} />}
 
         <Separator className="opacity-50" />
 
@@ -284,6 +290,173 @@ function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: st
         </div>
         <div className="leading-relaxed whitespace-pre-wrap">{content}</div>
       </div>
+    </div>
+  );
+}
+
+function DebugPanel({ debugInfo, expanded, onToggle }: { debugInfo: DebugInfo; expanded: boolean; onToggle: () => void }) {
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, section: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSection(section);
+    setTimeout(() => setCopiedSection(null), 2000);
+  };
+
+  return (
+    <div className="mt-2">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <Bug className="w-3.5 h-3.5" />
+        <span className="font-bold uppercase tracking-widest text-[10px]">Debug Info</span>
+        {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+      </button>
+      
+      {expanded && (
+        <Card className="mt-2 bg-muted/30 border-dashed">
+          <CardContent className="p-4 space-y-3">
+            <div className="text-[10px] text-muted-foreground text-right">
+              <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleTimeString()}</span>
+            </div>
+            
+            <RequestInspector 
+              requestBody={debugInfo.requestBody} 
+              onCopy={(text, section) => copyToClipboard(text, section)}
+              copiedSection={copiedSection}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+type RequestMessage = { role: string; content: string };
+type ParsedRequest = { model?: string; messages?: RequestMessage[]; [key: string]: unknown };
+
+function RequestInspector({ 
+  requestBody, 
+  onCopy, 
+  copiedSection 
+}: { 
+  requestBody: string; 
+  onCopy: (text: string, section: string) => void;
+  copiedSection: string | null;
+}) {
+  const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
+  const [showRawJson, setShowRawJson] = useState(false);
+
+  const parsed: ParsedRequest | null = useMemo(() => {
+    try {
+      return JSON.parse(requestBody);
+    } catch {
+      return null;
+    }
+  }, [requestBody]);
+
+  const toggleMessage = (index: number) => {
+    setExpandedMessages(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const roleColors: Record<string, string> = {
+    system: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    user: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    assistant: "bg-green-500/20 text-green-400 border-green-500/30",
+  };
+
+  if (!parsed) {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Groq Request Body</span>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => onCopy(requestBody, 'request')}>
+            {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          </Button>
+        </div>
+        <ScrollArea className="h-48 rounded border bg-background/50">
+          <pre className="p-3 text-[11px] font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
+        </ScrollArea>
+      </div>
+    );
+  }
+
+  const modelName = typeof parsed.model === 'string' ? parsed.model.split('/').pop() : parsed.model;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Groq Request Body</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowRawJson(!showRawJson)}
+            className="text-[9px] text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {showRawJson ? "Structured" : "Raw JSON"}
+          </button>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => onCopy(requestBody, 'request')}>
+            {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          </Button>
+        </div>
+      </div>
+
+      {showRawJson ? (
+        <ScrollArea className="h-64 rounded border bg-background/50">
+          <pre className="p-3 text-[11px] font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
+        </ScrollArea>
+      ) : (
+        <div className="space-y-2">
+          {parsed.model && (
+            <div className="flex items-center gap-2 text-[11px]">
+              <span className="text-muted-foreground">Model:</span>
+              <Badge variant="outline" className="font-mono text-[10px] h-5">{modelName}</Badge>
+            </div>
+          )}
+
+          {parsed.messages?.map((msg, idx) => {
+            const isExpanded = expandedMessages.has(idx);
+            const lines = msg.content.split('\n');
+            const preview = lines.slice(0, 2).join('\n');
+            const needsTruncation = lines.length > 2 || msg.content.length > 150;
+            const displayContent = isExpanded || !needsTruncation ? msg.content : preview + (preview.length < msg.content.length ? '...' : '');
+
+            return (
+              <div key={idx} className="rounded border bg-background/50 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b">
+                  <Badge variant="outline" className={cn("text-[9px] font-bold uppercase h-4 px-1.5", roleColors[msg.role] || "")}>
+                    {msg.role}
+                  </Badge>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">{msg.content.length} chars</span>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => onCopy(msg.content, `msg-${idx}`)}>
+                      {copiedSection === `msg-${idx}` ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-2">
+                  <pre className="text-[10px] font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                    {displayContent}
+                  </pre>
+                  {needsTruncation && (
+                    <button
+                      onClick={() => toggleMessage(idx)}
+                      className="mt-1 text-[9px] text-primary hover:underline"
+                    >
+                      {isExpanded ? "Show less" : `Show more (${lines.length} lines)`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
