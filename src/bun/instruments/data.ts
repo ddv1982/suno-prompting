@@ -99,7 +99,7 @@ export const AMBIENT_INSTRUMENT_POOLS = {
   },
   padOrSynth: {
     pick: { min: 1, max: 1 },
-    instruments: ['synth pad', 'analog synth pads', 'analog synth', 'digital synth', 'FM synth', 'Moog synth', 'synth', 'crystalline synth pads'] as const,
+    instruments: ['synth pad', 'analog synth pads', 'analog synth', 'digital synth', 'FM synth', 'Moog synth', 'synth', 'crystalline synth pads', 'ambient pad'] as const,
   },
   rare: {
     pick: { min: 0, max: 1 },
@@ -112,14 +112,18 @@ export const AMBIENT_INSTRUMENT_POOLS = {
       'electric piano',
       'Rhodes',
       'Wurlitzer',
+      'Clavinet',
       'cello',
       'vibraphone',
+      'oboe',
+      'bassoon',
       'bowed vibraphone',
       'marimba',
       'kalimba',
       'glockenspiel',
       'bells',
       'glass bells',
+      'congas',
       'singing bowls',
       'choir',
       'wordless choir',
@@ -131,7 +135,7 @@ export const AMBIENT_INSTRUMENT_POOLS = {
   },
   movement: {
     pick: { min: 0, max: 1 },
-    instruments: ['percussion', 'toms', 'shaker', 'frame drum', 'handpan', 'sub-bass'] as const,
+    instruments: ['percussion', 'toms', 'shaker', 'frame drum', 'handpan', 'sub-bass', 'snare drum', 'jazz brushes', 'cajón', 'djembe'] as const,
   },
 } as const;
 
