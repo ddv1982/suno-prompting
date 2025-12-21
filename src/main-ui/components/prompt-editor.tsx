@@ -138,8 +138,8 @@ export function PromptEditor({
                   onClick={handleCopy}
                   disabled={promptOverLimit}
                   className={cn(
-                    "h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm transition-all",
-                    copied && "bg-primary text-primary-foreground border-primary"
+                    "h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm transition-all duration-300",
+                    copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
                   )}
                 >
                   {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -205,16 +205,21 @@ export function PromptEditor({
               onClick={handleSend}
               disabled={isGenerating || !input.trim() || inputOverLimit}
               size="sm"
-              className="h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive"
+              className={cn(
+                "h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive transition-all duration-300",
+                isGenerating && "w-9 px-0"
+              )}
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Send className="w-4 h-4" />
+                <>
+                  <Send className="w-4 h-4" />
+                  <span className="font-bold text-tiny tracking-tight">
+                    {currentPrompt ? "REFINE" : "GENERATE"}
+                  </span>
+                </>
               )}
-              <span className="font-bold text-tiny tracking-tight">
-                {isGenerating ? "WORKING" : currentPrompt ? "REFINE" : "GENERATE"}
-              </span>
             </Button>
           </div>
 
@@ -239,7 +244,7 @@ export function PromptEditor({
                   {currentModel.split('/').pop()}
                 </span>
               )}
-              <StatusIndicator status={isGenerating ? "working" : "ready"} showLabel={isGenerating} />
+              <StatusIndicator status={isGenerating ? "working" : "ready"} showLabel={false} />
             </div>
           </div>
         </div>
@@ -258,17 +263,18 @@ function PromptOutput({ text }: { text: string }) {
           return <div key={idx} className="h-4" />;
         }
 
-        const isSection = /^\[[^\]]+\]/.test(line);
-        const isField = /^(Genre|Mood|Instruments):\s/.test(line);
-        const isHeader = /^\[Mood\],\s\[Genre\/Era\],\sKey:/.test(line);
+        const cleanLine = line.trim();
+        const isSection = /^\[.+\]/.test(cleanLine);
+        const isField = /^(Genre|Mood|Instruments|Tempo|Key):/i.test(cleanLine);
+        const isHeader = /^\[Mood\],.*Key:/.test(cleanLine); // Relaxed header check
 
         return (
           <div
             key={idx}
             className={cn(
               isHeader && "text-muted-foreground",
-              isField && "text-foreground",
-              isSection && !isHeader && "text-primary font-semibold"
+              isField && "text-foreground font-medium",
+              isSection && !isHeader && "text-primary font-bold tracking-wide"
             )}
           >
             {line}
