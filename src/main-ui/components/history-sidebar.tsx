@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { SectionLabel } from "@/components/ui/section-label";
 import { cn } from "@/lib/utils";
 import { type PromptSession } from "@shared/types";
 
@@ -26,15 +27,15 @@ export function HistorySidebar({
       className="w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 overflow-hidden"
     >
       <SidebarHeader className="p-4 border-b flex items-center gap-2">
-        <SidebarGroupLabel className="px-0 font-bold uppercase tracking-widest text-[10px]">
-          History
+        <SidebarGroupLabel className="px-0">
+          <SectionLabel>History</SectionLabel>
         </SidebarGroupLabel>
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onNewProject}
-            className="h-7 px-2 text-[10px] font-bold gap-1"
+            className="h-7 px-2 text-tiny font-bold gap-1 interactive"
           >
             <Plus className="w-3 h-3" />
             NEW
@@ -103,10 +104,10 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
           }
         }}
         className={cn(
-          "flex-1 min-w-0 py-2.5 px-3 rounded-md cursor-pointer transition-colors",
+          "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer transition-all duration-150",
           isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "hover:bg-sidebar-accent/50"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+            : "hover:bg-sidebar-accent/50 hover:translate-x-0.5"
         )}
       >
         <div className="flex flex-col gap-0.5">
@@ -118,7 +119,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
           >
             {session.originalInput || "Untitled Project"}
           </span>
-          <span className="text-[10px] text-sidebar-foreground/50">
+          <span className="text-micro text-sidebar-foreground/50">
             {date.toLocaleDateString()}
           </span>
         </div>

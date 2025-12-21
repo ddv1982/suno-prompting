@@ -8,7 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { SectionLabel } from "@/components/ui/section-label";
 import { api } from "@/services/rpc";
 import { APP_CONSTANTS } from "@shared/constants";
 
@@ -72,18 +74,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             Application Settings
           </DialogTitle>
         </DialogHeader>
-        <div className="py-6 space-y-4">
+        <div className="py-6 space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              Groq API Key
-            </label>
+            <SectionLabel>Groq API Key</SectionLabel>
             <div className="relative">
-              <input
+              <Input
                 type={showKey ? "text" : "password"}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                 placeholder="gsk_..."
+                className="pr-10"
               />
               <button
                 type="button"
@@ -93,24 +93,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground italic">
+            <p className="text-tiny text-muted-foreground">
               Get your key from <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-primary hover:underline">console.groq.com</a>
             </p>
             {error && (
-              <p className="text-[11px] text-destructive flex items-center gap-2">
+              <p className="text-caption text-destructive flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" /> {error}
               </p>
             )}
           </div>
+
           <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              AI Model
-            </label>
+            <SectionLabel>AI Model</SectionLabel>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={loading}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading && <option value="">Loading...</option>}
               {APP_CONSTANTS.AI.AVAILABLE_MODELS.map((m) => (
@@ -119,36 +118,32 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </option>
               ))}
             </select>
-            <p className="text-[10px] text-muted-foreground italic">
+            <p className="text-tiny text-muted-foreground">
               Select the AI model for generating prompts
             </p>
           </div>
+
           <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              Song Structure Tags
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
+            <SectionLabel>Song Structure Tags</SectionLabel>
+            <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={useSunoTags} onCheckedChange={setUseSunoTags} />
-              <span className="text-sm">
-                Include [VERSE], [CHORUS], etc.
-              </span>
+              <span className="text-sm">Include [VERSE], [CHORUS], etc.</span>
             </label>
-            <p className="text-[10px] text-muted-foreground italic">
+            <p className="text-tiny text-muted-foreground">
               When enabled, prompts include Suno V5 section and performance tags
             </p>
           </div>
+
           <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+            <SectionLabel className="flex items-center gap-1">
               <Bug className="w-3 h-3" />
               Debug Mode
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
+            </SectionLabel>
+            <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={debugMode} onCheckedChange={setDebugMode} />
-              <span className="text-sm">
-                Show AI prompts sent to Groq
-              </span>
+              <span className="text-sm">Show AI prompts sent to Groq</span>
             </label>
-            <p className="text-[10px] text-muted-foreground italic">
+            <p className="text-tiny text-muted-foreground">
               When enabled, displays the system and user prompts sent to the AI model
             </p>
           </div>

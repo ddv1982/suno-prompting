@@ -8,6 +8,11 @@
   --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Roboto Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
+  /* Typography scale */
+  --text-micro: 0.5625rem;   /* 9px - timestamps, role labels */
+  --text-tiny: 0.625rem;     /* 10px - badges, button labels, status */
+  --text-caption: 0.6875rem; /* 11px - help text, descriptions */
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -187,4 +192,52 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Typography utilities */
+@utility text-micro {
+  font-size: var(--text-micro);
+  line-height: 1.4;
+}
+
+@utility text-tiny {
+  font-size: var(--text-tiny);
+  line-height: 1.4;
+}
+
+@utility text-caption {
+  font-size: var(--text-caption);
+  line-height: 1.5;
+}
+
+/* Label pattern utility */
+@utility label-section {
+  font-size: var(--text-tiny);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-foreground);
+}
+
+/* Micro-interactions */
+.interactive {
+  transition: all 0.15s ease;
+}
+
+.interactive:hover {
+  transform: translateY(-1px);
+}
+
+.interactive:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Smooth fade-in animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
 }

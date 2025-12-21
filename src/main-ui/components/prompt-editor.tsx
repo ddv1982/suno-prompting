@@ -6,6 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SectionLabel } from "@/components/ui/section-label";
+import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
@@ -92,12 +94,10 @@ export function PromptEditor({
     <section className="flex-1 flex flex-col bg-background">
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-6xl mx-auto w-full overflow-auto">
         <div className="flex justify-between items-center">
-          <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-            Generated Prompt Output
-          </h2>
+          <SectionLabel>Generated Prompt Output</SectionLabel>
           <Badge
             variant={promptOverLimit ? "destructive" : "secondary"}
-            className="text-[10px] font-mono tabular-nums h-5"
+            className="text-tiny font-mono tabular-nums h-5"
           >
             {charCount} / {maxChars}
           </Badge>
@@ -130,7 +130,7 @@ export function PromptEditor({
                   size="sm"
                   onClick={onRemix}
                   disabled={isGenerating}
-                  className="h-8 px-3 text-[10px] font-bold gap-2 bg-background/80 backdrop-blur-sm text-foreground hover:text-foreground active:text-foreground"
+                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/80 backdrop-blur-sm"
                 >
                   <RefreshCw className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
                   {isGenerating ? "REMIXING" : "REMIX"}
@@ -141,10 +141,8 @@ export function PromptEditor({
                   onClick={handleCopy}
                   disabled={promptOverLimit}
                   className={cn(
-                    "h-8 px-3 text-[10px] font-bold gap-2 bg-background/80 backdrop-blur-sm transition-all",
-                    copied 
-                      ? "bg-primary text-primary-foreground border-primary hover:text-primary-foreground" 
-                      : "text-foreground hover:text-foreground active:text-foreground"
+                    "h-8 px-3 text-tiny font-bold gap-2 bg-background/80 backdrop-blur-sm transition-all",
+                    copied && "bg-primary text-primary-foreground border-primary"
                   )}
                 >
                   {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -161,10 +159,8 @@ export function PromptEditor({
 
         <Separator className="opacity-50" />
 
-        <div className="flex-1 flex flex-col min-h-37.5 overflow-auto">
-          <h3 className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
-            Chat History
-          </h3>
+        <div className="flex-1 flex flex-col min-h-36 overflow-auto">
+          <SectionLabel className="mb-3">Chat History</SectionLabel>
           <ScrollArea className="flex-1 pr-4" viewportRef={scrollRef}>
             {chatMessages.length === 0 ? (
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic opacity-40">
@@ -200,47 +196,41 @@ export function PromptEditor({
               onClick={handleSend}
               disabled={isGenerating || !input.trim() || inputOverLimit}
               size="sm"
-              className="h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0"
+              className="h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              <span className="font-bold text-[10px] tracking-tight">
+              <span className="font-bold text-tiny tracking-tight">
                 {isGenerating ? "WORKING" : currentPrompt ? "REFINE" : "GENERATE"}
               </span>
             </Button>
           </div>
 
           {inputOverLimit && (
-            <p className="text-[11px] text-destructive flex items-center gap-2">
+            <p className="text-caption text-destructive flex items-center gap-2">
               <AlertCircle className="w-4 h-4" /> Feedback is over {maxChars} characters.
             </p>
           )}
 
           <div className="flex justify-between items-center px-1">
-            <p className="text-[10px] text-muted-foreground flex gap-4 opacity-70">
+            <p className="text-tiny text-muted-foreground flex gap-4 opacity-70">
               <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 border rounded bg-background text-[9px]">Enter</kbd> to send
+                <kbd className="px-1.5 py-0.5 border rounded-md bg-background text-micro">Enter</kbd> to send
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 border rounded bg-background text-[9px]">Shift + Enter</kbd> for new line
+                <kbd className="px-1.5 py-0.5 border rounded-md bg-background text-micro">Shift + Enter</kbd> for new line
               </span>
             </p>
-            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground opacity-80">
+            <div className="flex items-center gap-4">
               {currentModel && (
-                <span className="text-primary/70">{currentModel.split('/').pop()}</span>
+                <span className="text-tiny font-bold uppercase tracking-tight text-primary/70">
+                  {currentModel.split('/').pop()}
+                </span>
               )}
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "w-2 h-2 rounded-full",
-                    isGenerating ? "bg-primary animate-pulse shadow-[0_0_8px_var(--primary)]" : "bg-green-500/50"
-                  )}
-                ></span>
-                {isGenerating ? "Generating" : "Ready"}
-              </div>
+              <StatusIndicator status={isGenerating ? "working" : "ready"} showLabel={isGenerating} />
             </div>
           </div>
         </div>
@@ -275,18 +265,17 @@ function ValidationMessages({ errors, warnings }: { errors: string[]; warnings: 
 
 function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }) {
   return (
-    <div className={cn("flex w-full mb-3", role === "user" ? "justify-end" : "justify-start")}
-    >
+    <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-2 text-xs shadow-sm",
+          "max-w-[85%] rounded-xl px-4 py-2.5 text-xs shadow-sm",
           role === "user"
-            ? "bg-primary text-primary-foreground rounded-tr-none"
-            : "bg-muted text-foreground rounded-tl-none border"
+            ? "bg-primary text-primary-foreground rounded-tr-sm"
+            : "bg-muted text-foreground rounded-tl-sm border"
         )}
       >
-        <div className="font-bold opacity-70 mb-0.5 text-[9px] uppercase tracking-tighter">
-          {role === "user" ? "Refinement" : "Assistant"}
+        <div className="font-bold opacity-70 mb-1 text-micro uppercase tracking-wider">
+          {role === "user" ? "You" : "Assistant"}
         </div>
         <div className="leading-relaxed whitespace-pre-wrap">{content}</div>
       </div>
@@ -310,14 +299,14 @@ function DebugPanel({ debugInfo, expanded, onToggle }: { debugInfo: DebugInfo; e
         className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         <Bug className="w-3.5 h-3.5" />
-        <span className="font-bold uppercase tracking-widest text-[10px]">Debug Info</span>
+        <SectionLabel>Debug Info</SectionLabel>
         {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </button>
       
       {expanded && (
-        <Card className="mt-2 bg-muted/30 border-dashed">
+        <Card className="mt-2 bg-muted/30 border-dashed animate-fade-in">
           <CardContent className="p-4 space-y-3">
-            <div className="text-[10px] text-muted-foreground text-right">
+            <div className="text-tiny text-muted-foreground text-right">
               <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleTimeString()}</span>
             </div>
             
@@ -375,13 +364,13 @@ function RequestInspector({
     return (
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Groq Request Body</span>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => onCopy(requestBody, 'request')}>
+          <SectionLabel>Groq Request Body</SectionLabel>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => onCopy(requestBody, 'request')}>
             {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </Button>
         </div>
-        <ScrollArea className="h-48 rounded border bg-background/50">
-          <pre className="p-3 text-[11px] font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
+        <ScrollArea className="h-48 rounded-lg border bg-background/50">
+          <pre className="p-3 text-caption font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
         </ScrollArea>
       </div>
     );
@@ -392,30 +381,30 @@ function RequestInspector({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Groq Request Body</span>
+        <SectionLabel>Groq Request Body</SectionLabel>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowRawJson(!showRawJson)}
-            className="text-[9px] text-muted-foreground hover:text-foreground transition-colors underline"
+            className="text-micro text-muted-foreground hover:text-foreground transition-colors underline"
           >
             {showRawJson ? "Structured" : "Raw JSON"}
           </button>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => onCopy(requestBody, 'request')}>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => onCopy(requestBody, 'request')}>
             {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </Button>
         </div>
       </div>
 
       {showRawJson ? (
-        <ScrollArea className="h-64 rounded border bg-background/50">
-          <pre className="p-3 text-[11px] font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
+        <ScrollArea className="h-64 rounded-lg border bg-background/50">
+          <pre className="p-3 text-caption font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
         </ScrollArea>
       ) : (
         <div className="space-y-2">
           {parsed.model && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-caption">
               <span className="text-muted-foreground">Model:</span>
-              <Badge variant="outline" className="font-mono text-[10px] h-5">{modelName}</Badge>
+              <Badge variant="outline" className="font-mono text-tiny h-5">{modelName}</Badge>
             </div>
           )}
 
@@ -427,26 +416,26 @@ function RequestInspector({
             const displayContent = isExpanded || !needsTruncation ? msg.content : preview + (preview.length < msg.content.length ? '...' : '');
 
             return (
-              <div key={idx} className="rounded border bg-background/50 overflow-hidden">
+              <div key={idx} className="rounded-lg border bg-background/50 overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b">
-                  <Badge variant="outline" className={cn("text-[9px] font-bold uppercase h-4 px-1.5", roleColors[msg.role] || "")}>
+                  <Badge variant="outline" className={cn("text-micro font-bold uppercase h-4 px-1.5", roleColors[msg.role] || "")}>
                     {msg.role}
                   </Badge>
                   <div className="flex items-center gap-1">
-                    <span className="text-[9px] text-muted-foreground">{msg.content.length} chars</span>
+                    <span className="text-micro text-muted-foreground">{msg.content.length} chars</span>
                     <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => onCopy(msg.content, `msg-${idx}`)}>
                       {copiedSection === `msg-${idx}` ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
                     </Button>
                   </div>
                 </div>
                 <div className="p-2">
-                  <pre className="text-[10px] font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                  <pre className="text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
                     {displayContent}
                   </pre>
                   {needsTruncation && (
                     <button
                       onClick={() => toggleMessage(idx)}
-                      className="mt-1 text-[9px] text-primary hover:underline"
+                      className="mt-1 text-micro text-primary hover:underline"
                     >
                       {isExpanded ? "Show less" : `Show more (${lines.length} lines)`}
                     </button>
