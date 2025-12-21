@@ -7,8 +7,13 @@ import { createHandlers } from '@bun/handlers';
 // Set up application menu for macOS keyboard shortcuts (Cmd+C, Cmd+V, etc.)
 ApplicationMenu.setApplicationMenu([
     {
+        label: "Suno Prompting App",
         submenu: [
             { label: "About Suno Prompting App", role: "about" },
+            { type: "separator" },
+            { role: "hide" },
+            { role: "hideOthers" },
+            { role: "showAll" },
             { type: "separator" },
             { label: "Quit", role: "quit" }
         ],
