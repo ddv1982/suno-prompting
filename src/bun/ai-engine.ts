@@ -20,19 +20,28 @@ OUTPUT FORMAT (Top-Anchor Strategy):
 
 Genre: [specific genre name]
 Mood: [2-3 evocative mood descriptors]
-Instruments: [with CHARACTER adjectives]
+Instruments: [with CHARACTER adjectives - ONLY list instruments mentioned in technical guidance]
 
-[INTRO] [Sparse instrumentation, set the mood]
-[VERSE] [Specific instruments + emotional arc]
-[CHORUS] [Full arrangement, peak energy]
-[BRIDGE] [Contrasting texture, optional]
-[OUTRO] [Resolution style]
+[INTRO] [Natural flowing description: sparse instrumentation setting the scene]
+[VERSE] [Natural flowing description: weave instruments into the narrative with emotion]
+[CHORUS] [Natural flowing description: peak energy with full arrangement and story climax]
+[BRIDGE] [Natural flowing description: contrasting texture, optional]
+[OUTRO] [Natural flowing description: resolution and fade]
 
-SECTION TIP: Specify instruments per section
+SECTION WRITING RULES:
+- Write in natural phrases, NOT word lists
+- Blend instruments into the story naturally
+- ONLY reference instruments from the provided list in technical guidance
 
 PERFORMANCE TAGS: (breathy), (belt), (whisper), (ad-lib), (hold)` : '';
 
   return `You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
+
+CRITICAL RULES:
+1. PRESERVE the user's narrative, story, and meaning - this is the soul of the song
+2. Use technical guidance as creative COLOR, blending it naturally with the story
+3. NEVER repeat words or phrases - each significant word should appear only ONCE
+4. Create a cohesive, non-redundant prompt that flows naturally
 ${songStructure}
 STRICT CONSTRAINTS:
 - Output MUST be under ${MAX_CHARS} characters.
@@ -40,16 +49,22 @@ STRICT CONSTRAINTS:
 }
 
 function buildContextualPrompt(description: string): string {
-  const parts = [`Generate a studio-grade Suno V5 prompt for: ${description}`];
-  
   const genre = detectGenre(description);
-  if (genre) parts.push(getGenreInstruments(genre));
-  
   const harmonic = detectHarmonic(description);
-  if (harmonic) parts.push(getHarmonicGuidance(harmonic));
-  
   const rhythmic = detectRhythmic(description);
-  if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
+  
+  const parts = [
+    `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
+    description,
+  ];
+  
+  // Only add technical guidance if detected
+  if (genre || harmonic || rhythmic) {
+    parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
+    if (genre) parts.push(getGenreInstruments());
+    if (harmonic) parts.push(getHarmonicGuidance(harmonic));
+    if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
+  }
   
   return parts.join('\n\n');
 }
@@ -107,6 +122,48 @@ export class AIEngine {
     return buildSystemPrompt(this.useSunoTags);
   }
 
+  private detectRepeatedWords(text: string): string[] {
+    const words = text.toLowerCase().split(/[\s,;.()[\]]+/);
+    const seen = new Set<string>();
+    const repeated = new Set<string>();
+    
+    for (const word of words) {
+      if (word.length < 4) continue; // Skip short words
+      if (seen.has(word)) {
+        repeated.add(word);
+      }
+      seen.add(word);
+    }
+    
+    return Array.from(repeated);
+  }
+
+  private async condenseWithDedup(text: string, repeatedWords: string[]): Promise<string> {
+    try {
+      const { text: condensed } = await generateText({
+        model: this.getGroqModel(),
+        system: 'Remove word repetition while preserving meaning and musical quality. Output ONLY the revised prompt.',
+        prompt: `These words repeat too often: ${repeatedWords.join(', ')}\n\nRemove repetition, keep each word once:\n\n${text}`,
+        maxRetries: 2,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+      return condensed.trim();
+    } catch {
+      return text;
+    }
+  }
+
+  private async deduplicateWords(text: string): Promise<string> {
+    const repeated = this.detectRepeatedWords(text);
+    
+    // If significant repetition detected (> 3 repeated words), fix it
+    if (repeated.length > 3) {
+      return this.condenseWithDedup(text, repeated);
+    }
+    
+    return text;
+  }
+
   private async condense(text: string): Promise<string> {
     const targetChars = MAX_CHARS - 50;
     
@@ -153,7 +210,13 @@ export class AIEngine {
         throw new AIGenerationError('Empty response from AI model');
       }
 
-      const result = await this.ensureLength(genResult.text.trim());
+      let result = genResult.text.trim();
+      
+      // Check for word repetition and fix if needed
+      result = await this.deduplicateWords(result);
+      
+      // Ensure length constraints
+      result = await this.ensureLength(result);
       
       return {
         text: result,
@@ -215,7 +278,13 @@ export class AIEngine {
         throw new AIGenerationError('Empty response from AI model during refinement');
       }
 
-      const result = await this.ensureLength(genResult.text.trim());
+      let result = genResult.text.trim();
+      
+      // Check for word repetition and fix if needed
+      result = await this.deduplicateWords(result);
+      
+      // Ensure length constraints
+      result = await this.ensureLength(result);
       
       return {
         text: result,

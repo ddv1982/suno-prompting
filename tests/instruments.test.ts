@@ -65,24 +65,103 @@ describe('detectGenre', () => {
 
 describe('getGenreInstruments', () => {
   test('includes genre header and description', () => {
-    const guidance = getGenreInstruments('ambient');
+    const guidance = getGenreInstruments();
     expect(guidance).toContain('SUGGESTED INSTRUMENTS (Ambient)');
     expect(guidance).toContain('Warm, intimate, emotional soundscapes');
   });
 
-  test('picks 4 or 5 random instruments', () => {
-    const guidance = getGenreInstruments('ambient');
+  test('picks 4-9 instruments from pools', () => {
+    const guidance = getGenreInstruments();
     const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    // Pool system: 1 core + 1-2 pads + 1 color + 0-1 voice + 1 texture + 0-1 rhythm + 0-1 contrast + 0-1 rare = 4-9
     expect(lines.length).toBeGreaterThanOrEqual(4);
-    expect(lines.length).toBeLessThanOrEqual(5);
+    expect(lines.length).toBeLessThanOrEqual(9);
   });
 
   test('returns different instruments on multiple calls (random)', () => {
     const results = new Set<string>();
     for (let i = 0; i < 10; i++) {
-      results.add(getGenreInstruments('ambient'));
+      results.add(getGenreInstruments());
     }
-    // With random selection, we expect variation
     expect(results.size).toBeGreaterThan(1);
+  });
+
+  test('never includes both acoustic piano and Rhodes (exclusion rule)', () => {
+    for (let i = 0; i < 50; i++) {
+      const guidance = getGenreInstruments().toLowerCase();
+      const hasPiano = guidance.includes('acoustic piano');
+      const hasRhodes = guidance.includes('rhodes');
+      expect(hasPiano && hasRhodes).toBe(false);
+    }
+  });
+
+  test('never includes both Rhodes and Wurlitzer (exclusion rule)', () => {
+    for (let i = 0; i < 50; i++) {
+      const guidance = getGenreInstruments().toLowerCase();
+      const hasRhodes = guidance.includes('rhodes');
+      const hasWurli = guidance.includes('wurlitzer');
+      expect(hasRhodes && hasWurli).toBe(false);
+    }
+  });
+
+  test('never includes both bells and singing bowls (exclusion rule)', () => {
+    for (let i = 0; i < 50; i++) {
+      const guidance = getGenreInstruments().toLowerCase();
+      const hasBells = guidance.includes('bells');
+      const hasBowls = guidance.includes('singing bowls');
+      expect(hasBells && hasBowls).toBe(false);
+    }
+  });
+
+  test('always includes at least one core harmonic instrument', () => {
+    const coreKeywords = ['piano', 'rhodes', 'wurlitzer', 'nord stage', 'triton', 'harmonium', 'celesta', 'omnichord'];
+    for (let i = 0; i < 20; i++) {
+      const guidance = getGenreInstruments().toLowerCase();
+      const hasCore = coreKeywords.some(k => guidance.includes(k));
+      expect(hasCore).toBe(true);
+    }
+  });
+
+  test('includes at least one organic and one electronic element (contrast guarantee)', () => {
+    const organicMarkers = [
+      'acoustic',
+      'piano',
+      'vibraphone',
+      'marimba',
+      'kalimba',
+      'glockenspiel',
+      'gamelan',
+      'bells',
+      'bowls',
+      'waterphone',
+      'strings',
+      'cello',
+      'viola',
+      'clarinet',
+      'shakuhachi',
+      'duduk',
+      'guitar',
+      'harmonium',
+      'handpan',
+      'frame-drum',
+      'shakers',
+      'rattles',
+      'gourds',
+      'clockwork',
+      'ticks',
+      'hydrophone',
+      'contact-mic',
+      'found-percussion',
+    ];
+
+    const electronicMarkers = ['synth', 'wavetable', 'wavestation', 'd-50', 'digital', 'fm', 'dx7', 'tape', 'granular', 'sequencer', 'eventide', 'triton', 'nord'];
+
+    for (let i = 0; i < 30; i++) {
+      const guidance = getGenreInstruments().toLowerCase();
+      const hasOrganic = organicMarkers.some(k => guidance.includes(k));
+      const hasElectronic = electronicMarkers.some(k => guidance.includes(k));
+      expect(hasOrganic).toBe(true);
+      expect(hasElectronic).toBe(true);
+    }
   });
 });
