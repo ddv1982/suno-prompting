@@ -80,20 +80,7 @@ If you want Suno to follow your lyrics 100% without improvisation:
 
 ---
 
-## 7. Troubleshooting Common Issues
-| Issue | Potential Fix |
-| :--- | :--- |
-| **Muddy Mix** | Remove contradictory tags (e.g., don't ask for "lo-fi" and "ultra-clean" at once). |
-| **Off-Tempo Drums** | Explicitly state the BPM and use the tag `Tight rhythmic timing`. |
-| **Generic Sound** | Add specific era or gear tags like `Vintage 1960s tube amp` or `analog synths`. |
-| **Garbled Vocals** | Shorten the lyric line or add more punctuation to allow for "breaths". |
-
----
-
-## 8. Artist Secrets & Pro Insights
-Top Suno creators like **Ashwave**, **Echo Nova**, and **Jack Righteous** use specific workflows to separate "AI demos" from "Industry Standard" tracks.
-
-### The "GM Formula" (by ChillPanic)
+### The "GM Formula"
 Most successful prompts follow the **GM Structure**:
 1.  **Genre:** (e.g., *Cinematic Synthwave*)
 2.  **Mood:** (e.g., *Tense, dark, futuristic*)
@@ -118,15 +105,6 @@ Don't try to get the perfect song in one click. Use this iterative workflow:
     *   *Lyric Tag:* `[Scene: A rainy platform at midnight, ticket clutched in hand]` — Suno V5 uses this context to influence the emotional weight of the performance.
 
 ---
-
-## 9. The Sweet Spot: Specification vs. Magic
-One of the most advanced lessons from the Suno community is avoiding the **Paradox of Over-Specification**. V5 is a powerful transformer model; if you try to control every single note with "math," you often break its creative flow.
-
-### The "Hallucination" Trap
-*   **The Issue:** Using overly technical instructions like "ascending whole-steps every 16 bars" or "Lydian #4 on every E chord" can confuse the AI. It doesn't have a rigid metronome or sheet music—it works on *patterns*.
-*   **The Fix:** Use **Emotional Descriptors** instead of technical ones.
-    *   *Bad:* "Modulate to G major at 2:30."
-    *   *Good:* "[TRANSITION] Harmonic bloom into radiant brightness, emotional shift."
 
 ### Trusting the "Algorithmic Serendipity"
 *   **The Philosophy:** Prompting is like directing a world-class musician. If you tell them exactly which finger to use, the performance is stiff. If you give them the *feel* and the *palette*, they will surprise you with something better than you imagined.
