@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { api } from "@/services/rpc";
 import { APP_CONSTANTS } from "@shared/constants";
 
@@ -127,17 +128,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               Song Structure Tags
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={useSunoTags}
-                onClick={() => setUseSunoTags(!useSunoTags)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${useSunoTags ? 'bg-primary' : 'bg-input'}`}
-              >
-                <span
-                  className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${useSunoTags ? 'translate-x-5' : 'translate-x-0'}`}
-                />
-              </button>
+              <Switch checked={useSunoTags} onCheckedChange={setUseSunoTags} />
               <span className="text-sm">
                 Include [VERSE], [CHORUS], etc.
               </span>
@@ -152,17 +143,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               Debug Mode
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={debugMode}
-                onClick={() => setDebugMode(!debugMode)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${debugMode ? 'bg-primary' : 'bg-input'}`}
-              >
-                <span
-                  className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${debugMode ? 'translate-x-5' : 'translate-x-0'}`}
-                />
-              </button>
+              <Switch checked={debugMode} onCheckedChange={setDebugMode} />
               <span className="text-sm">
                 Show AI prompts sent to Groq
               </span>

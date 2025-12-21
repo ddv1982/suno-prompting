@@ -2,6 +2,9 @@ import { type RPCHandlers } from '@shared/types';
 import { validatePrompt } from '@shared/validation';
 import { type AIEngine } from '@bun/ai-engine';
 import { type StorageManager } from '@bun/storage';
+import { createLogger } from '@bun/logger';
+
+const log = createLogger('RPC');
 
 export function createHandlers(
     aiEngine: AIEngine, 
@@ -9,87 +12,87 @@ export function createHandlers(
 ): RPCHandlers {
     return {
         generateInitial: async ({ description }) => {
-            console.log('Bun: Received generateInitial request', { description });
+            log.info('generateInitial', { description });
             try {
                 const result = await aiEngine.generateInitial(description);
                 const versionId = Bun.randomUUIDv7();
                 const validation = validatePrompt(result.text);
-                console.log('Bun: Generated initial prompt', { versionId, isValid: validation.isValid, promptLength: result.text.length });
+                log.info('generateInitial:complete', { versionId, isValid: validation.isValid, promptLength: result.text.length });
                 return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
             } catch (error) {
-                console.error('Bun: Error in generateInitial', error);
+                log.error('generateInitial:failed', error);
                 throw error;
             }
         },
         refinePrompt: async ({ currentPrompt, feedback }) => {
-            console.log('Bun: Received refinePrompt request', { feedback });
+            log.info('refinePrompt', { feedback });
             try {
                 const result = await aiEngine.refinePrompt(currentPrompt, feedback);
                 const versionId = Bun.randomUUIDv7();
                 const validation = validatePrompt(result.text);
-                console.log('Bun: Refined prompt', { versionId, isValid: validation.isValid, promptLength: result.text.length });
+                log.info('refinePrompt:complete', { versionId, isValid: validation.isValid, promptLength: result.text.length });
                 return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
             } catch (error) {
-                console.error('Bun: Error in refinePrompt', error);
+                log.error('refinePrompt:failed', error);
                 throw error;
             }
         },
         getHistory: async () => {
-            console.log('Bun: Received getHistory request');
+            log.info('getHistory');
             const sessions = await storage.getHistory();
-            console.log('Bun: Returning history', { count: sessions.length });
+            log.info('getHistory:complete', { count: sessions.length });
             return { sessions };
         },
         saveSession: async ({ session }) => {
-            console.log('Bun: Received saveSession request', { id: session.id });
+            log.info('saveSession', { id: session.id });
             await storage.saveSession(session);
             return { success: true };
         },
         deleteSession: async ({ id }) => {
-            console.log('Bun: Received deleteSession request', { id });
+            log.info('deleteSession', { id });
             await storage.deleteSession(id);
             return { success: true };
         },
         getApiKey: async () => {
-            console.log('Bun: Received getApiKey request');
+            log.info('getApiKey');
             const config = await storage.getConfig();
             return { apiKey: config.apiKey };
         },
         setApiKey: async ({ apiKey }) => {
-            console.log('Bun: Received setApiKey request');
+            log.info('setApiKey');
             await storage.saveConfig({ apiKey });
             aiEngine.setApiKey(apiKey);
             return { success: true };
         },
         getModel: async () => {
-            console.log('Bun: Received getModel request');
+            log.info('getModel');
             const config = await storage.getConfig();
             return { model: config.model };
         },
         setModel: async ({ model }) => {
-            console.log('Bun: Received setModel request', { model });
+            log.info('setModel', { model });
             await storage.saveConfig({ model });
             aiEngine.setModel(model);
             return { success: true };
         },
         getSunoTags: async () => {
-            console.log('Bun: Received getSunoTags request');
+            log.info('getSunoTags');
             const config = await storage.getConfig();
             return { useSunoTags: config.useSunoTags };
         },
         setSunoTags: async ({ useSunoTags }) => {
-            console.log('Bun: Received setSunoTags request', { useSunoTags });
+            log.info('setSunoTags', { useSunoTags });
             await storage.saveConfig({ useSunoTags });
             aiEngine.setUseSunoTags(useSunoTags);
             return { success: true };
         },
         getDebugMode: async () => {
-            console.log('Bun: Received getDebugMode request');
+            log.info('getDebugMode');
             const config = await storage.getConfig();
             return { debugMode: config.debugMode };
         },
         setDebugMode: async ({ debugMode }) => {
-            console.log('Bun: Received setDebugMode request', { debugMode });
+            log.info('setDebugMode', { debugMode });
             await storage.saveConfig({ debugMode });
             aiEngine.setDebugMode(debugMode);
             return { success: true };

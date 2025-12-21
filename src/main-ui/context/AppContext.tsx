@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { api, setStreamCallback, setCondensingCallback } from '@/services/rpc';
 import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/types';
-import { type ValidationResult } from '@shared/validation';
+import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { sortByUpdated } from '@shared/session-utils';
 
@@ -47,15 +47,48 @@ function generateId() {
     );
 }
 
+type StreamingState = {
+    setIsGenerating: (v: boolean) => void;
+    setIsCondensing: (v: boolean) => void;
+    setStreamingPrompt: (v: string | ((prev: string) => string)) => void;
+};
+
+async function withStreamingCallbacks<T>(
+    state: StreamingState,
+    operation: () => Promise<T>
+): Promise<T> {
+    state.setIsGenerating(true);
+    state.setIsCondensing(false);
+    state.setStreamingPrompt("");
+    
+    setStreamCallback((chunk) => {
+        state.setStreamingPrompt((prev) => prev + chunk);
+    });
+    
+    setCondensingCallback((status) => {
+        if (status === 'start') {
+            state.setIsCondensing(true);
+            state.setStreamingPrompt("");
+        } else {
+            state.setIsCondensing(false);
+        }
+    });
+
+    try {
+        return await operation();
+    } finally {
+        state.setIsGenerating(false);
+        state.setIsCondensing(false);
+        state.setStreamingPrompt("");
+        setStreamCallback(null);
+        setCondensingCallback(null);
+    }
+}
+
 export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [sessions, setSessions] = useState<PromptSession[]>([]);
     const [currentSession, setCurrentSession] = useState<PromptSession | null>(null);
-    const [validation, setValidation] = useState<ValidationResult>({
-        errors: [],
-        warnings: [],
-        isValid: true,
-        charCount: 0,
-    });
+    const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
     const [isGenerating, setIsGenerating] = useState(false);
     const [isCondensing, setIsCondensing] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -89,14 +122,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const selectSession = useCallback((session: PromptSession) => {
         setCurrentSession(session);
         setChatMessages(buildChatMessages(session));
-        setValidation({ errors: [], warnings: [], isValid: true, charCount: 0 });
+        setValidation({ ...EMPTY_VALIDATION });
         setStreamingPrompt("");
     }, []);
 
     const newProject = useCallback(() => {
         setCurrentSession(null);
         setChatMessages([]);
-        setValidation({ errors: [], warnings: [], isValid: true, charCount: 0 });
+        setValidation({ ...EMPTY_VALIDATION });
         setStreamingPrompt("");
     }, []);
 
@@ -125,77 +158,66 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [currentSession?.id, newProject]);
 
+    const streamingState: StreamingState = {
+        setIsGenerating,
+        setIsCondensing,
+        setStreamingPrompt,
+    };
+
     const handleGenerate = useCallback(async (input: string) => {
         if (isGenerating) return;
         
         const currentPrompt = currentSession?.currentPrompt || "";
         const isInitial = !currentPrompt;
-        
-        setIsGenerating(true);
-        setIsCondensing(false);
-        setStreamingPrompt("");
-        
-        // Set up streaming callback
-        setStreamCallback((chunk) => {
-            setStreamingPrompt((prev) => prev + chunk);
-        });
-        
-        // Set up condensing callback
-        setCondensingCallback((status) => {
-            if (status === 'start') {
-                setIsCondensing(true);
-                setStreamingPrompt(""); // Clear invalid prompt from display
-            } else {
-                setIsCondensing(false);
-            }
-        });
 
         try {
-            let result;
-            if (isInitial) {
-                result = await api.generateInitial(input);
-            } else {
-                setChatMessages((prev) => [...prev, { role: "user", content: input }]);
-                result = await api.refinePrompt(currentPrompt, input);
-            }
+            await withStreamingCallbacks(streamingState, async () => {
+                let result;
+                if (isInitial) {
+                    result = await api.generateInitial(input);
+                } else {
+                    setChatMessages((prev) => [...prev, { role: "user", content: input }]);
+                    result = await api.refinePrompt(currentPrompt, input);
+                }
 
-            if (!result?.prompt) {
-                throw new Error("Invalid result received from generation");
-            }
+                if (!result?.prompt) {
+                    throw new Error("Invalid result received from generation");
+                }
 
-            setDebugInfo(result.debugInfo);
-            const now = new Date().toISOString();
-            const newVersion: PromptVersion = {
-                id: result.versionId || generateId(),
-                content: result.prompt,
-                feedback: !isInitial ? input : undefined,
-                timestamp: now,
-            };
-
-            let updatedSession: PromptSession;
-            if (isInitial || !currentSession) {
-                updatedSession = {
-                    id: generateId(),
-                    originalInput: input,
-                    currentPrompt: result.prompt,
-                    versionHistory: [newVersion],
-                    createdAt: now,
-                    updatedAt: now,
+                setDebugInfo(result.debugInfo);
+                const now = new Date().toISOString();
+                const newVersion: PromptVersion = {
+                    id: result.versionId || generateId(),
+                    content: result.prompt,
+                    feedback: !isInitial ? input : undefined,
+                    timestamp: now,
                 };
-                setChatMessages(buildChatMessages(updatedSession));
-            } else {
-                updatedSession = {
-                    ...currentSession,
-                    currentPrompt: result.prompt,
-                    versionHistory: [...currentSession.versionHistory, newVersion],
-                    updatedAt: now,
-                };
-                setChatMessages((prev) => [...prev, { role: "ai", content: "Updated prompt generated." }]);
-            }
 
-            setValidation(result.validation);
-            await saveSession(updatedSession);
-            await loadHistory(0);
+                let updatedSession: PromptSession;
+                if (isInitial || !currentSession) {
+                    updatedSession = {
+                        id: generateId(),
+                        originalInput: input,
+                        currentPrompt: result.prompt,
+                        versionHistory: [newVersion],
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+                    setChatMessages(buildChatMessages(updatedSession));
+                } else {
+                    updatedSession = {
+                        ...currentSession,
+                        currentPrompt: result.prompt,
+                        versionHistory: [...currentSession.versionHistory, newVersion],
+                        updatedAt: now,
+                    };
+                    setChatMessages((prev) => [...prev, { role: "ai", content: "Updated prompt generated." }]);
+                }
+
+                setValidation(result.validation);
+                await saveSession(updatedSession);
+                await loadHistory(0);
+            });
         } catch (error) {
             console.error("Generation failed:", error);
             setChatMessages((prev) => [
@@ -205,12 +227,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                     content: `Error: ${error instanceof Error ? error.message : "Failed to generate prompt"}.`,
                 },
             ]);
-        } finally {
-            setIsGenerating(false);
-            setIsCondensing(false);
-            setStreamingPrompt("");
-            setStreamCallback(null);
-            setCondensingCallback(null);
         }
     }, [isGenerating, currentSession, saveSession, loadHistory]);
 
@@ -221,63 +237,42 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const handleRemix = useCallback(async () => {
         if (isGenerating || !currentSession?.originalInput) return;
-        
-        setIsGenerating(true);
-        setIsCondensing(false);
-        setStreamingPrompt("");
-        
-        setStreamCallback((chunk) => {
-            setStreamingPrompt((prev) => prev + chunk);
-        });
-        
-        setCondensingCallback((status) => {
-            if (status === 'start') {
-                setIsCondensing(true);
-                setStreamingPrompt("");
-            } else {
-                setIsCondensing(false);
-            }
-        });
 
         try {
-            const result = await api.generateInitial(currentSession.originalInput);
+            await withStreamingCallbacks(streamingState, async () => {
+                const result = await api.generateInitial(currentSession.originalInput);
 
-            if (!result?.prompt) {
-                throw new Error("Invalid result received from remix");
-            }
+                if (!result?.prompt) {
+                    throw new Error("Invalid result received from remix");
+                }
 
-            setDebugInfo(result.debugInfo);
-            const now = new Date().toISOString();
-            const newVersion: PromptVersion = {
-                id: result.versionId || generateId(),
-                content: result.prompt,
-                feedback: "[remix]",
-                timestamp: now,
-            };
+                setDebugInfo(result.debugInfo);
+                const now = new Date().toISOString();
+                const newVersion: PromptVersion = {
+                    id: result.versionId || generateId(),
+                    content: result.prompt,
+                    feedback: "[remix]",
+                    timestamp: now,
+                };
 
-            const updatedSession: PromptSession = {
-                ...currentSession,
-                currentPrompt: result.prompt,
-                versionHistory: [...currentSession.versionHistory, newVersion],
-                updatedAt: now,
-            };
+                const updatedSession: PromptSession = {
+                    ...currentSession,
+                    currentPrompt: result.prompt,
+                    versionHistory: [...currentSession.versionHistory, newVersion],
+                    updatedAt: now,
+                };
 
-            setChatMessages((prev) => [...prev, { role: "ai", content: "Remixed prompt generated." }]);
-            setValidation(result.validation);
-            await saveSession(updatedSession);
-            await loadHistory(0);
+                setChatMessages((prev) => [...prev, { role: "ai", content: "Remixed prompt generated." }]);
+                setValidation(result.validation);
+                await saveSession(updatedSession);
+                await loadHistory(0);
+            });
         } catch (error) {
             console.error("Remix failed:", error);
             setChatMessages((prev) => [
                 ...prev,
                 { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix prompt"}.` },
             ]);
-        } finally {
-            setIsGenerating(false);
-            setIsCondensing(false);
-            setStreamingPrompt("");
-            setStreamCallback(null);
-            setCondensingCallback(null);
         }
     }, [isGenerating, currentSession, saveSession, loadHistory]);
 

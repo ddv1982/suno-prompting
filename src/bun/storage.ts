@@ -1,10 +1,17 @@
 import { join } from 'path';
 import { homedir } from 'os';
 import { mkdir } from 'fs/promises';
-import { type PromptSession } from '@shared/types';
+import { type PromptSession, type AppConfig } from '@shared/types';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
 import { encrypt, decrypt } from '@bun/crypto';
 import { APP_CONSTANTS } from '@shared/constants';
+
+const DEFAULT_CONFIG: AppConfig = {
+    apiKey: null,
+    model: APP_CONSTANTS.AI.DEFAULT_MODEL,
+    useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS,
+    debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
+};
 
 export class StorageManager {
     private baseDir: string;
@@ -59,11 +66,11 @@ export class StorageManager {
         await this.saveHistory(filtered);
     }
 
-    async getConfig(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean }> {
+    async getConfig(): Promise<AppConfig> {
         try {
             const file = Bun.file(this.configPath);
             if (!(await file.exists())) {
-                return { apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE };
+                return { ...DEFAULT_CONFIG };
             }
             const config = await file.json();
             if (config.apiKey) {
@@ -75,18 +82,18 @@ export class StorageManager {
                 }
             }
             return {
-                apiKey: config.apiKey ?? null,
-                model: config.model ?? APP_CONSTANTS.AI.DEFAULT_MODEL,
-                useSunoTags: config.useSunoTags ?? APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS,
-                debugMode: config.debugMode ?? APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
+                apiKey: config.apiKey ?? DEFAULT_CONFIG.apiKey,
+                model: config.model ?? DEFAULT_CONFIG.model,
+                useSunoTags: config.useSunoTags ?? DEFAULT_CONFIG.useSunoTags,
+                debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
             };
         } catch (error) {
             console.error('Failed to read config:', error);
-            return { apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE };
+            return { ...DEFAULT_CONFIG };
         }
     }
 
-    async saveConfig(config: Partial<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean }>) {
+    async saveConfig(config: Partial<AppConfig>) {
         try {
             const existing = await this.getConfig();
             const toSave = { ...existing, ...config };

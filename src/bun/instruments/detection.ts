@@ -5,32 +5,28 @@ const HARMONIC_PRIORITY: HarmonicStyle[] = ['lydian_dominant', 'lydian_augmented
 const RHYTHMIC_PRIORITY: RhythmicStyle[] = ['polyrhythm'];
 const GENRE_PRIORITY: Genre[] = ['ambient'];
 
-export function detectHarmonic(description: string): HarmonicStyle | null {
+function detectFromKeywords<K extends string>(
+  description: string,
+  data: Record<K, { keywords: readonly string[] }>,
+  priority: readonly K[]
+): K | null {
   const lower = description.toLowerCase();
-  for (const style of HARMONIC_PRIORITY) {
-    if (HARMONIC_STYLES[style].keywords.some(kw => lower.includes(kw))) {
-      return style;
+  for (const key of priority) {
+    if (data[key].keywords.some(kw => lower.includes(kw))) {
+      return key;
     }
   }
   return null;
+}
+
+export function detectHarmonic(description: string): HarmonicStyle | null {
+  return detectFromKeywords(description, HARMONIC_STYLES, HARMONIC_PRIORITY);
 }
 
 export function detectRhythmic(description: string): RhythmicStyle | null {
-  const lower = description.toLowerCase();
-  for (const style of RHYTHMIC_PRIORITY) {
-    if (RHYTHMIC_STYLES[style].keywords.some(kw => lower.includes(kw))) {
-      return style;
-    }
-  }
-  return null;
+  return detectFromKeywords(description, RHYTHMIC_STYLES, RHYTHMIC_PRIORITY);
 }
 
 export function detectGenre(description: string): Genre | null {
-  const lower = description.toLowerCase();
-  for (const genre of GENRE_PRIORITY) {
-    if (GENRE_INSTRUMENTS[genre].keywords.some(kw => lower.includes(kw))) {
-      return genre;
-    }
-  }
-  return null;
+  return detectFromKeywords(description, GENRE_INSTRUMENTS, GENRE_PRIORITY);
 }

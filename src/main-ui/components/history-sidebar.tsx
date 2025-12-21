@@ -112,16 +112,9 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
         <div className="flex flex-col gap-0.5">
           <span
             className={cn(
-              "text-sm font-medium leading-tight wrap-break-word whitespace-normal text-sidebar-foreground",
+              "text-sm font-medium leading-tight text-sidebar-foreground line-clamp-2 break-words",
               isActive && "font-semibold"
             )}
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              wordBreak: "break-word",
-            }}
           >
             {session.originalInput || "Untitled Project"}
           </span>

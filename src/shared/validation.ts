@@ -5,6 +5,13 @@ export interface ValidationResult {
     charCount: number;
 }
 
+export const EMPTY_VALIDATION: ValidationResult = {
+    isValid: true,
+    errors: [],
+    warnings: [],
+    charCount: 0,
+};
+
 const CONTRADICTORY_PAIRS = [
     ['lo-fi', 'ultra-clean'],
     ['lo-fi', 'high fidelity'],
