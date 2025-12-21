@@ -27,7 +27,8 @@ function App() {
     newProject,
     deleteSession,
     handleGenerate,
-    handleCopy
+    handleCopy,
+    handleRemix
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
@@ -55,6 +56,7 @@ function App() {
               chatMessages={chatMessages}
               onGenerate={handleGenerate}
               onCopy={handleCopy}
+              onRemix={handleRemix}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
               currentModel={currentModel}
             />

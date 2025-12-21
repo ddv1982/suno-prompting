@@ -1604,6 +1604,13 @@
       }
     }
   }
+  .hover\:text-primary-foreground {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-primary-foreground);
+      }
+    }
+  }
   .hover\:text-sidebar-accent-foreground {
     &:hover {
       @media (hover: hover) {
@@ -1759,6 +1766,11 @@
   .active\:bg-sidebar-accent {
     &:active {
       background-color: var(--color-sidebar-accent);
+    }
+  }
+  .active\:text-foreground {
+    &:active {
+      color: var(--color-foreground);
     }
   }
   .active\:text-sidebar-accent-foreground {

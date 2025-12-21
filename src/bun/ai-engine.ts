@@ -25,36 +25,24 @@ export class AIEngine {
 
   async initialize() {
     const songStructure = this.useSunoTags ? `
-OUTPUT FORMAT (use this exact structure):
+OUTPUT FORMAT (Top-Anchor Strategy):
 
-[Vocal type or "Instrumental"], [primary mood], [BPM], [Genre], Key: [key/mode]
+[Vocal Persona], [Mood], [Genre/Era], Key: [key/mode]
 
-Genre: [genre name]
-Mood: [comma-separated mood descriptors]
-Instruments: [comma-separated instrument list with character descriptions]
-Vocals: [vocal description or "none"]
+Genre: [specific genre name]
+Mood: [2-3 evocative mood descriptors]
+Instruments: [with CHARACTER adjectives]
+Vocals: [vocal tone/texture description or "none"]
 
-[INTRO] [Description of intro section with instruments and harmonic feel]
-[VERSE] or [BUILD] [Description with specific instruments and emotional arc]
-[CHORUS] [Description of chorus with harmonic/textural peak]
-[BRIDGE] [Optional - contrasting section description]
-[OUTRO] [Description of ending with resolution style]
+[INTRO] [Sparse instrumentation, set the mood]
+[VERSE] [Specific instruments + emotional arc]
+[CHORUS] [Full arrangement, peak energy]
+[BRIDGE] [Contrasting texture, optional]
+[OUTRO] [Resolution style]
 
-SECTION TAG OPTIONS:
-- Use [INTRO], [VERSE], [BUILD], [CHORUS], [BRIDGE], [OUTRO], [TRANSITION]
-- Performance tags in lyrics: (breathy), (belt), (whisper), (ad-lib), (hold)
-- Vocal stacking: (Unison), (Layered harmonies), (Double track)
-` : `
-OUTPUT FORMAT (use this exact structure):
+SECTION TIP: Specify instruments per section
 
-[Vocal type or "Instrumental"], [primary mood], [BPM], [Genre], Key: [key/mode]
-
-Genre: [genre name]
-Mood: [comma-separated mood descriptors]
-Instruments: [comma-separated instrument list with character descriptions]
-Vocals: [vocal description or "none"]
-
-[Evocative prose description of the overall sound, texture, and emotional journey - no section tags]
+PERFORMANCE TAGS: (breathy), (belt), (whisper), (ad-lib), (hold)` : `OUTPUT FORMAT (Top-Anchor Strategy):
 `;
 
     this.systemPrompt = `
@@ -62,9 +50,7 @@ You are a creative music prompt writer for Suno V5. Transform user descriptions 
 ${songStructure}
 STRICT CONSTRAINTS:
 - Output MUST be under ${APP_CONSTANTS.MAX_PROMPT_CHARS} characters.
-- Output ONLY the prompt itself - no explanations, labels, or extra text.
-- Be specific about instruments and their character.
-- Include harmonic/key information where relevant.
+- Output ONLY the prompt itself - no explanations or extra text.
 `;
   }
 

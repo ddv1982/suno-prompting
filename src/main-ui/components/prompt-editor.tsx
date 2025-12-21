@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Check, Copy, Send, AlertCircle } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "../lib/chat-utils";
 import { type ValidationResult } from "../../shared/validation";
@@ -20,6 +20,7 @@ type PromptEditorProps = {
   chatMessages: ChatMessage[];
   onGenerate: (input: string) => void;
   onCopy: () => void;
+  onRemix: () => void;
   maxChars?: number;
   currentModel?: string;
 };
@@ -32,6 +33,7 @@ export function PromptEditor({
   chatMessages,
   onGenerate,
   onCopy,
+  onRemix,
   maxChars = 1000,
   currentModel = "",
 }: PromptEditorProps) {
@@ -118,19 +120,33 @@ export function PromptEditor({
           </ScrollArea>
           <div className="absolute top-4 right-4 flex gap-2">
             {currentPrompt && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopy}
-                disabled={promptOverLimit}
-                className={cn(
-                  "h-8 px-3 text-[10px] font-bold gap-2 bg-background/80 backdrop-blur-sm transition-all",
-                  copied && "bg-primary text-primary-foreground border-primary"
-                )}
-              >
-                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "COPIED" : "COPY"}
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemix}
+                  disabled={isGenerating}
+                  className="h-8 px-3 text-[10px] font-bold gap-2 bg-background/80 backdrop-blur-sm text-foreground hover:text-foreground active:text-foreground"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
+                  {isGenerating ? "REMIXING" : "REMIX"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopy}
+                  disabled={promptOverLimit}
+                  className={cn(
+                    "h-8 px-3 text-[10px] font-bold gap-2 bg-background/80 backdrop-blur-sm transition-all",
+                    copied 
+                      ? "bg-primary text-primary-foreground border-primary hover:text-primary-foreground" 
+                      : "text-foreground hover:text-foreground active:text-foreground"
+                  )}
+                >
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? "COPIED" : "COPY"}
+                </Button>
+              </>
             )}
           </div>
         </Card>

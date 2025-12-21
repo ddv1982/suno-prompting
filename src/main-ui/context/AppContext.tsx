@@ -25,6 +25,7 @@ interface AppContextType {
     deleteSession: (id: string) => Promise<void>;
     handleGenerate: (input: string) => Promise<void>;
     handleCopy: () => void;
+    handleRemix: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -215,6 +216,67 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         navigator.clipboard.writeText(prompt);
     }, [currentSession?.currentPrompt]);
 
+    const handleRemix = useCallback(async () => {
+        if (isGenerating || !currentSession?.originalInput) return;
+        
+        setIsGenerating(true);
+        setIsCondensing(false);
+        setStreamingPrompt("");
+        
+        setStreamCallback((chunk) => {
+            setStreamingPrompt((prev) => prev + chunk);
+        });
+        
+        setCondensingCallback((status) => {
+            if (status === 'start') {
+                setIsCondensing(true);
+                setStreamingPrompt("");
+            } else {
+                setIsCondensing(false);
+            }
+        });
+
+        try {
+            const result = await api.generateInitial(currentSession.originalInput);
+
+            if (!result?.prompt) {
+                throw new Error("Invalid result received from remix");
+            }
+
+            const now = new Date().toISOString();
+            const newVersion: PromptVersion = {
+                id: result.versionId || generateId(),
+                content: result.prompt,
+                feedback: "[remix]",
+                timestamp: now,
+            };
+
+            const updatedSession: PromptSession = {
+                ...currentSession,
+                currentPrompt: result.prompt,
+                versionHistory: [...currentSession.versionHistory, newVersion],
+                updatedAt: now,
+            };
+
+            setChatMessages((prev) => [...prev, { role: "ai", content: "Remixed prompt generated." }]);
+            setValidation(result.validation);
+            await saveSession(updatedSession);
+            await loadHistory(0);
+        } catch (error) {
+            console.error("Remix failed:", error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix prompt"}.` },
+            ]);
+        } finally {
+            setIsGenerating(false);
+            setIsCondensing(false);
+            setStreamingPrompt("");
+            setStreamCallback(null);
+            setCondensingCallback(null);
+        }
+    }, [isGenerating, currentSession, saveSession, loadHistory]);
+
     useEffect(() => {
         loadHistory();
         loadModel();
@@ -246,7 +308,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             saveSession,
             deleteSession,
             handleGenerate,
-            handleCopy
+            handleCopy,
+            handleRemix
         }}>
             {children}
         </AppContext.Provider>
