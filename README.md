@@ -19,7 +19,15 @@ The app automatically detects musical characteristics from your description and 
 
 ### Genre Detection
 
-Scans for keywords like "ambient", "atmospheric", "soundscape" and suggests 4-5 curated instruments with character adjectives (e.g., "Fender Rhodes - warm, electric piano tone", "VCS 3-style patchboard synth textures").
+Scans for keywords like "ambient", "atmospheric", "soundscape" and injects **ambient instrument guidance** as a single list of **2–4 Suno-friendly instrument tags**.
+
+Internally, the app selects from simple pools (harmonic anchor + pad/synth, with optional color/movement and a small rare pool), applies exclusion rules to avoid conflicts, and constrains the final prompt’s `Instruments:` line to use **only** the provided tags.
+
+#### Ambient instrument selection (how it works)
+
+1. **Pool selection (variety):** picks from `harmonicAnchor` + `padOrSynth`, then optionally from `rare` (~15%), `color`, and `movement`.
+2. **Exclusions:** prevents known-clashing combos (e.g., acoustic piano + Rhodes, Rhodes + Wurlitzer, bells + singing bowls).
+3. **Prompt constraint:** the AI is instructed to use **only** the 2–4 tags from `SUGGESTED INSTRUMENTS (Suno tags)` on the final `Instruments:` line.
 
 **Currently Supported:** Ambient
 

@@ -1,5 +1,6 @@
 import { expect, test, describe } from "bun:test";
 import { validatePrompt } from "@shared/validation";
+import { _testStripLeakedMetaLines } from "@bun/ai-engine";
 
 describe("validatePrompt", () => {
     test("should pass for valid prompt under 1000 characters", () => {
@@ -42,5 +43,31 @@ describe("validatePrompt", () => {
         const result = validatePrompt("");
         expect(result.isValid).toBe(true);
         expect(result.charCount).toBe(0);
+    });
+});
+
+describe("stripLeakedMetaLines", () => {
+    test("removes leaked meta-instruction lines while preserving the prompt", () => {
+        const input = [
+            "Remove word repetition while preserving meaning and musical quality",
+            "Mood, Genre, Key: C minor",
+            "Instruments: synth pad, piano",
+            "[VERSE] drifting neon fog over empty streets",
+        ].join("\n");
+
+        const out = _testStripLeakedMetaLines(input);
+        expect(out).not.toContain("Remove word repetition");
+        expect(out).toContain("Mood, Genre, Key");
+        expect(out).toContain("[VERSE]");
+    });
+
+    test("removes common 'output only' style leakage", () => {
+        const input = [
+            "Output ONLY the revised prompt.",
+            "A minimal ambient piece with soft synth pads.",
+        ].join("\n");
+
+        const out = _testStripLeakedMetaLines(input);
+        expect(out).toBe("A minimal ambient piece with soft synth pads.");
     });
 });

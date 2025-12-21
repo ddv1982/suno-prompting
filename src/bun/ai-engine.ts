@@ -1,6 +1,13 @@
 import { createGroq } from '@ai-sdk/groq';
-import { generateText, streamText } from 'ai';
-import { detectGenre, getGenreInstruments, detectHarmonic, getHarmonicGuidance, detectRhythmic, getRhythmicGuidance } from '@bun/instruments';
+import { generateText } from 'ai';
+import {
+  detectAmbient,
+  getAmbientInstruments,
+  detectHarmonic,
+  getHarmonicGuidance,
+  detectRhythmic,
+  getRhythmicGuidance,
+} from '@bun/instruments';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
@@ -12,6 +19,35 @@ export type GenerationResult = {
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
+const LEAKED_META_SUBSTRINGS = [
+  'remove word repetition',
+  'remove repetition',
+  'these words repeat',
+  'output only',
+  'condense to under',
+  'strict constraints',
+  "here's the revised prompt",
+  'here is the revised prompt',
+] as const;
+
+function hasLeakedMeta(text: string): boolean {
+  const lower = text.toLowerCase();
+  return LEAKED_META_SUBSTRINGS.some(s => lower.includes(s));
+}
+
+function stripLeakedMetaLines(text: string): string {
+  const lines = text.split('\n');
+  const filtered = lines.filter(line => {
+    const lower = line.toLowerCase();
+    return !LEAKED_META_SUBSTRINGS.some(s => lower.includes(s));
+  });
+  return filtered.join('\n').trim();
+}
+
+export function _testStripLeakedMetaLines(text: string): string {
+  return stripLeakedMetaLines(text);
+}
+
 function buildSystemPrompt(useSunoTags: boolean): string {
   const songStructure = useSunoTags ? `
 OUTPUT FORMAT (Top-Anchor Strategy):
@@ -20,7 +56,7 @@ OUTPUT FORMAT (Top-Anchor Strategy):
 
 Genre: [specific genre name]
 Mood: [2-3 evocative mood descriptors]
-Instruments: [with CHARACTER adjectives - ONLY list instruments mentioned in technical guidance]
+Instruments: [2-4 items max, with CHARACTER adjectives - ONLY use items from SUGGESTED INSTRUMENTS (Suno tags) in technical guidance]
 
 [INTRO] [Natural flowing description: sparse instrumentation setting the scene]
 [VERSE] [Natural flowing description: weave instruments into the narrative with emotion]
@@ -31,7 +67,9 @@ Instruments: [with CHARACTER adjectives - ONLY list instruments mentioned in tec
 SECTION WRITING RULES:
 - Write in natural phrases, NOT word lists
 - Blend instruments into the story naturally
-- ONLY reference instruments from the provided list in technical guidance
+- Instruments line: ONLY use SUGGESTED INSTRUMENTS (Suno tags)
+- Sections: only reference instruments from the technical guidance list
+- Never invent instruments outside technical guidance
 
 PERFORMANCE TAGS: (breathy), (belt), (whisper), (ad-lib), (hold)` : '';
 
@@ -49,7 +87,7 @@ STRICT CONSTRAINTS:
 }
 
 function buildContextualPrompt(description: string): string {
-  const genre = detectGenre(description);
+  const isAmbient = detectAmbient(description);
   const harmonic = detectHarmonic(description);
   const rhythmic = detectRhythmic(description);
   
@@ -59,9 +97,11 @@ function buildContextualPrompt(description: string): string {
   ];
   
   // Only add technical guidance if detected
-  if (genre || harmonic || rhythmic) {
+  if (isAmbient || harmonic || rhythmic) {
     parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
-    if (genre) parts.push(getGenreInstruments());
+    if (isAmbient) {
+      parts.push(getAmbientInstruments());
+    }
     if (harmonic) parts.push(getHarmonicGuidance(harmonic));
     if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
   }
@@ -122,6 +162,23 @@ export class AIEngine {
     return buildSystemPrompt(this.useSunoTags);
   }
 
+  private buildDebugInfo(systemPrompt: string, userPrompt: string, requestBody: unknown): DebugInfo {
+    return {
+      systemPrompt,
+      userPrompt,
+      model: this.model,
+      timestamp: new Date().toISOString(),
+      requestBody: formatRequestBody(requestBody),
+    };
+  }
+
+  private scrubLeakedMeta(text: string): string {
+    if (!hasLeakedMeta(text)) return text;
+    const scrubbed = stripLeakedMetaLines(text);
+    if (scrubbed.trim().length < APP_CONSTANTS.MIN_PROMPT_CHARS) return text;
+    return scrubbed;
+  }
+
   private detectRepeatedWords(text: string): string[] {
     const words = text.toLowerCase().split(/[\s,;.()[\]]+/);
     const seen = new Set<string>();
@@ -142,12 +199,17 @@ export class AIEngine {
     try {
       const { text: condensed } = await generateText({
         model: this.getGroqModel(),
-        system: 'Remove word repetition while preserving meaning and musical quality. Output ONLY the revised prompt.',
-        prompt: `These words repeat too often: ${repeatedWords.join(', ')}\n\nRemove repetition, keep each word once:\n\n${text}`,
+        system: [
+          'Rewrite the given music prompt to remove word repetition while preserving meaning and musical quality.',
+          'Return ONLY the rewritten prompt text.',
+          'Do NOT include explanations, meta-instructions, prefaces, or quotes.',
+          'Do NOT mention repetition-removal, condensing, or "output only" in the result.',
+        ].join(' '),
+        prompt: `PROMPT_TO_REWRITE:\n<<<\n${text}\n>>>\n\nREPEATED_WORDS:\n${repeatedWords.join(', ')}`,
         maxRetries: 2,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
-      return condensed.trim();
+      return this.scrubLeakedMeta(condensed.trim());
     } catch {
       return text;
     }
@@ -170,12 +232,17 @@ export class AIEngine {
     try {
       const { text: condensed } = await generateText({
         model: this.getGroqModel(),
-        system: 'You condense music prompts while preserving quality. Output ONLY the condensed prompt.',
-        prompt: `Condense to under ${targetChars} characters (current: ${text.length}). Preserve musical details - genre, mood, key, instruments, structure. Remove redundant words:\n\n${text}`,
+        system: [
+          `Rewrite the given music prompt to be under ${targetChars} characters while preserving musical quality and key details.`,
+          'Return ONLY the rewritten prompt text.',
+          'Do NOT include explanations, meta-instructions, prefaces, or quotes.',
+          'Do NOT mention condensing, character counts, or "output only" in the result.',
+        ].join(' '),
+        prompt: `PROMPT_TO_REWRITE:\n<<<\n${text}\n>>>`,
         maxRetries: 2,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
-      return condensed.trim();
+      return this.scrubLeakedMeta(condensed.trim());
     } catch {
       // If condensing fails, fall back to truncation
       return truncateToLimit(text);
@@ -193,77 +260,92 @@ export class AIEngine {
     return truncateToLimit(condensed);
   }
 
+  private async postProcess(text: string): Promise<string> {
+    let result = this.scrubLeakedMeta(text.trim());
+    if (hasLeakedMeta(result)) {
+      result = await this.rewriteWithoutMeta(result);
+    }
+    result = await this.deduplicateWords(result);
+    result = await this.ensureLength(result);
+    result = this.scrubLeakedMeta(result);
+    if (hasLeakedMeta(result)) {
+      result = await this.rewriteWithoutMeta(result);
+      result = this.scrubLeakedMeta(result);
+    }
+    return result;
+  }
+
+  private async rewriteWithoutMeta(text: string): Promise<string> {
+    try {
+      const { text: rewritten } = await generateText({
+        model: this.getGroqModel(),
+        system: [
+          'Rewrite the given music prompt text.',
+          'Remove any meta-instructions or assistant chatter.',
+          'Return ONLY the final prompt text.',
+        ].join(' '),
+        prompt: `PROMPT_TO_REWRITE:\n<<<\n${text}\n>>>`,
+        maxRetries: 1,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+
+      return this.scrubLeakedMeta(rewritten.trim());
+    } catch {
+      return text;
+    }
+  }
+
+  private async runGeneration(
+    actionLabel: string,
+    systemPrompt: string,
+    userPromptForDebug: string,
+    operation: () => Promise<Awaited<ReturnType<typeof generateText>>>
+  ): Promise<GenerationResult> {
+    try {
+      const genResult = await operation();
+
+      if (!genResult.text?.trim()) {
+        throw new AIGenerationError(`Empty response from AI model${actionLabel ? ` (${actionLabel})` : ''}`);
+      }
+
+      const result = await this.postProcess(genResult.text);
+
+      return {
+        text: result,
+        debugInfo: this.debugMode
+          ? this.buildDebugInfo(systemPrompt, userPromptForDebug, genResult.request.body)
+          : undefined,
+      };
+    } catch (error) {
+      if (error instanceof AIGenerationError) throw error;
+      throw new AIGenerationError(
+        `Failed to ${actionLabel}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
   async generateInitial(description: string): Promise<GenerationResult> {
     const userPrompt = buildContextualPrompt(description);
     const systemPrompt = this.systemPrompt;
-    
-    try {
-      const genResult = await generateText({
+
+    return this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>
+      generateText({
         model: this.getGroqModel(),
         system: systemPrompt,
         prompt: userPrompt,
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      if (!genResult.text?.trim()) {
-        throw new AIGenerationError('Empty response from AI model');
-      }
-
-      let result = genResult.text.trim();
-      
-      // Check for word repetition and fix if needed
-      result = await this.deduplicateWords(result);
-      
-      // Ensure length constraints
-      result = await this.ensureLength(result);
-      
-      return {
-        text: result,
-        debugInfo: this.debugMode ? {
-          systemPrompt,
-          userPrompt,
-          model: this.model,
-          timestamp: new Date().toISOString(),
-          requestBody: formatRequestBody(genResult.request.body),
-        } : undefined,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to generate prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
-  }
-
-  async *generateInitialStream(description: string): AsyncIterable<string> {
-    try {
-      const result = await streamText({
-        model: this.getGroqModel(),
-        system: this.systemPrompt,
-        prompt: buildContextualPrompt(description),
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      for await (const chunk of result.textStream) {
-        yield chunk;
-      }
-    } catch (error) {
-      throw new AIGenerationError(
-        `Failed to stream prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
+      })
+    );
   }
 
   async refinePrompt(currentPrompt: string, feedback: string): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
     const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
-    
-    try {
-      const genResult = await generateText({
+
+    return this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
+      generateText({
         model: this.getGroqModel(),
         system: systemPrompt,
         messages: [
@@ -272,60 +354,7 @@ export class AIEngine {
         ],
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      if (!genResult.text?.trim()) {
-        throw new AIGenerationError('Empty response from AI model during refinement');
-      }
-
-      let result = genResult.text.trim();
-      
-      // Check for word repetition and fix if needed
-      result = await this.deduplicateWords(result);
-      
-      // Ensure length constraints
-      result = await this.ensureLength(result);
-      
-      return {
-        text: result,
-        debugInfo: this.debugMode ? {
-          systemPrompt,
-          userPrompt,
-          model: this.model,
-          timestamp: new Date().toISOString(),
-          requestBody: formatRequestBody(genResult.request.body),
-        } : undefined,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to refine prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
-  }
-
-  async *refinePromptStream(currentPrompt: string, feedback: string): AsyncIterable<string> {
-    try {
-      const result = await streamText({
-        model: this.getGroqModel(),
-        system: this.systemPrompt,
-        messages: [
-          { role: 'assistant', content: currentPrompt },
-          { role: 'user', content: feedback },
-        ],
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      for await (const chunk of result.textStream) {
-        yield chunk;
-      }
-    } catch (error) {
-      throw new AIGenerationError(
-        `Failed to stream refined prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
+      })
+    );
   }
 }

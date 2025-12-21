@@ -3,6 +3,7 @@ import { validatePrompt } from '@shared/validation';
 import { type AIEngine } from '@bun/ai-engine';
 import { type StorageManager } from '@bun/storage';
 import { createLogger } from '@bun/logger';
+import type { GenerationResult } from '@bun/ai-engine';
 
 const log = createLogger('RPC');
 
@@ -10,32 +11,31 @@ export function createHandlers(
     aiEngine: AIEngine, 
     storage: StorageManager
 ): RPCHandlers {
+
+    async function runAndValidate(
+        action: 'generateInitial' | 'refinePrompt',
+        meta: Record<string, unknown>,
+        operation: () => Promise<GenerationResult>
+    ) {
+        log.info(action, meta);
+        try {
+            const result = await operation();
+            const versionId = Bun.randomUUIDv7();
+            const validation = validatePrompt(result.text);
+            log.info(`${action}:complete`, { versionId, isValid: validation.isValid, promptLength: result.text.length });
+            return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
+        } catch (error) {
+            log.error(`${action}:failed`, error);
+            throw error;
+        }
+    }
+
     return {
         generateInitial: async ({ description }) => {
-            log.info('generateInitial', { description });
-            try {
-                const result = await aiEngine.generateInitial(description);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('generateInitial:complete', { versionId, isValid: validation.isValid, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
-            } catch (error) {
-                log.error('generateInitial:failed', error);
-                throw error;
-            }
+            return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description));
         },
         refinePrompt: async ({ currentPrompt, feedback }) => {
-            log.info('refinePrompt', { feedback });
-            try {
-                const result = await aiEngine.refinePrompt(currentPrompt, feedback);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('refinePrompt:complete', { versionId, isValid: validation.isValid, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
-            } catch (error) {
-                log.error('refinePrompt:failed', error);
-                throw error;
-            }
+            return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback));
         },
         getHistory: async () => {
             log.info('getHistory');

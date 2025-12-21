@@ -18,7 +18,6 @@ import DOMPurify from "dompurify";
 type PromptEditorProps = {
   currentPrompt: string;
   isGenerating: boolean;
-  isCondensing?: boolean;
   validation: ValidationResult;
   chatMessages: ChatMessage[];
   onGenerate: (input: string) => void;
@@ -32,7 +31,6 @@ type PromptEditorProps = {
 export function PromptEditor({
   currentPrompt,
   isGenerating,
-  isCondensing = false,
   validation,
   chatMessages,
   onGenerate,
@@ -106,20 +104,13 @@ export function PromptEditor({
         <Card className="flex-1 relative group border shadow-sm bg-muted/5 overflow-hidden">
           <ScrollArea className="h-full">
             <CardContent className="p-6">
-              {isCondensing ? (
-                <div className="flex items-center gap-3 text-muted-foreground italic">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Optimizing prompt length...</span>
-                </div>
-              ) : (
-                <div
-                  className={cn(
-                    "font-mono text-sm leading-relaxed",
-                    !sanitizedPrompt && "text-muted-foreground italic"
-                  )}
-                  dangerouslySetInnerHTML={{ __html: sanitizedPrompt || "Start by describing your creative vision below..." }}
-                />
-              )}
+              <div
+                className={cn(
+                  "font-mono text-sm leading-relaxed",
+                  !sanitizedPrompt && "text-muted-foreground italic"
+                )}
+                dangerouslySetInnerHTML={{ __html: sanitizedPrompt || "Start by describing your creative vision below..." }}
+              />
             </CardContent>
           </ScrollArea>
           <div className="absolute top-4 right-4 flex gap-2">

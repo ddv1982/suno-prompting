@@ -1,5 +1,5 @@
 import { HARMONIC_STYLES, RHYTHMIC_STYLES, AMBIENT_KEYWORDS } from './data';
-import type { HarmonicStyle, RhythmicStyle, Genre } from './data';
+import type { HarmonicStyle, RhythmicStyle } from './data';
 
 const HARMONIC_PRIORITY: HarmonicStyle[] = ['lydian_dominant', 'lydian_augmented', 'lydian_sharp_two', 'lydian'];
 const RHYTHMIC_PRIORITY: RhythmicStyle[] = ['polyrhythm'];
@@ -26,7 +26,7 @@ export function detectRhythmic(description: string): RhythmicStyle | null {
   return detectFromKeywords(description, RHYTHMIC_STYLES, RHYTHMIC_PRIORITY);
 }
 
-export function detectGenre(description: string): Genre | null {
+export function detectAmbient(description: string): boolean {
   const lower = description.toLowerCase();
-  return AMBIENT_KEYWORDS.some(kw => lower.includes(kw)) ? 'ambient' : null;
+  return AMBIENT_KEYWORDS.some(kw => lower.includes(kw));
 }

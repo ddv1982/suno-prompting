@@ -17,10 +17,8 @@ function App() {
     currentSession,
     validation,
     isGenerating,
-    isCondensing,
     chatMessages,
     settingsOpen,
-    streamingPrompt,
     currentModel,
     debugInfo,
     setSettingsOpen,
@@ -33,8 +31,6 @@ function App() {
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
-  // If condensing, hide the streamed text; if streaming, show it; otherwise show current
-  const displayPrompt = isCondensing ? "" : (isGenerating && streamingPrompt ? streamingPrompt : currentPrompt);
 
   return (
     <SidebarProvider>
@@ -50,9 +46,8 @@ function App() {
           <Header onOpenSettings={() => setSettingsOpen(true)} />
           <main className="flex-1 min-h-0 overflow-auto">
             <PromptEditor
-              currentPrompt={displayPrompt}
+              currentPrompt={currentPrompt}
               isGenerating={isGenerating}
-              isCondensing={isCondensing}
               validation={validation}
               chatMessages={chatMessages}
               onGenerate={handleGenerate}

@@ -113,7 +113,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
         <div className="flex flex-col gap-0.5">
           <span
             className={cn(
-              "text-sm font-medium leading-tight text-sidebar-foreground line-clamp-2 break-words",
+              "text-sm font-medium leading-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
               isActive && "font-semibold"
             )}
           >

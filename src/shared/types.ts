@@ -125,9 +125,6 @@ export type SunoRPCSchema = {
     }>;
     webview: RPCSchema<{
         requests: Record<string, never>;
-        messages: {
-            onStreamChunk: { chunk: string };
-            onCondensing: { status: 'start' | 'done' };
-        };
+        messages: Record<string, never>;
     }>;
 };

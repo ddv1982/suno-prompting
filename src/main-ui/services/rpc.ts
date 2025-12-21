@@ -5,31 +5,9 @@ const rpc = Electroview.defineRPC<SunoRPCSchema>({
     maxRequestTime: 30000,
     handlers: {
         requests: {},
-        messages: {
-            onStreamChunk: ({ chunk }: { chunk: string }) => {
-                if (streamCallback) {
-                    streamCallback(chunk);
-                }
-            },
-            onCondensing: ({ status }: { status: 'start' | 'done' }) => {
-                if (condensingCallback) {
-                    condensingCallback(status);
-                }
-            }
-        }
+        messages: {}
     }
 });
-
-let streamCallback: ((chunk: string) => void) | null = null;
-let condensingCallback: ((status: 'start' | 'done') => void) | null = null;
-
-export const setStreamCallback = (cb: ((chunk: string) => void) | null) => {
-    streamCallback = cb;
-};
-
-export const setCondensingCallback = (cb: ((status: 'start' | 'done') => void) | null) => {
-    condensingCallback = cb;
-};
 
 new Electroview({ rpc });
 

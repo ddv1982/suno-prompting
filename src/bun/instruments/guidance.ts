@@ -1,5 +1,18 @@
-import { HARMONIC_STYLES, RHYTHMIC_STYLES, AMBIENT_INSTRUMENT_POOLS, AMBIENT_EXCLUSION_RULES } from './data';
-import type { HarmonicStyle, RhythmicStyle, Rarity, AmbientPoolName, InstrumentTag } from './data';
+import {
+  HARMONIC_STYLES,
+  RHYTHMIC_STYLES,
+  AMBIENT_INSTRUMENT_POOLS,
+  AMBIENT_EXCLUSION_RULES,
+  AMBIENT_POOL_ORDER,
+  AMBIENT_MAX_TAGS,
+  AMBIENT_GUIDANCE_DESCRIPTION,
+  AMBIENT_INSTRUMENTS_HEADER,
+} from './data';
+import type { HarmonicStyle, RhythmicStyle, AmbientPoolName, SunoInstrumentToken } from './data';
+
+const POOL_ORDER: readonly AmbientPoolName[] = AMBIENT_POOL_ORDER;
+
+const EXCLUSION_RULES_LC = AMBIENT_EXCLUSION_RULES.map(([a, b]) => [a.toLowerCase(), b.toLowerCase()] as const);
 
 function shuffle<T>(arr: readonly T[]): T[] {
   const result = [...arr];
@@ -14,13 +27,20 @@ function pickRandom<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
-function hasExclusion(selected: string[], candidate: string): boolean {
+function randomIntInclusive(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function rollChance(chance: number | undefined): boolean {
+  if (chance === undefined) return true;
+  return Math.random() <= chance;
+}
+
+function hasExclusion(selected: readonly string[], candidate: string): boolean {
   const candidateLower = candidate.toLowerCase();
   for (const existing of selected) {
     const existingLower = existing.toLowerCase();
-    for (const [a, b] of AMBIENT_EXCLUSION_RULES) {
-      const aLower = a.toLowerCase();
-      const bLower = b.toLowerCase();
+    for (const [aLower, bLower] of EXCLUSION_RULES_LC) {
       if (
         (existingLower.includes(aLower) && candidateLower.includes(bLower)) ||
         (existingLower.includes(bLower) && candidateLower.includes(aLower))
@@ -32,25 +52,13 @@ function hasExclusion(selected: string[], candidate: string): boolean {
   return false;
 }
 
-type PoolInstrument = { readonly name: string; readonly rarity: Rarity; readonly tags?: readonly InstrumentTag[] };
+type AmbientPool = {
+  readonly pick: { readonly min: number; readonly max: number };
+  readonly instruments: readonly SunoInstrumentToken[];
+  readonly chanceToInclude?: number;
+};
 
-type SelectedInstrument = PoolInstrument & { readonly pool: AmbientPoolName };
-
-function weightedShuffle(instruments: readonly PoolInstrument[]): PoolInstrument[] {
-  const weighted: PoolInstrument[] = [];
-  for (const inst of instruments) {
-    // Common instruments get 4x weight, rare get 1x
-    const copies = inst.rarity === 'common' ? 4 : 1;
-    for (let i = 0; i < copies; i++) {
-      weighted.push(inst);
-    }
-  }
-  return shuffle(weighted);
-}
-
-function hasTag(selected: readonly SelectedInstrument[], tag: InstrumentTag): boolean {
-  return selected.some(i => i.tags?.includes(tag));
-}
+const POOLS: Record<AmbientPoolName, AmbientPool> = AMBIENT_INSTRUMENT_POOLS;
 
 export function getHarmonicGuidance(style: HarmonicStyle): string {
   const s = HARMONIC_STYLES[style];
@@ -71,7 +79,7 @@ export function getHarmonicGuidance(style: HarmonicStyle): string {
 export function getRhythmicGuidance(style: RhythmicStyle): string {
   const s = RHYTHMIC_STYLES[style];
   const chars = shuffle(s.characteristics).slice(0, 3);
-  
+
   return [
     `RHYTHMIC STYLE (${s.name}):`,
     s.description,
@@ -81,122 +89,64 @@ export function getRhythmicGuidance(style: RhythmicStyle): string {
   ].join('\n');
 }
 
-function selectFromPool(
-  poolName: AmbientPoolName,
-  pool: { readonly pick: { readonly min: number; readonly max: number }; readonly chanceToInclude?: number; readonly instruments: readonly PoolInstrument[] },
-  selected: readonly SelectedInstrument[]
-): SelectedInstrument[] {
-  // Check probability gate for optional pools (like rare)
-  if (pool.chanceToInclude !== undefined && Math.random() > pool.chanceToInclude) {
-    return [];
-  }
+function computePickCount(pick: AmbientPool['pick'], remainingSlots: number): number {
+  if (remainingSlots <= 0) return 0;
+  const desired = randomIntInclusive(pick.min, pick.max);
+  return Math.min(desired, remainingSlots);
+}
 
-  // Determine how many to pick
-  const range = pool.pick.max - pool.pick.min + 1;
-  const count = pool.pick.min + Math.floor(Math.random() * range);
-  if (count === 0) return [];
+function pickUniqueTokens(
+  candidates: readonly SunoInstrumentToken[],
+  selected: readonly SunoInstrumentToken[],
+  count: number
+): SunoInstrumentToken[] {
+  if (count <= 0) return [];
 
-  // Filter out excluded instruments
-  const selectedNames = selected.map(s => s.name);
-  const available = pool.instruments.filter(inst => !hasExclusion(selectedNames, inst.name));
-  if (available.length === 0) return [];
+  const picks: SunoInstrumentToken[] = [];
+  const seen = new Set<SunoInstrumentToken>(selected);
 
-  // Weighted shuffle and pick unique instruments
-  const shuffled = weightedShuffle(available);
-  const picks: SelectedInstrument[] = [];
-  const seen = new Set<string>();
-
-  for (const inst of shuffled) {
+  for (const token of candidates) {
     if (picks.length >= count) break;
-    if (!seen.has(inst.name) && !hasExclusion([...selectedNames, ...picks.map(p => p.name)], inst.name)) {
-      picks.push({ ...inst, pool: poolName });
-      seen.add(inst.name);
-    }
+    if (seen.has(token)) continue;
+    if (hasExclusion([...selected, ...picks], token)) continue;
+    picks.push(token);
+    seen.add(token);
   }
 
   return picks;
 }
 
-function enforceContrast(selected: SelectedInstrument[]): SelectedInstrument[] {
-  // Goal: always include at least one organic and one electronic element.
-  const required: InstrumentTag[] = ['organic', 'electronic'];
+function pickFromPool(
+  pool: AmbientPool,
+  selected: readonly SunoInstrumentToken[],
+  remainingSlots: number
+): SunoInstrumentToken[] {
+  if (!rollChance(pool.chanceToInclude)) return [];
 
-  // Core/pads should remain present; replacing *within* those pools is fine, but replacing them
-  // with an instrument from a different pool is not.
-  const protectedPools = new Set<AmbientPoolName>(['coreHarmonic', 'padsAtmosphere']);
+  const count = computePickCount(pool.pick, remainingSlots);
+  if (count <= 0) return [];
 
-  const poolFixPriority: AmbientPoolName[] = [
-    'colorOvertones',
-    'expressiveVoices',
-    'subtleRhythm',
-    'contrastWildcard',
-    'textureTime',
-    'rare',
-    'coreHarmonic',
-    'padsAtmosphere',
-  ];
+  const available = pool.instruments.filter(token => !hasExclusion(selected, token));
+  const shuffled = shuffle(available);
+  const picks = pickUniqueTokens(shuffled, selected, count);
 
-  for (const tag of required) {
-    if (hasTag(selected, tag)) continue;
-
-    let fixed = false;
-    for (const poolName of poolFixPriority) {
-      const idx = selected.findIndex(s => s.pool === poolName);
-      if (idx === -1) continue;
-
-      const pool = AMBIENT_INSTRUMENT_POOLS[poolName];
-      const instruments = pool.instruments as readonly PoolInstrument[];
-      const candidates = shuffle(instruments).filter(i => i.tags?.includes(tag));
-      if (candidates.length === 0) continue;
-
-      for (const cand of candidates) {
-        if (selected.some(s => s.name === cand.name)) continue;
-
-        const remaining = [...selected.slice(0, idx), ...selected.slice(idx + 1)];
-        const remainingNames = remaining.map(s => s.name);
-        if (hasExclusion(remainingNames, cand.name)) continue;
-
-        const existing = selected[idx]!;
-        if (protectedPools.has(existing.pool) && existing.pool !== poolName) continue;
-
-        selected[idx] = { ...cand, pool: poolName };
-        fixed = true;
-        break;
-      }
-
-      if (fixed) break;
-    }
-  }
-
-  return selected;
+  return picks;
 }
 
-export function getGenreInstruments(): string {
-  let selected: SelectedInstrument[] = [];
-  const pools = AMBIENT_INSTRUMENT_POOLS;
+export function getAmbientInstruments(): string {
+  let selected: SunoInstrumentToken[] = [];
 
-  const poolOrder: (keyof typeof pools)[] = [
-    'coreHarmonic',
-    'padsAtmosphere',
-    'colorOvertones',
-    'expressiveVoices',
-    'textureTime',
-    'subtleRhythm',
-    'contrastWildcard',
-    'rare',
-  ];
-
-  for (const poolName of poolOrder) {
-    const pool = pools[poolName];
-    const picks = selectFromPool(poolName, pool, selected);
-    selected = [...selected, ...picks];
+  for (const poolName of POOL_ORDER) {
+    if (selected.length >= AMBIENT_MAX_TAGS) break;
+    const pool = POOLS[poolName];
+    const picks = pickFromPool(pool, selected, AMBIENT_MAX_TAGS - selected.length);
+    selected = [...selected, ...picks].slice(0, AMBIENT_MAX_TAGS);
   }
 
-  selected = enforceContrast(selected);
-
   return [
-    'SUGGESTED INSTRUMENTS (Ambient):',
-    'Warm, intimate, emotional soundscapes with gentle movement',
-    ...selected.map(i => `- ${i.name}`),
+    AMBIENT_INSTRUMENTS_HEADER,
+    AMBIENT_GUIDANCE_DESCRIPTION,
+    '',
+    ...selected.map(t => `- ${t}`),
   ].join('\n');
 }

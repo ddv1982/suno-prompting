@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import { detectHarmonic, getHarmonicGuidance, detectRhythmic, detectGenre, getGenreInstruments } from '../src/bun/instruments';
+import {
+  detectHarmonic,
+  getHarmonicGuidance,
+  detectRhythmic,
+  detectAmbient,
+  getAmbientInstruments,
+  AMBIENT_INSTRUMENT_POOLS,
+} from '../src/bun/instruments';
 
 describe('detectHarmonic', () => {
   test('detects lydian_dominant for jazzy/fusion keywords', () => {
@@ -52,43 +59,54 @@ describe('detectRhythmic', () => {
   });
 });
 
-describe('detectGenre', () => {
+describe('detectAmbient', () => {
   test('detects ambient keywords', () => {
-    expect(detectGenre('ambient soundscape')).toBe('ambient');
-    expect(detectGenre('atmospheric pads')).toBe('ambient');
+    expect(detectAmbient('ambient soundscape')).toBe(true);
+    expect(detectAmbient('atmospheric pads')).toBe(true);
   });
 
   test('returns null for no match', () => {
-    expect(detectGenre('heavy metal')).toBeNull();
+    expect(detectAmbient('heavy metal')).toBe(false);
   });
 });
 
-describe('getGenreInstruments', () => {
+describe('getAmbientInstruments', () => {
+  function parseBullets(guidance: string): string[] {
+    return guidance
+      .split('\n')
+      .filter(l => l.startsWith('- '))
+      .map(l => l.slice(2));
+  }
+
   test('includes genre header and description', () => {
-    const guidance = getGenreInstruments();
-    expect(guidance).toContain('SUGGESTED INSTRUMENTS (Ambient)');
-    expect(guidance).toContain('Warm, intimate, emotional soundscapes');
+    const guidance = getAmbientInstruments();
+    expect(guidance).toContain('SUGGESTED INSTRUMENTS (Suno tags)');
+    expect(guidance).toContain('Ambient: warm, intimate, emotional soundscapes');
   });
 
-  test('picks 4-9 instruments from pools', () => {
-    const guidance = getGenreInstruments();
-    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
-    // Pool system: 1 core + 1-2 pads + 1 color + 0-1 voice + 1 texture + 0-1 rhythm + 0-1 contrast + 0-1 rare = 4-9
-    expect(lines.length).toBeGreaterThanOrEqual(4);
-    expect(lines.length).toBeLessThanOrEqual(9);
+  test('picks 2-4 Suno canonical tags', () => {
+    const guidance = getAmbientInstruments();
+    const tags = parseBullets(guidance);
+    expect(tags.length).toBeGreaterThanOrEqual(2);
+    expect(tags.length).toBeLessThanOrEqual(4);
+
+    const whitelist = new Set<string>(Object.values(AMBIENT_INSTRUMENT_POOLS).flatMap(p => p.instruments));
+    for (const tag of tags) {
+      expect(whitelist.has(tag)).toBe(true);
+    }
   });
 
   test('returns different instruments on multiple calls (random)', () => {
     const results = new Set<string>();
     for (let i = 0; i < 10; i++) {
-      results.add(getGenreInstruments());
+      results.add(getAmbientInstruments());
     }
     expect(results.size).toBeGreaterThan(1);
   });
 
   test('never includes both acoustic piano and Rhodes (exclusion rule)', () => {
     for (let i = 0; i < 50; i++) {
-      const guidance = getGenreInstruments().toLowerCase();
+      const guidance = getAmbientInstruments().toLowerCase();
       const hasPiano = guidance.includes('acoustic piano');
       const hasRhodes = guidance.includes('rhodes');
       expect(hasPiano && hasRhodes).toBe(false);
@@ -97,7 +115,7 @@ describe('getGenreInstruments', () => {
 
   test('never includes both Rhodes and Wurlitzer (exclusion rule)', () => {
     for (let i = 0; i < 50; i++) {
-      const guidance = getGenreInstruments().toLowerCase();
+      const guidance = getAmbientInstruments().toLowerCase();
       const hasRhodes = guidance.includes('rhodes');
       const hasWurli = guidance.includes('wurlitzer');
       expect(hasRhodes && hasWurli).toBe(false);
@@ -106,62 +124,23 @@ describe('getGenreInstruments', () => {
 
   test('never includes both bells and singing bowls (exclusion rule)', () => {
     for (let i = 0; i < 50; i++) {
-      const guidance = getGenreInstruments().toLowerCase();
+      const guidance = getAmbientInstruments().toLowerCase();
       const hasBells = guidance.includes('bells');
       const hasBowls = guidance.includes('singing bowls');
       expect(hasBells && hasBowls).toBe(false);
     }
   });
 
-  test('always includes at least one core harmonic instrument', () => {
-    const coreKeywords = ['piano', 'rhodes', 'wurlitzer', 'nord stage', 'triton', 'harmonium', 'celesta', 'omnichord'];
-    for (let i = 0; i < 20; i++) {
-      const guidance = getGenreInstruments().toLowerCase();
-      const hasCore = coreKeywords.some(k => guidance.includes(k));
-      expect(hasCore).toBe(true);
-    }
-  });
-
-  test('includes at least one organic and one electronic element (contrast guarantee)', () => {
-    const organicMarkers = [
-      'acoustic',
-      'piano',
-      'vibraphone',
-      'marimba',
-      'kalimba',
-      'glockenspiel',
-      'gamelan',
-      'bells',
-      'bowls',
-      'waterphone',
-      'strings',
-      'cello',
-      'viola',
-      'clarinet',
-      'shakuhachi',
-      'duduk',
-      'guitar',
-      'harmonium',
-      'handpan',
-      'frame-drum',
-      'shakers',
-      'rattles',
-      'gourds',
-      'clockwork',
-      'ticks',
-      'hydrophone',
-      'contact-mic',
-      'found-percussion',
-    ];
-
-    const electronicMarkers = ['synth', 'wavetable', 'wavestation', 'd-50', 'digital', 'fm', 'dx7', 'tape', 'granular', 'sequencer', 'eventide', 'triton', 'nord'];
+  test('always includes a harmonic anchor and a pad/synth tag', () => {
+    const anchor = new Set<string>(AMBIENT_INSTRUMENT_POOLS.harmonicAnchor.instruments);
+    const pad = new Set<string>(AMBIENT_INSTRUMENT_POOLS.padOrSynth.instruments);
 
     for (let i = 0; i < 30; i++) {
-      const guidance = getGenreInstruments().toLowerCase();
-      const hasOrganic = organicMarkers.some(k => guidance.includes(k));
-      const hasElectronic = electronicMarkers.some(k => guidance.includes(k));
-      expect(hasOrganic).toBe(true);
-      expect(hasElectronic).toBe(true);
+      const guidance = getAmbientInstruments();
+      const tags = parseBullets(guidance);
+      expect(tags.some(t => anchor.has(t))).toBe(true);
+      expect(tags.some(t => pad.has(t))).toBe(true);
     }
   });
 });
+
