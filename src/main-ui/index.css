@@ -106,41 +106,46 @@
 
 @layer base {
   :root {
-    /* Refined dark theme with subtle blue undertone */
-    --background: oklch(0.11 0.008 260);
+    /* Studio console dark theme */
+    --background: oklch(0.095 0.01 260);
     --foreground: oklch(0.95 0.01 260);
-    --card: oklch(0.14 0.008 260);
+    --card: oklch(0.135 0.012 260);
     --card-foreground: oklch(0.95 0.01 260);
-    --popover: oklch(0.14 0.008 260);
+    --popover: oklch(0.135 0.012 260);
     --popover-foreground: oklch(0.95 0.01 260);
-    /* Teal/cyan accent for visual interest */
-    --primary: oklch(0.72 0.14 180);
+    /* Cyan/teal accent with subtle glow */
+    --primary: oklch(0.76 0.16 185);
     --primary-foreground: oklch(0.12 0.02 180);
-    --secondary: oklch(0.22 0.01 260);
+    --secondary: oklch(0.2 0.012 260);
     --secondary-foreground: oklch(0.95 0.01 260);
-    --muted: oklch(0.22 0.01 260);
+    --muted: oklch(0.18 0.012 260);
     --muted-foreground: oklch(0.65 0.02 260);
-    --accent: oklch(0.22 0.015 260);
+    --accent: oklch(0.2 0.015 260);
     --accent-foreground: oklch(0.95 0.01 260);
     --destructive: oklch(0.55 0.2 25);
     --destructive-foreground: oklch(0.95 0 0);
-    --border: oklch(0.22 0.01 260);
-    --input: oklch(0.18 0.01 260);
-    --ring: oklch(0.72 0.14 180);
+    --border: oklch(0.22 0.012 260);
+    --input: oklch(0.16 0.012 260);
+    --ring: oklch(0.76 0.16 185);
     --chart-1: oklch(0.72 0.14 180);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.899);
     --chart-5: oklch(0.645 0.246 16.439);
-    --radius: 0.625rem;
-    --sidebar-background: oklch(0.09 0.008 260);
+    --radius: 0.75rem;
+    --sidebar-background: oklch(0.075 0.01 260);
     --sidebar-foreground: oklch(0.85 0.01 260);
-    --sidebar-primary: oklch(0.72 0.14 180);
+    --sidebar-primary: oklch(0.76 0.16 185);
     --sidebar-primary-foreground: oklch(0.12 0.02 180);
-    --sidebar-accent: oklch(0.16 0.01 260);
+    --sidebar-accent: oklch(0.14 0.012 260);
     --sidebar-accent-foreground: oklch(0.95 0.01 260);
-    --sidebar-border: oklch(0.18 0.01 260);
-    --sidebar-ring: oklch(0.72 0.14 180);
+    --sidebar-border: oklch(0.16 0.012 260);
+    --sidebar-ring: oklch(0.76 0.16 185);
+
+    /* Extra UI tokens */
+    --panel: oklch(0.12 0.012 260);
+    --panel-2: oklch(0.14 0.012 260);
+    --shadow-color: oklch(0.76 0.16 185 / 0.25);
   }
 
   .light {
@@ -182,15 +187,30 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    /* Hide scrollbar but keep functionality */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
   }
   *::-webkit-scrollbar {
-    display: none; /* Chrome/Safari/Opera */
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 30%, var(--muted));
+    border: 2px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--primary) 45%, var(--muted));
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(900px circle at 15% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 55%),
+      radial-gradient(800px circle at 85% 10%, color-mix(in oklab, var(--chart-4) 12%, transparent), transparent 60%);
   }
 }
 
@@ -240,4 +260,16 @@
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+@utility panel {
+  background: var(--panel);
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  border-radius: var(--radius);
+}
+
+@utility panel-2 {
+  background: var(--panel-2);
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  border-radius: var(--radius);
 }

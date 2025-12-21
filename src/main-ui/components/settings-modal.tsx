@@ -67,7 +67,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-106.25">
+      <DialogContent className="sm:max-w-106.25 bg-card/70 backdrop-blur border shadow-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
@@ -83,7 +83,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="gsk_..."
-                className="pr-10"
+                className="pr-10 bg-background/40 backdrop-blur"
               />
               <button
                 type="button"
@@ -109,7 +109,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={loading}
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-lg border border-input bg-background/40 backdrop-blur px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading && <option value="">Loading...</option>}
               {APP_CONSTANTS.AI.AVAILABLE_MODELS.map((m) => (

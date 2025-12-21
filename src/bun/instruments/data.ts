@@ -95,11 +95,11 @@ export const AMBIENT_KEYWORDS = ['ambient', 'atmospheric', 'soundscape'] as cons
 export const AMBIENT_INSTRUMENT_POOLS = {
   harmonicAnchor: {
     pick: { min: 1, max: 1 },
-    instruments: ['prepared piano', 'harmonium', 'celesta', 'strings', 'guitar', 'acoustic guitar'] as const,
+    instruments: ['prepared piano', 'felt piano', 'harmonium', 'celesta', 'strings', 'guitar', 'acoustic guitar', 'fretless guitar'] as const,
   },
   padOrSynth: {
     pick: { min: 1, max: 1 },
-    instruments: ['synth pad', 'analog synth', 'digital synth', 'FM synth', 'Moog synth', 'synth', 'crystalline synth pads'] as const,
+    instruments: ['synth pad', 'analog synth pads', 'analog synth', 'digital synth', 'FM synth', 'Moog synth', 'synth', 'crystalline synth pads'] as const,
   },
   rare: {
     pick: { min: 0, max: 1 },
@@ -114,16 +114,19 @@ export const AMBIENT_INSTRUMENT_POOLS = {
       'Wurlitzer',
       'cello',
       'vibraphone',
+      'bowed vibraphone',
       'marimba',
       'kalimba',
       'glockenspiel',
       'bells',
+      'glass bells',
       'singing bowls',
       'choir',
       'wordless choir',
       'clarinet',
       'shakuhachi',
       'duduk',
+      'breathy EWI',
     ] as const,
   },
   movement: {

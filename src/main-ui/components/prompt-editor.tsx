@@ -8,12 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Bug } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult } from "@shared/validation";
 import { type DebugInfo } from "@shared/types";
-import DOMPurify from "dompurify";
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -42,7 +42,7 @@ export function PromptEditor({
 }: PromptEditorProps) {
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState(false);
-  const [debugExpanded, setDebugExpanded] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { charCount, promptOverLimit, inputOverLimit } = useMemo(() => ({
@@ -50,11 +50,6 @@ export function PromptEditor({
     promptOverLimit: currentPrompt.length > maxChars,
     inputOverLimit: input.trim().length > maxChars,
   }), [currentPrompt, input, maxChars]);
-
-  // Sanitize the prompt for display
-  const sanitizedPrompt = useMemo(() => 
-    currentPrompt ? DOMPurify.sanitize(currentPrompt) : "", 
-  [currentPrompt]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -101,27 +96,38 @@ export function PromptEditor({
           </Badge>
         </div>
 
-        <Card className="flex-1 relative group border shadow-sm bg-muted/5 overflow-hidden">
+        <Card className="flex-1 relative group border shadow-sm bg-card/50 backdrop-blur overflow-hidden">
           <ScrollArea className="h-full">
             <CardContent className="p-6">
-              <div
-                className={cn(
-                  "font-mono text-sm leading-relaxed",
-                  !sanitizedPrompt && "text-muted-foreground italic"
-                )}
-                dangerouslySetInnerHTML={{ __html: sanitizedPrompt || "Start by describing your creative vision below..." }}
-              />
+              {currentPrompt ? (
+                <PromptOutput text={currentPrompt} />
+              ) : (
+                <div className="text-sm text-muted-foreground italic">
+                  Start by describing your creative vision below…
+                </div>
+              )}
             </CardContent>
           </ScrollArea>
           <div className="absolute top-4 right-4 flex gap-2">
             {currentPrompt && (
               <>
+                {debugInfo && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDebugOpen(true)}
+                    className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                  >
+                    <Bug className="w-3.5 h-3.5" />
+                    DEBUG
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onRemix}
                   disabled={isGenerating}
-                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/80 backdrop-blur-sm"
+                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
                 >
                   <RefreshCw className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
                   {isGenerating ? "REMIXING" : "REMIX"}
@@ -132,7 +138,7 @@ export function PromptEditor({
                   onClick={handleCopy}
                   disabled={promptOverLimit}
                   className={cn(
-                    "h-8 px-3 text-tiny font-bold gap-2 bg-background/80 backdrop-blur-sm transition-all",
+                    "h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm transition-all",
                     copied && "bg-primary text-primary-foreground border-primary"
                   )}
                 >
@@ -146,7 +152,19 @@ export function PromptEditor({
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />
 
-        {debugInfo && <DebugPanel debugInfo={debugInfo} expanded={debugExpanded} onToggle={() => setDebugExpanded(!debugExpanded)} />}
+        {debugInfo && (
+          <Sheet open={debugOpen} onOpenChange={setDebugOpen}>
+            <SheetContent side="right" className="w-[min(640px,95vw)] sm:max-w-none">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <Bug className="w-4 h-4" />
+                  Debug Info
+                </SheetTitle>
+              </SheetHeader>
+              <DebugDrawerBody debugInfo={debugInfo} />
+            </SheetContent>
+          </Sheet>
+        )}
 
         <Separator className="opacity-50" />
 
@@ -180,7 +198,7 @@ export function PromptEditor({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl focus-visible:ring-primary/20"
+              className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl bg-background/40 backdrop-blur focus-visible:ring-primary/20"
               placeholder="Describe your song, style, mood, or refine the existing prompt..."
             />
             <Button
@@ -230,6 +248,56 @@ export function PromptEditor({
   );
 }
 
+function PromptOutput({ text }: { text: string }) {
+  const lines = useMemo(() => text.split('\n'), [text]);
+
+  return (
+    <div className="font-mono text-sm leading-relaxed whitespace-pre-wrap break-words">
+      {lines.map((line, idx) => {
+        if (line.trim().length === 0) {
+          return <div key={idx} className="h-4" />;
+        }
+
+        const isSection = /^\[[^\]]+\]/.test(line);
+        const isField = /^(Genre|Mood|Instruments):\s/.test(line);
+        const isHeader = /^\[Mood\],\s\[Genre\/Era\],\sKey:/.test(line);
+
+        return (
+          <div
+            key={idx}
+            className={cn(
+              isHeader && "text-muted-foreground",
+              isField && "text-foreground",
+              isSection && !isHeader && "text-primary font-semibold"
+            )}
+          >
+            {line}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DebugDrawerBody({ debugInfo }: { debugInfo: DebugInfo }) {
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, section: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSection(section);
+    setTimeout(() => setCopiedSection(null), 2000);
+  };
+
+  return (
+    <div className="mt-4 space-y-3">
+      <div className="text-tiny text-muted-foreground">
+        <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleString()}</span>
+      </div>
+      <RequestInspector requestBody={debugInfo.requestBody} onCopy={copyToClipboard} copiedSection={copiedSection} />
+    </div>
+  );
+}
+
 function ValidationMessages({ errors, warnings }: { errors: string[]; warnings: string[] }) {
   if (errors.length === 0 && warnings.length === 0) return null;
 
@@ -261,8 +329,8 @@ function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: st
         className={cn(
           "max-w-[85%] rounded-xl px-4 py-2.5 text-xs shadow-sm",
           role === "user"
-            ? "bg-primary text-primary-foreground rounded-tr-sm"
-            : "bg-muted text-foreground rounded-tl-sm border"
+            ? "bg-primary text-primary-foreground rounded-tr-sm shadow-lg"
+            : "bg-background/40 backdrop-blur text-foreground rounded-tl-sm border"
         )}
       >
         <div className="font-bold opacity-70 mb-1 text-micro uppercase tracking-wider">
@@ -270,45 +338,6 @@ function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: st
         </div>
         <div className="leading-relaxed whitespace-pre-wrap">{content}</div>
       </div>
-    </div>
-  );
-}
-
-function DebugPanel({ debugInfo, expanded, onToggle }: { debugInfo: DebugInfo; expanded: boolean; onToggle: () => void }) {
-  const [copiedSection, setCopiedSection] = useState<string | null>(null);
-
-  const copyToClipboard = (text: string, section: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedSection(section);
-    setTimeout(() => setCopiedSection(null), 2000);
-  };
-
-  return (
-    <div className="mt-2">
-      <button
-        onClick={onToggle}
-        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <Bug className="w-3.5 h-3.5" />
-        <SectionLabel>Debug Info</SectionLabel>
-        {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-      </button>
-      
-      {expanded && (
-        <Card className="mt-2 bg-muted/30 border-dashed animate-fade-in">
-          <CardContent className="p-4 space-y-3">
-            <div className="text-tiny text-muted-foreground text-right">
-              <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleTimeString()}</span>
-            </div>
-            
-            <RequestInspector 
-              requestBody={debugInfo.requestBody} 
-              onCopy={(text, section) => copyToClipboard(text, section)}
-              copiedSection={copiedSection}
-            />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

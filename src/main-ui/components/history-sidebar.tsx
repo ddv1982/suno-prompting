@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/section-label";
 import { cn } from "@/lib/utils";
 import { type PromptSession } from "@shared/types";
@@ -21,37 +22,56 @@ export function HistorySidebar({
   onDeleteSession,
   onNewProject,
 }: HistorySidebarProps) {
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? sessions.filter(s => (s.originalInput || "").toLowerCase().includes(q))
+    : sessions;
+
   return (
     <Sidebar
       collapsible="none"
       className="w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 overflow-hidden"
     >
-      <SidebarHeader className="p-4 border-b flex items-center gap-2">
-        <SidebarGroupLabel className="px-0">
-          <SectionLabel>History</SectionLabel>
-        </SidebarGroupLabel>
-        <div className="ml-auto flex items-center gap-2">
+      <SidebarHeader className="p-4 border-b">
+        <div className="flex items-center gap-2">
+          <SidebarGroupLabel className="px-0">
+            <SectionLabel>History</SectionLabel>
+          </SidebarGroupLabel>
+          <div className="ml-auto flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onNewProject}
-            className="h-7 px-2 text-tiny font-bold gap-1 interactive"
+            className="h-7 px-2 text-tiny font-bold gap-1 interactive bg-background/40 backdrop-blur"
           >
             <Plus className="w-3 h-3" />
             NEW
           </Button>
+        </div>
+        </div>
+
+        <div className="mt-3 relative">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search projects…"
+            className="pl-9 bg-background/40 backdrop-blur"
+          />
         </div>
       </SidebarHeader>
       <SidebarContent className="px-2 min-w-0">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {sessions.length === 0 ? (
+              {filtered.length === 0 ? (
                 <div className="text-xs text-muted-foreground italic p-8 text-center leading-relaxed">
-                  No projects yet.
+                  {sessions.length === 0 ? "No projects yet." : "No matches."}
                 </div>
               ) : (
-                sessions.map((session) => (
+                filtered.map((session) => (
                   <HistoryItem
                     key={session.id}
                     session={session}
