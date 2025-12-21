@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Roboto Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= --theme(--breakpoint-md)) {
+    max-width: none;
+  }
+  @media (width >= --theme(--breakpoint-lg)) {
+    max-width: none;
+  }
+  @media (width >= --theme(--breakpoint-xl)) {
+    max-width: none;
+  }
+  @media (width >= --theme(--breakpoint-2xl)) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as before with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border, currentColor);
+  }
+}
+
+@layer base {
+  :root {
+    /* Refined dark theme with subtle blue undertone */
+    --background: oklch(0.11 0.008 260);
+    --foreground: oklch(0.95 0.01 260);
+    --card: oklch(0.14 0.008 260);
+    --card-foreground: oklch(0.95 0.01 260);
+    --popover: oklch(0.14 0.008 260);
+    --popover-foreground: oklch(0.95 0.01 260);
+    /* Teal/cyan accent for visual interest */
+    --primary: oklch(0.72 0.14 180);
+    --primary-foreground: oklch(0.12 0.02 180);
+    --secondary: oklch(0.22 0.01 260);
+    --secondary-foreground: oklch(0.95 0.01 260);
+    --muted: oklch(0.22 0.01 260);
+    --muted-foreground: oklch(0.65 0.02 260);
+    --accent: oklch(0.22 0.015 260);
+    --accent-foreground: oklch(0.95 0.01 260);
+    --destructive: oklch(0.55 0.2 25);
+    --destructive-foreground: oklch(0.95 0 0);
+    --border: oklch(0.22 0.01 260);
+    --input: oklch(0.18 0.01 260);
+    --ring: oklch(0.72 0.14 180);
+    --chart-1: oklch(0.72 0.14 180);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.899);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --radius: 0.625rem;
+    --sidebar-background: oklch(0.09 0.008 260);
+    --sidebar-foreground: oklch(0.85 0.01 260);
+    --sidebar-primary: oklch(0.72 0.14 180);
+    --sidebar-primary-foreground: oklch(0.12 0.02 180);
+    --sidebar-accent: oklch(0.16 0.01 260);
+    --sidebar-accent-foreground: oklch(0.95 0.01 260);
+    --sidebar-border: oklch(0.18 0.01 260);
+    --sidebar-ring: oklch(0.72 0.14 180);
+  }
+
+  .light {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --sidebar-background: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
