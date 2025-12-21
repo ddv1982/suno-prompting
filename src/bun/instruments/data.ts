@@ -103,7 +103,7 @@ export const AMBIENT_INSTRUMENT_POOLS = {
   },
   rare: {
     pick: { min: 0, max: 1 },
-    chanceToInclude: 0.15,
+    chanceToInclude: 0.25,
     instruments: ['taiko drums', 'steel pan', 'Hammond organ'] as const,
   },
   color: {
@@ -131,7 +131,7 @@ export const AMBIENT_INSTRUMENT_POOLS = {
   },
   movement: {
     pick: { min: 0, max: 1 },
-    instruments: ['percussion', 'shaker', 'frame drum', 'handpan', 'sub-bass'] as const,
+    instruments: ['percussion', 'toms', 'shaker', 'frame drum', 'handpan', 'sub-bass'] as const,
   },
 } as const;
 
