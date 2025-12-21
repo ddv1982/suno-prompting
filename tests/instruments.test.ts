@@ -73,7 +73,7 @@ describe('getGenreInstruments', () => {
     expect(lines.length).toBe(5);
   });
 
-  test('can pick from the expanded Eno-inspired list', () => {
+  test('can pick from the expanded ambient instrument list', () => {
     // Run multiple times to increase chance of hitting a new instrument
     const instruments = new Set<string>();
     for (let i = 0; i < 20; i++) {
