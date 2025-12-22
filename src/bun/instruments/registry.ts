@@ -28,10 +28,30 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'crystalline synth pads', category: 'pad', aliases: ['crystal pads', 'glassy pads'] },
   { canonical: 'ambient pad', category: 'pad', aliases: ['atmospheric pad', 'drone pad'] },
 
+  // Synth variants (workstation-inspired)
+  { canonical: 'synth strings', category: 'pad', aliases: ['string synth', 'synthetic strings'] },
+  { canonical: 'synth brass', category: 'pad', aliases: ['brass synth', 'synthetic brass'] },
+  { canonical: 'synth choir', category: 'pad', aliases: ['choir synth', 'vocal synth'] },
+  { canonical: 'synth piano', category: 'pad', aliases: ['electric grand', 'synth keys'] },
+  { canonical: 'synth flute', category: 'pad', aliases: ['FM flute', 'digital flute'] },
+  { canonical: 'synth bells', category: 'pad', aliases: ['bell synth', 'FM bells', 'digital bells'] },
+  { canonical: 'arpeggiator', category: 'pad', aliases: ['arp', 'arpeggiated synth', 'sequenced synth'] },
+  { canonical: 'synth bass', category: 'movement', aliases: ['bass synth', 'synthetic bass'] },
+  { canonical: '808', category: 'movement', aliases: ['808 drums', 'TR-808', '808 kick'] },
+
   // Rare instruments
   { canonical: 'taiko drums', category: 'rare', aliases: ['taiko', 'japanese drums'] },
   { canonical: 'steel pan', category: 'rare', aliases: ['steel drum', 'steelpan', 'steel drums'] },
-  { canonical: 'Hammond organ', category: 'rare', aliases: ['Hammond', 'B3 organ', 'organ'] },
+  { canonical: 'Hammond organ', category: 'rare', aliases: ['Hammond', 'B3 organ'] },
+  { canonical: 'organ', category: 'color', aliases: ['pipe organ', 'church organ'] },
+  { canonical: 'mellotron', category: 'color', aliases: ['tape synth'] },
+  { canonical: 'theremin', category: 'rare', aliases: [] },
+  { canonical: 'vocoder', category: 'rare', aliases: ['talk box', 'voice synth'] },
+  { canonical: 'harmonica', category: 'color', aliases: ['blues harp', 'mouth organ'] },
+  { canonical: 'accordion', category: 'color', aliases: ['squeezebox', 'button accordion'] },
+  { canonical: 'mandolin', category: 'rare', aliases: ['mando'] },
+  { canonical: 'banjo', category: 'rare', aliases: ['5-string banjo'] },
+  { canonical: 'timpani', category: 'movement', aliases: ['kettledrums', 'orchestral drums'] },
 
   // Color instruments
   { canonical: 'electric piano', category: 'color', aliases: ['e-piano', 'epiano'] },

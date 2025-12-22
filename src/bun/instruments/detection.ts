@@ -36,14 +36,15 @@ export function detectRhythmic(description: string): RhythmicStyle | null {
   return detectFromKeywords(description, RHYTHMIC_STYLES, RHYTHMIC_PRIORITY);
 }
 
+const GENRE_PRIORITY: GenreType[] = [
+  'synthwave', 'lofi', 'cinematic',
+  'jazz', 'classical', 'folk', 'rnb',
+  'electronic', 'rock', 'pop',
+  'ambient',
+];
+
 export function detectGenre(description: string): GenreType | null {
-  const lower = description.toLowerCase();
-  for (const [key, genre] of Object.entries(GENRE_REGISTRY)) {
-    if (genre.keywords.some(kw => lower.includes(kw))) {
-      return key as GenreType;
-    }
-  }
-  return null;
+  return detectFromKeywords(description, GENRE_REGISTRY, GENRE_PRIORITY);
 }
 
 export function detectAmbient(description: string): boolean {

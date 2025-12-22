@@ -26,6 +26,22 @@ export const EXCLUSION_RULES: readonly [string, string][] = [
   ['taiko drums', 'djembe'],
   ['congas', 'djembe'],
   ['frame drum', 'cajón'],
+  // Synth vs acoustic conflicts
+  ['synth strings', 'strings'],
+  ['synth brass', 'trumpet'],
+  ['synth brass', 'trombone'],
+  ['synth brass', 'french horn'],
+  ['synth choir', 'choir'],
+  ['synth choir', 'wordless choir'],
+  ['synth piano', 'felt piano'],
+  ['synth flute', 'flute'],
+  ['synth bells', 'bells'],
+  ['synth bells', 'glockenspiel'],
+  ['synth bass', 'bass'],
+  ['808', 'drums'],
+  ['808', 'kick drum'],
+  // Organ conflicts
+  ['organ', 'Hammond organ'],
 ];
 
 export const MODE_PALETTES: Record<string, ModePalette> = {

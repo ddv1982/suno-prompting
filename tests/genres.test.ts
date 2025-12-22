@@ -1,0 +1,211 @@
+import { describe, expect, test } from 'bun:test';
+import {
+  GENRE_REGISTRY,
+  JAZZ_GENRE,
+  ELECTRONIC_GENRE,
+  ROCK_GENRE,
+  SYNTHWAVE_GENRE,
+  CINEMATIC_GENRE,
+  FOLK_GENRE,
+  RNB_GENRE,
+  detectGenre,
+  getGenreInstruments,
+  isValidInstrument,
+} from '@bun/instruments';
+
+describe('Genre Registry', () => {
+  test('should have 11 genres registered', () => {
+    expect(Object.keys(GENRE_REGISTRY).length).toBe(11);
+  });
+
+  test('all genres have required properties', () => {
+    for (const genre of Object.values(GENRE_REGISTRY)) {
+      expect(genre.name).toBeDefined();
+      expect(genre.keywords.length).toBeGreaterThan(0);
+      expect(genre.description).toBeDefined();
+      expect(genre.pools).toBeDefined();
+      expect(genre.poolOrder.length).toBeGreaterThan(0);
+      expect(genre.maxTags).toBeGreaterThan(0);
+    }
+  });
+
+  test('all genre instruments are valid in registry', () => {
+    for (const genre of Object.values(GENRE_REGISTRY)) {
+      for (const pool of Object.values(genre.pools)) {
+        for (const instrument of pool.instruments) {
+          expect(isValidInstrument(instrument)).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+describe('Genre Detection', () => {
+  test('detects jazz from keywords', () => {
+    expect(detectGenre('smooth jazz vibes')).toBe('jazz');
+    expect(detectGenre('bebop style')).toBe('jazz');
+    expect(detectGenre('fusion guitar')).toBe('jazz');
+  });
+
+  test('detects electronic from keywords', () => {
+    expect(detectGenre('edm club track')).toBe('electronic');
+    expect(detectGenre('house music')).toBe('electronic');
+    expect(detectGenre('techno beat')).toBe('electronic');
+    expect(detectGenre('dubstep drop')).toBe('electronic');
+  });
+
+  test('detects rock from keywords', () => {
+    expect(detectGenre('rock anthem')).toBe('rock');
+    expect(detectGenre('alternative vibes')).toBe('rock');
+    expect(detectGenre('punk energy')).toBe('rock');
+  });
+
+  test('detects pop from keywords', () => {
+    expect(detectGenre('pop hit')).toBe('pop');
+    expect(detectGenre('mainstream sound')).toBe('pop');
+    expect(detectGenre('dance pop')).toBe('pop');
+  });
+
+  test('detects classical from keywords', () => {
+    expect(detectGenre('classical symphony')).toBe('classical');
+    expect(detectGenre('baroque chamber')).toBe('classical');
+    expect(detectGenre('chamber music')).toBe('classical');
+  });
+
+  test('detects lofi from keywords', () => {
+    expect(detectGenre('lofi beats')).toBe('lofi');
+    expect(detectGenre('lo-fi study music')).toBe('lofi');
+    expect(detectGenre('chill vibes')).toBe('lofi');
+  });
+
+  test('detects synthwave from keywords', () => {
+    expect(detectGenre('synthwave track')).toBe('synthwave');
+    expect(detectGenre('retrowave vibes')).toBe('synthwave');
+    expect(detectGenre('80s nostalgia')).toBe('synthwave');
+    expect(detectGenre('outrun style')).toBe('synthwave');
+  });
+
+  test('detects cinematic from keywords', () => {
+    expect(detectGenre('cinematic epic')).toBe('cinematic');
+    expect(detectGenre('trailer music')).toBe('cinematic');
+    expect(detectGenre('film score')).toBe('cinematic');
+  });
+
+  test('detects folk from keywords', () => {
+    expect(detectGenre('folk song')).toBe('folk');
+    expect(detectGenre('acoustic ballad')).toBe('folk');
+    expect(detectGenre('country road')).toBe('folk');
+    expect(detectGenre('americana style')).toBe('folk');
+  });
+
+  test('detects rnb from keywords', () => {
+    expect(detectGenre('rnb groove')).toBe('rnb');
+    expect(detectGenre('r&b slow jam')).toBe('rnb');
+    expect(detectGenre('soul music')).toBe('rnb');
+    expect(detectGenre('neo-soul vibes')).toBe('rnb');
+  });
+
+  test('detects ambient from keywords', () => {
+    expect(detectGenre('ambient soundscape')).toBe('ambient');
+    expect(detectGenre('atmospheric textures')).toBe('ambient');
+  });
+
+  test('returns null for unrecognized descriptions', () => {
+    expect(detectGenre('asdfqwer random text')).toBeNull();
+  });
+
+  test('priority order: synthwave before electronic', () => {
+    expect(detectGenre('synthwave electronic')).toBe('synthwave');
+  });
+
+  test('priority order: lofi before chill pop', () => {
+    expect(detectGenre('chill lofi')).toBe('lofi');
+  });
+});
+
+describe('Genre Instrument Selection', () => {
+  test('jazz genre returns formatted string with instruments', () => {
+    const result = getGenreInstruments('jazz');
+    expect(result).toContain('SUGGESTED INSTRUMENTS');
+    expect(result).toContain('Jazz');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  test('electronic genre returns formatted string', () => {
+    const result = getGenreInstruments('electronic');
+    expect(result).toContain('Electronic');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  test('synthwave genre contains synth instruments', () => {
+    const result = getGenreInstruments('synthwave');
+    const hasSynth = result.includes('synth') || result.includes('arpeggiator') || result.includes('808');
+    expect(hasSynth).toBe(true);
+  });
+
+  test('classical genre contains orchestral instruments', () => {
+    const result = getGenreInstruments('classical');
+    const hasOrchestral = ['strings', 'violin', 'cello', 'flute', 'oboe', 'clarinet', 'felt piano'].some(i => result.includes(i));
+    expect(hasOrchestral).toBe(true);
+  });
+
+  test('folk genre may include rare instruments over multiple calls', () => {
+    let foundRare = false;
+    for (let i = 0; i < 30; i++) {
+      const result = getGenreInstruments('folk');
+      if (result.includes('mandolin') || result.includes('banjo')) {
+        foundRare = true;
+        break;
+      }
+    }
+    expect(foundRare).toBe(true);
+  });
+
+  test('handles user instruments option', () => {
+    const result = getGenreInstruments('jazz', { userInstruments: ['saxophone'] });
+    expect(result).toContain('User specified');
+    expect(result).toContain('saxophone');
+  });
+});
+
+describe('Individual Genre Definitions', () => {
+  test('JAZZ_GENRE has correct structure', () => {
+    expect(JAZZ_GENRE.name).toBe('Jazz');
+    expect(JAZZ_GENRE.keywords).toContain('jazz');
+    expect(JAZZ_GENRE.pools.harmonic).toBeDefined();
+    expect(JAZZ_GENRE.pools.color).toBeDefined();
+    expect(JAZZ_GENRE.pools.movement).toBeDefined();
+  });
+
+  test('ELECTRONIC_GENRE has synth instruments', () => {
+    expect(ELECTRONIC_GENRE.name).toBe('Electronic');
+    expect(ELECTRONIC_GENRE.pools.pad?.instruments).toContain('arpeggiator');
+    expect(ELECTRONIC_GENRE.pools.movement?.instruments).toContain('808');
+  });
+
+  test('ROCK_GENRE has guitar and drums', () => {
+    expect(ROCK_GENRE.pools.harmonic?.instruments).toContain('guitar');
+    expect(ROCK_GENRE.pools.movement?.instruments).toContain('drums');
+  });
+
+  test('CINEMATIC_GENRE has epic instruments', () => {
+    expect(CINEMATIC_GENRE.pools.movement?.instruments).toContain('taiko drums');
+    expect(CINEMATIC_GENRE.pools.color?.instruments).toContain('choir');
+  });
+
+  test('SYNTHWAVE_GENRE is synth-focused', () => {
+    expect(SYNTHWAVE_GENRE.pools.pad?.instruments).toContain('analog synth');
+    expect(SYNTHWAVE_GENRE.pools.pad?.instruments).toContain('arpeggiator');
+    expect(SYNTHWAVE_GENRE.pools.movement?.instruments).toContain('synth bass');
+  });
+
+  test('FOLK_GENRE has acoustic instruments', () => {
+    expect(FOLK_GENRE.pools.harmonic?.instruments).toContain('acoustic guitar');
+    expect(FOLK_GENRE.pools.rare?.instruments).toContain('banjo');
+  });
+
+  test('RNB_GENRE has soulful keys', () => {
+    expect(RNB_GENRE.pools.harmonic?.instruments).toContain('Rhodes');
+    expect(RNB_GENRE.pools.harmonic?.instruments).toContain('Wurlitzer');
+  });
+});

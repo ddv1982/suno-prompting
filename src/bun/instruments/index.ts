@@ -9,8 +9,30 @@ export {
 } from '@bun/instruments/modes';
 export type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 
-export { GENRE_REGISTRY, AMBIENT_GENRE } from '@bun/instruments/genres';
+export {
+  GENRE_REGISTRY,
+  AMBIENT_GENRE,
+  JAZZ_GENRE,
+  ELECTRONIC_GENRE,
+  ROCK_GENRE,
+  POP_GENRE,
+  CLASSICAL_GENRE,
+  LOFI_GENRE,
+  SYNTHWAVE_GENRE,
+  CINEMATIC_GENRE,
+  FOLK_GENRE,
+  RNB_GENRE,
+} from '@bun/instruments/genres';
 export type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
+
+// Synth replacements
+export {
+  SYNTH_REPLACEMENTS,
+  getSynthAlternatives,
+  hasSynthAlternative,
+  suggestSynthReplacement,
+  getAllSynthInstruments,
+} from '@bun/instruments/synthReplacements';
 
 export { RHYTHMIC_STYLES, POLYRHYTHMS, ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/data';
 export type { RhythmicStyle, PolyrhythmType, PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/data';

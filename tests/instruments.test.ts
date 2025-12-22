@@ -160,7 +160,12 @@ describe('detectGenre', () => {
   });
 
   test('returns null for no match', () => {
-    expect(detectGenre('heavy metal song')).toBeNull();
+    expect(detectGenre('random gibberish xyzzy')).toBeNull();
+  });
+
+  test('detects rock genre including metal', () => {
+    expect(detectGenre('heavy metal song')).toBe('rock');
+    expect(detectGenre('rock anthem')).toBe('rock');
   });
 });
 
@@ -311,7 +316,7 @@ describe('instrument registry', () => {
 
   test('isValidInstrument returns false for unknown instruments', () => {
     expect(isValidInstrument('kazoo')).toBe(false);
-    expect(isValidInstrument('theremin')).toBe(false);
+    expect(isValidInstrument('bagpipes')).toBe(false);
   });
 
   test('toCanonical converts aliases to canonical names', () => {
@@ -323,7 +328,7 @@ describe('instrument registry', () => {
 
   test('toCanonical returns null for unknown instruments', () => {
     expect(toCanonical('kazoo')).toBeNull();
-    expect(toCanonical('theremin')).toBeNull();
+    expect(toCanonical('bagpipes')).toBeNull();
   });
 });
 
