@@ -50,7 +50,7 @@ Detects **12 music genres** and selects appropriate instruments from curated poo
 | Genre | Keywords | Key Instruments |
 |-------|----------|-----------------|
 | Ambient | ambient, atmospheric, soundscape | felt piano, synth pad, strings, kalimba |
-| Jazz | jazz, bebop, swing, fusion | Rhodes, saxophone, jazz brushes |
+| Jazz | jazz, bebop, swing, fusion | Rhodes, Hammond organ, saxophone, upright bass |
 | Electronic | edm, house, techno, dubstep | synth pad, 808, arpeggiator, vocoder |
 | Rock | rock, alternative, punk, metal | guitar, drums, bass, Hammond organ |
 | Pop | pop, mainstream, dance pop | felt piano, synth, bass, drums |

@@ -7,7 +7,7 @@ export const JAZZ_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 1 },
-      instruments: ['Rhodes', 'felt piano', 'acoustic guitar'],
+      instruments: ['Rhodes', 'felt piano', 'acoustic guitar', 'Hammond organ', 'Wurlitzer'],
     },
     color: {
       pick: { min: 1, max: 2 },
@@ -15,12 +15,17 @@ export const JAZZ_GENRE: GenreDefinition = {
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['bass', 'jazz brushes', 'drums'],
+      instruments: ['upright bass', 'jazz brushes', 'drums', 'congas', 'bongos', 'timbales'],
     },
   },
   poolOrder: ['harmonic', 'color', 'movement'],
   maxTags: 4,
   exclusionRules: [
     ['Rhodes', 'felt piano'],
+    ['Rhodes', 'Wurlitzer'],
+    ['felt piano', 'Wurlitzer'],
+    ['Rhodes', 'Hammond organ'],
+    ['felt piano', 'Hammond organ'],
+    ['Wurlitzer', 'Hammond organ'],
   ],
 };
