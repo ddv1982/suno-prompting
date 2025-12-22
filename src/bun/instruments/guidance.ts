@@ -95,12 +95,27 @@ export function getCombinationGuidance(combo: CombinationType): string {
   const progs = shuffle([...c.progressions]).slice(0, 3);
 
   const lines = [
-    `MODAL COMBINATION (${c.name}):`,
+    `MODAL COMBINATION: ${c.name}`,
     c.description,
     '',
-    `Emotional Arc: ${c.emotionalArc}`,
-    '',
   ];
+
+  if ('sectionGuide' in c && c.sectionGuide) {
+    lines.push('SECTION GUIDE:');
+    const guide = c.sectionGuide;
+    if ('chorus' in guide && 'bridgeOutro' in guide) {
+      lines.push(`- INTRO/VERSE: ${guide.introVerse}`);
+      lines.push(`- CHORUS: ${guide.chorus}`);
+      lines.push(`- BRIDGE/OUTRO: ${guide.bridgeOutro}`);
+    } else if ('chorusBridgeOutro' in guide) {
+      lines.push(`- INTRO/VERSE: ${guide.introVerse}`);
+      lines.push(`- CHORUS/BRIDGE/OUTRO: ${guide.chorusBridgeOutro}`);
+    }
+    lines.push('');
+  }
+
+  lines.push(`Emotional Arc: ${c.emotionalArc}`);
+  lines.push('');
 
   if ('borrowedChords' in c) {
     lines.push(`Borrowed chords: ${c.borrowedChords.join(', ')}`);

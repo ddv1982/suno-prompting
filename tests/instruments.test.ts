@@ -510,5 +510,25 @@ describe('getCombinationGuidance', () => {
     expect(guidance).toContain('Emotional Arc:');
     expect(guidance).toContain('Best instruments:');
   });
+
+  test('includes section guide for 3-phase combinations', () => {
+    const guidance = getCombinationGuidance('lydian_exploration');
+    expect(guidance).toContain('SECTION GUIDE:');
+    expect(guidance).toContain('INTRO/VERSE:');
+    expect(guidance).toContain('CHORUS:');
+    expect(guidance).toContain('BRIDGE/OUTRO:');
+    expect(guidance).toContain('Lydian dream');
+    expect(guidance).toContain('Dominant groove');
+    expect(guidance).toContain('Augmented cosmos');
+  });
+
+  test('includes section guide for 2-phase combinations', () => {
+    const guidance = getCombinationGuidance('major_minor');
+    expect(guidance).toContain('SECTION GUIDE:');
+    expect(guidance).toContain('INTRO/VERSE:');
+    expect(guidance).toContain('CHORUS/BRIDGE/OUTRO:');
+    expect(guidance).toContain('Major brightness');
+    expect(guidance).toContain('Minor shadow');
+  });
 });
 

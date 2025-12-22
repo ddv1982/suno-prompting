@@ -14,6 +14,10 @@ export const CROSS_MODE_COMBINATIONS = {
     emotionalArc: 'Joy → Melancholy → Resolution',
     famousExamples: ['Let It Be (Beatles)', 'Creep (Radiohead)', 'With Or Without You (U2)'],
     bestInstruments: ['piano', 'strings', 'acoustic guitar', 'choir'],
+    sectionGuide: {
+      introVerse: 'Major brightness, hopeful I-IV-V warmth',
+      chorusBridgeOutro: 'Minor shadow creeps in, bVI-bVII borrowed darkness',
+    },
   },
   lydian_minor: {
     name: 'Lydian-Minor (Dreamlike Darkness)',
@@ -29,6 +33,10 @@ export const CROSS_MODE_COMBINATIONS = {
     emotionalArc: 'Wonder → Shadow → Mystery',
     famousExamples: ['Flying in a Blue Dream (Satriani)', 'Cinematic scores'],
     bestInstruments: ['synth pad', 'strings', 'piano', 'celesta'],
+    sectionGuide: {
+      introVerse: 'Lydian float, dreamy #11 shimmer, ethereal space',
+      chorusBridgeOutro: 'Minor shadow descends, iv-bVI darkness grounds the dream',
+    },
   },
   lydian_major: {
     name: 'Lydian-Major (Floating Resolution)',
@@ -44,6 +52,10 @@ export const CROSS_MODE_COMBINATIONS = {
     emotionalArc: 'Wonder → Clarity → Joy',
     famousExamples: ['Steve Vai ballads', 'Modern film scores'],
     bestInstruments: ['piano', 'brass', 'strings', 'acoustic guitar'],
+    sectionGuide: {
+      introVerse: 'Lydian wonder, floating #11 colors, ethereal drift',
+      chorusBridgeOutro: 'Major resolution, bright V-I cadence, grounded joy',
+    },
   },
   dorian_lydian: {
     name: 'Dorian-Lydian (Jazz Fusion)',
@@ -59,6 +71,10 @@ export const CROSS_MODE_COMBINATIONS = {
     emotionalArc: 'Groove → Float → Depth',
     famousExamples: ['Herbie Hancock', 'Weather Report', 'Snarky Puppy'],
     bestInstruments: ['Rhodes', 'saxophone', 'bass', 'vibraphone'],
+    sectionGuide: {
+      introVerse: 'Dorian groove, jazzy i7 sophistication, soulful minor',
+      chorusBridgeOutro: 'Lydian release, IV7#11 brightness lifts to floating space',
+    },
   },
   harmonic_major: {
     name: 'Harmonic Minor-Major (Classical Drama)',
@@ -74,6 +90,10 @@ export const CROSS_MODE_COMBINATIONS = {
     emotionalArc: 'Tension → Drama → Triumph',
     famousExamples: ['Mozart symphonies', 'Tchaikovsky', 'Gothic film scores'],
     bestInstruments: ['strings', 'organ', 'choir', 'brass', 'piano'],
+    sectionGuide: {
+      introVerse: 'Harmonic minor tension, V7 yearning, gothic drama',
+      chorusBridgeOutro: 'Picardy major triumph, I resolves darkness to light',
+    },
   },
   phrygian_major: {
     name: 'Phrygian-Major (Spanish Triumph)',
@@ -89,6 +109,10 @@ export const CROSS_MODE_COMBINATIONS = {
     emotionalArc: 'Tension → Exotic → Liberation',
     famousExamples: ['Flamenco finales', 'Spanish classical'],
     bestInstruments: ['flamenco guitar', 'strings', 'brass', 'percussion'],
+    sectionGuide: {
+      introVerse: 'Phrygian fire, bII exotic tension, Spanish drama',
+      chorusBridgeOutro: 'Major liberation, bright I triumph breaks free',
+    },
   },
 } as const;
 
@@ -106,6 +130,11 @@ export const WITHIN_MODE_COMBINATIONS = {
     emotionalArc: 'Sadness → Drama → Resolution',
     famousExamples: ['Classical minor key works', 'Jazz ballads'],
     bestInstruments: ['piano', 'strings', 'cello', 'violin'],
+    sectionGuide: {
+      introVerse: 'Aeolian sorrow, natural minor weight, melancholic i-iv',
+      chorus: 'Harmonic minor drama, V7 tension yearns, raised 7th intensity',
+      bridgeOutro: 'Melodic minor resolve, bittersweet maj7 sophistication',
+    },
   },
   lydian_exploration: {
     name: 'Lydian Exploration',
@@ -120,6 +149,11 @@ export const WITHIN_MODE_COMBINATIONS = {
     emotionalArc: 'Dream → Groove → Otherworldly',
     famousExamples: ['Joe Satriani', 'Steve Vai', 'Film scores'],
     bestInstruments: ['synth pad', 'Rhodes', 'strings', 'glass bells'],
+    sectionGuide: {
+      introVerse: 'Pure Lydian dream, bright #11 shimmer, floating Imaj7#11',
+      chorus: 'Lydian Dominant groove, funky II7 edge, playful mystery',
+      bridgeOutro: 'Lydian Augmented cosmos, #5 strangeness, alien shimmer',
+    },
   },
   major_modes: {
     name: 'Major Mode Spectrum',
@@ -134,6 +168,11 @@ export const WITHIN_MODE_COMBINATIONS = {
     emotionalArc: 'Wonder → Joy → Groove',
     famousExamples: ['Classic rock', 'Pop ballads'],
     bestInstruments: ['piano', 'guitar', 'Hammond organ', 'brass'],
+    sectionGuide: {
+      introVerse: 'Lydian wonder, ethereal #11 float, dreamy colors',
+      chorus: 'Ionian brightness, resolved I-IV-V joy, major clarity',
+      bridgeOutro: 'Mixolydian drive, bVII groove, bluesy rock energy',
+    },
   },
   dark_modes: {
     name: 'Dark Mode Descent',
@@ -148,6 +187,11 @@ export const WITHIN_MODE_COMBINATIONS = {
     emotionalArc: 'Melancholy → Danger → Dread',
     famousExamples: ['Horror scores', 'Metal progressions'],
     bestInstruments: ['strings', 'distorted synth', 'prepared piano', 'bass'],
+    sectionGuide: {
+      introVerse: 'Aeolian sorrow, minor depth, melancholic foundation',
+      chorus: 'Phrygian danger, bII exotic menace, Spanish darkness',
+      bridgeOutro: 'Locrian dread, diminished instability, unresolved horror',
+    },
   },
 } as const;
 
