@@ -7,6 +7,10 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 - **Simple Prompt Generation**: Transform plain English descriptions into professionally formatted Suno prompts using the "Top-Anchor Strategy" and "GM Formula".
 - **Intelligent Mode Selection**: LLM-powered analysis of your description to select optimal harmonic modes based on emotional content, narrative arcs, and explicit requests.
 - **Modal Combinations**: 10 pre-built combinations that journey through multiple modes with section-specific guidance.
+- **Time Signature Detection**: 11 time signatures from standard (4/4, 3/4) to complex odd meters (5/4, 7/8, 11/8, 13/8) with 7 section-based journeys.
+- **Polyrhythm Combinations**: 8 pre-built rhythmic journeys for layered, cross-rhythm complexity.
+- **Lydian Chord Theory**: Complete diatonic chord reference for all 12 keys with triads, 7th chords, and extended voicings.
+- **Dynamic Instrument Selection**: Pool-based instrument selection from 70+ instruments with automatic variety and exclusion rules.
 - **User Instrument Prioritization**: Mention instruments in your description and they'll be automatically detected and prioritized in the output.
 - **Iterative AI Refinement**: Tweak and refine your prompts through a chat-like interface.
 - **Smart Constraints & Validation**:
@@ -168,6 +172,103 @@ Best instruments: layered percussion, polyrhythmic bass, interlocking synths
 
 **Note:** Polyrhythm combinations work **independently** of modal combinations. A track can have BOTH a modal combination AND a polyrhythm combination (e.g., `lydian_exploration` + `complexity_build`).
 
+### Time Signature Detection
+
+Detects standard, compound, and odd time signatures with beat groupings and section-based journeys:
+
+**Standard & Compound:**
+| Signature | Keywords | Feel |
+|-----------|----------|------|
+| 4/4 | common time, standard | Steady, grounded |
+| 3/4 | waltz, triple meter | Elegant, dancing |
+| 6/8 | jig, shuffle, compound | Rolling, swinging |
+
+**Odd Time Signatures:**
+| Signature | Keywords | Feel | Famous Examples |
+|-----------|----------|------|-----------------|
+| 5/4 | take five, quintuple | Off-balance drive | Take Five, Mission Impossible |
+| 5/8 | balkan five | Quick, nimble | Balkan folk |
+| 7/8 | balkan, aksak, limping | Urgent, limping | Money (Pink Floyd) |
+| 7/4 | expansive odd | Spacious, epic | Solsbury Hill |
+| 9/8 | slip jig, compound triple | Lilting, Celtic | Blue Rondo à la Turk |
+| 11/8 | tool time, prog eleven | Complex, shifting | Lateralus (Tool) |
+| 13/8 | king crimson | Extreme complexity | King Crimson |
+| 15/8 | extreme odd | Extended compound | Experimental prog |
+
+Each signature includes: beat count, grouping patterns (e.g., 7/8 as 2+2+3 or 3+2+2), feel description, characteristics, and best genres.
+
+**Time Signature Journeys (7 combinations):**
+
+| Journey | Signatures | Emotional Arc | Best For |
+|---------|------------|---------------|----------|
+| Prog Odyssey | 4/4 → 7/8 → 5/4 | Grounded → Urgent → Expansive | Prog rock, art rock |
+| Balkan Fusion | 7/8 → 9/8 → 11/8 | Limping → Flowing → Hypnotic | World fusion, jazz |
+| Jazz Exploration | 4/4 → 5/4 → 9/8 | Swing → Cool → Dance | Jazz, cool jazz |
+| Math Rock Descent | 5/4 → 7/8 → 11/8 | Intellectual → Urgent → Labyrinthine | Math rock, prog metal |
+| Celtic Journey | 6/8 → 9/8 → 3/4 | Rolling → Dancing → Elegance | Celtic, folk rock |
+| Metal Complexity | 4/4 → 7/4 → 13/8 | Crushing → Epic → Chaotic | Prog metal, djent |
+| Gentle Odd | 3/4 → 5/4 → 6/8 | Waltz → Thoughtful → Rolling | Indie, singer-songwriter |
+
+**Section Guide Example (Prog Odyssey):**
+```
+TIME SIGNATURE JOURNEY: Prog Odyssey
+
+SECTION GUIDE:
+- INTRO/VERSE: 4/4 foundation - establish familiarity, build trust
+- CHORUS: 7/8 urgency - add edge and drive, limping intensity
+- BRIDGE/OUTRO: 5/4 resolution - intellectual satisfaction, unique landing
+
+Emotional Arc: Grounded → Urgent → Expansive
+Best genres: prog rock, art rock, prog metal
+```
+
+### Lydian Chord Theory Reference
+
+Complete diatonic chord sets for Lydian mode across all 12 root notes:
+
+**Scale Formula:** W-W-W-H-W-W-H (1-2-3-#4-5-6-7)
+
+**Diatonic Chords:**
+| Degree | Roman | Triad | 7th Chord | Example (C Lydian) |
+|--------|-------|-------|-----------|-------------------|
+| I | I | Major | Maj7 | Cmaj7 |
+| II | II | Major | Dom7 | D7 |
+| iii | iii | minor | min7 | Em7 |
+| iv° | iv° | dim | m7b5 | F#m7b5 |
+| V | V | Major | Maj7 | Gmaj7 |
+| vi | vi | minor | min7 | Am7 |
+| vii | vii | minor | min7 | Bm7 |
+
+**Signature Sound:** The II major chord (e.g., D in C Lydian) creates the characteristic "floating" Lydian quality.
+
+**Extended Chords:** Each scale degree also supports sus2, sus4, add9, and 6th chord voicings.
+
+**Available for all 12 keys:** C, C#, D, D#, E, F, F#, G, G#, A, A#, B
+
+### Dynamic Instrument Selection
+
+Instruments are now **dynamically selected** from the registry based on mode, providing variety on each generation:
+
+**Category Pools:**
+- **Harmonic**: felt piano, prepared piano, harmonium, celesta, strings, guitars
+- **Pad**: synth pad, analog synth, FM synth, Moog, crystalline pads, ambient pad
+- **Color**: Rhodes, Wurlitzer, cello, violin, vibraphone, oboe, harp, saxophone, choir
+- **Movement**: percussion, drums, bass, shaker, djembe, cajón, handpan
+- **Rare**: taiko drums, steel pan, Hammond organ
+
+**How It Works:**
+1. Each mode defines which category pools to draw from
+2. Random instruments are selected within min/max constraints
+3. Exclusion rules prevent conflicting combinations
+4. Results vary on each generation for creative variety
+
+**Exclusion Rules (automatic):**
+- No Rhodes + Wurlitzer together
+- No bells + singing bowls together
+- No felt piano + Rhodes together
+- No violin + viola together (too similar)
+- And more...
+
 ## Tech Stack
 
 - **Runtime**: [Electrobun](https://electrobun.dev/) - Native desktop application framework.
@@ -235,13 +336,16 @@ The project uses Bun's built-in test runner. To execute the test suite:
 bun test
 ```
 
-Tests cover (104 total):
+Tests cover (195 total):
 - Instrument registry and alias resolution
 - User instrument extraction from descriptions
+- Dynamic instrument selection and exclusion rules
 - Ambient instrument selection and prioritization
 - Harmonic/rhythmic style detection (13 modes)
 - Modal combination detection and guidance (10 combinations)
 - Polyrhythm combination detection and guidance (8 combinations)
+- Time signature detection and guidance (11 signatures, 7 journeys)
+- Lydian chord generation for all 12 keys (triads, 7ths, extended)
 - Section-specific guidance for 2-phase and 3-phase combinations
 - Genre detection and registry
 - RPC communication bridge
