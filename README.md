@@ -5,6 +5,8 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 ## Features
 
 - **Simple Prompt Generation**: Transform plain English descriptions into professionally formatted Suno prompts using the "Top-Anchor Strategy" and "GM Formula".
+- **Intelligent Mode Selection**: LLM-powered analysis of your description to select optimal harmonic modes based on emotional content, narrative arcs, and explicit requests.
+- **Modal Combinations**: 10 pre-built combinations that journey through multiple modes with section-specific guidance.
 - **User Instrument Prioritization**: Mention instruments in your description and they'll be automatically detected and prioritized in the output.
 - **Iterative AI Refinement**: Tweak and refine your prompts through a chat-like interface.
 - **Smart Constraints & Validation**:
@@ -50,18 +52,76 @@ Internally, the app selects from simple pools (harmonic anchor + pad/synth, with
 
 **Currently Supported:** Ambient
 
+### Intelligent Mode Selection (LLM-Powered)
+
+Before generating a prompt, the app uses an LLM to analyze your description and intelligently select the best harmonic approach. This understands:
+
+- **Explicit requests**: "2 lydian chord types" → `lydian_exploration`
+- **Emotional content**: "heartbreak turning to acceptance" → `minor_journey`
+- **Narrative arcs**: "epic battle then victory" → `harmonic_major`
+- **Imagery**: "floating through clouds, reality hits" → `lydian_minor`
+
+Falls back to keyword detection if LLM selection fails.
+
 ### Harmonic Style Detection
 
-Detects advanced harmonic vocabulary and provides chord theory guidance:
+Detects advanced harmonic vocabulary and provides chord theory guidance across **13 modes**:
 
+**Lydian Variants:**
 | Style | Keywords | Character |
 |-------|----------|-----------|
 | Lydian Dominant | jazzy, fusion, funk | Playful, mischievous |
 | Lydian Augmented | mysterious, alien, space | Otherworldly, floating |
 | Lydian #2 | exotic, enchanted, magic | Cinematic, evocative |
-| Pure Lydian | lydian, #11 | Bright, ethereal |
+| Pure Lydian | lydian, #11, cinematic | Bright, ethereal |
 
-Each style includes: chord type, formula, characteristics, suggested progressions, and key examples.
+**Major Modes:**
+| Style | Keywords | Character |
+|-------|----------|-----------|
+| Ionian | major, happy, bright, pop | Resolved, joyful |
+| Mixolydian | bluesy, rock, dominant | Driving, groovy |
+
+**Minor Modes:**
+| Style | Keywords | Character |
+|-------|----------|-----------|
+| Dorian | jazzy, soulful, minor groove | Sophisticated, hopeful |
+| Aeolian | sad, melancholic, minor | Emotional, dramatic |
+| Phrygian | spanish, flamenco, exotic | Tense, fiery |
+| Locrian | horror, dissonant, unstable | Dread, experimental |
+| Harmonic Minor | gothic, classical, vampire | Dramatic tension |
+| Melodic Minor | jazz, noir, sophisticated | Bittersweet, smooth |
+
+Each style includes: chord type, formula, characteristics, suggested progressions, key examples, and best instruments.
+
+### Modal Combinations
+
+10 pre-built combinations for songs that journey through multiple modes, each with **section-specific guidance**:
+
+**Cross-Mode Combinations (2-phase):**
+| Combination | Emotional Arc | Use For |
+|-------------|---------------|---------|
+| Major-Minor | Joy → Melancholy | Bittersweet, happy-sad |
+| Lydian-Minor | Wonder → Shadow | Dreamy-dark, ethereal tension |
+| Lydian-Major | Wonder → Joy | Uplifting, bright resolution |
+| Dorian-Lydian | Groove → Float | Jazz fusion, sophisticated |
+| Harmonic-Major | Tension → Triumph | Classical drama, victory |
+| Phrygian-Major | Exotic → Liberation | Spanish triumph, flamenco |
+
+**Within-Mode Combinations (3-phase):**
+| Combination | Emotional Arc | Use For |
+|-------------|---------------|---------|
+| Minor Journey | Sadness → Drama → Resolution | Grief to acceptance |
+| Lydian Exploration | Dream → Groove → Otherworldly | Multiple lydian colors |
+| Major Modes | Wonder → Joy → Groove | Bright variety |
+| Dark Modes | Melancholy → Danger → Dread | Horror, descent |
+
+**Section Guide Example (Lydian Exploration):**
+```
+SECTION GUIDE:
+- INTRO/VERSE: Pure Lydian dream, bright #11 shimmer, floating Imaj7#11
+- CHORUS: Lydian Dominant groove, funky II7 edge, playful mystery
+- BRIDGE/OUTRO: Lydian Augmented cosmos, #5 strangeness, alien shimmer
+```
 
 ### Rhythmic Style Detection
 
@@ -140,11 +200,14 @@ The project uses Bun's built-in test runner. To execute the test suite:
 bun test
 ```
 
-Tests cover (57 total):
+Tests cover (92 total):
 - Instrument registry and alias resolution
 - User instrument extraction from descriptions
 - Ambient instrument selection and prioritization
-- Harmonic/rhythmic style detection
+- Harmonic/rhythmic style detection (13 modes)
+- Modal combination detection and guidance (10 combinations)
+- Section-specific guidance for 2-phase and 3-phase combinations
+- Genre detection and registry
 - RPC communication bridge
 - Prompt validation logic (character limits, contradictory tags)
 - Session utilities
