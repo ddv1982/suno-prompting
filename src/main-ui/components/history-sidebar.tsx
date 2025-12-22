@@ -124,10 +124,10 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
           }
         }}
         className={cn(
-          "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer transition-all duration-150",
+          "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer border border-transparent transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
           isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-            : "hover:bg-sidebar-accent/50 hover:translate-x-0.5"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border shadow-sm"
+            : "hover:bg-sidebar-accent/60 hover:border-sidebar-border hover:text-sidebar-foreground"
         )}
       >
         <div className="flex flex-col gap-0.5">

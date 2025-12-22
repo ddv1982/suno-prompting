@@ -1,12 +1,56 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1024" height="1024" rx="200" fill="#121212"/>
-  <path d="M300 700C300 700 350 300 512 300C674 300 724 700 724 700" stroke="#ff007f" stroke-width="60" stroke-linecap="round"/>
-  <path d="M300 500C300 500 350 200 512 200C674 200 724 500 724 500" stroke="#00f2ff" stroke-width="40" stroke-linecap="round" opacity="0.6"/>
-  <circle cx="512" cy="512" r="120" fill="url(#paint0_linear)"/>
   <defs>
-    <linearGradient id="paint0_linear" x1="392" y1="392" x2="632" y2="632" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#00f2ff"/>
-      <stop offset="1" stop-color="#ff007f"/>
+    <linearGradient id="bg" x1="220" y1="140" x2="804" y2="884" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F111A" />
+      <stop offset="1" stop-color="#05060A" />
     </linearGradient>
+    <radialGradient id="bgGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 420) rotate(90) scale(520 520)">
+      <stop stop-color="#242B3D" stop-opacity="0.9" />
+      <stop offset="1" stop-color="#05060A" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="stroke" x1="280" y1="240" x2="780" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00FFFF" />
+      <stop offset="1" stop-color="#FF00CC" />
+    </linearGradient>
+    <linearGradient id="strokeHighlight" x1="300" y1="200" x2="720" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B2FFFF" />
+      <stop offset="0.5" stop-color="#00FFFF" stop-opacity="0.3" />
+      <stop offset="1" stop-color="#FFB2EE" stop-opacity="0.1" />
+    </linearGradient>
+    <radialGradient id="orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 500) rotate(90) scale(180 180)">
+      <stop stop-color="#FFFFFF" />
+      <stop offset="0.2" stop-color="#70FFFF" />
+      <stop offset="0.6" stop-color="#00D9FF" />
+      <stop offset="1" stop-color="#FF00AA" />
+    </radialGradient>
   </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="212" fill="url(#bg)" />
+  <rect x="0" y="0" width="1024" height="1024" rx="212" fill="url(#bgGlow)" />
+
+  <circle cx="512" cy="520" r="240" fill="#000000" opacity="0.4" filter="blur(20px)" />
+
+  <path
+    d="M236 660C236 394 374 236 512 236C650 236 788 394 788 660C788 780 712 844 628 844C544 844 512 778 512 736C512 778 480 844 396 844C312 844 236 780 236 660Z"
+    fill="none"
+    stroke="url(#stroke)"
+    stroke-width="72"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M236 660C236 394 374 236 512 236C650 236 788 394 788 660C788 780 712 844 628 844"
+    fill="none"
+    stroke="url(#strokeHighlight)"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.6"
+  />
+
+  <circle cx="512" cy="504" r="146" fill="url(#orb)" />
+  <circle cx="452" cy="452" r="48" fill="white" fill-opacity="0.4" />
+  <circle cx="574" cy="420" r="24" fill="white" fill-opacity="0.3" />
 </svg>
+

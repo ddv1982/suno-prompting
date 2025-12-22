@@ -13,6 +13,9 @@ export default {
         "entrypoint": "src/main-ui/index.tsx"
       }
     },
+    "mac": {
+      "icons": "icon.iconset"
+    },
     "copy": {
       "src/main-ui/index.html": "views/main-ui/index.html",
       "src/main-ui/dist.css": "views/main-ui/index.css"
