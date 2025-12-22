@@ -49,17 +49,17 @@ Detects **12 music genres** and selects appropriate instruments from curated poo
 
 | Genre | Keywords | Key Instruments |
 |-------|----------|-----------------|
-| Ambient | ambient, atmospheric, soundscape | felt piano, synth pad, singing bowls |
+| Ambient | ambient, atmospheric, soundscape | felt piano, synth pad, strings, kalimba |
 | Jazz | jazz, bebop, swing, fusion | Rhodes, saxophone, jazz brushes |
 | Electronic | edm, house, techno, dubstep | synth pad, 808, arpeggiator, vocoder |
 | Rock | rock, alternative, punk, metal | guitar, drums, bass, Hammond organ |
-| Pop | pop, mainstream, dance pop | felt piano, synth, drums |
-| Classical | classical, orchestral, symphony | strings, violin, flute, timpani |
-| Lo-fi | lofi, chill, study beats | Rhodes, kalimba, jazz brushes |
+| Pop | pop, mainstream, dance pop | felt piano, synth, bass, drums |
+| Classical | classical, orchestral, symphony | strings, violin, cello, flute, french horn |
+| Lo-fi | lofi, chill, study beats | felt piano, Rhodes, kalimba, jazz brushes |
 | Synthwave | synthwave, retrowave, 80s, outrun | analog synth, arpeggiator, synth bass |
-| Cinematic | cinematic, epic, trailer | strings, taiko drums, choir |
+| Cinematic | cinematic, epic, trailer | strings, french horn, choir, taiko drums |
 | Folk | folk, acoustic, country, americana | acoustic guitar, violin, banjo, mandolin |
-| R&B | rnb, soul, neo-soul, motown | Rhodes, Wurlitzer, saxophone |
+| R&B | rnb, soul, neo-soul, motown | Rhodes, Wurlitzer, bass, saxophone |
 | Video Game | video game, chiptune, 8-bit, rpg, arcade | strings, arpeggiator, FM synth, bells, taiko drums |
 
 Each genre has:
