@@ -1,10 +1,19 @@
-// Data exports
 export {
   HARMONIC_STYLES,
-  RHYTHMIC_STYLES,
-  AMBIENT_INSTRUMENT_POOLS,
-} from '@bun/instruments/data';
-export type { HarmonicStyle, RhythmicStyle } from '@bun/instruments/data';
+  LYDIAN_MODES,
+  MAJOR_MODES,
+  MINOR_MODES,
+  CROSS_MODE_COMBINATIONS,
+  WITHIN_MODE_COMBINATIONS,
+  ALL_COMBINATIONS,
+} from '@bun/instruments/modes';
+export type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
+
+export { GENRE_REGISTRY, AMBIENT_GENRE } from '@bun/instruments/genres';
+export type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
+
+export { RHYTHMIC_STYLES } from '@bun/instruments/data';
+export type { RhythmicStyle } from '@bun/instruments/data';
 
 // Registry exports
 export {
@@ -23,8 +32,8 @@ export { extractInstruments, normalizeToken, matchInstrument } from '@bun/instru
 export type { ExtractionResult } from '@bun/instruments/extraction';
 
 // Detection exports
-export { detectHarmonic, detectRhythmic, detectAmbient } from '@bun/instruments/detection';
+export { detectHarmonic, detectRhythmic, detectAmbient, detectGenre, detectCombination } from '@bun/instruments/detection';
 
 // Guidance exports
-export { getHarmonicGuidance, getRhythmicGuidance, getAmbientInstruments } from '@bun/instruments/guidance';
+export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getGenreInstruments, getAmbientInstruments } from '@bun/instruments/guidance';
 export type { InstrumentSelectionOptions } from '@bun/instruments/guidance';

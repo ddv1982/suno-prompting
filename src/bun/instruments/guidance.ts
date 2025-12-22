@@ -1,23 +1,14 @@
-import {
-  HARMONIC_STYLES,
-  RHYTHMIC_STYLES,
-  AMBIENT_INSTRUMENT_POOLS,
-  AMBIENT_EXCLUSION_RULES,
-  AMBIENT_POOL_ORDER,
-  AMBIENT_MAX_TAGS,
-  AMBIENT_GUIDANCE_DESCRIPTION,
-  AMBIENT_INSTRUMENTS_HEADER,
-} from '@bun/instruments/data';
-import type { HarmonicStyle, RhythmicStyle, AmbientPoolName, SunoInstrumentToken } from '@bun/instruments/data';
+import { HARMONIC_STYLES, ALL_COMBINATIONS } from '@bun/instruments/modes';
+import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
+import type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
+import { RHYTHMIC_STYLES } from '@bun/instruments/data';
+import type { RhythmicStyle } from '@bun/instruments/data';
 
 export type InstrumentSelectionOptions = {
   readonly userInstruments?: readonly string[];
   readonly maxTags?: number;
 };
-
-const POOL_ORDER: readonly AmbientPoolName[] = AMBIENT_POOL_ORDER;
-
-const EXCLUSION_RULES_LC = AMBIENT_EXCLUSION_RULES.map(([a, b]) => [a.toLowerCase(), b.toLowerCase()] as const);
 
 function shuffle<T>(arr: readonly T[]): T[] {
   const result = [...arr];
@@ -41,11 +32,18 @@ function rollChance(chance: number | undefined): boolean {
   return Math.random() <= chance;
 }
 
-function hasExclusion(selected: readonly string[], candidate: string): boolean {
+function hasExclusion(
+  selected: readonly string[],
+  candidate: string,
+  exclusionRules: readonly [string, string][]
+): boolean {
+  if (!exclusionRules.length) return false;
   const candidateLower = candidate.toLowerCase();
   for (const existing of selected) {
     const existingLower = existing.toLowerCase();
-    for (const [aLower, bLower] of EXCLUSION_RULES_LC) {
+    for (const [a, b] of exclusionRules) {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
       if (
         (existingLower.includes(aLower) && candidateLower.includes(bLower)) ||
         (existingLower.includes(bLower) && candidateLower.includes(aLower))
@@ -57,20 +55,12 @@ function hasExclusion(selected: readonly string[], candidate: string): boolean {
   return false;
 }
 
-type AmbientPool = {
-  readonly pick: { readonly min: number; readonly max: number };
-  readonly instruments: readonly SunoInstrumentToken[];
-  readonly chanceToInclude?: number;
-};
-
-const POOLS: Record<AmbientPoolName, AmbientPool> = AMBIENT_INSTRUMENT_POOLS;
-
 export function getHarmonicGuidance(style: HarmonicStyle): string {
   const s = HARMONIC_STYLES[style];
   const chars = shuffle(s.characteristics).slice(0, 3);
   const prog = pickRandom(s.progressions);
 
-  return [
+  const lines = [
     `HARMONIC STYLE (${s.name}):`,
     s.description,
     `Chord: ${s.chordType}`,
@@ -78,7 +68,13 @@ export function getHarmonicGuidance(style: HarmonicStyle): string {
     ...chars.map(c => `- ${c}`),
     `Suggested Progression: ${prog}`,
     `Examples: ${s.keyExamples}`,
-  ].join('\n');
+  ];
+
+  if (s.bestInstruments) {
+    lines.push(`Best instruments: ${s.bestInstruments.join(', ')}`);
+  }
+
+  return lines.join('\n');
 }
 
 export function getRhythmicGuidance(style: RhythmicStyle): string {
@@ -94,26 +90,58 @@ export function getRhythmicGuidance(style: RhythmicStyle): string {
   ].join('\n');
 }
 
-function computePickCount(pick: AmbientPool['pick'], remainingSlots: number): number {
+export function getCombinationGuidance(combo: CombinationType): string {
+  const c = ALL_COMBINATIONS[combo];
+  const progs = shuffle([...c.progressions]).slice(0, 3);
+
+  const lines = [
+    `MODAL COMBINATION (${c.name}):`,
+    c.description,
+    '',
+    `Emotional Arc: ${c.emotionalArc}`,
+    '',
+  ];
+
+  if ('borrowedChords' in c) {
+    lines.push(`Borrowed chords: ${c.borrowedChords.join(', ')}`);
+    lines.push('');
+  }
+
+  lines.push('Suggested progressions:');
+  lines.push(...progs.map(p => `- ${p}`));
+
+  if ('famousExamples' in c && c.famousExamples) {
+    lines.push('');
+    lines.push(`Famous examples: ${c.famousExamples.join(', ')}`);
+  }
+
+  lines.push('');
+  lines.push(`Best instruments: ${c.bestInstruments.join(', ')}`);
+
+  return lines.join('\n');
+}
+
+function computePickCount(pick: InstrumentPool['pick'], remainingSlots: number): number {
   if (remainingSlots <= 0) return 0;
   const desired = randomIntInclusive(pick.min, pick.max);
   return Math.min(desired, remainingSlots);
 }
 
 function pickUniqueTokens(
-  candidates: readonly SunoInstrumentToken[],
-  selected: readonly SunoInstrumentToken[],
-  count: number
-): SunoInstrumentToken[] {
+  candidates: readonly string[],
+  selected: readonly string[],
+  count: number,
+  exclusionRules: readonly [string, string][]
+): string[] {
   if (count <= 0) return [];
 
-  const picks: SunoInstrumentToken[] = [];
-  const seen = new Set<SunoInstrumentToken>(selected);
+  const picks: string[] = [];
+  const seen = new Set<string>(selected);
 
   for (const token of candidates) {
     if (picks.length >= count) break;
     if (seen.has(token)) continue;
-    if (hasExclusion([...selected, ...picks], token)) continue;
+    if (hasExclusion([...selected, ...picks], token, exclusionRules)) continue;
     picks.push(token);
     seen.add(token);
   }
@@ -122,46 +150,54 @@ function pickUniqueTokens(
 }
 
 function pickFromPool(
-  pool: AmbientPool,
-  selected: readonly SunoInstrumentToken[],
-  remainingSlots: number
-): SunoInstrumentToken[] {
+  pool: InstrumentPool,
+  selected: readonly string[],
+  remainingSlots: number,
+  exclusionRules: readonly [string, string][]
+): string[] {
   if (!rollChance(pool.chanceToInclude)) return [];
 
   const count = computePickCount(pool.pick, remainingSlots);
   if (count <= 0) return [];
 
-  const available = pool.instruments.filter(token => !hasExclusion(selected, token));
+  const available = pool.instruments.filter(token => !hasExclusion(selected, token, exclusionRules));
   const shuffled = shuffle(available);
-  const picks = pickUniqueTokens(shuffled, selected, count);
+  const picks = pickUniqueTokens(shuffled, selected, count, exclusionRules);
 
   return picks;
 }
 
-export function getAmbientInstruments(options?: InstrumentSelectionOptions): string {
-  const maxTags = options?.maxTags ?? AMBIENT_MAX_TAGS;
+export function getGenreInstruments(
+  genre: GenreType,
+  options?: InstrumentSelectionOptions
+): string {
+  const def = GENRE_REGISTRY[genre];
+  const maxTags = options?.maxTags ?? def.maxTags;
   const userInstruments = options?.userInstruments ?? [];
-  
-  // Start with user-provided instruments (up to maxTags)
-  const userSelected = userInstruments.slice(0, maxTags) as SunoInstrumentToken[];
-  let selected: SunoInstrumentToken[] = [...userSelected];
+  const exclusionRules = def.exclusionRules ?? [];
 
-  // Fill remaining slots from pools
-  for (const poolName of POOL_ORDER) {
+  const userSelected = userInstruments.slice(0, maxTags);
+  let selected: string[] = [...userSelected];
+
+  for (const poolName of def.poolOrder) {
     if (selected.length >= maxTags) break;
-    const pool = POOLS[poolName];
-    const picks = pickFromPool(pool, selected, maxTags - selected.length);
+    const pool = def.pools[poolName];
+    if (!pool) continue;
+    const picks = pickFromPool(pool, selected, maxTags - selected.length, exclusionRules);
     selected = [...selected, ...picks].slice(0, maxTags);
   }
 
-  // Build output with clear distinction between user and suggested
-  const lines: string[] = [AMBIENT_INSTRUMENTS_HEADER, AMBIENT_GUIDANCE_DESCRIPTION, ''];
-  
+  const lines: string[] = [
+    'SUGGESTED INSTRUMENTS (Suno tags):',
+    `${def.name}: ${def.description}`,
+    '',
+  ];
+
   if (userSelected.length > 0) {
     lines.push('User specified (MUST use):');
     lines.push(...userSelected.map(t => `- ${t}`));
   }
-  
+
   const suggested = selected.filter(t => !userSelected.includes(t));
   if (suggested.length > 0) {
     if (userSelected.length > 0) {
@@ -172,4 +208,8 @@ export function getAmbientInstruments(options?: InstrumentSelectionOptions): str
   }
 
   return lines.join('\n');
+}
+
+export function getAmbientInstruments(options?: InstrumentSelectionOptions): string {
+  return getGenreInstruments('ambient', options);
 }

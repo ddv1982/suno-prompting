@@ -4,8 +4,12 @@ import {
   getHarmonicGuidance,
   detectRhythmic,
   detectAmbient,
+  detectGenre,
+  detectCombination,
+  getCombinationGuidance,
+  getGenreInstruments,
   getAmbientInstruments,
-  AMBIENT_INSTRUMENT_POOLS,
+  GENRE_REGISTRY,
   extractInstruments,
   normalizeToken,
   matchInstrument,
@@ -15,28 +19,81 @@ import {
 } from '../src/bun/instruments';
 
 describe('detectHarmonic', () => {
-  test('detects lydian_dominant for jazzy/fusion keywords', () => {
-    expect(detectHarmonic('jazzy fusion track')).toBe('lydian_dominant');
-    expect(detectHarmonic('funky groove')).toBe('lydian_dominant');
+  // Lydian variants
+  test('detects lydian_dominant for fusion keywords', () => {
+    expect(detectHarmonic('fusion track')).toBe('lydian_dominant');
+    expect(detectHarmonic('simpsons style')).toBe('lydian_dominant');
   });
 
-  test('detects lydian_augmented for space/mysterious keywords', () => {
+  test('detects lydian_augmented for space/alien keywords', () => {
     expect(detectHarmonic('alien space vibes')).toBe('lydian_augmented');
-    expect(detectHarmonic('mysterious atmosphere')).toBe('lydian_augmented');
+    expect(detectHarmonic('supernatural atmosphere')).toBe('lydian_augmented');
   });
 
-  test('detects lydian_sharp_two for exotic/magic keywords', () => {
-    expect(detectHarmonic('exotic enchanted melody')).toBe('lydian_sharp_two');
-    expect(detectHarmonic('magic forest')).toBe('lydian_sharp_two');
+  test('detects lydian_sharp_two for enchanted keywords', () => {
+    expect(detectHarmonic('enchanted melody')).toBe('lydian_sharp_two');
   });
 
-  test('detects pure lydian as fallback for lydian keyword', () => {
+  test('detects pure lydian for lydian/cinematic keywords', () => {
     expect(detectHarmonic('lydian mode')).toBe('lydian');
-    expect(detectHarmonic('bright #11 chords')).toBe('lydian');
+    expect(detectHarmonic('dreamy floating sound')).toBe('lydian');
+    expect(detectHarmonic('cinematic score')).toBe('lydian');
+  });
+
+  // New modes
+  test('detects ionian for major/happy keywords', () => {
+    expect(detectHarmonic('happy uplifting song')).toBe('ionian');
+    expect(detectHarmonic('major key melody')).toBe('ionian');
+    expect(detectHarmonic('joyful and cheerful')).toBe('ionian');
+  });
+
+  test('detects mixolydian for bluesy/rock keywords', () => {
+    expect(detectHarmonic('mixolydian groove')).toBe('mixolydian');
+    expect(detectHarmonic('bluesy rock track')).toBe('mixolydian');
+    expect(detectHarmonic('driving groovy beat')).toBe('mixolydian');
+  });
+
+  test('detects dorian for jazzy/soulful keywords', () => {
+    expect(detectHarmonic('dorian jazz')).toBe('dorian');
+    expect(detectHarmonic('soulful smooth vibes')).toBe('dorian');
+    expect(detectHarmonic('funky groove')).toBe('dorian');
+  });
+
+  test('detects aeolian for minor/sad keywords', () => {
+    expect(detectHarmonic('sad melancholic ballad')).toBe('aeolian');
+    expect(detectHarmonic('emotional dramatic piece')).toBe('aeolian');
+    expect(detectHarmonic('minor key melody')).toBe('aeolian');
+  });
+
+  test('detects phrygian for spanish/flamenco keywords', () => {
+    expect(detectHarmonic('phrygian mode')).toBe('phrygian');
+    expect(detectHarmonic('spanish flamenco')).toBe('phrygian');
+    expect(detectHarmonic('middle eastern vibe')).toBe('phrygian');
+    expect(detectHarmonic('metal riff')).toBe('phrygian');
+  });
+
+  test('detects locrian for horror/dissonant keywords', () => {
+    expect(detectHarmonic('locrian scale')).toBe('locrian');
+    expect(detectHarmonic('horror soundtrack')).toBe('locrian');
+    expect(detectHarmonic('dissonant experimental')).toBe('locrian');
+  });
+
+  test('detects harmonic_minor for classical/gothic keywords', () => {
+    expect(detectHarmonic('harmonic minor scale')).toBe('harmonic_minor');
+    expect(detectHarmonic('gothic classical')).toBe('harmonic_minor');
+    expect(detectHarmonic('vampire soundtrack')).toBe('harmonic_minor');
+    expect(detectHarmonic('eastern european folk')).toBe('harmonic_minor');
+  });
+
+  test('detects melodic_minor for jazz/noir keywords', () => {
+    expect(detectHarmonic('melodic minor mode')).toBe('melodic_minor');
+    expect(detectHarmonic('jazz minor sound')).toBe('melodic_minor');
+    expect(detectHarmonic('film noir soundtrack')).toBe('melodic_minor');
+    expect(detectHarmonic('sophisticated smooth jazz')).toBe('melodic_minor');
   });
 
   test('returns null for no match', () => {
-    expect(detectHarmonic('rock ballad')).toBeNull();
+    expect(detectHarmonic('simple song')).toBeNull();
   });
 });
 
@@ -51,6 +108,27 @@ describe('getHarmonicGuidance', () => {
   test('includes bullet points', () => {
     const guidance = getHarmonicGuidance('lydian_dominant');
     expect(guidance.match(/^- /gm)?.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('includes best instruments for all modes', () => {
+    const guidance = getHarmonicGuidance('lydian');
+    expect(guidance).toContain('Best instruments:');
+    expect(guidance).toContain('strings');
+  });
+
+  test('includes best instruments for new modes', () => {
+    expect(getHarmonicGuidance('dorian')).toContain('Rhodes');
+    expect(getHarmonicGuidance('phrygian')).toContain('flamenco guitar');
+    expect(getHarmonicGuidance('aeolian')).toContain('cello');
+    expect(getHarmonicGuidance('mixolydian')).toContain('Hammond organ');
+    expect(getHarmonicGuidance('ionian')).toContain('piano');
+  });
+
+  test('includes best instruments for minor scale variants', () => {
+    expect(getHarmonicGuidance('harmonic_minor')).toContain('harpsichord');
+    expect(getHarmonicGuidance('harmonic_minor')).toContain('organ');
+    expect(getHarmonicGuidance('melodic_minor')).toContain('saxophone');
+    expect(getHarmonicGuidance('melodic_minor')).toContain('upright bass');
   });
 });
 
@@ -71,8 +149,39 @@ describe('detectAmbient', () => {
     expect(detectAmbient('atmospheric pads')).toBe(true);
   });
 
-  test('returns null for no match', () => {
+  test('returns false for no match', () => {
     expect(detectAmbient('heavy metal')).toBe(false);
+  });
+});
+
+describe('detectGenre', () => {
+  test('detects ambient genre', () => {
+    expect(detectGenre('ambient soundscape')).toBe('ambient');
+    expect(detectGenre('atmospheric pads')).toBe('ambient');
+  });
+
+  test('returns null for no match', () => {
+    expect(detectGenre('heavy metal song')).toBeNull();
+  });
+});
+
+describe('getGenreInstruments', () => {
+  test('works for ambient genre', () => {
+    const guidance = getGenreInstruments('ambient');
+    expect(guidance).toContain('SUGGESTED INSTRUMENTS');
+    expect(guidance).toContain('Ambient:');
+  });
+
+  test('respects user instruments', () => {
+    const guidance = getGenreInstruments('ambient', { userInstruments: ['cello'] });
+    expect(guidance).toContain('User specified (MUST use):');
+    expect(guidance).toContain('- cello');
+  });
+
+  test('respects maxTags option', () => {
+    const guidance = getGenreInstruments('ambient', { maxTags: 2 });
+    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    expect(lines.length).toBeLessThanOrEqual(2);
   });
 });
 
@@ -87,7 +196,8 @@ describe('getAmbientInstruments', () => {
   test('includes genre header and description', () => {
     const guidance = getAmbientInstruments();
     expect(guidance).toContain('SUGGESTED INSTRUMENTS (Suno tags)');
-    expect(guidance).toContain('Ambient: warm, intimate, emotional soundscapes');
+    expect(guidance).toContain('Ambient:');
+    expect(guidance.toLowerCase()).toContain('warm, intimate, emotional soundscapes');
   });
 
   test('picks 2-4 Suno canonical tags', () => {
@@ -96,7 +206,8 @@ describe('getAmbientInstruments', () => {
     expect(tags.length).toBeGreaterThanOrEqual(2);
     expect(tags.length).toBeLessThanOrEqual(4);
 
-    const whitelist = new Set<string>(Object.values(AMBIENT_INSTRUMENT_POOLS).flatMap(p => p.instruments));
+    const ambientPools = GENRE_REGISTRY.ambient.pools;
+    const whitelist = new Set<string>(Object.values(ambientPools).flatMap(p => [...p.instruments]));
     for (const tag of tags) {
       expect(whitelist.has(tag)).toBe(true);
     }
@@ -138,8 +249,9 @@ describe('getAmbientInstruments', () => {
   });
 
   test('always includes a harmonic anchor and a pad/synth tag', () => {
-    const anchor = new Set<string>(AMBIENT_INSTRUMENT_POOLS.harmonicAnchor.instruments);
-    const pad = new Set<string>(AMBIENT_INSTRUMENT_POOLS.padOrSynth.instruments);
+    const pools = GENRE_REGISTRY.ambient.pools;
+    const anchor = new Set<string>(pools.harmonicAnchor.instruments);
+    const pad = new Set<string>(pools.padOrSynth.instruments);
 
     for (let i = 0; i < 30; i++) {
       const guidance = getAmbientInstruments();
@@ -299,6 +411,104 @@ describe('extractInstruments', () => {
     expect(result.found).toContain('strings');
     expect(result.found).toContain('synth pad');
     expect(result.found).toContain('felt piano');
+  });
+});
+
+describe('detectCombination', () => {
+  test('detects major_minor for bittersweet keywords', () => {
+    expect(detectCombination('bittersweet ballad')).toBe('major_minor');
+    expect(detectCombination('happy sad song')).toBe('major_minor');
+    expect(detectCombination('emotional major key')).toBe('major_minor');
+  });
+
+  test('detects lydian_minor for dreamy dark keywords', () => {
+    expect(detectCombination('lydian minor vibes')).toBe('lydian_minor');
+    expect(detectCombination('floating dark atmosphere')).toBe('lydian_minor');
+    expect(detectCombination('cinematic tension score')).toBe('lydian_minor');
+  });
+
+  test('detects lydian_major for floating happy keywords', () => {
+    expect(detectCombination('lydian major sound')).toBe('lydian_major');
+    expect(detectCombination('bright uplifting track')).toBe('lydian_major');
+  });
+
+  test('detects dorian_lydian for jazz fusion keywords', () => {
+    expect(detectCombination('jazz fusion track')).toBe('dorian_lydian');
+    expect(detectCombination('sophisticated groove')).toBe('dorian_lydian');
+  });
+
+  test('detects harmonic_major for classical drama keywords', () => {
+    expect(detectCombination('classical drama')).toBe('harmonic_major');
+    expect(detectCombination('gothic triumph ending')).toBe('harmonic_major');
+  });
+
+  test('detects minor_journey for evolving minor keywords', () => {
+    expect(detectCombination('minor journey')).toBe('minor_journey');
+    expect(detectCombination('evolving minor sound')).toBe('minor_journey');
+  });
+
+  test('detects lydian_exploration for all lydian keywords', () => {
+    expect(detectCombination('lydian exploration')).toBe('lydian_exploration');
+    expect(detectCombination('all lydian modes')).toBe('lydian_exploration');
+  });
+
+  test('detects major_modes for major exploration keywords', () => {
+    expect(detectCombination('major modes')).toBe('major_modes');
+    expect(detectCombination('bright to bluesy')).toBe('major_modes');
+  });
+
+  test('detects dark_modes for descending darkness keywords', () => {
+    expect(detectCombination('dark modes')).toBe('dark_modes');
+    expect(detectCombination('darker and darker')).toBe('dark_modes');
+  });
+
+  test('returns null for no match', () => {
+    expect(detectCombination('simple pop song')).toBeNull();
+  });
+});
+
+describe('getCombinationGuidance', () => {
+  test('includes combination name and description', () => {
+    const guidance = getCombinationGuidance('major_minor');
+    expect(guidance).toContain('Major-Minor (Bittersweet)');
+    expect(guidance).toContain('Happy foundation');
+  });
+
+  test('includes emotional arc', () => {
+    const guidance = getCombinationGuidance('lydian_minor');
+    expect(guidance).toContain('Emotional Arc:');
+    expect(guidance).toContain('Wonder');
+  });
+
+  test('includes borrowed chords for cross-mode combinations', () => {
+    const guidance = getCombinationGuidance('major_minor');
+    expect(guidance).toContain('Borrowed chords:');
+    expect(guidance).toContain('bVI');
+  });
+
+  test('includes suggested progressions', () => {
+    const guidance = getCombinationGuidance('dorian_lydian');
+    expect(guidance).toContain('Suggested progressions:');
+    expect(guidance).toContain('-');
+  });
+
+  test('includes famous examples when available', () => {
+    const guidance = getCombinationGuidance('major_minor');
+    expect(guidance).toContain('Famous examples:');
+    expect(guidance).toContain('Beatles');
+  });
+
+  test('includes best instruments', () => {
+    const guidance = getCombinationGuidance('harmonic_major');
+    expect(guidance).toContain('Best instruments:');
+    expect(guidance).toContain('strings');
+  });
+
+  test('works for within-mode combinations', () => {
+    const guidance = getCombinationGuidance('minor_journey');
+    expect(guidance).toContain('Minor Scale Journey');
+    expect(guidance).toContain('Emotional Arc:');
+    expect(guidance).toContain('Best instruments:');
   });
 });
 

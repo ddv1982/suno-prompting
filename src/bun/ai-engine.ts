@@ -1,12 +1,14 @@
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import {
-  detectAmbient,
-  getAmbientInstruments,
+  detectGenre,
+  getGenreInstruments,
   detectHarmonic,
   getHarmonicGuidance,
   detectRhythmic,
   getRhythmicGuidance,
+  detectCombination,
+  getCombinationGuidance,
   extractInstruments,
 } from '@bun/instruments';
 import { AIGenerationError } from '@shared/errors';
@@ -88,28 +90,26 @@ STRICT CONSTRAINTS:
 }
 
 function buildContextualPrompt(description: string): string {
-  const isAmbient = detectAmbient(description);
+  const genre = detectGenre(description);
   const harmonic = detectHarmonic(description);
   const rhythmic = detectRhythmic(description);
-  
-  // Extract user-specified instruments from description
+  const combination = detectCombination(description);
+
   const { found: userInstruments } = extractInstruments(description);
-  
+
   const parts = [
     `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
     description,
   ];
-  
-  // Only add technical guidance if detected
-  if (isAmbient || harmonic || rhythmic) {
+
+  if (genre || harmonic || rhythmic || combination) {
     parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
-    if (isAmbient) {
-      parts.push(getAmbientInstruments({ userInstruments }));
-    }
-    if (harmonic) parts.push(getHarmonicGuidance(harmonic));
+    if (combination) parts.push(getCombinationGuidance(combination));
+    if (genre) parts.push(getGenreInstruments(genre, { userInstruments }));
+    if (harmonic && !combination) parts.push(getHarmonicGuidance(harmonic));
     if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
   }
-  
+
   return parts.join('\n\n');
 }
 
