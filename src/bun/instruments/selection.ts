@@ -52,6 +52,17 @@ POLYRHYTHM COMBINATIONS (for rhythmic journeys):
 
 AVAILABLE GENRES:
 - ambient: atmospheric, soundscape, ethereal textures
+- jazz: bebop, swing, cool jazz, fusion, big band, bossa nova
+- electronic: edm, house, techno, dubstep, trance
+- rock: alternative, punk, metal, grunge, hard rock
+- pop: mainstream, dance pop, synth pop
+- classical: orchestral, symphony, baroque, romantic
+- lofi: lo-fi, chill beats, study music, relaxing
+- synthwave: retrowave, outrun, 80s synth, neon
+- cinematic: film score, epic, trailer, dramatic orchestral
+- folk: acoustic, bluegrass, country, americana, celtic
+- rnb: r&b, soul, neo-soul, motown
+- videogame: video game, chiptune, 8-bit, arcade, rpg, jrpg, boss battle
 
 SELECTION RULES:
 1. Match EMOTIONAL ARC to combination's arc when possible
@@ -67,7 +78,7 @@ SELECTION RULES:
 11. polyrhythmCombination is INDEPENDENT - can be used with any harmonic choice
 
 Return ONLY valid JSON (no markdown, no explanation):
-{"genre":"ambient"|null,"combination":"<key>"|null,"singleMode":"<key>"|null,"polyrhythmCombination":"<key>"|null,"reasoning":"brief"}`;
+{"genre":"ambient"|"jazz"|"electronic"|"rock"|"pop"|"classical"|"lofi"|"synthwave"|"cinematic"|"folk"|"rnb"|"videogame"|null,"combination":"<key>"|null,"singleMode":"<key>"|null,"polyrhythmCombination":"<key>"|null,"reasoning":"brief"}`;
 
 export async function selectModesWithLLM(
   description: string,
