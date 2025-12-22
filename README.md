@@ -10,7 +10,9 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 - **Time Signature Detection**: 11 time signatures from standard (4/4, 3/4) to complex odd meters (5/4, 7/8, 11/8, 13/8) with 7 section-based journeys.
 - **Polyrhythm Combinations**: 8 pre-built rhythmic journeys for layered, cross-rhythm complexity.
 - **Lydian Chord Theory**: Complete diatonic chord reference for all 12 keys with triads, 7th chords, and extended voicings.
-- **Dynamic Instrument Selection**: Pool-based instrument selection from 70+ instruments with automatic variety and exclusion rules.
+- **Dynamic Instrument Selection**: Pool-based instrument selection from 90+ instruments with automatic variety and exclusion rules.
+- **11 Genre Palettes**: Curated instrument pools for jazz, electronic, rock, pop, classical, lofi, synthwave, cinematic, folk, R&B, and ambient.
+- **Synth Replacements**: Professional workstation-inspired synth alternatives for acoustic instruments.
 - **User Instrument Prioritization**: Mention instruments in your description and they'll be automatically detected and prioritized in the output.
 - **Iterative AI Refinement**: Tweak and refine your prompts through a chat-like interface.
 - **Smart Constraints & Validation**:
@@ -28,7 +30,7 @@ The app automatically detects musical characteristics from your description and 
 
 When you mention instruments in your description, the app automatically:
 
-1. **Detects** instruments using a registry of 70+ Suno-compatible instruments
+1. **Detects** instruments using a registry of 90+ Suno-compatible instruments
 2. **Converts aliases** to canonical Suno tags (e.g., "piano" → "felt piano", "fiddle" → "violin", "keys" → "felt piano")
 3. **Prioritizes** your instruments in the "MUST use" section
 4. **Fills remaining slots** (up to 4 total) from random pools
@@ -43,18 +45,55 @@ Supported aliases include common names like "keys", "fiddle", "vibes", "sax", "d
 
 ### Genre Detection
 
-Scans for keywords like "ambient", "atmospheric", "soundscape" and injects **ambient instrument guidance** as a single list of **2–4 Suno-friendly instrument tags**.
+Detects **11 music genres** and selects appropriate instruments from curated pools:
 
-Internally, the app selects from simple pools (harmonic anchor + pad/synth, with optional color/movement and a small rare pool), applies exclusion rules to avoid conflicts, and constrains the final prompt’s `Instruments:` line to use **only** the provided tags.
+| Genre | Keywords | Key Instruments |
+|-------|----------|-----------------|
+| Ambient | ambient, atmospheric, soundscape | felt piano, synth pad, singing bowls |
+| Jazz | jazz, bebop, swing, fusion | Rhodes, saxophone, jazz brushes |
+| Electronic | edm, house, techno, dubstep | synth pad, 808, arpeggiator, vocoder |
+| Rock | rock, alternative, punk, metal | guitar, drums, bass, Hammond organ |
+| Pop | pop, mainstream, dance pop | felt piano, synth, drums |
+| Classical | classical, orchestral, symphony | strings, violin, flute, timpani |
+| Lo-fi | lofi, chill, study beats | Rhodes, kalimba, jazz brushes |
+| Synthwave | synthwave, retrowave, 80s, outrun | analog synth, arpeggiator, synth bass |
+| Cinematic | cinematic, epic, trailer | strings, taiko drums, choir |
+| Folk | folk, acoustic, country, americana | acoustic guitar, violin, banjo, mandolin |
+| R&B | rnb, soul, neo-soul, motown | Rhodes, Wurlitzer, saxophone |
 
-#### Ambient instrument selection (how it works)
+Each genre has:
+- **Curated instrument pools** by category (harmonic, pad, color, movement, rare)
+- **Exclusion rules** to prevent conflicting combinations
+- **Random variety** on each generation
+
+#### How Genre Selection Works
 
 1. **User instruments first:** any instruments detected from your description are locked in as "MUST use".
-2. **Pool selection (variety):** fills remaining slots from `harmonicAnchor` + `padOrSynth`, then optionally from `rare` (~25%), `color`, and `movement`.
-3. **Exclusions:** prevents known-clashing combos (e.g., acoustic piano + Rhodes, Rhodes + Wurlitzer, bells + singing bowls).
+2. **Pool selection (variety):** fills remaining slots from genre-specific pools by category.
+3. **Exclusions:** prevents known-clashing combos (e.g., Rhodes + Wurlitzer, synth strings + strings).
 4. **Prompt constraint:** the AI is instructed to use the provided tags on the final `Instruments:` line.
 
-**Currently Supported:** Ambient
+### Synth Replacements
+
+Professional keyboard workstation-inspired synth alternatives for acoustic instruments:
+
+| Acoustic | Synth Alternatives |
+|----------|-------------------|
+| strings | synth strings, mellotron |
+| choir | synth choir, mellotron, vocoder |
+| trumpet, trombone, french horn | synth brass |
+| flute | synth flute |
+| bells, glockenspiel | synth bells |
+| bass | synth bass, sub-bass |
+| felt piano | synth piano, electric piano |
+
+**New synth instruments added:**
+- synth strings, synth brass, synth choir, synth piano, synth flute, synth bells
+- arpeggiator, 808, synth bass
+- mellotron, theremin, vocoder
+- harmonica, accordion, mandolin, banjo, timpani, organ
+
+**Automatic exclusion:** The app prevents mixing real and synth versions of the same instrument type (e.g., no "strings" + "synth strings" together).
 
 ### Intelligent Mode Selection (LLM-Powered)
 
@@ -247,26 +286,29 @@ Complete diatonic chord sets for Lydian mode across all 12 root notes:
 
 ### Dynamic Instrument Selection
 
-Instruments are now **dynamically selected** from the registry based on mode, providing variety on each generation:
+Instruments are now **dynamically selected** from the registry based on mode and genre, providing variety on each generation:
 
-**Category Pools:**
+**Category Pools (90+ instruments):**
 - **Harmonic**: felt piano, prepared piano, harmonium, celesta, strings, guitars
-- **Pad**: synth pad, analog synth, FM synth, Moog, crystalline pads, ambient pad
-- **Color**: Rhodes, Wurlitzer, cello, violin, vibraphone, oboe, harp, saxophone, choir
-- **Movement**: percussion, drums, bass, shaker, djembe, cajón, handpan
-- **Rare**: taiko drums, steel pan, Hammond organ
+- **Pad**: synth pad, analog synth, FM synth, Moog, crystalline pads, ambient pad, synth strings, synth brass, synth choir, synth piano, synth flute, synth bells, arpeggiator
+- **Color**: Rhodes, Wurlitzer, cello, violin, vibraphone, oboe, harp, saxophone, choir, mellotron, organ, harmonica, accordion
+- **Movement**: percussion, drums, bass, shaker, djembe, cajón, handpan, synth bass, 808, timpani
+- **Rare**: taiko drums, steel pan, Hammond organ, theremin, vocoder, mandolin, banjo
 
 **How It Works:**
-1. Each mode defines which category pools to draw from
+1. Each mode/genre defines which category pools to draw from
 2. Random instruments are selected within min/max constraints
 3. Exclusion rules prevent conflicting combinations
 4. Results vary on each generation for creative variety
 
-**Exclusion Rules (automatic):**
+**Exclusion Rules (30+ automatic rules):**
 - No Rhodes + Wurlitzer together
 - No bells + singing bowls together
 - No felt piano + Rhodes together
 - No violin + viola together (too similar)
+- No synth strings + strings together (real vs synth)
+- No synth brass + trumpet together
+- No 808 + drums together
 - And more...
 
 ## Tech Stack
@@ -336,18 +378,19 @@ The project uses Bun's built-in test runner. To execute the test suite:
 bun test
 ```
 
-Tests cover (195 total):
-- Instrument registry and alias resolution
+Tests cover (252 total):
+- Instrument registry and alias resolution (90+ instruments)
 - User instrument extraction from descriptions
-- Dynamic instrument selection and exclusion rules
-- Ambient instrument selection and prioritization
+- Dynamic instrument selection and exclusion rules (30+ rules)
+- 11 genre detection and instrument selection
+- Synth replacement suggestions and mappings
 - Harmonic/rhythmic style detection (13 modes)
 - Modal combination detection and guidance (10 combinations)
 - Polyrhythm combination detection and guidance (8 combinations)
 - Time signature detection and guidance (11 signatures, 7 journeys)
 - Lydian chord generation for all 12 keys (triads, 7ths, extended)
 - Section-specific guidance for 2-phase and 3-phase combinations
-- Genre detection and registry
+- Genre-specific exclusion rules
 - RPC communication bridge
 - Prompt validation logic (character limits, contradictory tags)
 - Session utilities
