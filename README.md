@@ -5,6 +5,7 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 ## Features
 
 - **Simple Prompt Generation**: Transform plain English descriptions into professionally formatted Suno prompts using the "Top-Anchor Strategy" and "GM Formula".
+- **User Instrument Prioritization**: Mention instruments in your description and they'll be automatically detected and prioritized in the output.
 - **Iterative AI Refinement**: Tweak and refine your prompts through a chat-like interface.
 - **Smart Constraints & Validation**:
   - **1000-Character Limit**: Real-time enforcement and visual counter.
@@ -17,6 +18,23 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 
 The app automatically detects musical characteristics from your description and injects expert guidance into the AI prompt.
 
+### User Instrument Detection
+
+When you mention instruments in your description, the app automatically:
+
+1. **Detects** instruments using a registry of 70+ Suno-compatible instruments
+2. **Converts aliases** to canonical Suno tags (e.g., "piano" → "felt piano", "fiddle" → "violin", "keys" → "felt piano")
+3. **Prioritizes** your instruments in the "MUST use" section
+4. **Fills remaining slots** (up to 4 total) from random pools
+
+**Example:**
+- Input: `"ambient track with piano and violin"`
+- Output instruments:
+  - User specified (MUST use): `felt piano`, `violin`
+  - Suggested additions: `synth pad`, `kalimba`
+
+Supported aliases include common names like "keys", "fiddle", "vibes", "sax", "drums", "bass", etc.
+
 ### Genre Detection
 
 Scans for keywords like "ambient", "atmospheric", "soundscape" and injects **ambient instrument guidance** as a single list of **2–4 Suno-friendly instrument tags**.
@@ -25,9 +43,10 @@ Internally, the app selects from simple pools (harmonic anchor + pad/synth, with
 
 #### Ambient instrument selection (how it works)
 
-1. **Pool selection (variety):** picks from `harmonicAnchor` + `padOrSynth`, then optionally from `rare` (~15%), `color`, and `movement`.
-2. **Exclusions:** prevents known-clashing combos (e.g., acoustic piano + Rhodes, Rhodes + Wurlitzer, bells + singing bowls).
-3. **Prompt constraint:** the AI is instructed to use **only** the 2–4 tags from `SUGGESTED INSTRUMENTS (Suno tags)` on the final `Instruments:` line.
+1. **User instruments first:** any instruments detected from your description are locked in as "MUST use".
+2. **Pool selection (variety):** fills remaining slots from `harmonicAnchor` + `padOrSynth`, then optionally from `rare` (~25%), `color`, and `movement`.
+3. **Exclusions:** prevents known-clashing combos (e.g., acoustic piano + Rhodes, Rhodes + Wurlitzer, bells + singing bowls).
+4. **Prompt constraint:** the AI is instructed to use the provided tags on the final `Instruments:` line.
 
 **Currently Supported:** Ambient
 
@@ -121,9 +140,14 @@ The project uses Bun's built-in test runner. To execute the test suite:
 bun test
 ```
 
-Tests cover:
-- RPC communication bridge.
-- Prompt validation logic (character limits, contradictory tags).
+Tests cover (57 total):
+- Instrument registry and alias resolution
+- User instrument extraction from descriptions
+- Ambient instrument selection and prioritization
+- Harmonic/rhythmic style detection
+- RPC communication bridge
+- Prompt validation logic (character limits, contradictory tags)
+- Session utilities
 
 ### Build for Production
 
