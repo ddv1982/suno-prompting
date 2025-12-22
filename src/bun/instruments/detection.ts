@@ -1,5 +1,5 @@
-import { HARMONIC_STYLES, RHYTHMIC_STYLES, AMBIENT_KEYWORDS } from './data';
-import type { HarmonicStyle, RhythmicStyle } from './data';
+import { HARMONIC_STYLES, RHYTHMIC_STYLES, AMBIENT_KEYWORDS } from '@bun/instruments/data';
+import type { HarmonicStyle, RhythmicStyle } from '@bun/instruments/data';
 
 const HARMONIC_PRIORITY: HarmonicStyle[] = ['lydian_dominant', 'lydian_augmented', 'lydian_sharp_two', 'lydian'];
 const RHYTHMIC_PRIORITY: RhythmicStyle[] = ['polyrhythm'];

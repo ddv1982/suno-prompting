@@ -7,8 +7,13 @@ import {
   AMBIENT_MAX_TAGS,
   AMBIENT_GUIDANCE_DESCRIPTION,
   AMBIENT_INSTRUMENTS_HEADER,
-} from './data';
-import type { HarmonicStyle, RhythmicStyle, AmbientPoolName, SunoInstrumentToken } from './data';
+} from '@bun/instruments/data';
+import type { HarmonicStyle, RhythmicStyle, AmbientPoolName, SunoInstrumentToken } from '@bun/instruments/data';
+
+export type InstrumentSelectionOptions = {
+  readonly userInstruments?: readonly string[];
+  readonly maxTags?: number;
+};
 
 const POOL_ORDER: readonly AmbientPoolName[] = AMBIENT_POOL_ORDER;
 
@@ -133,20 +138,38 @@ function pickFromPool(
   return picks;
 }
 
-export function getAmbientInstruments(): string {
-  let selected: SunoInstrumentToken[] = [];
+export function getAmbientInstruments(options?: InstrumentSelectionOptions): string {
+  const maxTags = options?.maxTags ?? AMBIENT_MAX_TAGS;
+  const userInstruments = options?.userInstruments ?? [];
+  
+  // Start with user-provided instruments (up to maxTags)
+  const userSelected = userInstruments.slice(0, maxTags) as SunoInstrumentToken[];
+  let selected: SunoInstrumentToken[] = [...userSelected];
 
+  // Fill remaining slots from pools
   for (const poolName of POOL_ORDER) {
-    if (selected.length >= AMBIENT_MAX_TAGS) break;
+    if (selected.length >= maxTags) break;
     const pool = POOLS[poolName];
-    const picks = pickFromPool(pool, selected, AMBIENT_MAX_TAGS - selected.length);
-    selected = [...selected, ...picks].slice(0, AMBIENT_MAX_TAGS);
+    const picks = pickFromPool(pool, selected, maxTags - selected.length);
+    selected = [...selected, ...picks].slice(0, maxTags);
   }
 
-  return [
-    AMBIENT_INSTRUMENTS_HEADER,
-    AMBIENT_GUIDANCE_DESCRIPTION,
-    '',
-    ...selected.map(t => `- ${t}`),
-  ].join('\n');
+  // Build output with clear distinction between user and suggested
+  const lines: string[] = [AMBIENT_INSTRUMENTS_HEADER, AMBIENT_GUIDANCE_DESCRIPTION, ''];
+  
+  if (userSelected.length > 0) {
+    lines.push('User specified (MUST use):');
+    lines.push(...userSelected.map(t => `- ${t}`));
+  }
+  
+  const suggested = selected.filter(t => !userSelected.includes(t));
+  if (suggested.length > 0) {
+    if (userSelected.length > 0) {
+      lines.push('');
+      lines.push('Suggested additions:');
+    }
+    lines.push(...suggested.map(t => `- ${t}`));
+  }
+
+  return lines.join('\n');
 }

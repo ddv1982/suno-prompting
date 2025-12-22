@@ -7,6 +7,7 @@ import {
   getHarmonicGuidance,
   detectRhythmic,
   getRhythmicGuidance,
+  extractInstruments,
 } from '@bun/instruments';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
@@ -91,6 +92,9 @@ function buildContextualPrompt(description: string): string {
   const harmonic = detectHarmonic(description);
   const rhythmic = detectRhythmic(description);
   
+  // Extract user-specified instruments from description
+  const { found: userInstruments } = extractInstruments(description);
+  
   const parts = [
     `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
     description,
@@ -100,7 +104,7 @@ function buildContextualPrompt(description: string): string {
   if (isAmbient || harmonic || rhythmic) {
     parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
     if (isAmbient) {
-      parts.push(getAmbientInstruments());
+      parts.push(getAmbientInstruments({ userInstruments }));
     }
     if (harmonic) parts.push(getHarmonicGuidance(harmonic));
     if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));

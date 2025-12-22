@@ -6,6 +6,12 @@ import {
   detectAmbient,
   getAmbientInstruments,
   AMBIENT_INSTRUMENT_POOLS,
+  extractInstruments,
+  normalizeToken,
+  matchInstrument,
+  isValidInstrument,
+  toCanonical,
+  INSTRUMENT_REGISTRY,
 } from '../src/bun/instruments';
 
 describe('detectHarmonic', () => {
@@ -141,6 +147,158 @@ describe('getAmbientInstruments', () => {
       expect(tags.some(t => anchor.has(t))).toBe(true);
       expect(tags.some(t => pad.has(t))).toBe(true);
     }
+  });
+
+  test('prioritizes user-provided instruments', () => {
+    const guidance = getAmbientInstruments({ userInstruments: ['piano', 'violin'] });
+    expect(guidance).toContain('User specified (MUST use):');
+    expect(guidance).toContain('- piano');
+    expect(guidance).toContain('- violin');
+  });
+
+  test('fills remaining slots after user instruments', () => {
+    const guidance = getAmbientInstruments({ userInstruments: ['cello'] });
+    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.length).toBeLessThanOrEqual(4);
+  });
+
+  test('respects maxTags option', () => {
+    const guidance = getAmbientInstruments({ maxTags: 2 });
+    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    expect(lines.length).toBeLessThanOrEqual(2);
+  });
+});
+
+describe('instrument registry', () => {
+  test('registry has entries for all categories', () => {
+    const categories = new Set(INSTRUMENT_REGISTRY.map(e => e.category));
+    expect(categories.has('harmonic')).toBe(true);
+    expect(categories.has('pad')).toBe(true);
+    expect(categories.has('color')).toBe(true);
+    expect(categories.has('movement')).toBe(true);
+    expect(categories.has('rare')).toBe(true);
+  });
+
+  test('isValidInstrument returns true for canonical names', () => {
+    expect(isValidInstrument('felt piano')).toBe(true);
+    expect(isValidInstrument('synth pad')).toBe(true);
+    expect(isValidInstrument('cello')).toBe(true);
+  });
+
+  test('isValidInstrument returns true for aliases', () => {
+    expect(isValidInstrument('piano')).toBe(true);
+    expect(isValidInstrument('keys')).toBe(true);
+    expect(isValidInstrument('fiddle')).toBe(true);
+  });
+
+  test('isValidInstrument is case-insensitive', () => {
+    expect(isValidInstrument('Piano')).toBe(true);
+    expect(isValidInstrument('PIANO')).toBe(true);
+    expect(isValidInstrument('PiAnO')).toBe(true);
+  });
+
+  test('isValidInstrument returns false for unknown instruments', () => {
+    expect(isValidInstrument('kazoo')).toBe(false);
+    expect(isValidInstrument('theremin')).toBe(false);
+  });
+
+  test('toCanonical converts aliases to canonical names', () => {
+    expect(toCanonical('piano')).toBe('felt piano');
+    expect(toCanonical('keys')).toBe('felt piano');
+    expect(toCanonical('fiddle')).toBe('violin');
+    expect(toCanonical('vibes')).toBe('vibraphone');
+  });
+
+  test('toCanonical returns null for unknown instruments', () => {
+    expect(toCanonical('kazoo')).toBeNull();
+    expect(toCanonical('theremin')).toBeNull();
+  });
+});
+
+describe('normalizeToken', () => {
+  test('lowercases and trims', () => {
+    expect(normalizeToken('  Piano  ')).toBe('piano');
+    expect(normalizeToken('GUITAR')).toBe('guitar');
+  });
+
+  test('removes special characters', () => {
+    expect(normalizeToken('piano!')).toBe('piano');
+    expect(normalizeToken('(guitar)')).toBe('guitar');
+  });
+
+  test('normalizes whitespace', () => {
+    expect(normalizeToken('felt   piano')).toBe('felt piano');
+  });
+});
+
+describe('matchInstrument', () => {
+  test('matches canonical names', () => {
+    expect(matchInstrument('felt piano')).toBe('felt piano');
+    expect(matchInstrument('cello')).toBe('cello');
+  });
+
+  test('matches aliases to canonical', () => {
+    expect(matchInstrument('piano')).toBe('felt piano');
+    expect(matchInstrument('keys')).toBe('felt piano');
+    expect(matchInstrument('fiddle')).toBe('violin');
+  });
+
+  test('handles articles', () => {
+    expect(matchInstrument('a piano')).toBe('felt piano');
+    expect(matchInstrument('the guitar')).toBe('guitar');
+  });
+
+  test('returns null for non-instruments', () => {
+    expect(matchInstrument('happy')).toBeNull();
+    expect(matchInstrument('loud')).toBeNull();
+  });
+});
+
+describe('extractInstruments', () => {
+  test('extracts instruments from "with" phrases', () => {
+    const result = extractInstruments('An ambient track with piano and cello');
+    expect(result.found).toContain('felt piano');
+    expect(result.found).toContain('cello');
+  });
+
+  test('extracts instruments from "featuring" phrases', () => {
+    const result = extractInstruments('A soundscape featuring strings and synth');
+    expect(result.found).toContain('strings');
+    expect(result.found).toContain('synth');
+  });
+
+  test('extracts multiple instruments from comma-separated list', () => {
+    const result = extractInstruments('Using piano, guitar, and drums');
+    expect(result.found).toContain('felt piano');
+    expect(result.found).toContain('guitar');
+    expect(result.found).toContain('drums');
+  });
+
+  test('handles aliases and converts to canonical', () => {
+    const result = extractInstruments('A track with keys and fiddle');
+    expect(result.found).toContain('felt piano');
+    expect(result.found).toContain('violin');
+  });
+
+  test('returns empty array for no instruments', () => {
+    const result = extractInstruments('A happy upbeat song');
+    expect(result.found).toHaveLength(0);
+  });
+
+  test('deduplicates instruments', () => {
+    const result = extractInstruments('Piano with piano and more piano');
+    const pianoCount = result.found.filter(i => i === 'felt piano').length;
+    expect(pianoCount).toBe(1);
+  });
+
+  test('handles complex descriptions', () => {
+    const result = extractInstruments(
+      'Create an atmospheric ambient track featuring lush strings and ethereal synth pads, with subtle piano melodies'
+    );
+    expect(result.found).toContain('strings');
+    expect(result.found).toContain('synth pad');
+    expect(result.found).toContain('felt piano');
   });
 });
 
