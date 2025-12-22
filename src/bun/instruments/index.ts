@@ -12,8 +12,8 @@ export type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 export { GENRE_REGISTRY, AMBIENT_GENRE } from '@bun/instruments/genres';
 export type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
 
-export { RHYTHMIC_STYLES, POLYRHYTHMS, ALL_POLYRHYTHM_COMBINATIONS } from '@bun/instruments/data';
-export type { RhythmicStyle, PolyrhythmType, PolyrhythmCombinationType } from '@bun/instruments/data';
+export { RHYTHMIC_STYLES, POLYRHYTHMS, ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/data';
+export type { RhythmicStyle, PolyrhythmType, PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/data';
 
 // Registry exports
 export {
@@ -32,10 +32,10 @@ export { extractInstruments, normalizeToken, matchInstrument } from '@bun/instru
 export type { ExtractionResult } from '@bun/instruments/extraction';
 
 // Detection exports
-export { detectHarmonic, detectRhythmic, detectAmbient, detectGenre, detectCombination, detectPolyrhythmCombination } from '@bun/instruments/detection';
+export { detectHarmonic, detectRhythmic, detectAmbient, detectGenre, detectCombination, detectPolyrhythmCombination, detectTimeSignature, detectTimeSignatureJourney } from '@bun/instruments/detection';
 
 // Guidance exports
-export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getPolyrhythmCombinationGuidance, getGenreInstruments, getAmbientInstruments, buildGuidanceFromSelection } from '@bun/instruments/guidance';
+export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getPolyrhythmCombinationGuidance, getTimeSignatureGuidance, getTimeSignatureJourneyGuidance, getGenreInstruments, getAmbientInstruments, buildGuidanceFromSelection } from '@bun/instruments/guidance';
 export type { InstrumentSelectionOptions, ModeSelectionInput } from '@bun/instruments/guidance';
 
 // Selection exports

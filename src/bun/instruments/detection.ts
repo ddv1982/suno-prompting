@@ -2,8 +2,8 @@ import { HARMONIC_STYLES, ALL_COMBINATIONS } from '@bun/instruments/modes';
 import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType } from '@bun/instruments/genres';
-import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS } from '@bun/instruments/data';
-import type { RhythmicStyle, PolyrhythmCombinationType } from '@bun/instruments/data';
+import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/data';
+import type { RhythmicStyle, PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/data';
 
 const HARMONIC_PRIORITY: HarmonicStyle[] = [
   'lydian_dominant', 'lydian_augmented', 'lydian_sharp_two',
@@ -67,4 +67,24 @@ const POLYRHYTHM_COMBINATION_PRIORITY: PolyrhythmCombinationType[] = [
 
 export function detectPolyrhythmCombination(description: string): PolyrhythmCombinationType | null {
   return detectFromKeywords(description, ALL_POLYRHYTHM_COMBINATIONS, POLYRHYTHM_COMBINATION_PRIORITY);
+}
+
+const TIME_SIGNATURE_PRIORITY: TimeSignatureType[] = [
+  'time_13_8', 'time_11_8', 'time_15_8',
+  'time_9_8', 'time_7_8', 'time_7_4',
+  'time_5_8', 'time_5_4',
+  'time_6_8', 'time_3_4', 'time_4_4',
+];
+
+export function detectTimeSignature(description: string): TimeSignatureType | null {
+  return detectFromKeywords(description, TIME_SIGNATURES, TIME_SIGNATURE_PRIORITY);
+}
+
+const TIME_SIGNATURE_JOURNEY_PRIORITY: TimeSignatureJourneyType[] = [
+  'prog_odyssey', 'balkan_fusion', 'jazz_exploration',
+  'math_rock_descent', 'celtic_journey', 'metal_complexity', 'gentle_odd',
+];
+
+export function detectTimeSignatureJourney(description: string): TimeSignatureJourneyType | null {
+  return detectFromKeywords(description, TIME_SIGNATURE_JOURNEYS, TIME_SIGNATURE_JOURNEY_PRIORITY);
 }

@@ -11,3 +11,13 @@ export type {
   MultiRhythmCombination,
   PolyrhythmCombinationType,
 } from './combinations';
+
+export { TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from './timeSignatures';
+export type {
+  TimeSignatureType,
+  TimeSignatureJourneyType,
+  TimeSignatureDefinition,
+  TimeSignatureJourneyDefinition,
+  Subdivision,
+  Complexity,
+} from './timeSignatures';

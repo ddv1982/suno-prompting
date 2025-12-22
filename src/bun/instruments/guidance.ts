@@ -2,8 +2,8 @@ import { HARMONIC_STYLES, ALL_COMBINATIONS, selectInstrumentsForMode } from '@bu
 import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
-import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS } from '@bun/instruments/data';
-import type { RhythmicStyle, PolyrhythmCombinationType } from '@bun/instruments/data';
+import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/data';
+import type { RhythmicStyle, PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/data';
 
 export type InstrumentSelectionOptions = {
   readonly userInstruments?: readonly string[];
@@ -258,11 +258,75 @@ export function getAmbientInstruments(options?: InstrumentSelectionOptions): str
   return getGenreInstruments('ambient', options);
 }
 
+export function getTimeSignatureGuidance(sig: TimeSignatureType): string {
+  const s = TIME_SIGNATURES[sig];
+  const chars = shuffle([...s.characteristics]).slice(0, 3);
+  const grouping = pickRandom(s.groupings);
+
+  const lines = [
+    `TIME SIGNATURE: ${s.name} (${s.signature})`,
+    s.description,
+    '',
+    `Feel: ${s.feel}`,
+    `Beats: ${s.beats} per measure (${s.subdivision} note pulse)`,
+    `Grouping: ${grouping}`,
+    '',
+    'Characteristics:',
+    ...chars.map(c => `- ${c}`),
+  ];
+
+  if (s.famousExamples.length > 0) {
+    lines.push('');
+    lines.push(`Famous examples: ${s.famousExamples.join(', ')}`);
+  }
+
+  lines.push('');
+  lines.push(`Best genres: ${s.bestGenres.join(', ')}`);
+
+  return lines.join('\n');
+}
+
+export function getTimeSignatureJourneyGuidance(journey: TimeSignatureJourneyType): string {
+  const j = TIME_SIGNATURE_JOURNEYS[journey];
+
+  const lines = [
+    `TIME SIGNATURE JOURNEY: ${j.name}`,
+    j.description,
+    '',
+    'SECTION GUIDE:',
+  ];
+
+  const guide = j.sectionGuide as {
+    introVerse: string;
+    chorus?: string;
+    bridgeOutro?: string;
+    chorusBridgeOutro?: string;
+  };
+  lines.push(`- INTRO/VERSE: ${guide.introVerse}`);
+  if (guide.chorus) {
+    lines.push(`- CHORUS: ${guide.chorus}`);
+  }
+  if (guide.bridgeOutro) {
+    lines.push(`- BRIDGE/OUTRO: ${guide.bridgeOutro}`);
+  } else if (guide.chorusBridgeOutro) {
+    lines.push(`- CHORUS/BRIDGE/OUTRO: ${guide.chorusBridgeOutro}`);
+  }
+
+  lines.push('');
+  lines.push(`Emotional Arc: ${j.emotionalArc}`);
+  lines.push('');
+  lines.push(`Best genres: ${j.bestGenres.join(', ')}`);
+
+  return lines.join('\n');
+}
+
 export type ModeSelectionInput = {
   genre: GenreType | null;
   combination: CombinationType | null;
   singleMode: HarmonicStyle | null;
   polyrhythmCombination: PolyrhythmCombinationType | null;
+  timeSignature: TimeSignatureType | null;
+  timeSignatureJourney: TimeSignatureJourneyType | null;
   reasoning: string;
 };
 
@@ -280,6 +344,12 @@ export function buildGuidanceFromSelection(
 
   if (selection.polyrhythmCombination) {
     parts.push(getPolyrhythmCombinationGuidance(selection.polyrhythmCombination));
+  }
+
+  if (selection.timeSignatureJourney) {
+    parts.push(getTimeSignatureJourneyGuidance(selection.timeSignatureJourney));
+  } else if (selection.timeSignature) {
+    parts.push(getTimeSignatureGuidance(selection.timeSignature));
   }
 
   if (selection.genre) {
