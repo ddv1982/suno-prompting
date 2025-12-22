@@ -187,23 +187,30 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* Invisible scrollbar by default - appears on scroll */
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
+    scrollbar-color: transparent transparent;
   }
   *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   *::-webkit-scrollbar-track {
     background: transparent;
   }
   *::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, var(--primary) 30%, var(--muted));
-    border: 2px solid transparent;
-    background-clip: content-box;
+    background: transparent;
     border-radius: 999px;
+    transition: background 0.3s ease;
   }
-  *::-webkit-scrollbar-thumb:hover {
+  /* Show scrollbar when element has .is-scrolling class */
+  .is-scrolling {
+    scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
+  }
+  .is-scrolling::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 30%, var(--muted));
+  }
+  .is-scrolling::-webkit-scrollbar-thumb:hover {
     background: color-mix(in oklab, var(--primary) 45%, var(--muted));
   }
   body {

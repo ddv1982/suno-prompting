@@ -6,12 +6,15 @@ import { HistorySidebar } from "@/components/history-sidebar";
 import { PromptEditor } from "@/components/prompt-editor";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AppProvider, useAppContext } from "@/context/AppContext";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { APP_CONSTANTS } from "@shared/constants";
 
 const SettingsModal = lazy(() => import("./components/settings-modal").then(m => ({ default: m.SettingsModal })));
 
 // Main App
 function App() {
+  useScrollReveal();
+  
   const {
     sessions,
     currentSession,
