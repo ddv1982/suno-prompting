@@ -1,16 +1,13 @@
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import {
-  detectGenre,
-  getGenreInstruments,
-  detectHarmonic,
-  getHarmonicGuidance,
   detectRhythmic,
   getRhythmicGuidance,
-  detectCombination,
-  getCombinationGuidance,
   extractInstruments,
+  buildGuidanceFromSelection,
 } from '@bun/instruments';
+import { selectModes } from '@bun/instruments/selection';
+import type { ModeSelection } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
@@ -89,12 +86,8 @@ STRICT CONSTRAINTS:
 - Output ONLY the prompt itself - no explanations or extra text.`;
 }
 
-function buildContextualPrompt(description: string): string {
-  const genre = detectGenre(description);
-  const harmonic = detectHarmonic(description);
+function buildContextualPrompt(description: string, selection: ModeSelection): string {
   const rhythmic = detectRhythmic(description);
-  const combination = detectCombination(description);
-
   const { found: userInstruments } = extractInstruments(description);
 
   const parts = [
@@ -102,11 +95,14 @@ function buildContextualPrompt(description: string): string {
     description,
   ];
 
-  if (genre || harmonic || rhythmic || combination) {
+  const hasGuidance = selection.genre || selection.combination || selection.singleMode || rhythmic;
+
+  if (hasGuidance) {
     parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
-    if (combination) parts.push(getCombinationGuidance(combination));
-    if (genre) parts.push(getGenreInstruments(genre, { userInstruments }));
-    if (harmonic && !combination) parts.push(getHarmonicGuidance(harmonic));
+    
+    const modeGuidance = buildGuidanceFromSelection(selection, { userInstruments });
+    if (modeGuidance) parts.push(modeGuidance);
+    
     if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
   }
 
@@ -330,7 +326,8 @@ export class AIEngine {
   }
 
   async generateInitial(description: string): Promise<GenerationResult> {
-    const userPrompt = buildContextualPrompt(description);
+    const selection = await selectModes(description, this.getGroqModel());
+    const userPrompt = buildContextualPrompt(description, selection);
     const systemPrompt = this.systemPrompt;
 
     return this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>

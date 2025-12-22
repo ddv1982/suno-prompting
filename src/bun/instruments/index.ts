@@ -35,5 +35,9 @@ export type { ExtractionResult } from '@bun/instruments/extraction';
 export { detectHarmonic, detectRhythmic, detectAmbient, detectGenre, detectCombination } from '@bun/instruments/detection';
 
 // Guidance exports
-export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getGenreInstruments, getAmbientInstruments } from '@bun/instruments/guidance';
-export type { InstrumentSelectionOptions } from '@bun/instruments/guidance';
+export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getGenreInstruments, getAmbientInstruments, buildGuidanceFromSelection } from '@bun/instruments/guidance';
+export type { InstrumentSelectionOptions, ModeSelectionInput } from '@bun/instruments/guidance';
+
+// Selection exports
+export { selectModes, selectModesWithLLM } from '@bun/instruments/selection';
+export type { ModeSelection } from '@bun/instruments/selection';

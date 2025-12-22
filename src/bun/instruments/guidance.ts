@@ -213,3 +213,29 @@ export function getGenreInstruments(
 export function getAmbientInstruments(options?: InstrumentSelectionOptions): string {
   return getGenreInstruments('ambient', options);
 }
+
+export type ModeSelectionInput = {
+  genre: GenreType | null;
+  combination: CombinationType | null;
+  singleMode: HarmonicStyle | null;
+  reasoning: string;
+};
+
+export function buildGuidanceFromSelection(
+  selection: ModeSelectionInput,
+  options?: InstrumentSelectionOptions
+): string {
+  const parts: string[] = [];
+
+  if (selection.combination) {
+    parts.push(getCombinationGuidance(selection.combination));
+  } else if (selection.singleMode) {
+    parts.push(getHarmonicGuidance(selection.singleMode));
+  }
+
+  if (selection.genre) {
+    parts.push(getGenreInstruments(selection.genre, options));
+  }
+
+  return parts.join('\n\n');
+}
