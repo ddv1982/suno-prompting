@@ -34,8 +34,8 @@
     "dompurify": "^3.3.1",
     "electrobun": "^0.7.1",
     "lucide-react": "^0.562.0",
-    "react": "^19.0.0-rc.1",
-    "react-dom": "^19.0.0-rc.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7"
