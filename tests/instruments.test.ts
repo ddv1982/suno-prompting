@@ -7,6 +7,8 @@ import {
   detectGenre,
   detectCombination,
   getCombinationGuidance,
+  detectPolyrhythmCombination,
+  getPolyrhythmCombinationGuidance,
   getGenreInstruments,
   getAmbientInstruments,
   GENRE_REGISTRY,
@@ -529,6 +531,78 @@ describe('getCombinationGuidance', () => {
     expect(guidance).toContain('CHORUS/BRIDGE/OUTRO:');
     expect(guidance).toContain('Major brightness');
     expect(guidance).toContain('Minor shadow');
+  });
+});
+
+describe('detectPolyrhythmCombination', () => {
+  test('detects complexity_build for building polyrhythm keywords', () => {
+    expect(detectPolyrhythmCombination('building polyrhythm')).toBe('complexity_build');
+    expect(detectPolyrhythmCombination('evolving rhythm')).toBe('complexity_build');
+  });
+
+  test('detects triplet_exploration for jazzy rhythm keywords', () => {
+    expect(detectPolyrhythmCombination('triplet exploration')).toBe('triplet_exploration');
+    expect(detectPolyrhythmCombination('triplet journey')).toBe('triplet_exploration');
+  });
+
+  test('detects odd_journey for prog rhythm keywords', () => {
+    expect(detectPolyrhythmCombination('odd journey')).toBe('odd_journey');
+    expect(detectPolyrhythmCombination('prog rhythm')).toBe('odd_journey');
+  });
+
+  test('detects tension_arc for tension release keywords', () => {
+    expect(detectPolyrhythmCombination('tension arc')).toBe('tension_arc');
+    expect(detectPolyrhythmCombination('build and resolve')).toBe('tension_arc');
+  });
+
+  test('detects groove_to_drive for energy build keywords', () => {
+    expect(detectPolyrhythmCombination('groove to drive')).toBe('groove_to_drive');
+    expect(detectPolyrhythmCombination('dance build')).toBe('groove_to_drive');
+  });
+
+  test('detects tension_release for drop keywords', () => {
+    expect(detectPolyrhythmCombination('tension release')).toBe('tension_release');
+  });
+
+  test('returns null for no match', () => {
+    expect(detectPolyrhythmCombination('simple beat')).toBeNull();
+  });
+});
+
+describe('getPolyrhythmCombinationGuidance', () => {
+  test('includes combination name and description', () => {
+    const guidance = getPolyrhythmCombinationGuidance('complexity_build');
+    expect(guidance).toContain('Complexity Build');
+    expect(guidance).toContain('Groove → Drive → Chaos');
+  });
+
+  test('includes section guide for 3-phase combinations', () => {
+    const guidance = getPolyrhythmCombinationGuidance('complexity_build');
+    expect(guidance).toContain('SECTION GUIDE:');
+    expect(guidance).toContain('INTRO/VERSE:');
+    expect(guidance).toContain('CHORUS:');
+    expect(guidance).toContain('BRIDGE/OUTRO:');
+    expect(guidance).toContain('Hemiola');
+    expect(guidance).toContain('Afrobeat');
+  });
+
+  test('includes section guide for 2-phase combinations', () => {
+    const guidance = getPolyrhythmCombinationGuidance('groove_to_drive');
+    expect(guidance).toContain('SECTION GUIDE:');
+    expect(guidance).toContain('INTRO/VERSE:');
+    expect(guidance).toContain('CHORUS/BRIDGE/OUTRO:');
+  });
+
+  test('includes emotional arc', () => {
+    const guidance = getPolyrhythmCombinationGuidance('tension_arc');
+    expect(guidance).toContain('Emotional Arc:');
+    expect(guidance).toContain('Drive');
+  });
+
+  test('includes best instruments', () => {
+    const guidance = getPolyrhythmCombinationGuidance('odd_journey');
+    expect(guidance).toContain('Best instruments:');
+    expect(guidance).toContain('drums');
   });
 });
 

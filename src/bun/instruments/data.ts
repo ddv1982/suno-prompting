@@ -1,6 +1,9 @@
 export { HARMONIC_STYLES } from '@bun/instruments/modes';
 export type { HarmonicStyle } from '@bun/instruments/modes';
 
+export { POLYRHYTHMS, ALL_POLYRHYTHM_COMBINATIONS } from '@bun/instruments/rhythms';
+export type { PolyrhythmType, PolyrhythmCombinationType } from '@bun/instruments/rhythms';
+
 export const RHYTHMIC_STYLES = {
   polyrhythm: {
     name: 'Polyrhythm',

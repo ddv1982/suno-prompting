@@ -1,19 +1,21 @@
 import { generateText } from 'ai';
 import type { LanguageModelV1 } from 'ai';
-import { detectGenre, detectCombination, detectHarmonic } from './detection';
+import { detectGenre, detectCombination, detectHarmonic, detectPolyrhythmCombination } from './detection';
 import type { GenreType } from './genres';
 import type { CombinationType, HarmonicStyle } from './modes';
+import type { PolyrhythmCombinationType } from './rhythms';
 
 export type ModeSelection = {
   genre: GenreType | null;
   combination: CombinationType | null;
   singleMode: HarmonicStyle | null;
+  polyrhythmCombination: PolyrhythmCombinationType | null;
   reasoning: string;
 };
 
-const SELECTION_SYSTEM_PROMPT = `You are a music theory expert. Analyze song descriptions and select the best harmonic approach.
+const SELECTION_SYSTEM_PROMPT = `You are a music theory expert. Analyze song descriptions and select the best harmonic and rhythmic approach.
 
-AVAILABLE COMBINATIONS (for multi-mode journeys):
+HARMONIC COMBINATIONS (for multi-mode journeys):
 - major_minor: Joy ↔ Melancholy. Use for: bittersweet, happy-sad, emotional depth
 - lydian_minor: Wonder → Shadow. Use for: dreamy-dark, ethereal tension
 - lydian_major: Floating → Resolved. Use for: uplifting, bright, hopeful
@@ -38,6 +40,16 @@ SINGLE MODES (when one specific color is needed):
 - phrygian: spanish, exotic, metal, tense
 - locrian: horror, unstable, experimental
 
+POLYRHYTHM COMBINATIONS (for rhythmic journeys):
+- complexity_build: Groove → Drive → Chaos. Use for: building intensity, EDM drops, progressive builds
+- triplet_exploration: Shuffle → Tension → Flow. Use for: jazz fusion, exploratory
+- odd_journey: Hypnotic → Complex → Intricate. Use for: prog rock, math rock, complex throughout
+- tension_arc: Drive → Chaos → Resolution. Use for: full tension/release arc
+- groove_to_drive: Shuffle → Driving. Use for: building energy, dance builds
+- tension_release: Drive → Shuffle. Use for: drops, satisfying releases
+- afrobeat_journey: Swing → Interlocking. Use for: world fusion, African rhythms
+- complex_simple: Chaos → Grounded. Use for: progressive resolution
+
 AVAILABLE GENRES:
 - ambient: atmospheric, soundscape, ethereal textures
 
@@ -48,12 +60,14 @@ SELECTION RULES:
 4. "floating, dreamy" = lydian or lydian_exploration
 5. "dark, descending" = dark_modes
 6. Explicit requests like "2 lydian", "multiple lydian", "lydian types" = lydian_exploration
-7. If description is purely technical, match the mode name
-8. If emotional but no clear arc, pick single mode matching dominant emotion
-9. combination and singleMode are mutually exclusive - pick ONE or the other
+7. "building polyrhythm" or "evolving rhythm" = complexity_build
+8. "complex rhythms throughout" or "prog rhythm" = odd_journey
+9. "tension and release rhythm" = tension_arc
+10. combination and singleMode are mutually exclusive - pick ONE or the other
+11. polyrhythmCombination is INDEPENDENT - can be used with any harmonic choice
 
 Return ONLY valid JSON (no markdown, no explanation):
-{"genre":"ambient"|null,"combination":"<key>"|null,"singleMode":"<key>"|null,"reasoning":"brief"}`;
+{"genre":"ambient"|null,"combination":"<key>"|null,"singleMode":"<key>"|null,"polyrhythmCombination":"<key>"|null,"reasoning":"brief"}`;
 
 export async function selectModesWithLLM(
   description: string,
@@ -83,6 +97,7 @@ export async function selectModes(
       genre: detectGenre(description),
       combination: detectCombination(description),
       singleMode: detectCombination(description) ? null : detectHarmonic(description),
+      polyrhythmCombination: detectPolyrhythmCombination(description),
       reasoning: 'Fallback to keyword detection',
     };
   }

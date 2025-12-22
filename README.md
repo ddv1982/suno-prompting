@@ -133,6 +133,41 @@ Detects complex rhythmic patterns:
 
 Includes common ratios (2:3, 3:4, 4:3, 5:4, 7:4) and suggested instruments for layered percussion.
 
+### Polyrhythm Combinations
+
+8 pre-built polyrhythm combinations for songs that journey through different rhythmic feels, each with **section-specific guidance**:
+
+**Cross-Rhythm Combinations (2-phase):**
+| Combination | Emotional Arc | Use For |
+|-------------|---------------|---------|
+| Groove to Drive | Shuffle → Driving | Building energy, dance builds |
+| Tension Release | Drive → Shuffle | Drops, resolution moments |
+| Afrobeat Journey | Swing → Interlocking | World fusion, organic builds |
+| Complex to Simple | Chaos → Grounded | Progressive resolution |
+
+**Multi-Rhythm Combinations (3-phase):**
+| Combination | Emotional Arc | Use For |
+|-------------|---------------|---------|
+| Complexity Build | Groove → Drive → Chaos | Progressive builds, EDM climax |
+| Triplet Exploration | Shuffle → Tension → Flow | Jazz fusion, exploratory |
+| Odd Journey | Hypnotic → Complex → Intricate | Prog rock, math rock |
+| Tension Arc | Drive → Chaos → Resolution | Full tension/release arc |
+
+**Section Guide Example (Complexity Build):**
+```
+POLYRHYTHM COMBINATION: Complexity Build
+
+SECTION GUIDE:
+- INTRO/VERSE: Hemiola groove (2:3), relaxed swing, establishes pulse
+- CHORUS: Afrobeat drive (4:3), hypnotic intensity, building energy
+- BRIDGE/OUTRO: Shifting chaos (5:4), peak complexity, rhythmic climax
+
+Emotional Arc: Groove → Drive → Chaos
+Best instruments: layered percussion, polyrhythmic bass, interlocking synths
+```
+
+**Note:** Polyrhythm combinations work **independently** of modal combinations. A track can have BOTH a modal combination AND a polyrhythm combination (e.g., `lydian_exploration` + `complexity_build`).
+
 ## Tech Stack
 
 - **Runtime**: [Electrobun](https://electrobun.dev/) - Native desktop application framework.
@@ -200,12 +235,13 @@ The project uses Bun's built-in test runner. To execute the test suite:
 bun test
 ```
 
-Tests cover (92 total):
+Tests cover (104 total):
 - Instrument registry and alias resolution
 - User instrument extraction from descriptions
 - Ambient instrument selection and prioritization
 - Harmonic/rhythmic style detection (13 modes)
 - Modal combination detection and guidance (10 combinations)
+- Polyrhythm combination detection and guidance (8 combinations)
 - Section-specific guidance for 2-phase and 3-phase combinations
 - Genre detection and registry
 - RPC communication bridge

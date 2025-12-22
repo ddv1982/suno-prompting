@@ -2,8 +2,8 @@ import { HARMONIC_STYLES, ALL_COMBINATIONS } from '@bun/instruments/modes';
 import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
-import { RHYTHMIC_STYLES } from '@bun/instruments/data';
-import type { RhythmicStyle } from '@bun/instruments/data';
+import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS } from '@bun/instruments/data';
+import type { RhythmicStyle, PolyrhythmCombinationType } from '@bun/instruments/data';
 
 export type InstrumentSelectionOptions = {
   readonly userInstruments?: readonly string[];
@@ -136,6 +136,34 @@ export function getCombinationGuidance(combo: CombinationType): string {
   return lines.join('\n');
 }
 
+export function getPolyrhythmCombinationGuidance(combo: PolyrhythmCombinationType): string {
+  const c = ALL_POLYRHYTHM_COMBINATIONS[combo];
+
+  const lines = [
+    `POLYRHYTHM COMBINATION: ${c.name}`,
+    c.description,
+    '',
+    'SECTION GUIDE:',
+  ];
+
+  const guide = c.sectionGuide;
+  if ('chorus' in guide && 'bridgeOutro' in guide) {
+    lines.push(`- INTRO/VERSE: ${guide.introVerse}`);
+    lines.push(`- CHORUS: ${guide.chorus}`);
+    lines.push(`- BRIDGE/OUTRO: ${guide.bridgeOutro}`);
+  } else if ('chorusBridgeOutro' in guide) {
+    lines.push(`- INTRO/VERSE: ${guide.introVerse}`);
+    lines.push(`- CHORUS/BRIDGE/OUTRO: ${guide.chorusBridgeOutro}`);
+  }
+
+  lines.push('');
+  lines.push(`Emotional Arc: ${c.emotionalArc}`);
+  lines.push('');
+  lines.push(`Best instruments: ${c.bestInstruments.join(', ')}`);
+
+  return lines.join('\n');
+}
+
 function computePickCount(pick: InstrumentPool['pick'], remainingSlots: number): number {
   if (remainingSlots <= 0) return 0;
   const desired = randomIntInclusive(pick.min, pick.max);
@@ -233,6 +261,7 @@ export type ModeSelectionInput = {
   genre: GenreType | null;
   combination: CombinationType | null;
   singleMode: HarmonicStyle | null;
+  polyrhythmCombination: PolyrhythmCombinationType | null;
   reasoning: string;
 };
 
@@ -246,6 +275,10 @@ export function buildGuidanceFromSelection(
     parts.push(getCombinationGuidance(selection.combination));
   } else if (selection.singleMode) {
     parts.push(getHarmonicGuidance(selection.singleMode));
+  }
+
+  if (selection.polyrhythmCombination) {
+    parts.push(getPolyrhythmCombinationGuidance(selection.polyrhythmCombination));
   }
 
   if (selection.genre) {

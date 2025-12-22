@@ -1,0 +1,103 @@
+export const POLYRHYTHMS = {
+  hemiola: {
+    name: 'Hemiola',
+    ratio: '2:3',
+    keywords: ['hemiola', '2:3', 'shuffle', 'swing', 'groovy'],
+    description: 'The most fundamental polyrhythm - groovy swing feel',
+    complexity: 'simple' as const,
+    characteristics: [
+      'Creates natural swing and shuffle feel',
+      'Foundation of jazz and Latin rhythms',
+      'Warm, danceable groove',
+      'Two against three creates gentle tension',
+    ],
+    bestInstruments: ['shaker', 'hi-hat', 'conga', 'acoustic guitar'],
+  },
+  reverse_hemiola: {
+    name: 'Reverse Hemiola',
+    ratio: '3:2',
+    keywords: ['3:2', 'triplet feel', 'flowing'],
+    description: 'Triplet-based flow over duple time',
+    complexity: 'simple' as const,
+    characteristics: [
+      'Flowing, liquid feel',
+      'Common in classical and romantic music',
+      'Creates forward momentum',
+      'Triplets dancing over steady pulse',
+    ],
+    bestInstruments: ['piano', 'strings', 'mallets', 'brushes'],
+  },
+  afrobeat: {
+    name: 'Afrobeat Drive',
+    ratio: '4:3',
+    keywords: ['4:3', 'afrobeat', 'driving', 'hypnotic'],
+    description: 'Driving, hypnotic Afrobeat-influenced pulse',
+    complexity: 'medium' as const,
+    characteristics: [
+      'Hypnotic, trance-inducing quality',
+      'Drives energy forward relentlessly',
+      'Foundation of Afrobeat and Afro-house',
+      'Creates urgency and momentum',
+    ],
+    bestInstruments: ['djembe', 'shekere', 'bass', 'clave'],
+  },
+  limping: {
+    name: 'Limping Feel',
+    ratio: '3:4',
+    keywords: ['3:4', 'limping', 'uneven', 'tension'],
+    description: 'Uneven, tension-creating rhythm',
+    complexity: 'medium' as const,
+    characteristics: [
+      'Creates sense of instability',
+      'Uneven, "limping" quality',
+      'Builds anticipation and tension',
+      'Common in progressive and experimental music',
+    ],
+    bestInstruments: ['tom drums', 'bass synth', 'prepared piano', 'percussion'],
+  },
+  shifting: {
+    name: 'Shifting Complex',
+    ratio: '5:4',
+    keywords: ['5:4', 'shifting', 'complex', 'disorienting', 'math rock'],
+    description: 'Complex, disorienting shifting feel',
+    complexity: 'complex' as const,
+    characteristics: [
+      'Constantly shifting ground',
+      'Disorienting, challenging to follow',
+      'Creates intellectual engagement',
+      'Foundation of math rock and prog',
+    ],
+    bestInstruments: ['electric guitar', 'drums', 'bass', 'synth arpeggio'],
+  },
+  african_compound: {
+    name: 'African 6/8',
+    ratio: '6:8',
+    keywords: ['6:8', 'african', 'compound', 'interlocking', 'world'],
+    description: 'Classic African interlocking compound rhythm',
+    complexity: 'medium' as const,
+    characteristics: [
+      'Interlocking patterns create whole',
+      'Trance-like, ceremonial quality',
+      'Multiple layers weave together',
+      'Organic, breathing feel',
+    ],
+    bestInstruments: ['talking drum', 'balafon', 'kalimba', 'shaker'],
+  },
+  evolving: {
+    name: 'Constantly Evolving',
+    ratio: '7:4',
+    keywords: ['7:4', 'evolving', 'progressive', 'intricate', 'prog metal'],
+    description: 'Intricate, never-settling rhythm',
+    complexity: 'very_complex' as const,
+    characteristics: [
+      'Never settles into predictable pattern',
+      'Constantly evolving feel',
+      'Requires active listening',
+      'Peak rhythmic complexity',
+    ],
+    bestInstruments: ['double bass drum', 'polyrhythmic synth', 'bass', 'complex percussion'],
+  },
+} as const;
+
+export type PolyrhythmType = keyof typeof POLYRHYTHMS;
+export type ComplexityLevel = 'simple' | 'medium' | 'complex' | 'very_complex';
