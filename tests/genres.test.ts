@@ -8,14 +8,15 @@ import {
   CINEMATIC_GENRE,
   FOLK_GENRE,
   RNB_GENRE,
+  VIDEOGAME_GENRE,
   detectGenre,
   getGenreInstruments,
   isValidInstrument,
 } from '@bun/instruments';
 
 describe('Genre Registry', () => {
-  test('should have 11 genres registered', () => {
-    expect(Object.keys(GENRE_REGISTRY).length).toBe(11);
+  test('should have 12 genres registered', () => {
+    expect(Object.keys(GENRE_REGISTRY).length).toBe(12);
   });
 
   test('all genres have required properties', () => {
@@ -108,6 +109,15 @@ describe('Genre Detection', () => {
   test('detects ambient from keywords', () => {
     expect(detectGenre('ambient soundscape')).toBe('ambient');
     expect(detectGenre('atmospheric textures')).toBe('ambient');
+  });
+
+  test('detects videogame from keywords', () => {
+    expect(detectGenre('video game soundtrack')).toBe('videogame');
+    expect(detectGenre('8-bit chiptune music')).toBe('videogame');
+    expect(detectGenre('boss battle theme')).toBe('videogame');
+    expect(detectGenre('rpg adventure music')).toBe('videogame');
+    expect(detectGenre('retro game arcade')).toBe('videogame');
+    expect(detectGenre('jrpg style')).toBe('videogame');
   });
 
   test('returns null for unrecognized descriptions', () => {
@@ -207,5 +217,14 @@ describe('Individual Genre Definitions', () => {
   test('RNB_GENRE has soulful keys', () => {
     expect(RNB_GENRE.pools.harmonic?.instruments).toContain('Rhodes');
     expect(RNB_GENRE.pools.harmonic?.instruments).toContain('Wurlitzer');
+  });
+
+  test('VIDEOGAME_GENRE has orchestral and retro elements', () => {
+    expect(VIDEOGAME_GENRE.name).toBe('Video Game');
+    expect(VIDEOGAME_GENRE.pools.harmonic?.instruments).toContain('strings');
+    expect(VIDEOGAME_GENRE.pools.pad?.instruments).toContain('arpeggiator');
+    expect(VIDEOGAME_GENRE.pools.pad?.instruments).toContain('FM synth');
+    expect(VIDEOGAME_GENRE.pools.color?.instruments).toContain('bells');
+    expect(VIDEOGAME_GENRE.pools.movement?.instruments).toContain('taiko drums');
   });
 });

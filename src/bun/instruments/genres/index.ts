@@ -9,6 +9,7 @@ import { SYNTHWAVE_GENRE } from './synthwave';
 import { CINEMATIC_GENRE } from './cinematic';
 import { FOLK_GENRE } from './folk';
 import { RNB_GENRE } from './rnb';
+import { VIDEOGAME_GENRE } from './videogame';
 
 export const GENRE_REGISTRY = {
   ambient: AMBIENT_GENRE,
@@ -22,6 +23,7 @@ export const GENRE_REGISTRY = {
   cinematic: CINEMATIC_GENRE,
   folk: FOLK_GENRE,
   rnb: RNB_GENRE,
+  videogame: VIDEOGAME_GENRE,
 } as const;
 
 export type GenreType = keyof typeof GENRE_REGISTRY;
@@ -38,5 +40,6 @@ export {
   CINEMATIC_GENRE,
   FOLK_GENRE,
   RNB_GENRE,
+  VIDEOGAME_GENRE,
 };
 export type { GenreDefinition, InstrumentPool } from './types';

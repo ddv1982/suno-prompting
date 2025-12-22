@@ -22,6 +22,7 @@ export {
   CINEMATIC_GENRE,
   FOLK_GENRE,
   RNB_GENRE,
+  VIDEOGAME_GENRE,
 } from '@bun/instruments/genres';
 export type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
 

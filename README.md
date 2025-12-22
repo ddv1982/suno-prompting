@@ -11,7 +11,7 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 - **Polyrhythm Combinations**: 8 pre-built rhythmic journeys for layered, cross-rhythm complexity.
 - **Lydian Chord Theory**: Complete diatonic chord reference for all 12 keys with triads, 7th chords, and extended voicings.
 - **Dynamic Instrument Selection**: Pool-based instrument selection from 90+ instruments with automatic variety and exclusion rules.
-- **11 Genre Palettes**: Curated instrument pools for jazz, electronic, rock, pop, classical, lofi, synthwave, cinematic, folk, R&B, and ambient.
+- **12 Genre Palettes**: Curated instrument pools for jazz, electronic, rock, pop, classical, lofi, synthwave, cinematic, folk, R&B, video game, and ambient.
 - **Synth Replacements**: Professional workstation-inspired synth alternatives for acoustic instruments.
 - **User Instrument Prioritization**: Mention instruments in your description and they'll be automatically detected and prioritized in the output.
 - **Iterative AI Refinement**: Tweak and refine your prompts through a chat-like interface.
@@ -45,7 +45,7 @@ Supported aliases include common names like "keys", "fiddle", "vibes", "sax", "d
 
 ### Genre Detection
 
-Detects **11 music genres** and selects appropriate instruments from curated pools:
+Detects **12 music genres** and selects appropriate instruments from curated pools:
 
 | Genre | Keywords | Key Instruments |
 |-------|----------|-----------------|
@@ -60,6 +60,7 @@ Detects **11 music genres** and selects appropriate instruments from curated poo
 | Cinematic | cinematic, epic, trailer | strings, taiko drums, choir |
 | Folk | folk, acoustic, country, americana | acoustic guitar, violin, banjo, mandolin |
 | R&B | rnb, soul, neo-soul, motown | Rhodes, Wurlitzer, saxophone |
+| Video Game | video game, chiptune, 8-bit, rpg, arcade | strings, arpeggiator, FM synth, bells, taiko drums |
 
 Each genre has:
 - **Curated instrument pools** by category (harmonic, pad, color, movement, rare)
@@ -378,11 +379,11 @@ The project uses Bun's built-in test runner. To execute the test suite:
 bun test
 ```
 
-Tests cover (252 total):
+Tests cover (254 total):
 - Instrument registry and alias resolution (90+ instruments)
 - User instrument extraction from descriptions
 - Dynamic instrument selection and exclusion rules (30+ rules)
-- 11 genre detection and instrument selection
+- 12 genre detection and instrument selection
 - Synth replacement suggestions and mappings
 - Harmonic/rhythmic style detection (13 modes)
 - Modal combination detection and guidance (10 combinations)
