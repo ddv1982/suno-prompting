@@ -39,6 +39,14 @@ export {
 export type { Note, NoteFlatVariant, AnyNote, ChordQuality, ScaleChord, ScaleDefinition } from './scaleChords';
 
 export {
+  MODE_PALETTES,
+  EXCLUSION_RULES,
+  selectInstrumentsForMode,
+  getModePalette,
+} from './palettes';
+export type { ModePalette, PoolConfig } from './palettes';
+
+export {
   CROSS_MODE_COMBINATIONS,
   WITHIN_MODE_COMBINATIONS,
   ALL_COMBINATIONS,

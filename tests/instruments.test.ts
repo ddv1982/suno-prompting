@@ -112,25 +112,22 @@ describe('getHarmonicGuidance', () => {
     expect(guidance.match(/^- /gm)?.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('includes best instruments for all modes', () => {
+  test('includes dynamically selected instruments for all modes', () => {
     const guidance = getHarmonicGuidance('lydian');
-    expect(guidance).toContain('Best instruments:');
-    expect(guidance).toContain('strings');
+    expect(guidance).toContain('Suggested instruments:');
   });
 
-  test('includes best instruments for new modes', () => {
-    expect(getHarmonicGuidance('dorian')).toContain('Rhodes');
-    expect(getHarmonicGuidance('phrygian')).toContain('flamenco guitar');
-    expect(getHarmonicGuidance('aeolian')).toContain('cello');
-    expect(getHarmonicGuidance('mixolydian')).toContain('Hammond organ');
-    expect(getHarmonicGuidance('ionian')).toContain('piano');
+  test('includes instruments for new modes', () => {
+    expect(getHarmonicGuidance('dorian')).toContain('Suggested instruments:');
+    expect(getHarmonicGuidance('phrygian')).toContain('Suggested instruments:');
+    expect(getHarmonicGuidance('aeolian')).toContain('Suggested instruments:');
+    expect(getHarmonicGuidance('mixolydian')).toContain('Suggested instruments:');
+    expect(getHarmonicGuidance('ionian')).toContain('Suggested instruments:');
   });
 
-  test('includes best instruments for minor scale variants', () => {
-    expect(getHarmonicGuidance('harmonic_minor')).toContain('harpsichord');
-    expect(getHarmonicGuidance('harmonic_minor')).toContain('organ');
-    expect(getHarmonicGuidance('melodic_minor')).toContain('saxophone');
-    expect(getHarmonicGuidance('melodic_minor')).toContain('upright bass');
+  test('includes instruments for minor scale variants', () => {
+    expect(getHarmonicGuidance('harmonic_minor')).toContain('Suggested instruments:');
+    expect(getHarmonicGuidance('melodic_minor')).toContain('Suggested instruments:');
   });
 });
 

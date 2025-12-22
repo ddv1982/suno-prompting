@@ -1,7 +1,7 @@
-import { HARMONIC_STYLES, ALL_COMBINATIONS } from '@bun/instruments/modes';
+import { HARMONIC_STYLES, ALL_COMBINATIONS, selectInstrumentsForMode } from '@bun/instruments/modes';
 import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
+import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
 import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS } from '@bun/instruments/data';
 import type { RhythmicStyle, PolyrhythmCombinationType } from '@bun/instruments/data';
 
@@ -70,8 +70,9 @@ export function getHarmonicGuidance(style: HarmonicStyle): string {
     `Examples: ${s.keyExamples}`,
   ];
 
-  if (s.bestInstruments) {
-    lines.push(`Best instruments: ${s.bestInstruments.join(', ')}`);
+  const instruments = selectInstrumentsForMode(style);
+  if (instruments.length > 0) {
+    lines.push(`Suggested instruments: ${instruments.join(', ')}`);
   }
 
   return lines.join('\n');
