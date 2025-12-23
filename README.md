@@ -85,14 +85,6 @@ The body uses section tags like:
   - `select.ts`: pool selection logic.
   - `format.ts`: turns detected concepts into human-readable guidance.
 
-### Import aliases
-
-The project uses TS path aliases:
-
-- `@bun/*` → `src/bun/*`
-- `@shared/*` → `src/shared/*`
-- `@/*` → `src/main-ui/*`
-
 ## Reference tables
 
 ### Genres (keywords → palette)
