@@ -26,8 +26,14 @@ function App() {
     currentModel,
     debugInfo,
     lockedPhrase,
+    editorMode,
+    advancedSelection,
+    computedMusicPhrase,
     setSettingsOpen,
     setLockedPhrase,
+    setEditorMode,
+    updateAdvancedSelection,
+    clearAdvancedSelection,
     selectSession,
     newProject,
     deleteSession,
@@ -61,7 +67,13 @@ function App() {
               validation={validation}
               chatMessages={chatMessages}
               lockedPhrase={lockedPhrase}
+              editorMode={editorMode}
+              advancedSelection={advancedSelection}
+              computedMusicPhrase={computedMusicPhrase}
               onLockedPhraseChange={setLockedPhrase}
+              onEditorModeChange={setEditorMode}
+              onAdvancedSelectionUpdate={updateAdvancedSelection}
+              onAdvancedSelectionClear={clearAdvancedSelection}
               onGenerate={handleGenerate}
               onCopy={handleCopy}
               onRemix={handleRemix}

@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/types';
+import { type PromptSession, type PromptVersion, type DebugInfo, type EditorMode, type AdvancedSelection, EMPTY_ADVANCED_SELECTION } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import { buildMusicPhrase } from '@shared/music-phrase';
 
 export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments' | 'remixGenre' | 'remixMood';
 
@@ -17,10 +18,17 @@ interface AppContextType {
     currentModel: string;
     debugInfo: DebugInfo | undefined;
     lockedPhrase: string;
+    editorMode: EditorMode;
+    advancedSelection: AdvancedSelection;
+    computedMusicPhrase: string;
     
     setSettingsOpen: (open: boolean) => void;
     setValidation: (v: ValidationResult) => void;
     setLockedPhrase: (phrase: string) => void;
+    setEditorMode: (mode: EditorMode) => void;
+    setAdvancedSelection: (selection: AdvancedSelection) => void;
+    updateAdvancedSelection: (updates: Partial<AdvancedSelection>) => void;
+    clearAdvancedSelection: () => void;
     loadHistory: (retries?: number) => Promise<void>;
     selectSession: (session: PromptSession) => void;
     newProject: () => void;
@@ -64,6 +72,35 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [currentModel, setCurrentModel] = useState("");
     const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
     const [lockedPhrase, setLockedPhrase] = useState("");
+    const [editorMode, setEditorMode] = useState<EditorMode>('simple');
+    const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
+
+    const computedMusicPhrase = useMemo(() => {
+        return buildMusicPhrase(advancedSelection);
+    }, [advancedSelection]);
+
+    const updateAdvancedSelection = useCallback((updates: Partial<AdvancedSelection>) => {
+        setAdvancedSelection(prev => {
+            const next = { ...prev, ...updates };
+            // Mutual exclusivity: harmonicStyle vs harmonicCombination
+            if (updates.harmonicStyle && updates.harmonicStyle !== null) {
+                next.harmonicCombination = null;
+            } else if (updates.harmonicCombination && updates.harmonicCombination !== null) {
+                next.harmonicStyle = null;
+            }
+            // Mutual exclusivity: timeSignature vs timeSignatureJourney
+            if (updates.timeSignature && updates.timeSignature !== null) {
+                next.timeSignatureJourney = null;
+            } else if (updates.timeSignatureJourney && updates.timeSignatureJourney !== null) {
+                next.timeSignature = null;
+            }
+            return next;
+        });
+    }, []);
+
+    const clearAdvancedSelection = useCallback(() => {
+        setAdvancedSelection(EMPTY_ADVANCED_SELECTION);
+    }, []);
 
     const loadModel = useCallback(async () => {
         try {
@@ -129,17 +166,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         
         const currentPrompt = currentSession?.currentPrompt || "";
         const isInitial = !currentPrompt;
-        const phraseToLock = lockedPhrase.trim() || undefined;
+        
+        // In advanced mode, combine music phrase with user's additional locked text
+        // In simple mode, use the user's manual locked phrase only
+        const effectiveLockedPhrase = editorMode === 'advanced'
+            ? [computedMusicPhrase, lockedPhrase.trim()].filter(Boolean).join(', ') || undefined
+            : lockedPhrase.trim() || undefined;
 
         try {
             setGeneratingAction('generate');
 
             let result;
             if (isInitial) {
-                result = await api.generateInitial(input, phraseToLock);
+                result = await api.generateInitial(input, effectiveLockedPhrase);
             } else {
                 setChatMessages((prev) => [...prev, { role: "user", content: input }]);
-                result = await api.refinePrompt(currentPrompt, input, phraseToLock);
+                result = await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase);
             }
 
             if (!result?.prompt) {
@@ -190,7 +232,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setGeneratingAction('none');
         }
-    }, [isGenerating, currentSession, saveSession, lockedPhrase]);
+    }, [isGenerating, currentSession, saveSession, lockedPhrase, editorMode, computedMusicPhrase]);
 
     const handleCopy = useCallback(() => {
         const prompt = currentSession?.currentPrompt || "";
@@ -199,11 +241,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const handleRemix = useCallback(async () => {
         if (isGenerating || !currentSession?.originalInput) return;
-        const phraseToLock = lockedPhrase.trim() || undefined;
+        
+        // In advanced mode, combine music phrase with user's additional locked text
+        const effectiveLockedPhrase = editorMode === 'advanced'
+            ? [computedMusicPhrase, lockedPhrase.trim()].filter(Boolean).join(', ') || undefined
+            : lockedPhrase.trim() || undefined;
 
         try {
             setGeneratingAction('remix');
-            const result = await api.generateInitial(currentSession.originalInput, phraseToLock);
+            const result = await api.generateInitial(currentSession.originalInput, effectiveLockedPhrase);
 
             if (!result?.prompt) {
                 throw new Error("Invalid result received from remix");
@@ -237,7 +283,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setGeneratingAction('none');
         }
-    }, [isGenerating, currentSession, saveSession, lockedPhrase]);
+    }, [isGenerating, currentSession, saveSession, lockedPhrase, editorMode, computedMusicPhrase]);
 
     const executeRemixAction = useCallback(async (
         action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
@@ -338,9 +384,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             currentModel,
             debugInfo,
             lockedPhrase,
+            editorMode,
+            advancedSelection,
+            computedMusicPhrase,
             setSettingsOpen,
             setValidation,
             setLockedPhrase,
+            setEditorMode,
+            setAdvancedSelection,
+            updateAdvancedSelection,
+            clearAdvancedSelection,
             loadHistory,
             selectSession,
             newProject,

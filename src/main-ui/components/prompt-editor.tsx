@@ -9,13 +9,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
-import { type DebugInfo } from "@shared/types";
+import { type DebugInfo, type EditorMode, type AdvancedSelection } from "@shared/types";
 import { type GeneratingAction } from "@/context/AppContext";
 import { APP_CONSTANTS } from "@shared/constants";
+import { AdvancedPanel } from "@/components/advanced-panel";
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -24,7 +25,13 @@ type PromptEditorProps = {
   validation: ValidationResult;
   chatMessages: ChatMessage[];
   lockedPhrase: string;
+  editorMode: EditorMode;
+  advancedSelection: AdvancedSelection;
+  computedMusicPhrase: string;
   onLockedPhraseChange: (phrase: string) => void;
+  onEditorModeChange: (mode: EditorMode) => void;
+  onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
+  onAdvancedSelectionClear: () => void;
   onGenerate: (input: string) => void;
   onCopy: () => void;
   onRemix: () => void;
@@ -43,7 +50,13 @@ export function PromptEditor({
   validation,
   chatMessages,
   lockedPhrase,
+  editorMode,
+  advancedSelection,
+  computedMusicPhrase,
   onLockedPhraseChange,
+  onEditorModeChange,
+  onAdvancedSelectionUpdate,
+  onAdvancedSelectionClear,
   onGenerate,
   onCopy,
   onRemix,
@@ -237,10 +250,47 @@ export function PromptEditor({
 
       <div className="border-t bg-muted/10 p-6 shrink-0">
         <div className="max-w-6xl mx-auto w-full space-y-4">
+          {/* Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={editorMode === 'simple' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onEditorModeChange('simple')}
+              className="h-7 px-3 text-tiny font-bold"
+            >
+              Simple
+            </Button>
+            <Button
+              variant={editorMode === 'advanced' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onEditorModeChange('advanced')}
+              className="h-7 px-3 text-tiny font-bold gap-1.5"
+            >
+              <Settings2 className="w-3 h-3" />
+              Advanced
+            </Button>
+            {editorMode === 'simple' && (
+              <span className="text-micro text-muted-foreground ml-2">
+                AI auto-selects harmonic style, rhythm, and time signature
+              </span>
+            )}
+          </div>
+
+          {/* Advanced Panel */}
+          {editorMode === 'advanced' && (
+            <AdvancedPanel
+              selection={advancedSelection}
+              onUpdate={onAdvancedSelectionUpdate}
+              onClear={onAdvancedSelectionClear}
+              computedPhrase={computedMusicPhrase}
+            />
+          )}
+
+          {/* Locked Phrase - available in both modes */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <label className="text-tiny text-muted-foreground font-medium">
-                Locked Phrase (optional)
+                {editorMode === 'advanced' ? 'Additional Locked Text (optional)' : 'Locked Phrase (optional)'}
               </label>
               {lockedPhrase && (
                 <span className={cn(
@@ -258,7 +308,9 @@ export function PromptEditor({
                 "min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg bg-background/40 backdrop-blur focus-visible:ring-primary/20",
                 !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20"
               )}
-              placeholder="Text that will appear exactly as written in the output..."
+              placeholder={editorMode === 'advanced' 
+                ? "Additional text to lock (combined with music phrase above)..."
+                : "Text that will appear exactly as written in the output..."}
             />
             {lockedPhraseValidation.error ? (
               <p className="text-micro text-destructive flex items-center gap-1">
@@ -266,7 +318,9 @@ export function PromptEditor({
               </p>
             ) : (
               <p className="text-micro text-muted-foreground opacity-70">
-                This text will be preserved verbatim - the AI won't modify it.
+                {editorMode === 'advanced'
+                  ? 'This text will be combined with your music selections above.'
+                  : "This text will be preserved verbatim - the AI won't modify it."}
               </p>
             )}
           </div>

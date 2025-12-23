@@ -1,6 +1,25 @@
 import { type RPCSchema } from 'electrobun';
 import { type ValidationResult } from '@shared/validation';
 
+// Editor mode types
+export type EditorMode = 'simple' | 'advanced';
+
+export type AdvancedSelection = {
+    harmonicStyle: string | null;
+    harmonicCombination: string | null;
+    polyrhythmCombination: string | null;
+    timeSignature: string | null;
+    timeSignatureJourney: string | null;
+};
+
+export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
+    harmonicStyle: null,
+    harmonicCombination: null,
+    polyrhythmCombination: null,
+    timeSignature: null,
+    timeSignatureJourney: null,
+};
+
 export type PromptVersion = {
     id: string;
     content: string;
