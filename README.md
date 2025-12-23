@@ -32,6 +32,18 @@ Platform builds:
 
 Artifacts land in `build/`.
 
+## Configuration
+
+Settings (including your Groq API key) are stored locally:
+
+| Platform | Location |
+|----------|----------|
+| macOS | `~/.suno-prompting-app/config.json` |
+| Linux | `~/.suno-prompting-app/config.json` |
+| Windows | `C:\Users\<username>\.suno-prompting-app\config.json` |
+
+The API key is encrypted at rest using AES-256-GCM.
+
 ## Output Format Contract
 
 The generated prompt is constrained to a strict structure so Suno V5 responds consistently.
