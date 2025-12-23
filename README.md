@@ -89,20 +89,24 @@ The body uses section tags like:
 
 ### Genres (keywords → palette)
 
+<!-- GENRE_TABLE_START -->
+
 | Genre | Keywords | Key Instruments |
 |-------|----------|-----------------|
-| Ambient | ambient, atmospheric, soundscape | felt piano, synth pad, strings, kalimba |
-| Jazz | jazz, bebop, swing, fusion | Rhodes, Hammond organ, saxophone, upright bass |
-| Electronic | edm, house, techno, dubstep | synth pad, 808, arpeggiator, vocoder |
-| Rock | rock, alternative, punk, metal | guitar, drums, bass, Hammond organ |
-| Pop | pop, mainstream, dance pop | felt piano, synth, bass, drums |
-| Classical | classical, orchestral, symphony | strings, violin, cello, flute, french horn |
-| Lo-fi | lofi, chill, study beats | felt piano, Rhodes, kalimba, jazz brushes |
-| Synthwave | synthwave, retrowave, 80s, outrun | analog synth, arpeggiator, synth bass |
-| Cinematic | cinematic, epic, trailer | strings, french horn, choir, taiko drums |
-| Folk | folk, acoustic, country, americana | acoustic guitar, violin, banjo, mandolin |
-| R&B | rnb, soul, neo-soul, motown | Rhodes, Wurlitzer, bass, saxophone |
-| Video Game | video game, chiptune, 8-bit, rpg, arcade | strings, arpeggiator, FM synth, bells, taiko drums |
+| Ambient | ambient, atmospheric, soundscape | prepared piano, felt piano, harmonium, celesta, strings |
+| Jazz | jazz, bebop, swing, cool jazz, fusion, big band, bossa nova | Rhodes, felt piano, acoustic guitar, Hammond organ, Wurlitzer |
+| Electronic | edm, electronic, house, techno, trance, dubstep, drum and bass, dnb | synth pad, analog synth, FM synth, arpeggiator, synth |
+| Rock | rock, alternative, indie rock, hard rock, punk, grunge, metal | distorted guitar, Fender Stratocaster, guitar, acoustic guitar, bass |
+| Pop | pop, mainstream, top 40, dance pop, synth pop, electropop | felt piano, Fender Stratocaster, guitar, acoustic guitar, synth pad |
+| Classical | classical, orchestral, symphony, chamber, baroque, romantic, opera | strings, felt piano, violin, cello, viola |
+| Lo-fi | lofi, lo-fi, chill, study beats, chillhop, bedroom pop | felt piano, Rhodes, electric piano, vibraphone, kalimba |
+| Synthwave | synthwave, retrowave, 80s, outrun, vaporwave, darksynth, cyberpunk | analog synth, FM synth, Moog synth, arpeggiator, synth pad |
+| Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic | strings, felt piano, french horn, cello, choir |
+| Folk | folk, acoustic, singer-songwriter, country, americana, bluegrass, celtic | acoustic guitar, felt piano, violin, harp, flute |
+| R&B | rnb, r&b, soul, neo-soul, motown, funk, gospel | Rhodes, Wurlitzer, felt piano, bass, drums |
+| Video Game | video game, game music, gaming, chiptune, 8-bit, 8 bit, retro game, pixel, arcade, boss battle, level music, rpg, jrpg, adventure game, platformer, nintendo, sega | strings, felt piano, harp, synth pad, arpeggiator |
+
+<!-- GENRE_TABLE_END -->
 
 ### Synth replacements
 
