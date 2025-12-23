@@ -26,6 +26,8 @@ type PromptEditorProps = {
   onCopy: () => void;
   onRemix: () => void;
   onRemixInstruments: () => void;
+  onRemixGenre: () => void;
+  onRemixMood: () => void;
   maxChars?: number;
   currentModel?: string;
   debugInfo?: DebugInfo;
@@ -41,6 +43,8 @@ export function PromptEditor({
   onCopy,
   onRemix,
   onRemixInstruments,
+  onRemixGenre,
+  onRemixMood,
   maxChars = 1000,
   currentModel = "",
   debugInfo,
@@ -127,6 +131,26 @@ export function PromptEditor({
                     DEBUG
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemixMood}
+                  disabled={isGenerating}
+                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                >
+                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
+                  MOOD
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemixGenre}
+                  disabled={isGenerating}
+                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                >
+                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixGenre' && "animate-spin")} />
+                  GENRE
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

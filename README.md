@@ -15,6 +15,10 @@ The **Suno Prompting App** is a specialized desktop application designed to empo
 - **Synth Replacements**: Professional workstation-inspired synth alternatives for acoustic instruments.
 - **User Instrument Prioritization**: Mention instruments in your description and they'll be automatically detected and prioritized in the output.
 - **Iterative AI Refinement**: Tweak and refine your prompts through a chat-like interface.
+- **Quick Remix Buttons**: Instantly randomize specific prompt elements:
+  - **Mood**: Shuffle between 42 evocative mood descriptors (euphoric, haunting, whimsical, etc.)
+  - **Genre**: Swap between all 12 genre palettes with one click
+  - **Instruments**: Regenerate instrument selection from genre-appropriate pools
 - **Smart Constraints & Validation**:
   - **1000-Character Limit**: Real-time enforcement and visual counter.
   - **Contradictory Tag Detection**: Warns about conflicting tags.
@@ -311,6 +315,34 @@ Instruments are now **dynamically selected** from the registry based on mode and
 - No synth brass + trumpet together
 - No 808 + drums together
 - And more...
+
+## Quick Remix Buttons
+
+The app provides instant remix buttons to quickly iterate on specific prompt elements without regenerating the entire prompt:
+
+| Button | Action | Details |
+|--------|--------|---------|
+| **MOOD** | Randomizes mood descriptors | Selects 2-3 from 42 evocative options |
+| **GENRE** | Swaps to a different genre | Cycles through all 12 genre palettes |
+| **INSTRUMENTS** | Regenerates instrument selection | Picks new instruments from genre pools |
+| **REMIX** | Full regeneration | Creates entirely new prompt from original input |
+
+### Mood Pool (42 descriptors)
+
+Organized by emotional category:
+
+| Category | Moods |
+|----------|-------|
+| Energetic | euphoric, explosive, triumphant, exhilarating, electrifying, uplifting |
+| Calm | serene, peaceful, tranquil, meditative, soothing, gentle |
+| Dark | haunting, brooding, sinister, ominous, menacing, foreboding |
+| Emotional | melancholic, wistful, bittersweet, yearning, nostalgic, tender |
+| Playful | whimsical, mischievous, carefree, lighthearted, jovial, quirky |
+| Intense | passionate, fierce, relentless, urgent, raw, visceral |
+| Atmospheric | ethereal, dreamy, mysterious, hypnotic, otherworldly, cosmic |
+| Additional | introspective, defiant, hopeful, rebellious, contemplative, cinematic |
+
+Each click randomly selects 2-3 moods, ensuring variety while maintaining coherent emotional tone.
 
 ## Tech Stack
 

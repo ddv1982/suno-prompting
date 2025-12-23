@@ -6,7 +6,9 @@ import {
   extractInstruments,
   buildGuidanceFromSelection,
   selectInstrumentsForGenre,
+  GENRE_REGISTRY,
 } from '@bun/instruments';
+import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
 import type { ModeSelection } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
@@ -19,6 +21,25 @@ export type GenerationResult = {
 };
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
+
+const MOOD_POOL = [
+  // Energetic
+  'euphoric', 'explosive', 'triumphant', 'exhilarating', 'electrifying', 'uplifting',
+  // Calm
+  'serene', 'peaceful', 'tranquil', 'meditative', 'soothing', 'gentle',
+  // Dark
+  'haunting', 'brooding', 'sinister', 'ominous', 'menacing', 'foreboding',
+  // Emotional
+  'melancholic', 'wistful', 'bittersweet', 'yearning', 'nostalgic', 'tender',
+  // Playful
+  'whimsical', 'mischievous', 'carefree', 'lighthearted', 'jovial', 'quirky',
+  // Intense
+  'passionate', 'fierce', 'relentless', 'urgent', 'raw', 'visceral',
+  // Atmospheric
+  'ethereal', 'dreamy', 'mysterious', 'hypnotic', 'otherworldly', 'cosmic',
+  // Additional variety
+  'introspective', 'defiant', 'hopeful', 'rebellious', 'contemplative', 'cinematic',
+] as const;
 
 const LEAKED_META_SUBSTRINGS = [
   'remove word repetition',
@@ -380,6 +401,56 @@ export class AIEngine {
       );
     } else {
       // If no Instruments line found, return original (edge case)
+      updatedPrompt = currentPrompt;
+    }
+    
+    return { text: updatedPrompt };
+  }
+
+  async remixGenre(currentPrompt: string): Promise<GenerationResult> {
+    const allGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
+    
+    // Extract current genre from prompt
+    const genreMatch = currentPrompt.match(/^Genre:\s*(.+)$/m);
+    const currentGenre = genreMatch?.[1]?.trim().toLowerCase() || '';
+    
+    // Filter out current genre and select a random different one
+    const availableGenres = allGenres.filter(g => g !== currentGenre);
+    const newGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)];
+    
+    // Replace the Genre: line in the prompt
+    const hasGenreLine = /^Genre:.*$/m.test(currentPrompt);
+    
+    let updatedPrompt: string;
+    if (hasGenreLine) {
+      updatedPrompt = currentPrompt.replace(
+        /^Genre:.*$/m,
+        `Genre: ${newGenre}`
+      );
+    } else {
+      updatedPrompt = currentPrompt;
+    }
+    
+    return { text: updatedPrompt };
+  }
+
+  async remixMood(currentPrompt: string): Promise<GenerationResult> {
+    // Select 2-3 random mood descriptors
+    const count = Math.random() < 0.5 ? 2 : 3;
+    const shuffled = [...MOOD_POOL].sort(() => Math.random() - 0.5);
+    const selectedMoods = shuffled.slice(0, count);
+    const moodLine = selectedMoods.join(', ');
+    
+    // Replace the Mood: line in the prompt
+    const hasMoodLine = /^Mood:.*$/m.test(currentPrompt);
+    
+    let updatedPrompt: string;
+    if (hasMoodLine) {
+      updatedPrompt = currentPrompt.replace(
+        /^Mood:.*$/m,
+        `Mood: ${moodLine}`
+      );
+    } else {
       updatedPrompt = currentPrompt;
     }
     

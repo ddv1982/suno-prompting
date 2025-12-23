@@ -50,6 +50,32 @@ export function createHandlers(
                 throw error;
             }
         },
+        remixGenre: async ({ currentPrompt }) => {
+            log.info('remixGenre');
+            try {
+                const result = await aiEngine.remixGenre(currentPrompt);
+                const versionId = Bun.randomUUIDv7();
+                const validation = validatePrompt(result.text);
+                log.info('remixGenre:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation };
+            } catch (error) {
+                log.error('remixGenre:failed', error);
+                throw error;
+            }
+        },
+        remixMood: async ({ currentPrompt }) => {
+            log.info('remixMood');
+            try {
+                const result = await aiEngine.remixMood(currentPrompt);
+                const versionId = Bun.randomUUIDv7();
+                const validation = validatePrompt(result.text);
+                log.info('remixMood:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation };
+            } catch (error) {
+                log.error('remixMood:failed', error);
+                throw error;
+            }
+        },
         getHistory: async () => {
             log.info('getHistory');
             const sessions = await storage.getHistory();

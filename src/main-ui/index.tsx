@@ -32,7 +32,9 @@ function App() {
     handleGenerate,
     handleCopy,
     handleRemix,
-    handleRemixInstruments
+    handleRemixInstruments,
+    handleRemixGenre,
+    handleRemixMood
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
@@ -60,6 +62,8 @@ function App() {
               onCopy={handleCopy}
               onRemix={handleRemix}
               onRemixInstruments={handleRemixInstruments}
+              onRemixGenre={handleRemixGenre}
+              onRemixMood={handleRemixMood}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
               currentModel={currentModel}
               debugInfo={debugInfo}

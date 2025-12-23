@@ -4,7 +4,7 @@ import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 
-export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments';
+export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments' | 'remixGenre' | 'remixMood';
 
 interface AppContextType {
     sessions: PromptSession[];
@@ -28,6 +28,8 @@ interface AppContextType {
     handleCopy: () => void;
     handleRemix: () => Promise<void>;
     handleRemixInstruments: () => Promise<void>;
+    handleRemixGenre: () => Promise<void>;
+    handleRemixMood: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -275,6 +277,86 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [isGenerating, currentSession, saveSession]);
 
+    const handleRemixGenre = useCallback(async () => {
+        if (isGenerating || !currentSession?.currentPrompt) return;
+
+        try {
+            setGeneratingAction('remixGenre');
+            const result = await api.remixGenre(currentSession.currentPrompt);
+
+            if (!result?.prompt) {
+                throw new Error("Invalid result received from genre remix");
+            }
+
+            const now = new Date().toISOString();
+            const newVersion: PromptVersion = {
+                id: result.versionId,
+                content: result.prompt,
+                feedback: "[genre remix]",
+                timestamp: now,
+            };
+
+            const updatedSession: PromptSession = {
+                ...currentSession,
+                currentPrompt: result.prompt,
+                versionHistory: [...currentSession.versionHistory, newVersion],
+                updatedAt: now,
+            };
+
+            setChatMessages((prev) => [...prev, { role: "ai", content: "Genre remixed." }]);
+            setValidation(result.validation);
+            await saveSession(updatedSession);
+        } catch (error) {
+            console.error("Genre remix failed:", error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix genre"}.` },
+            ]);
+        } finally {
+            setGeneratingAction('none');
+        }
+    }, [isGenerating, currentSession, saveSession]);
+
+    const handleRemixMood = useCallback(async () => {
+        if (isGenerating || !currentSession?.currentPrompt) return;
+
+        try {
+            setGeneratingAction('remixMood');
+            const result = await api.remixMood(currentSession.currentPrompt);
+
+            if (!result?.prompt) {
+                throw new Error("Invalid result received from mood remix");
+            }
+
+            const now = new Date().toISOString();
+            const newVersion: PromptVersion = {
+                id: result.versionId,
+                content: result.prompt,
+                feedback: "[mood remix]",
+                timestamp: now,
+            };
+
+            const updatedSession: PromptSession = {
+                ...currentSession,
+                currentPrompt: result.prompt,
+                versionHistory: [...currentSession.versionHistory, newVersion],
+                updatedAt: now,
+            };
+
+            setChatMessages((prev) => [...prev, { role: "ai", content: "Mood remixed." }]);
+            setValidation(result.validation);
+            await saveSession(updatedSession);
+        } catch (error) {
+            console.error("Mood remix failed:", error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix mood"}.` },
+            ]);
+        } finally {
+            setGeneratingAction('none');
+        }
+    }, [isGenerating, currentSession, saveSession]);
+
     useEffect(() => {
         loadHistory();
         loadModel();
@@ -308,7 +390,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             handleGenerate,
             handleCopy,
             handleRemix,
-            handleRemixInstruments
+            handleRemixInstruments,
+            handleRemixGenre,
+            handleRemixMood
         }}>
             {children}
         </AppContext.Provider>
