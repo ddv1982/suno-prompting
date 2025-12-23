@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult } from "@shared/validation";
@@ -23,6 +23,7 @@ type PromptEditorProps = {
   onGenerate: (input: string) => void;
   onCopy: () => void;
   onRemix: () => void;
+  onRemixInstruments: () => void;
   maxChars?: number;
   currentModel?: string;
   debugInfo?: DebugInfo;
@@ -36,6 +37,7 @@ export function PromptEditor({
   onGenerate,
   onCopy,
   onRemix,
+  onRemixInstruments,
   maxChars = 1000,
   currentModel = "",
   debugInfo,
@@ -122,6 +124,16 @@ export function PromptEditor({
                     DEBUG
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemixInstruments}
+                  disabled={isGenerating}
+                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                >
+                  <Shuffle className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
+                  INSTRUMENTS
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

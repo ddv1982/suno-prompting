@@ -58,7 +58,7 @@ export type { ExtractionResult } from '@bun/instruments/extraction';
 export { detectHarmonic, detectRhythmic, detectAmbient, detectGenre, detectCombination, detectPolyrhythmCombination, detectTimeSignature, detectTimeSignatureJourney } from '@bun/instruments/detection';
 
 // Guidance exports
-export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getPolyrhythmCombinationGuidance, getTimeSignatureGuidance, getTimeSignatureJourneyGuidance, getGenreInstruments, getAmbientInstruments, buildGuidanceFromSelection } from '@bun/instruments/guidance';
+export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getPolyrhythmCombinationGuidance, getTimeSignatureGuidance, getTimeSignatureJourneyGuidance, getGenreInstruments, getAmbientInstruments, selectInstrumentsForGenre, buildGuidanceFromSelection } from '@bun/instruments/guidance';
 export type { InstrumentSelectionOptions, ModeSelectionInput } from '@bun/instruments/guidance';
 
 // Selection exports

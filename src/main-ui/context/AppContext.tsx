@@ -24,6 +24,7 @@ interface AppContextType {
     handleGenerate: (input: string) => Promise<void>;
     handleCopy: () => void;
     handleRemix: () => Promise<void>;
+    handleRemixInstruments: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -226,6 +227,49 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [isGenerating, currentSession, saveSession]);
 
+    const handleRemixInstruments = useCallback(async () => {
+        if (isGenerating || !currentSession?.currentPrompt || !currentSession?.originalInput) return;
+
+        try {
+            setIsGenerating(true);
+            const result = await api.remixInstruments(
+                currentSession.currentPrompt,
+                currentSession.originalInput
+            );
+
+            if (!result?.prompt) {
+                throw new Error("Invalid result received from instrument remix");
+            }
+
+            const now = new Date().toISOString();
+            const newVersion: PromptVersion = {
+                id: result.versionId,
+                content: result.prompt,
+                feedback: "[instruments remix]",
+                timestamp: now,
+            };
+
+            const updatedSession: PromptSession = {
+                ...currentSession,
+                currentPrompt: result.prompt,
+                versionHistory: [...currentSession.versionHistory, newVersion],
+                updatedAt: now,
+            };
+
+            setChatMessages((prev) => [...prev, { role: "ai", content: "Instruments remixed." }]);
+            setValidation(result.validation);
+            await saveSession(updatedSession);
+        } catch (error) {
+            console.error("Instrument remix failed:", error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix instruments"}.` },
+            ]);
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [isGenerating, currentSession, saveSession]);
+
     useEffect(() => {
         loadHistory();
         loadModel();
@@ -257,7 +301,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             deleteSession,
             handleGenerate,
             handleCopy,
-            handleRemix
+            handleRemix,
+            handleRemixInstruments
         }}>
             {children}
         </AppContext.Provider>

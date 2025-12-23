@@ -37,6 +37,19 @@ export function createHandlers(
         refinePrompt: async ({ currentPrompt, feedback }) => {
             return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback));
         },
+        remixInstruments: async ({ currentPrompt, originalInput }) => {
+            log.info('remixInstruments');
+            try {
+                const result = await aiEngine.remixInstruments(currentPrompt, originalInput);
+                const versionId = Bun.randomUUIDv7();
+                const validation = validatePrompt(result.text);
+                log.info('remixInstruments:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation };
+            } catch (error) {
+                log.error('remixInstruments:failed', error);
+                throw error;
+            }
+        },
         getHistory: async () => {
             log.info('getHistory');
             const sessions = await storage.getHistory();

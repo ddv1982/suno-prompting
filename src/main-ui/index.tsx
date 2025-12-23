@@ -30,7 +30,8 @@ function App() {
     deleteSession,
     handleGenerate,
     handleCopy,
-    handleRemix
+    handleRemix,
+    handleRemixInstruments
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
@@ -56,6 +57,7 @@ function App() {
               onGenerate={handleGenerate}
               onCopy={handleCopy}
               onRemix={handleRemix}
+              onRemixInstruments={handleRemixInstruments}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
               currentModel={currentModel}
               debugInfo={debugInfo}

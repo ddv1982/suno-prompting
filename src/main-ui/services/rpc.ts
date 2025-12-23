@@ -35,6 +35,10 @@ export const api = {
         return await rpc.request.refinePrompt({ currentPrompt, feedback });
     },
 
+    async remixInstruments(currentPrompt: string, originalInput: string): Promise<BunRequests['remixInstruments']['response']> {
+        return await rpc.request.remixInstruments({ currentPrompt, originalInput });
+    },
+
     async getApiKey(): Promise<string> {
         const { apiKey } = await rpc.request.getApiKey({});
         return apiKey || '';

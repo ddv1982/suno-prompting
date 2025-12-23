@@ -32,6 +32,9 @@ export type GenerateInitialResponse = { prompt: string; versionId: string; valid
 export type RefinePromptParams = { currentPrompt: string; feedback: string };
 export type RefinePromptResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
 
+export type RemixInstrumentsParams = { currentPrompt: string; originalInput: string };
+export type RemixInstrumentsResponse = { prompt: string; versionId: string; validation: ValidationResult };
+
 export type SetDebugModeParams = { debugMode: boolean };
 
 export type GetHistoryResponse = { sessions: PromptSession[] };
@@ -52,6 +55,7 @@ export type AppConfig = {
 export type RPCHandlers = {
     generateInitial: (params: GenerateInitialParams) => Promise<GenerateInitialResponse>;
     refinePrompt: (params: RefinePromptParams) => Promise<RefinePromptResponse>;
+    remixInstruments: (params: RemixInstrumentsParams) => Promise<RemixInstrumentsResponse>;
     getHistory: (params: Record<string, never>) => Promise<GetHistoryResponse>;
     saveSession: (params: SaveSessionParams) => Promise<{ success: boolean }>;
     deleteSession: (params: DeleteSessionParams) => Promise<{ success: boolean }>;
@@ -75,6 +79,10 @@ export type SunoRPCSchema = {
             refinePrompt: {
                 params: RefinePromptParams;
                 response: RefinePromptResponse;
+            };
+            remixInstruments: {
+                params: RemixInstrumentsParams;
+                response: RemixInstrumentsResponse;
             };
             getHistory: {
                 params: Record<string, never>;

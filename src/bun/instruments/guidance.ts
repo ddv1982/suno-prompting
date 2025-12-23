@@ -258,6 +258,29 @@ export function getAmbientInstruments(options?: InstrumentSelectionOptions): str
   return getGenreInstruments('ambient', options);
 }
 
+export function selectInstrumentsForGenre(
+  genre: GenreType,
+  options?: InstrumentSelectionOptions
+): string[] {
+  const def = GENRE_REGISTRY[genre];
+  const maxTags = options?.maxTags ?? def.maxTags;
+  const userInstruments = options?.userInstruments ?? [];
+  const exclusionRules = def.exclusionRules ?? [];
+
+  const userSelected = userInstruments.slice(0, maxTags);
+  let selected: string[] = [...userSelected];
+
+  for (const poolName of def.poolOrder) {
+    if (selected.length >= maxTags) break;
+    const pool = def.pools[poolName];
+    if (!pool) continue;
+    const picks = pickFromPool(pool, selected, maxTags - selected.length, exclusionRules);
+    selected = [...selected, ...picks].slice(0, maxTags);
+  }
+
+  return selected;
+}
+
 export function getTimeSignatureGuidance(sig: TimeSignatureType): string {
   const s = TIME_SIGNATURES[sig];
   const chars = shuffle([...s.characteristics]).slice(0, 3);

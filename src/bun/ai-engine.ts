@@ -5,6 +5,7 @@ import {
   getRhythmicGuidance,
   extractInstruments,
   buildGuidanceFromSelection,
+  selectInstrumentsForGenre,
 } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
 import type { ModeSelection } from '@bun/instruments/selection';
@@ -357,5 +358,31 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       })
     );
+  }
+
+  async remixInstruments(currentPrompt: string, originalInput: string): Promise<GenerationResult> {
+    // Detect genre from original input
+    const selection = await selectModes(originalInput, this.getGroqModel());
+    const genre = selection.genre || 'ambient';
+    
+    // Generate new instruments from genre pool
+    const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });
+    const instrumentLine = instruments.join(', ');
+    
+    // Replace the Instruments: line in the prompt
+    const hasInstrumentsLine = /^Instruments:.*$/m.test(currentPrompt);
+    
+    let updatedPrompt: string;
+    if (hasInstrumentsLine) {
+      updatedPrompt = currentPrompt.replace(
+        /^Instruments:.*$/m,
+        `Instruments: ${instrumentLine}`
+      );
+    } else {
+      // If no Instruments line found, return original (edge case)
+      updatedPrompt = currentPrompt;
+    }
+    
+    return { text: updatedPrompt };
   }
 }
