@@ -26,10 +26,10 @@ export type DebugInfo = {
 };
 
 // Request/Response type definitions for RPC
-export type GenerateInitialParams = { description: string };
+export type GenerateInitialParams = { description: string; lockedPhrase?: string };
 export type GenerateInitialResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
 
-export type RefinePromptParams = { currentPrompt: string; feedback: string };
+export type RefinePromptParams = { currentPrompt: string; feedback: string; lockedPhrase?: string };
 export type RefinePromptResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
 
 export type RemixInstrumentsParams = { currentPrompt: string; originalInput: string };

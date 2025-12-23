@@ -10,7 +10,7 @@ import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildSystemPrompt } from '@bun/prompt/builders';
-import { postProcessPrompt } from '@bun/prompt/postprocess';
+import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine } from '@bun/prompt/remix';
 
 export type GenerationResult = {
@@ -214,12 +214,12 @@ export class AIEngine {
     }
   }
 
-  async generateInitial(description: string): Promise<GenerationResult> {
+  async generateInitial(description: string, lockedPhrase?: string): Promise<GenerationResult> {
     const selection = await selectModes(description, this.getGroqModel());
-    const userPrompt = buildContextualPrompt(description, selection);
+    const userPrompt = buildContextualPrompt(description, selection, lockedPhrase);
     const systemPrompt = this.systemPrompt;
 
-    return this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>
+    const result = await this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>
       generateText({
         model: this.getGroqModel(),
         system: systemPrompt,
@@ -228,24 +228,37 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       })
     );
+
+    if (lockedPhrase) {
+      result.text = swapLockedPhraseOut(result.text, lockedPhrase);
+    }
+
+    return result;
   }
 
-  async refinePrompt(currentPrompt: string, feedback: string): Promise<GenerationResult> {
+  async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
-    const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
+    const promptForLLM = lockedPhrase ? swapLockedPhraseIn(currentPrompt, lockedPhrase) : currentPrompt;
+    const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedback}`;
 
-    return this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
+    const result = await this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
       generateText({
         model: this.getGroqModel(),
         system: systemPrompt,
         messages: [
-          { role: 'assistant', content: currentPrompt },
+          { role: 'assistant', content: promptForLLM },
           { role: 'user', content: feedback },
         ],
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       })
     );
+
+    if (lockedPhrase) {
+      result.text = swapLockedPhraseOut(result.text, lockedPhrase);
+    }
+
+    return result;
   }
 
   async remixInstruments(currentPrompt: string, originalInput: string): Promise<GenerationResult> {

@@ -27,12 +27,12 @@ export const api = {
         await rpc.request.deleteSession({ id });
     },
 
-    async generateInitial(description: string): Promise<BunRequests['generateInitial']['response']> {
-        return await rpc.request.generateInitial({ description });
+    async generateInitial(description: string, lockedPhrase?: string): Promise<BunRequests['generateInitial']['response']> {
+        return await rpc.request.generateInitial({ description, lockedPhrase });
     },
 
-    async refinePrompt(currentPrompt: string, feedback: string): Promise<BunRequests['refinePrompt']['response']> {
-        return await rpc.request.refinePrompt({ currentPrompt, feedback });
+    async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<BunRequests['refinePrompt']['response']> {
+        return await rpc.request.refinePrompt({ currentPrompt, feedback, lockedPhrase });
     },
 
     async remixInstruments(currentPrompt: string, originalInput: string): Promise<BunRequests['remixInstruments']['response']> {

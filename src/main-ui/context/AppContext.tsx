@@ -16,9 +16,11 @@ interface AppContextType {
     settingsOpen: boolean;
     currentModel: string;
     debugInfo: DebugInfo | undefined;
+    lockedPhrase: string;
     
     setSettingsOpen: (open: boolean) => void;
     setValidation: (v: ValidationResult) => void;
+    setLockedPhrase: (phrase: string) => void;
     loadHistory: (retries?: number) => Promise<void>;
     selectSession: (session: PromptSession) => void;
     newProject: () => void;
@@ -61,6 +63,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [currentModel, setCurrentModel] = useState("");
     const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
+    const [lockedPhrase, setLockedPhrase] = useState("");
 
     const loadModel = useCallback(async () => {
         try {
@@ -126,16 +129,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         
         const currentPrompt = currentSession?.currentPrompt || "";
         const isInitial = !currentPrompt;
+        const phraseToLock = lockedPhrase.trim() || undefined;
 
         try {
             setGeneratingAction('generate');
 
             let result;
             if (isInitial) {
-                result = await api.generateInitial(input);
+                result = await api.generateInitial(input, phraseToLock);
             } else {
                 setChatMessages((prev) => [...prev, { role: "user", content: input }]);
-                result = await api.refinePrompt(currentPrompt, input);
+                result = await api.refinePrompt(currentPrompt, input, phraseToLock);
             }
 
             if (!result?.prompt) {
@@ -186,7 +190,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setGeneratingAction('none');
         }
-    }, [isGenerating, currentSession, saveSession]);
+    }, [isGenerating, currentSession, saveSession, lockedPhrase]);
 
     const handleCopy = useCallback(() => {
         const prompt = currentSession?.currentPrompt || "";
@@ -195,10 +199,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const handleRemix = useCallback(async () => {
         if (isGenerating || !currentSession?.originalInput) return;
+        const phraseToLock = lockedPhrase.trim() || undefined;
 
         try {
             setGeneratingAction('remix');
-            const result = await api.generateInitial(currentSession.originalInput);
+            const result = await api.generateInitial(currentSession.originalInput, phraseToLock);
 
             if (!result?.prompt) {
                 throw new Error("Invalid result received from remix");
@@ -232,7 +237,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setGeneratingAction('none');
         }
-    }, [isGenerating, currentSession, saveSession]);
+    }, [isGenerating, currentSession, saveSession, lockedPhrase]);
 
     const handleRemixInstruments = useCallback(async () => {
         if (isGenerating || !currentSession?.currentPrompt || !currentSession?.originalInput) return;
@@ -380,8 +385,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             settingsOpen,
             currentModel,
             debugInfo,
+            lockedPhrase,
             setSettingsOpen,
             setValidation,
+            setLockedPhrase,
             loadHistory,
             selectSession,
             newProject,

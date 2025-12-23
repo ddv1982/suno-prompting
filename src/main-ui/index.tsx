@@ -25,7 +25,9 @@ function App() {
     settingsOpen,
     currentModel,
     debugInfo,
+    lockedPhrase,
     setSettingsOpen,
+    setLockedPhrase,
     selectSession,
     newProject,
     deleteSession,
@@ -58,6 +60,8 @@ function App() {
               generatingAction={generatingAction}
               validation={validation}
               chatMessages={chatMessages}
+              lockedPhrase={lockedPhrase}
+              onLockedPhraseChange={setLockedPhrase}
               onGenerate={handleGenerate}
               onCopy={handleCopy}
               onRemix={handleRemix}

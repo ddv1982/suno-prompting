@@ -1,3 +1,15 @@
+import { LOCKED_PLACEHOLDER } from './builders';
+
+export function swapLockedPhraseIn(text: string, lockedPhrase: string): string {
+  if (!lockedPhrase) return text;
+  return text.replace(lockedPhrase, LOCKED_PLACEHOLDER);
+}
+
+export function swapLockedPhraseOut(text: string, lockedPhrase: string): string {
+  if (!lockedPhrase) return text;
+  return text.replace(LOCKED_PLACEHOLDER, lockedPhrase);
+}
+
 export const LEAKED_META_SUBSTRINGS = [
   'remove word repetition',
   'remove repetition',

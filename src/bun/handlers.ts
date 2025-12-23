@@ -31,11 +31,11 @@ export function createHandlers(
     }
 
     return {
-        generateInitial: async ({ description }) => {
-            return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description));
+        generateInitial: async ({ description, lockedPhrase }) => {
+            return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description, lockedPhrase));
         },
-        refinePrompt: async ({ currentPrompt, feedback }) => {
-            return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback));
+        refinePrompt: async ({ currentPrompt, feedback, lockedPhrase }) => {
+            return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase));
         },
         remixInstruments: async ({ currentPrompt, originalInput }) => {
             log.info('remixInstruments');

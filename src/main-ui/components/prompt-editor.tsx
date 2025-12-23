@@ -22,6 +22,8 @@ type PromptEditorProps = {
   generatingAction: GeneratingAction;
   validation: ValidationResult;
   chatMessages: ChatMessage[];
+  lockedPhrase: string;
+  onLockedPhraseChange: (phrase: string) => void;
   onGenerate: (input: string) => void;
   onCopy: () => void;
   onRemix: () => void;
@@ -39,6 +41,8 @@ export function PromptEditor({
   generatingAction,
   validation,
   chatMessages,
+  lockedPhrase,
+  onLockedPhraseChange,
   onGenerate,
   onCopy,
   onRemix,
@@ -232,6 +236,20 @@ export function PromptEditor({
 
       <div className="border-t bg-muted/10 p-6 shrink-0">
         <div className="max-w-6xl mx-auto w-full space-y-4">
+          <div className="space-y-1">
+            <label className="text-tiny text-muted-foreground font-medium">
+              Locked Phrase (optional)
+            </label>
+            <Textarea
+              value={lockedPhrase}
+              onChange={(e) => onLockedPhraseChange(e.target.value)}
+              className="min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg bg-background/40 backdrop-blur focus-visible:ring-primary/20"
+              placeholder="Text that will appear exactly as written in the output..."
+            />
+            <p className="text-micro text-muted-foreground opacity-70">
+              This text will be preserved verbatim - the AI won't modify it.
+            </p>
+          </div>
           <div className="flex gap-3 items-end">
             <Textarea
               value={input}
