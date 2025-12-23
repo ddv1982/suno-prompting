@@ -10,6 +10,8 @@ export const AMBIENT_GENRE: GenreDefinition = {
       instruments: [
         'prepared piano', 'felt piano', 'harmonium', 'celesta',
         'strings', 'guitar', 'acoustic guitar', 'fretless guitar',
+        'nylon string guitar', 'Fender Stratocaster', 'slide guitar',
+        'hollowbody guitar',
       ],
     },
     padOrSynth: {
@@ -31,7 +33,7 @@ export const AMBIENT_GENRE: GenreDefinition = {
         'cello', 'vibraphone', 'oboe', 'bassoon', 'bowed vibraphone',
         'marimba', 'kalimba', 'glockenspiel', 'bells', 'glass bells',
         'congas', 'singing bowls', 'choir', 'wordless choir',
-        'clarinet', 'shakuhachi', 'duduk', 'breathy EWI',
+        'clarinet', 'shakuhachi', 'duduk', 'breathy EWI', 'pedal steel',
       ],
     },
     movement: {
@@ -48,5 +50,8 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['acoustic piano', 'Rhodes'],
     ['Rhodes', 'Wurlitzer'],
     ['bells', 'singing bowls'],
+    ['guitar', 'Fender Stratocaster'],
+    ['acoustic guitar', 'nylon string guitar'],
+    ['slide guitar', 'pedal steel'],
   ],
 };

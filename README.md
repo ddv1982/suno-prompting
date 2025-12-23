@@ -105,7 +105,7 @@ The body uses section tags like:
 
 | Genre | Keywords | Key Instruments |
 |-------|----------|-----------------|
-| Ambient | ambient, atmospheric, soundscape | prepared piano, felt piano, harmonium, celesta, strings, guitar, acoustic guitar, fretless guitar, synth pad, analog synth pads, analog synth, digital synth, FM synth, Moog synth, synth, crystalline synth pads, ambient pad, taiko drums, steel pan, Hammond organ, electric piano, Rhodes, Wurlitzer, Clavinet, cello, vibraphone, oboe, bassoon, bowed vibraphone, marimba, kalimba, glockenspiel, bells, glass bells, congas, singing bowls, choir, wordless choir, clarinet, shakuhachi, duduk, breathy EWI, percussion, toms, shaker, frame drum, handpan, sub-bass, snare drum, jazz brushes, cajón, djembe |
+| Ambient | ambient, atmospheric, soundscape | prepared piano, felt piano, harmonium, celesta, strings, guitar, acoustic guitar, fretless guitar, nylon string guitar, Fender Stratocaster, slide guitar, hollowbody guitar, synth pad, analog synth pads, analog synth, digital synth, FM synth, Moog synth, synth, crystalline synth pads, ambient pad, taiko drums, steel pan, Hammond organ, electric piano, Rhodes, Wurlitzer, Clavinet, cello, vibraphone, oboe, bassoon, bowed vibraphone, marimba, kalimba, glockenspiel, bells, glass bells, congas, singing bowls, choir, wordless choir, clarinet, shakuhachi, duduk, breathy EWI, pedal steel, percussion, toms, shaker, frame drum, handpan, sub-bass, snare drum, jazz brushes, cajón, djembe |
 | Jazz | jazz, bebop, swing, cool jazz, fusion, big band, smooth jazz | Rhodes, grand piano, hollowbody guitar, Hammond organ, Wurlitzer, saxophone, tenor sax, trumpet, muted trumpet, trombone, vibraphone, clarinet, flute, upright bass, walking bass, jazz brushes, drums, ride cymbal, congas, bongos |
 | Electronic | edm, electronic, house, techno, trance, dubstep, drum and bass, dnb | synth pad, analog synth, FM synth, arpeggiator, synth, 808, synth bass, kick drum, hi-hat, drums, vocoder |
 | Rock | rock, alternative, indie rock, hard rock, grunge, classic rock, heartland rock | distorted guitar, Fender Stratocaster, guitar, acoustic guitar, Telecaster, bass, drums, kick drum, toms, electric piano, organ, Clavinet, grand piano, Hammond organ, tambourine |
@@ -134,7 +134,7 @@ The body uses section tags like:
 
 **Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
 
-**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, bells, braams, congas, distorted guitar, electric piano, grand piano, guitar, handclaps, harmonica, low brass, organ, saxophone, shaker, tambourine, toms, upright bass, vibraphone
+**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Fender Stratocaster, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, bells, braams, congas, distorted guitar, electric piano, grand piano, guitar, handclaps, harmonica, hollowbody guitar, low brass, organ, saxophone, shaker, tambourine, toms, upright bass, vibraphone
 
 **Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir
 
