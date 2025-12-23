@@ -16,11 +16,11 @@ export const LOFI_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 1 },
-      instruments: ['vibraphone', 'kalimba', 'guitar'],
+      instruments: ['vibraphone', 'kalimba', 'guitar', 'cello', 'clarinet'],
     },
     movement: {
       pick: { min: 1, max: 1 },
-      instruments: ['jazz brushes', 'shaker', 'drums'],
+      instruments: ['jazz brushes', 'shaker', 'percussion', 'drums'],
     },
   },
   poolOrder: ['harmonic', 'color', 'pad', 'movement'],

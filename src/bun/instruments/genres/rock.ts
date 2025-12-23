@@ -12,7 +12,7 @@ export const ROCK_GENRE: GenreDefinition = {
     color: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['electric piano', 'organ'],
+      instruments: ['electric piano', 'organ', 'Clavinet'],
     },
     movement: {
       pick: { min: 2, max: 2 },

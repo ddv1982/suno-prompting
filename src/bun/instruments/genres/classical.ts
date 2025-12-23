@@ -11,7 +11,18 @@ export const CLASSICAL_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 2, max: 3 },
-      instruments: ['violin', 'cello', 'viola', 'flute', 'oboe', 'clarinet', 'bassoon', 'french horn', 'harp'],
+      instruments: [
+        'violin',
+        'cello',
+        'viola',
+        'flute',
+        'oboe',
+        'clarinet',
+        'bassoon',
+        'french horn',
+        'harp',
+        'celesta',
+      ],
     },
     movement: {
       pick: { min: 0, max: 1 },

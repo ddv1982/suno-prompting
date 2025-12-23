@@ -7,11 +7,20 @@ export const SYNTHWAVE_GENRE: GenreDefinition = {
   pools: {
     pad: {
       pick: { min: 2, max: 3 },
-      instruments: ['analog synth', 'FM synth', 'Moog synth', 'arpeggiator', 'synth pad'],
+      instruments: [
+        'analog synth',
+        'analog synth pads',
+        'FM synth',
+        'digital synth',
+        'Moog synth',
+        'arpeggiator',
+        'synth pad',
+        'synth',
+      ],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['synth bass', '808', 'drums'],
+      instruments: ['synth bass', '808', 'kick drum', 'hi-hat', 'drums'],
     },
   },
   poolOrder: ['pad', 'movement'],

@@ -7,7 +7,7 @@ export const RNB_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['Rhodes', 'Wurlitzer', 'felt piano'],
+      instruments: ['Rhodes', 'Wurlitzer', 'electric piano', 'felt piano', 'Clavinet'],
     },
     color: {
       pick: { min: 0, max: 1 },
@@ -16,7 +16,7 @@ export const RNB_GENRE: GenreDefinition = {
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['bass', 'drums'],
+      instruments: ['bass', 'drums', 'kick drum', 'hi-hat'],
     },
   },
   poolOrder: ['harmonic', 'color', 'movement'],

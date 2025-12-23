@@ -11,7 +11,17 @@ export const CINEMATIC_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['french horn', 'cello', 'choir', 'wordless choir', 'violin'],
+      instruments: [
+        'french horn',
+        'cello',
+        'choir',
+        'wordless choir',
+        'violin',
+        'celesta',
+        'glockenspiel',
+        'bells',
+        'harp',
+      ],
     },
     movement: {
       pick: { min: 1, max: 2 },

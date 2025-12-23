@@ -11,7 +11,7 @@ export const FOLK_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['violin', 'harp', 'flute', 'harmonica', 'accordion'],
+      instruments: ['violin', 'harp', 'flute', 'harmonica', 'accordion', 'clarinet'],
     },
     movement: {
       pick: { min: 0, max: 1 },
