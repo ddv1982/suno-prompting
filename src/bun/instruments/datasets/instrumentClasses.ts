@@ -64,9 +64,6 @@ export const MULTIGENRE_FORCE_EXCLUDE = [
 
 const FOUNDATIONAL_SET = new Set<string>(FOUNDATIONAL_INSTRUMENTS.map(i => i.toLowerCase()));
 const ORCHESTRAL_COLOR_SET = new Set<string>(ORCHESTRAL_COLOR_INSTRUMENTS.map(i => i.toLowerCase()));
-const MULTIGENRE_FORCE_INCLUDE_SET = new Set<string>(
-  MULTIGENRE_FORCE_INCLUDE.map(i => i.toLowerCase())
-);
 const MULTIGENRE_FORCE_EXCLUDE_SET = new Set<string>(
   MULTIGENRE_FORCE_EXCLUDE.map(i => i.toLowerCase())
 );
