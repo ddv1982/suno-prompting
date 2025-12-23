@@ -1,9 +1,16 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
+import {
+  FOUNDATIONAL_INSTRUMENTS,
+  MULTIGENRE_INSTRUMENTS,
+} from '@bun/instruments/datasets/instrumentClasses';
 
 export const GENRE_TABLE_START = '<!-- GENRE_TABLE_START -->';
 export const GENRE_TABLE_END = '<!-- GENRE_TABLE_END -->';
+
+export const INSTRUMENT_CLASSES_START = '<!-- INSTRUMENT_CLASSES_START -->';
+export const INSTRUMENT_CLASSES_END = '<!-- INSTRUMENT_CLASSES_END -->';
 
 type Options = {
   readonly includeOptionalPools: boolean;
@@ -95,12 +102,40 @@ export function replaceGenreTableSection(readme: string, tableMarkdown: string):
   return `${before}\n\n${tableMarkdown}\n\n${after}`;
 }
 
+export function buildInstrumentClassesMarkdown(): string {
+  return [
+    `**Foundational instruments** (anchors): ${FOUNDATIONAL_INSTRUMENTS.join(', ')}`,
+    '',
+    `**Multi-genre instruments** (>= 3 genres, excluding foundational): ${MULTIGENRE_INSTRUMENTS.join(
+      ', ',
+    )}`,
+  ].join('\n');
+}
+
+export function replaceInstrumentClassesSection(readme: string, markdown: string): string {
+  const start = readme.indexOf(INSTRUMENT_CLASSES_START);
+  const end = readme.indexOf(INSTRUMENT_CLASSES_END);
+
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error(
+      `README is missing instrument classes markers. Expected ${INSTRUMENT_CLASSES_START} ... ${INSTRUMENT_CLASSES_END}`,
+    );
+  }
+
+  const before = readme.slice(0, start + INSTRUMENT_CLASSES_START.length);
+  const after = readme.slice(end);
+
+  return `${before}\n\n${markdown}\n\n${after}`;
+}
+
 async function main() {
   const readmePath = new URL('../README.md', import.meta.url);
   const readme = await readFile(readmePath, 'utf8');
 
   const table = buildGenreTableMarkdown();
-  const updated = replaceGenreTableSection(readme, table);
+  const classes = buildInstrumentClassesMarkdown();
+
+  const updated = replaceInstrumentClassesSection(replaceGenreTableSection(readme, table), classes);
 
   if (updated === readme) {
     console.log('README genre table is already up to date.');

@@ -108,6 +108,16 @@ The body uses section tags like:
 
 <!-- GENRE_TABLE_END -->
 
+### Instrument layers
+
+<!-- INSTRUMENT_CLASSES_START -->
+
+**Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
+
+**Multi-genre instruments** (>= 3 genres, excluding foundational): 808, Clavinet, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, bells, celesta, cello, choir, clarinet, electric piano, felt piano, flute, french horn, glockenspiel, guitar, harp, jazz brushes, taiko drums, timpani, trumpet, vibraphone, violin
+
+<!-- INSTRUMENT_CLASSES_END -->
+
 ### Synth replacements
 
 | Acoustic | Synth Alternatives |
