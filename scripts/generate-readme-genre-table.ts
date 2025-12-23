@@ -6,12 +6,10 @@ export const GENRE_TABLE_START = '<!-- GENRE_TABLE_START -->';
 export const GENRE_TABLE_END = '<!-- GENRE_TABLE_END -->';
 
 type Options = {
-  readonly maxInstrumentsPerGenre: number;
   readonly includeOptionalPools: boolean;
 };
 
 const DEFAULT_OPTIONS: Options = {
-  maxInstrumentsPerGenre: 5,
   includeOptionalPools: true,
 };
 
@@ -37,8 +35,8 @@ function poolWeight(pool: InstrumentPool): number {
   return pool.chanceToInclude;
 }
 
-function pickKeyInstruments(genre: GenreDefinition, options: Options): string[] {
-  const { maxInstrumentsPerGenre, includeOptionalPools } = options;
+function listGenreInstruments(genre: GenreDefinition, options: Options): string[] {
+  const { includeOptionalPools } = options;
 
   const requiredPools = genre.poolOrder
     .map(k => genre.pools[k])
@@ -48,7 +46,7 @@ function pickKeyInstruments(genre: GenreDefinition, options: Options): string[] 
   const requiredInstruments = uniqueInOrder(requiredPools.flatMap(p => p.instruments));
   const picked: string[] = [...requiredInstruments];
 
-  if (includeOptionalPools && picked.length < maxInstrumentsPerGenre) {
+  if (includeOptionalPools) {
     const optionalPools = genre.poolOrder
       .map(k => genre.pools[k])
       .filter((p): p is InstrumentPool => Boolean(p))
@@ -58,18 +56,11 @@ function pickKeyInstruments(genre: GenreDefinition, options: Options): string[] 
     for (const pool of optionalPools) {
       for (const instrument of pool.instruments) {
         picked.push(instrument);
-        const uniquePicked = uniqueInOrder(picked);
-        picked.length = 0;
-        picked.push(...uniquePicked);
-
-        if (picked.length >= maxInstrumentsPerGenre) {
-          return picked.slice(0, maxInstrumentsPerGenre);
-        }
       }
     }
   }
 
-  return picked.slice(0, maxInstrumentsPerGenre);
+  return uniqueInOrder(picked);
 }
 
 export function buildGenreTableMarkdown(options: Partial<Options> = {}): string {
@@ -81,7 +72,7 @@ export function buildGenreTableMarkdown(options: Partial<Options> = {}): string 
 
   for (const genre of Object.values(GENRE_REGISTRY)) {
     const keywords = genre.keywords.join(', ');
-    const instruments = pickKeyInstruments(genre, resolved).join(', ');
+    const instruments = listGenreInstruments(genre, resolved).join(', ');
     lines.push(`| ${genre.name} | ${keywords} | ${instruments} |`);
   }
 
