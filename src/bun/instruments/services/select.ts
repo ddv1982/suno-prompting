@@ -3,8 +3,10 @@ import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
+  ORCHESTRAL_COLOR_INSTRUMENTS,
   isFoundationalInstrument,
   isMultiGenreInstrument,
+  isOrchestralColorInstrument,
 } from '@bun/instruments/datasets/instrumentClasses';
 import type { Rng } from '@bun/instruments/services/random';
 import { shuffle, randomIntInclusive, rollChance } from '@bun/instruments/services/random';
@@ -17,6 +19,10 @@ export type InstrumentSelectionOptions = {
     readonly count: { readonly min: number; readonly max: number };
   };
   readonly foundational?: {
+    readonly enabled: boolean;
+    readonly count: { readonly min: number; readonly max: number };
+  };
+  readonly orchestralColor?: {
     readonly enabled: boolean;
     readonly count: { readonly min: number; readonly max: number };
   };
@@ -121,21 +127,32 @@ export function selectInstrumentsForGenre(
 
   const multiGenre = options?.multiGenre ?? { enabled: true, count: { min: 1, max: 2 } };
   const foundational = options?.foundational ?? { enabled: true, count: { min: 0, max: 1 } };
+  const orchestralColor = options?.orchestralColor ?? { enabled: true, count: { min: 0, max: 1 } };
 
   const userSelected = userInstruments.slice(0, maxTags);
   let selected: string[] = [...userSelected];
 
   const hasFoundationalAlready = () => selected.some(isFoundationalInstrument);
+  const userWantsOrchestralColor = userSelected.some(isOrchestralColorInstrument);
+  const isOrchestralGenre = genre === 'cinematic' || genre === 'classical' || genre === 'videogame';
+
+  // We keep orchestral color rare outside orchestral genres.
+  // Ambient is treated as non-orchestral for pool selection (so it stays rare there too).
+  const allowOrchestralFromPools = isOrchestralGenre || userWantsOrchestralColor;
 
   for (const poolName of def.poolOrder) {
     if (selected.length >= maxTags) break;
     const pool = def.pools[poolName];
     if (!pool) continue;
 
-    // Prefer genre-defining picks here: avoid foundational + multigenre so we can inject those separately.
-    const candidatesOverride = pool.instruments.filter(
-      i => !isFoundationalInstrument(i) && !isMultiGenreInstrument(i)
-    );
+    // Prefer genre-defining picks here: avoid foundational + multi-genre (and optionally orchestral color)
+    // so we can inject those layers deterministically.
+    const candidatesOverride = pool.instruments.filter(i => {
+      if (isFoundationalInstrument(i)) return false;
+      if (isMultiGenreInstrument(i)) return false;
+      if (!allowOrchestralFromPools && isOrchestralColorInstrument(i)) return false;
+      return true;
+    });
 
     const picks = pickFromPool(
       pool,
@@ -168,6 +185,25 @@ export function selectInstrumentsForGenre(
         selected,
         maxTags - selected.length,
         foundational.count,
+        exclusionRules,
+        rng
+      );
+      selected = [...selected, ...picks].slice(0, maxTags);
+    }
+  }
+
+  if (selected.length < maxTags && orchestralColor.enabled) {
+    const canInject =
+      isOrchestralGenre ||
+      genre === 'ambient' ||
+      userWantsOrchestralColor;
+
+    if (canInject) {
+      const picks = pickFromList(
+        ORCHESTRAL_COLOR_INSTRUMENTS,
+        selected,
+        maxTags - selected.length,
+        orchestralColor.count,
         exclusionRules,
         rng
       );

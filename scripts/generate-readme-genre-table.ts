@@ -4,6 +4,7 @@ import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/ty
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
+  ORCHESTRAL_COLOR_INSTRUMENTS,
 } from '@bun/instruments/datasets/instrumentClasses';
 
 export const GENRE_TABLE_START = '<!-- GENRE_TABLE_START -->';
@@ -106,9 +107,11 @@ export function buildInstrumentClassesMarkdown(): string {
   return [
     `**Foundational instruments** (anchors): ${FOUNDATIONAL_INSTRUMENTS.join(', ')}`,
     '',
-    `**Multi-genre instruments** (>= 3 genres, excluding foundational): ${MULTIGENRE_INSTRUMENTS.join(
+    `**Multi-genre instruments** (wildcards): ${MULTIGENRE_INSTRUMENTS.join(
       ', ',
     )}`,
+    '',
+    `**Orchestral color instruments** (gated): ${ORCHESTRAL_COLOR_INSTRUMENTS.join(', ')}`,
   ].join('\n');
 }
 

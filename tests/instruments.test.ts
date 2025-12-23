@@ -24,6 +24,7 @@ import {
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
+  ORCHESTRAL_COLOR_INSTRUMENTS,
 } from '@bun/instruments/datasets/instrumentClasses';
 
 describe('detectHarmonic', () => {
@@ -221,6 +222,7 @@ describe('getAmbientInstruments', () => {
       ...Object.values(ambientPools).flatMap(p => [...p.instruments]),
       ...MULTIGENRE_INSTRUMENTS,
       ...FOUNDATIONAL_INSTRUMENTS,
+      ...ORCHESTRAL_COLOR_INSTRUMENTS,
     ]);
     for (const tag of tags) {
       expect(whitelist.has(tag)).toBe(true);

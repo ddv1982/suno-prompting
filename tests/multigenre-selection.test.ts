@@ -4,6 +4,7 @@ import { createRng } from '@bun/instruments/services/random';
 import {
   isFoundationalInstrument,
   isMultiGenreInstrument,
+  isOrchestralColorInstrument,
 } from '@bun/instruments/datasets/instrumentClasses';
 
 describe('Multi-genre + foundational selection', () => {
@@ -31,9 +32,32 @@ describe('Multi-genre + foundational selection', () => {
       rng,
       multiGenre: { enabled: false, count: { min: 1, max: 2 } },
       foundational: { enabled: false, count: { min: 0, max: 1 } },
+      orchestralColor: { enabled: false, count: { min: 0, max: 1 } },
     });
 
     expect(selected.some(isMultiGenreInstrument)).toBe(false);
     expect(selected.some(isFoundationalInstrument)).toBe(false);
+    expect(selected.some(isOrchestralColorInstrument)).toBe(false);
+  });
+
+  test('injects orchestral color for cinematic/classical/videogame when enabled', () => {
+    const rng = createRng(222);
+    const selected = selectInstrumentsForGenre('cinematic', { maxTags: 10, rng });
+
+    // Might already include orchestral instruments from pools; but it should be possible to have at least one.
+    expect(selected.some(isOrchestralColorInstrument)).toBe(true);
+  });
+
+  test('does not inject orchestral color for non-orchestral genres unless user asks', () => {
+    const rng = createRng(333);
+    const selected = selectInstrumentsForGenre('rock', { maxTags: 10, rng });
+    expect(selected.some(isOrchestralColorInstrument)).toBe(false);
+
+    const selectedWithUser = selectInstrumentsForGenre('rock', {
+      maxTags: 10,
+      rng: createRng(333),
+      userInstruments: ['violin'],
+    });
+    expect(selectedWithUser.some(isOrchestralColorInstrument)).toBe(true);
   });
 });

@@ -3,8 +3,10 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
+  ORCHESTRAL_COLOR_INSTRUMENTS,
   isFoundationalInstrument,
   isMultiGenreInstrument,
+  isOrchestralColorInstrument,
 } from '@bun/instruments/datasets/instrumentClasses';
 
 function uniqLower(items: readonly string[]): string[] {
@@ -28,7 +30,7 @@ function listGenreInstruments(genre: GenreDefinition): string[] {
 
 function listGenreSpecificInstruments(genre: GenreDefinition): string[] {
   return listGenreInstruments(genre).filter(
-    i => !isFoundationalInstrument(i) && !isMultiGenreInstrument(i)
+    i => !isFoundationalInstrument(i) && !isMultiGenreInstrument(i) && !isOrchestralColorInstrument(i)
   );
 }
 
@@ -77,6 +79,16 @@ function main() {
 
   console.log('\n=== Multi-genre instruments (>= 3 genres) ===');
   console.log(MULTIGENRE_INSTRUMENTS.join(', '));
+
+  console.log('\n=== Orchestral color instruments ===');
+  console.log(ORCHESTRAL_COLOR_INSTRUMENTS.join(', '));
+
+  console.log('\n=== Orchestral color genres ===');
+  for (const instrument of ORCHESTRAL_COLOR_INSTRUMENTS) {
+    const key = instrument.toLowerCase();
+    const set = instrumentToGenres.get(key);
+    console.log(`${instrument}: ${(set ? [...set].sort() : []).join(', ')}`);
+  }
 
   console.log('\n=== Instruments used in many genres (top 25) ===');
   for (const row of overlap.slice(0, 25)) {

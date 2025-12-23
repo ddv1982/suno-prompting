@@ -114,7 +114,9 @@ The body uses section tags like:
 
 **Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
 
-**Multi-genre instruments** (>= 3 genres, excluding foundational): 808, Clavinet, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, bells, celesta, cello, choir, clarinet, electric piano, felt piano, flute, french horn, glockenspiel, guitar, harp, jazz brushes, taiko drums, timpani, trumpet, vibraphone, violin
+**Multi-genre instruments** (wildcards): 808, Clavinet, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, bells, electric piano, guitar, vibraphone
+
+**Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir, trumpet, flute, clarinet
 
 <!-- INSTRUMENT_CLASSES_END -->
 
