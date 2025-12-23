@@ -132,7 +132,6 @@ export function selectInstrumentsForGenre(
   const userSelected = userInstruments.slice(0, maxTags);
   let selected: string[] = [...userSelected];
 
-  const hasFoundationalAlready = () => selected.some(isFoundationalInstrument);
   const userWantsOrchestralColor = userSelected.some(isOrchestralColorInstrument);
   const isOrchestralGenre = genre === 'cinematic' || genre === 'classical' || genre === 'videogame';
 
@@ -145,14 +144,11 @@ export function selectInstrumentsForGenre(
     const pool = def.pools[poolName];
     if (!pool) continue;
 
-    // Prefer genre-defining picks here: avoid foundational + multi-genre (and optionally orchestral color)
-    // so we can inject those layers deterministically.
-    const candidatesOverride = pool.instruments.filter(i => {
-      if (isFoundationalInstrument(i)) return false;
-      if (isMultiGenreInstrument(i)) return false;
-      if (!allowOrchestralFromPools && isOrchestralColorInstrument(i)) return false;
-      return true;
-    });
+    // Keep pools as-authored; only filter orchestral color for non-orchestral genres
+    // to prevent constant cinematic drift.
+    const candidatesOverride = allowOrchestralFromPools
+      ? undefined
+      : pool.instruments.filter(i => !isOrchestralColorInstrument(i));
 
     const picks = pickFromPool(
       pool,
@@ -165,50 +161,70 @@ export function selectInstrumentsForGenre(
     selected = [...selected, ...picks].slice(0, maxTags);
   }
 
-  if (selected.length < maxTags && multiGenre.enabled) {
+  // Quota-based injections: fill missing counts rather than always adding.
+  const existingMulti = selected.filter(isMultiGenreInstrument).length;
+  const existingFoundational = selected.filter(isFoundationalInstrument).length;
+  const existingOrchestral = selected.filter(isOrchestralColorInstrument).length;
+
+  const multiTarget = multiGenre.enabled
+    ? randomIntInclusive(multiGenre.count.min, multiGenre.count.max, rng)
+    : 0;
+  const foundationalTarget = foundational.enabled
+    ? randomIntInclusive(foundational.count.min, foundational.count.max, rng)
+    : 0;
+
+  let orchestralTarget = 0;
+  if (orchestralColor.enabled) {
+    if (isOrchestralGenre || userWantsOrchestralColor) {
+      orchestralTarget = randomIntInclusive(
+        orchestralColor.count.min,
+        orchestralColor.count.max,
+        rng
+      );
+    } else if (genre === 'ambient') {
+      const ambientChance = 0.15;
+      orchestralTarget = rollChance(ambientChance, rng) ? 1 : 0;
+    }
+  }
+
+  const missingMulti = Math.max(0, multiTarget - existingMulti);
+  const missingFoundational = Math.max(0, foundationalTarget - existingFoundational);
+  const missingOrchestral = Math.max(0, orchestralTarget - existingOrchestral);
+
+  if (selected.length < maxTags && missingMulti > 0) {
     const picks = pickFromList(
       MULTIGENRE_INSTRUMENTS,
       selected,
       maxTags - selected.length,
-      multiGenre.count,
+      { min: missingMulti, max: missingMulti },
       exclusionRules,
       rng
     );
     selected = [...selected, ...picks].slice(0, maxTags);
   }
 
-  if (selected.length < maxTags && foundational.enabled) {
-    // Foundational is an anchor; prefer injecting only when not already present.
-    if (!hasFoundationalAlready()) {
-      const picks = pickFromList(
-        FOUNDATIONAL_INSTRUMENTS,
-        selected,
-        maxTags - selected.length,
-        foundational.count,
-        exclusionRules,
-        rng
-      );
-      selected = [...selected, ...picks].slice(0, maxTags);
-    }
+  if (selected.length < maxTags && missingFoundational > 0) {
+    const picks = pickFromList(
+      FOUNDATIONAL_INSTRUMENTS,
+      selected,
+      maxTags - selected.length,
+      { min: missingFoundational, max: missingFoundational },
+      exclusionRules,
+      rng
+    );
+    selected = [...selected, ...picks].slice(0, maxTags);
   }
 
-  if (selected.length < maxTags && orchestralColor.enabled) {
-    const canInject =
-      isOrchestralGenre ||
-      genre === 'ambient' ||
-      userWantsOrchestralColor;
-
-    if (canInject) {
-      const picks = pickFromList(
-        ORCHESTRAL_COLOR_INSTRUMENTS,
-        selected,
-        maxTags - selected.length,
-        orchestralColor.count,
-        exclusionRules,
-        rng
-      );
-      selected = [...selected, ...picks].slice(0, maxTags);
-    }
+  if (selected.length < maxTags && missingOrchestral > 0) {
+    const picks = pickFromList(
+      ORCHESTRAL_COLOR_INSTRUMENTS,
+      selected,
+      maxTags - selected.length,
+      { min: missingOrchestral, max: missingOrchestral },
+      exclusionRules,
+      rng
+    );
+    selected = [...selected, ...picks].slice(0, maxTags);
   }
 
   return selected;

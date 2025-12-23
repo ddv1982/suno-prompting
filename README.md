@@ -116,7 +116,7 @@ The body uses section tags like:
 
 **Multi-genre instruments** (wildcards): 808, Clavinet, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, bells, electric piano, guitar, vibraphone
 
-**Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir, trumpet, flute, clarinet
+**Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir
 
 <!-- INSTRUMENT_CLASSES_END -->
 

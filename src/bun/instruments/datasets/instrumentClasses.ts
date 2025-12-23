@@ -36,9 +36,6 @@ export const ORCHESTRAL_COLOR_INSTRUMENTS = [
   'taiko drums',
   'choir',
   'wordless choir',
-  'trumpet',
-  'flute',
-  'clarinet',
 ] as const;
 
 // Override lists to curate multi-genre “wildcards” for modern Suno prompts.
@@ -60,6 +57,9 @@ export const MULTIGENRE_FORCE_INCLUDE = [
 export const MULTIGENRE_FORCE_EXCLUDE = [
   'felt piano',
   'jazz brushes',
+  'trumpet',
+  'flute',
+  'clarinet',
 ] as const;
 
 const FOUNDATIONAL_SET = new Set<string>(FOUNDATIONAL_INSTRUMENTS.map(i => i.toLowerCase()));
