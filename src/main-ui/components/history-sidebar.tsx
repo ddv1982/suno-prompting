@@ -4,6 +4,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/section-label";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { type PromptSession } from "@shared/types";
 
@@ -98,10 +99,12 @@ type HistoryItemProps = {
 
 function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps) {
   const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const date = new Date(session.updatedAt);
 
   const handleDelete = async () => {
     setDeleting(true);
+    setConfirmOpen(false);
     try {
       await onDelete();
     } catch (error) {
@@ -112,47 +115,67 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
   };
 
   return (
-    <SidebarMenuItem>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={deleting ? undefined : onSelect}
-        onKeyDown={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && !deleting) {
-            e.preventDefault();
-            onSelect();
-          }
-        }}
-        className={cn(
-          "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer border border-transparent transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-          isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border shadow-sm"
-            : "hover:bg-sidebar-accent/60 hover:border-sidebar-border hover:text-sidebar-foreground"
-        )}
-      >
-        <div className="flex flex-col gap-0.5">
-          <span
-            className={cn(
-              "text-sm font-medium leading-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
-              isActive && "font-semibold"
-            )}
-          >
-            {session.originalInput || "Untitled Project"}
-          </span>
-          <span className="text-micro text-sidebar-foreground/50">
-            {date.toLocaleDateString()}
-          </span>
+    <>
+      <SidebarMenuItem>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={deleting ? undefined : onSelect}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && !deleting) {
+              e.preventDefault();
+              onSelect();
+            }
+          }}
+          className={cn(
+            "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer border border-transparent transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+            isActive
+              ? "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border shadow-sm"
+              : "hover:bg-sidebar-accent/60 hover:border-sidebar-border hover:text-sidebar-foreground"
+          )}
+        >
+          <div className="flex flex-col gap-0.5">
+            <span
+              className={cn(
+                "text-sm font-medium leading-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
+                isActive && "font-semibold"
+              )}
+            >
+              {session.originalInput || "Untitled Project"}
+            </span>
+            <span className="text-micro text-sidebar-foreground/50">
+              {date.toLocaleDateString()}
+            </span>
+          </div>
         </div>
-      </div>
-      <SidebarMenuAction
-        showOnHover
-        data-testid="history-delete"
-        disabled={deleting}
-        onClick={handleDelete}
-      >
-        <Trash2 className="w-4 h-4" />
-      </SidebarMenuAction>
-    </SidebarMenuItem>
+        <SidebarMenuAction
+          showOnHover
+          data-testid="history-delete"
+          disabled={deleting}
+          onClick={() => setConfirmOpen(true)}
+        >
+          <Trash2 className="w-4 h-4" />
+        </SidebarMenuAction>
+      </SidebarMenuItem>
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this project? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

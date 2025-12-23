@@ -239,25 +239,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [isGenerating, currentSession, saveSession, lockedPhrase]);
 
-    const handleRemixInstruments = useCallback(async () => {
-        if (isGenerating || !currentSession?.currentPrompt || !currentSession?.originalInput) return;
+    const executeRemixAction = useCallback(async (
+        action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
+        apiCall: () => Promise<{ prompt: string; versionId: string; validation: ValidationResult }>,
+        feedbackLabel: string,
+        successMessage: string
+    ) => {
+        if (isGenerating || !currentSession?.currentPrompt) return;
 
         try {
-            setGeneratingAction('remixInstruments');
-            const result = await api.remixInstruments(
-                currentSession.currentPrompt,
-                currentSession.originalInput
-            );
+            setGeneratingAction(action);
+            const result = await apiCall();
 
             if (!result?.prompt) {
-                throw new Error("Invalid result received from instrument remix");
+                throw new Error(`Invalid result received from ${feedbackLabel}`);
             }
 
             const now = new Date().toISOString();
             const newVersion: PromptVersion = {
                 id: result.versionId,
                 content: result.prompt,
-                feedback: "[instruments remix]",
+                feedback: `[${feedbackLabel}]`,
                 timestamp: now,
             };
 
@@ -268,99 +270,49 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 updatedAt: now,
             };
 
-            setChatMessages((prev) => [...prev, { role: "ai", content: "Instruments remixed." }]);
+            setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
             setValidation(result.validation);
             await saveSession(updatedSession);
         } catch (error) {
-            console.error("Instrument remix failed:", error);
+            console.error(`${feedbackLabel} failed:`, error);
             setChatMessages((prev) => [
                 ...prev,
-                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix instruments"}.` },
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : `Failed to ${feedbackLabel}`}.` },
             ]);
         } finally {
             setGeneratingAction('none');
         }
     }, [isGenerating, currentSession, saveSession]);
+
+    const handleRemixInstruments = useCallback(async () => {
+        if (!currentSession?.originalInput) return;
+        await executeRemixAction(
+            'remixInstruments',
+            () => api.remixInstruments(currentSession.currentPrompt, currentSession.originalInput),
+            'instruments remix',
+            'Instruments remixed.'
+        );
+    }, [currentSession, executeRemixAction]);
 
     const handleRemixGenre = useCallback(async () => {
-        if (isGenerating || !currentSession?.currentPrompt) return;
-
-        try {
-            setGeneratingAction('remixGenre');
-            const result = await api.remixGenre(currentSession.currentPrompt);
-
-            if (!result?.prompt) {
-                throw new Error("Invalid result received from genre remix");
-            }
-
-            const now = new Date().toISOString();
-            const newVersion: PromptVersion = {
-                id: result.versionId,
-                content: result.prompt,
-                feedback: "[genre remix]",
-                timestamp: now,
-            };
-
-            const updatedSession: PromptSession = {
-                ...currentSession,
-                currentPrompt: result.prompt,
-                versionHistory: [...currentSession.versionHistory, newVersion],
-                updatedAt: now,
-            };
-
-            setChatMessages((prev) => [...prev, { role: "ai", content: "Genre remixed." }]);
-            setValidation(result.validation);
-            await saveSession(updatedSession);
-        } catch (error) {
-            console.error("Genre remix failed:", error);
-            setChatMessages((prev) => [
-                ...prev,
-                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix genre"}.` },
-            ]);
-        } finally {
-            setGeneratingAction('none');
-        }
-    }, [isGenerating, currentSession, saveSession]);
+        if (!currentSession?.currentPrompt) return;
+        await executeRemixAction(
+            'remixGenre',
+            () => api.remixGenre(currentSession.currentPrompt),
+            'genre remix',
+            'Genre remixed.'
+        );
+    }, [currentSession, executeRemixAction]);
 
     const handleRemixMood = useCallback(async () => {
-        if (isGenerating || !currentSession?.currentPrompt) return;
-
-        try {
-            setGeneratingAction('remixMood');
-            const result = await api.remixMood(currentSession.currentPrompt);
-
-            if (!result?.prompt) {
-                throw new Error("Invalid result received from mood remix");
-            }
-
-            const now = new Date().toISOString();
-            const newVersion: PromptVersion = {
-                id: result.versionId,
-                content: result.prompt,
-                feedback: "[mood remix]",
-                timestamp: now,
-            };
-
-            const updatedSession: PromptSession = {
-                ...currentSession,
-                currentPrompt: result.prompt,
-                versionHistory: [...currentSession.versionHistory, newVersion],
-                updatedAt: now,
-            };
-
-            setChatMessages((prev) => [...prev, { role: "ai", content: "Mood remixed." }]);
-            setValidation(result.validation);
-            await saveSession(updatedSession);
-        } catch (error) {
-            console.error("Mood remix failed:", error);
-            setChatMessages((prev) => [
-                ...prev,
-                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix mood"}.` },
-            ]);
-        } finally {
-            setGeneratingAction('none');
-        }
-    }, [isGenerating, currentSession, saveSession]);
+        if (!currentSession?.currentPrompt) return;
+        await executeRemixAction(
+            'remixMood',
+            () => api.remixMood(currentSession.currentPrompt),
+            'mood remix',
+            'Mood remixed.'
+        );
+    }, [currentSession, executeRemixAction]);
 
     useEffect(() => {
         loadHistory();

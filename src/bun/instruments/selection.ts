@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 import type { LanguageModel } from 'ai';
+import { z } from 'zod';
 import {
   detectGenre,
   detectCombination,
@@ -11,6 +12,14 @@ import {
 import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
 import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
+
+const LLMResponseSchema = z.object({
+  genre: z.enum(['ambient', 'jazz', 'electronic', 'rock', 'pop', 'classical', 'lofi', 'synthwave', 'cinematic', 'folk', 'rnb', 'videogame']).nullable().optional(),
+  combination: z.string().nullable().optional(),
+  singleMode: z.string().nullable().optional(),
+  polyrhythmCombination: z.string().nullable().optional(),
+  reasoning: z.string().optional(),
+});
 
 export type ModeSelection = {
   genre: GenreType | null;
@@ -102,16 +111,17 @@ export async function selectModesWithLLM(
   });
 
   const cleaned = text.trim().replace(/```json\n?|\n?```/g, '');
-  const parsed = JSON.parse(cleaned) as Partial<ModeSelection>;
+  const rawParsed = JSON.parse(cleaned);
+  const validated = LLMResponseSchema.parse(rawParsed);
 
   return {
-    genre: parsed.genre ?? null,
-    combination: parsed.combination ?? null,
-    singleMode: parsed.singleMode ?? null,
-    polyrhythmCombination: parsed.polyrhythmCombination ?? null,
+    genre: (validated.genre as GenreType) ?? null,
+    combination: (validated.combination as CombinationType) ?? null,
+    singleMode: (validated.singleMode as HarmonicStyle) ?? null,
+    polyrhythmCombination: (validated.polyrhythmCombination as PolyrhythmCombinationType) ?? null,
     timeSignature: detectTimeSignature(description),
     timeSignatureJourney: detectTimeSignatureJourney(description),
-    reasoning: parsed.reasoning ?? 'LLM selection',
+    reasoning: validated.reasoning ?? 'LLM selection',
   };
 }
 

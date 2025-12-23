@@ -12,9 +12,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
-import { type ValidationResult } from "@shared/validation";
+import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 import { type DebugInfo } from "@shared/types";
 import { type GeneratingAction } from "@/context/AppContext";
+import { APP_CONSTANTS } from "@shared/constants";
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -58,11 +59,12 @@ export function PromptEditor({
   const [debugOpen, setDebugOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { charCount, promptOverLimit, inputOverLimit } = useMemo(() => ({
+  const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation } = useMemo(() => ({
     charCount: currentPrompt.length,
     promptOverLimit: currentPrompt.length > maxChars,
     inputOverLimit: input.trim().length > maxChars,
-  }), [currentPrompt, input, maxChars]);
+    lockedPhraseValidation: validateLockedPhrase(lockedPhrase),
+  }), [currentPrompt, input, maxChars, lockedPhrase]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -73,9 +75,8 @@ export function PromptEditor({
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed || isGenerating) return;
-    if (trimmed.length > maxChars) {
-      return;
-    }
+    if (trimmed.length > maxChars) return;
+    if (!lockedPhraseValidation.isValid) return;
     onGenerate(trimmed);
     setInput("");
   };
@@ -237,18 +238,37 @@ export function PromptEditor({
       <div className="border-t bg-muted/10 p-6 shrink-0">
         <div className="max-w-6xl mx-auto w-full space-y-4">
           <div className="space-y-1">
-            <label className="text-tiny text-muted-foreground font-medium">
-              Locked Phrase (optional)
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-tiny text-muted-foreground font-medium">
+                Locked Phrase (optional)
+              </label>
+              {lockedPhrase && (
+                <span className={cn(
+                  "text-micro font-mono tabular-nums",
+                  !lockedPhraseValidation.isValid ? "text-destructive" : "text-muted-foreground"
+                )}>
+                  {lockedPhrase.length} / {APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS}
+                </span>
+              )}
+            </div>
             <Textarea
               value={lockedPhrase}
               onChange={(e) => onLockedPhraseChange(e.target.value)}
-              className="min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg bg-background/40 backdrop-blur focus-visible:ring-primary/20"
+              className={cn(
+                "min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg bg-background/40 backdrop-blur focus-visible:ring-primary/20",
+                !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20"
+              )}
               placeholder="Text that will appear exactly as written in the output..."
             />
-            <p className="text-micro text-muted-foreground opacity-70">
-              This text will be preserved verbatim - the AI won't modify it.
-            </p>
+            {lockedPhraseValidation.error ? (
+              <p className="text-micro text-destructive flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {lockedPhraseValidation.error}
+              </p>
+            ) : (
+              <p className="text-micro text-muted-foreground opacity-70">
+                This text will be preserved verbatim - the AI won't modify it.
+              </p>
+            )}
           </div>
           <div className="flex gap-3 items-end">
             <Textarea
@@ -260,7 +280,7 @@ export function PromptEditor({
             />
             <Button
               onClick={handleSend}
-              disabled={isGenerating || !input.trim() || inputOverLimit}
+              disabled={isGenerating || !input.trim() || inputOverLimit || !lockedPhraseValidation.isValid}
               size="sm"
               className={cn(
                 "h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive transition-all duration-300",

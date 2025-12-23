@@ -33,12 +33,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     if (isOpen) {
       setError(null);
       setLoading(true);
-      Promise.all([api.getApiKey(), api.getModel(), api.getSunoTags(), api.getDebugMode()])
-        .then(([key, savedModel, savedUseSunoTags, savedDebugMode]) => {
-          setApiKey(key);
-          setModel(savedModel || APP_CONSTANTS.AI.DEFAULT_MODEL);
-          setUseSunoTags(savedUseSunoTags);
-          setDebugMode(savedDebugMode);
+      api.getAllSettings()
+        .then((settings) => {
+          setApiKey(settings.apiKey || '');
+          setModel(settings.model || APP_CONSTANTS.AI.DEFAULT_MODEL);
+          setUseSunoTags(settings.useSunoTags);
+          setDebugMode(settings.debugMode);
         })
         .catch((err) => {
           console.error("Failed to fetch settings", err);
@@ -52,10 +52,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setSaving(true);
     setError(null);
     try {
-      await api.setApiKey(apiKey.trim());
-      await api.setModel(model);
-      await api.setSunoTags(useSunoTags);
-      await api.setDebugMode(debugMode);
+      await api.saveAllSettings({
+        apiKey: apiKey.trim(),
+        model,
+        useSunoTags,
+        debugMode
+      });
       onClose();
     } catch (e) {
       console.error("Failed to save settings", e);

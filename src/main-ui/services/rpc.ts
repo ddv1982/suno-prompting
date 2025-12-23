@@ -81,5 +81,13 @@ export const api = {
 
     async setDebugMode(debugMode: boolean): Promise<void> {
         await rpc.request.setDebugMode({ debugMode });
+    },
+
+    async getAllSettings(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean }> {
+        return await rpc.request.getAllSettings({});
+    },
+
+    async saveAllSettings(settings: { apiKey: string; model: string; useSunoTags: boolean; debugMode: boolean }): Promise<void> {
+        await rpc.request.saveAllSettings(settings);
     }
 };

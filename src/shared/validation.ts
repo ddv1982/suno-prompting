@@ -1,8 +1,15 @@
+import { APP_CONSTANTS } from './constants';
+
 export interface ValidationResult {
     isValid: boolean;
     errors: string[];
     warnings: string[];
     charCount: number;
+}
+
+export interface LockedPhraseValidation {
+    isValid: boolean;
+    error: string | null;
 }
 
 export const EMPTY_VALIDATION: ValidationResult = {
@@ -11,6 +18,26 @@ export const EMPTY_VALIDATION: ValidationResult = {
     warnings: [],
     charCount: 0,
 };
+
+export function validateLockedPhrase(phrase: string): LockedPhraseValidation {
+    if (!phrase) return { isValid: true, error: null };
+    
+    if (phrase.length > APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS) {
+        return {
+            isValid: false,
+            error: `Locked phrase exceeds ${APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS} characters (${phrase.length}).`
+        };
+    }
+    
+    if (phrase.includes('{{') || phrase.includes('}}')) {
+        return {
+            isValid: false,
+            error: 'Locked phrase cannot contain {{ or }} characters.'
+        };
+    }
+    
+    return { isValid: true, error: null };
+}
 
 const CONTRADICTORY_PAIRS = [
     ['lo-fi', 'ultra-clean'],

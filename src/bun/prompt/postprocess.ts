@@ -1,13 +1,18 @@
 import { LOCKED_PLACEHOLDER } from './builders';
 
+export function isValidLockedPhrase(phrase: string): boolean {
+  if (!phrase) return true;
+  return !phrase.includes('{{') && !phrase.includes('}}');
+}
+
 export function swapLockedPhraseIn(text: string, lockedPhrase: string): string {
   if (!lockedPhrase) return text;
-  return text.replace(lockedPhrase, LOCKED_PLACEHOLDER);
+  return text.replaceAll(lockedPhrase, LOCKED_PLACEHOLDER);
 }
 
 export function swapLockedPhraseOut(text: string, lockedPhrase: string): string {
   if (!lockedPhrase) return text;
-  return text.replace(LOCKED_PLACEHOLDER, lockedPhrase);
+  return text.replaceAll(LOCKED_PLACEHOLDER, lockedPhrase);
 }
 
 export const LEAKED_META_SUBSTRINGS = [

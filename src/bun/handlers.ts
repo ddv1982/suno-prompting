@@ -135,6 +135,25 @@ export function createHandlers(
             await storage.saveConfig({ debugMode });
             aiEngine.setDebugMode(debugMode);
             return { success: true };
+        },
+        getAllSettings: async () => {
+            log.info('getAllSettings');
+            const config = await storage.getConfig();
+            return {
+                apiKey: config.apiKey,
+                model: config.model,
+                useSunoTags: config.useSunoTags,
+                debugMode: config.debugMode
+            };
+        },
+        saveAllSettings: async ({ apiKey, model, useSunoTags, debugMode }) => {
+            log.info('saveAllSettings');
+            await storage.saveConfig({ apiKey, model, useSunoTags, debugMode });
+            aiEngine.setApiKey(apiKey);
+            aiEngine.setModel(model);
+            aiEngine.setUseSunoTags(useSunoTags);
+            aiEngine.setDebugMode(debugMode);
+            return { success: true };
         }
     };
 }

@@ -1,6 +1,7 @@
 export const APP_CONSTANTS = {
     MAX_PROMPT_CHARS: 1000,
     MIN_PROMPT_CHARS: 20,
+    MAX_LOCKED_PHRASE_CHARS: 300,
     STORAGE_DIR: '.suno-prompting-app',
     AI: {
         MAX_RETRIES: 10,

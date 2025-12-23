@@ -59,6 +59,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             setSunoTags: handlers.setSunoTags,
             getDebugMode: handlers.getDebugMode,
             setDebugMode: handlers.setDebugMode,
+            getAllSettings: handlers.getAllSettings,
+            saveAllSettings: handlers.saveAllSettings,
         }
     }
 });

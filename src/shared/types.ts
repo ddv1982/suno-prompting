@@ -43,6 +43,20 @@ export type RemixMoodResponse = { prompt: string; versionId: string; validation:
 
 export type SetDebugModeParams = { debugMode: boolean };
 
+export type SaveAllSettingsParams = {
+    apiKey: string;
+    model: string;
+    useSunoTags: boolean;
+    debugMode: boolean;
+};
+
+export type GetAllSettingsResponse = {
+    apiKey: string | null;
+    model: string;
+    useSunoTags: boolean;
+    debugMode: boolean;
+};
+
 export type GetHistoryResponse = { sessions: PromptSession[] };
 export type SaveSessionParams = { session: PromptSession };
 export type DeleteSessionParams = { id: string };
@@ -75,6 +89,8 @@ export type RPCHandlers = {
     setSunoTags: (params: SetSunoTagsParams) => Promise<{ success: boolean }>;
     getDebugMode: (params: Record<string, never>) => Promise<{ debugMode: boolean }>;
     setDebugMode: (params: SetDebugModeParams) => Promise<{ success: boolean }>;
+    getAllSettings: (params: Record<string, never>) => Promise<GetAllSettingsResponse>;
+    saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
 };
 
 export type SunoRPCSchema = {
@@ -142,6 +158,14 @@ export type SunoRPCSchema = {
             };
             setDebugMode: {
                 params: SetDebugModeParams;
+                response: { success: boolean };
+            };
+            getAllSettings: {
+                params: Record<string, never>;
+                response: GetAllSettingsResponse;
+            };
+            saveAllSettings: {
+                params: SaveAllSettingsParams;
                 response: { success: boolean };
             };
         };

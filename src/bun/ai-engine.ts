@@ -12,6 +12,9 @@ import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildSystemPrompt } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine } from '@bun/prompt/remix';
+import { createLogger } from '@bun/logger';
+
+const log = createLogger('AIEngine');
 
 export type GenerationResult = {
   text: string;
@@ -128,7 +131,8 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
       return condensed.trim();
-    } catch {
+    } catch (error) {
+      log.warn('condenseWithDedup:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
       return text;
     }
   }
@@ -150,7 +154,8 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
       return condensed.trim();
-    } catch {
+    } catch (error) {
+      log.warn('condense:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
       return text;
     }
   }
@@ -179,7 +184,8 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
       return rewritten.trim();
-    } catch {
+    } catch (error) {
+      log.warn('rewriteWithoutMeta:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
       return text;
     }
   }
