@@ -1,5 +1,5 @@
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import type { GenreDefinition } from '@bun/instruments/genres/types';
+import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
@@ -24,7 +24,7 @@ function uniqLower(items: readonly string[]): string[] {
 function listGenreInstruments(genre: GenreDefinition): string[] {
   const orderedPools = genre.poolOrder
     .map(key => genre.pools[key])
-    .filter(Boolean);
+    .filter((p): p is InstrumentPool => Boolean(p));
   return uniqLower(orderedPools.flatMap(p => p.instruments));
 }
 

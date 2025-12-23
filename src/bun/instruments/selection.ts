@@ -1,15 +1,24 @@
 import { generateText } from 'ai';
-import type { LanguageModelV1 } from 'ai';
-import { detectGenre, detectCombination, detectHarmonic, detectPolyrhythmCombination } from '@bun/instruments/detection';
+import type { LanguageModel } from 'ai';
+import {
+  detectGenre,
+  detectCombination,
+  detectHarmonic,
+  detectPolyrhythmCombination,
+  detectTimeSignature,
+  detectTimeSignatureJourney,
+} from '@bun/instruments/detection';
 import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
-import type { PolyrhythmCombinationType } from '@bun/instruments/rhythms';
+import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
 
 export type ModeSelection = {
   genre: GenreType | null;
   combination: CombinationType | null;
   singleMode: HarmonicStyle | null;
   polyrhythmCombination: PolyrhythmCombinationType | null;
+  timeSignature: TimeSignatureType | null;
+  timeSignatureJourney: TimeSignatureJourneyType | null;
   reasoning: string;
 };
 
@@ -82,33 +91,46 @@ Return ONLY valid JSON (no markdown, no explanation):
 
 export async function selectModesWithLLM(
   description: string,
-  model: LanguageModelV1
+  model: LanguageModel
 ): Promise<ModeSelection> {
   const { text } = await generateText({
     model,
     system: SELECTION_SYSTEM_PROMPT,
     prompt: `Analyze this song description and select the best harmonic approach:\n\n"${description}"`,
-    maxTokens: 150,
+    maxOutputTokens: 150,
     temperature: 0.1,
   });
 
   const cleaned = text.trim().replace(/```json\n?|\n?```/g, '');
-  return JSON.parse(cleaned) as ModeSelection;
+  const parsed = JSON.parse(cleaned) as Partial<ModeSelection>;
+
+  return {
+    genre: parsed.genre ?? null,
+    combination: parsed.combination ?? null,
+    singleMode: parsed.singleMode ?? null,
+    polyrhythmCombination: parsed.polyrhythmCombination ?? null,
+    timeSignature: detectTimeSignature(description),
+    timeSignatureJourney: detectTimeSignatureJourney(description),
+    reasoning: parsed.reasoning ?? 'LLM selection',
+  };
 }
 
 export async function selectModes(
   description: string,
-  model: LanguageModelV1
+  model: LanguageModel
 ): Promise<ModeSelection> {
   try {
     return await selectModesWithLLM(description, model);
   } catch (error) {
     console.warn('[Selection] LLM selection failed, falling back to keywords:', error);
+    const combination = detectCombination(description);
     return {
       genre: detectGenre(description),
-      combination: detectCombination(description),
-      singleMode: detectCombination(description) ? null : detectHarmonic(description),
+      combination,
+      singleMode: combination ? null : detectHarmonic(description),
       polyrhythmCombination: detectPolyrhythmCombination(description),
+      timeSignature: detectTimeSignature(description),
+      timeSignatureJourney: detectTimeSignatureJourney(description),
       reasoning: 'Fallback to keyword detection',
     };
   }

@@ -266,8 +266,8 @@ describe('getAmbientInstruments', () => {
 
   test('always includes a harmonic anchor and a pad/synth tag', () => {
     const pools = GENRE_REGISTRY.ambient.pools;
-    const anchor = new Set<string>(pools.harmonicAnchor.instruments);
-    const pad = new Set<string>(pools.padOrSynth.instruments);
+    const anchor = new Set<string>(pools.harmonicAnchor!.instruments);
+    const pad = new Set<string>(pools.padOrSynth!.instruments);
 
     for (let i = 0; i < 30; i++) {
       const guidance = getAmbientInstruments();

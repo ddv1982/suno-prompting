@@ -6,7 +6,6 @@ import {
 } from '@bun/instruments';
 import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
-import type { ModeSelection } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
@@ -27,7 +26,7 @@ const MOOD_POOL = [
   // Calm
   'serene', 'peaceful', 'tranquil', 'meditative', 'soothing', 'gentle',
   // Dark
-  'haunting', 'brooding', 'sinister', 'ominous', 'menacing', 'foreboding',
+  'haunting', 'sinister', 'ominous', 'menacing', 'foreboding',
   // Emotional
   'melancholic', 'wistful', 'bittersweet', 'yearning', 'nostalgic', 'tender',
   // Playful
@@ -268,7 +267,12 @@ export class AIEngine {
     
     // Filter out current genre and select a random different one
     const availableGenres = allGenres.filter(g => g !== currentGenre);
-    const newGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)];
+
+    if (availableGenres.length === 0) {
+      return { text: currentPrompt };
+    }
+
+    const newGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)]!;
     
     return { text: replaceFieldLine(currentPrompt, 'Genre', newGenre) };
   }

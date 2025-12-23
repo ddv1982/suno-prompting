@@ -35,8 +35,8 @@ describe('Instrument registry integrity', () => {
 
 describe('Genre pool integrity', () => {
   test('no genre pool contains duplicates after canonical normalization', () => {
-    for (const [genreKey, genre] of Object.entries(GENRE_REGISTRY)) {
-      for (const [poolKey, pool] of Object.entries(genre.pools)) {
+    for (const genre of Object.values(GENRE_REGISTRY)) {
+      for (const pool of Object.values(genre.pools)) {
         const canonicals = pool.instruments.map(i => toCanonical(i));
 
         // Existing tests cover validity, but keep this assert here to make failures clearer.

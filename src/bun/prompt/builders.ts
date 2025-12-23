@@ -50,7 +50,14 @@ export function buildContextualPrompt(description: string, selection: ModeSelect
     description,
   ];
 
-  const hasGuidance = selection.genre || selection.combination || selection.singleMode || rhythmic;
+  const hasGuidance =
+    selection.genre ||
+    selection.combination ||
+    selection.singleMode ||
+    selection.polyrhythmCombination ||
+    selection.timeSignature ||
+    selection.timeSignatureJourney ||
+    rhythmic;
 
   if (hasGuidance) {
     parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
