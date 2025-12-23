@@ -1,11 +1,25 @@
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
+import {
+  FOUNDATIONAL_INSTRUMENTS,
+  MULTIGENRE_INSTRUMENTS,
+  isFoundationalInstrument,
+  isMultiGenreInstrument,
+} from '@bun/instruments/datasets/instrumentClasses';
 import type { Rng } from '@bun/instruments/services/random';
 import { shuffle, randomIntInclusive, rollChance } from '@bun/instruments/services/random';
 
 export type InstrumentSelectionOptions = {
   readonly userInstruments?: readonly string[];
   readonly maxTags?: number;
+  readonly multiGenre?: {
+    readonly enabled: boolean;
+    readonly count: { readonly min: number; readonly max: number };
+  };
+  readonly foundational?: {
+    readonly enabled: boolean;
+    readonly count: { readonly min: number; readonly max: number };
+  };
   readonly rng?: Rng;
 };
 
@@ -65,14 +79,32 @@ function pickFromPool(
   selected: readonly string[],
   remainingSlots: number,
   exclusionRules: readonly [string, string][],
-  rng: Rng
+  rng: Rng,
+  candidatesOverride?: readonly string[]
 ): string[] {
   if (!rollChance(pool.chanceToInclude, rng)) return [];
 
   const count = computePickCount(pool.pick, remainingSlots, rng);
   if (count <= 0) return [];
 
-  const available = pool.instruments.filter(token => !hasExclusion(selected, token, exclusionRules));
+  const source = candidatesOverride ?? pool.instruments;
+  const available = source.filter(token => !hasExclusion(selected, token, exclusionRules));
+  const shuffled = shuffle(available, rng);
+  return pickUniqueTokens(shuffled, selected, count, exclusionRules);
+}
+
+function pickFromList(
+  candidates: readonly string[],
+  selected: readonly string[],
+  remainingSlots: number,
+  desired: { readonly min: number; readonly max: number },
+  exclusionRules: readonly [string, string][],
+  rng: Rng
+): string[] {
+  if (remainingSlots <= 0) return [];
+  const count = computePickCount(desired, remainingSlots, rng);
+  if (count <= 0) return [];
+  const available = candidates.filter(token => !hasExclusion(selected, token, exclusionRules));
   const shuffled = shuffle(available, rng);
   return pickUniqueTokens(shuffled, selected, count, exclusionRules);
 }
@@ -87,15 +119,60 @@ export function selectInstrumentsForGenre(
   const userInstruments = options?.userInstruments ?? [];
   const exclusionRules = def.exclusionRules ?? [];
 
+  const multiGenre = options?.multiGenre ?? { enabled: true, count: { min: 1, max: 2 } };
+  const foundational = options?.foundational ?? { enabled: true, count: { min: 0, max: 1 } };
+
   const userSelected = userInstruments.slice(0, maxTags);
   let selected: string[] = [...userSelected];
+
+  const hasFoundationalAlready = () => selected.some(isFoundationalInstrument);
 
   for (const poolName of def.poolOrder) {
     if (selected.length >= maxTags) break;
     const pool = def.pools[poolName];
     if (!pool) continue;
-    const picks = pickFromPool(pool, selected, maxTags - selected.length, exclusionRules, rng);
+
+    // Prefer genre-defining picks here: avoid foundational + multigenre so we can inject those separately.
+    const candidatesOverride = pool.instruments.filter(
+      i => !isFoundationalInstrument(i) && !isMultiGenreInstrument(i)
+    );
+
+    const picks = pickFromPool(
+      pool,
+      selected,
+      maxTags - selected.length,
+      exclusionRules,
+      rng,
+      candidatesOverride
+    );
     selected = [...selected, ...picks].slice(0, maxTags);
+  }
+
+  if (selected.length < maxTags && multiGenre.enabled) {
+    const picks = pickFromList(
+      MULTIGENRE_INSTRUMENTS,
+      selected,
+      maxTags - selected.length,
+      multiGenre.count,
+      exclusionRules,
+      rng
+    );
+    selected = [...selected, ...picks].slice(0, maxTags);
+  }
+
+  if (selected.length < maxTags && foundational.enabled) {
+    // Foundational is an anchor; prefer injecting only when not already present.
+    if (!hasFoundationalAlready()) {
+      const picks = pickFromList(
+        FOUNDATIONAL_INSTRUMENTS,
+        selected,
+        maxTags - selected.length,
+        foundational.count,
+        exclusionRules,
+        rng
+      );
+      selected = [...selected, ...picks].slice(0, maxTags);
+    }
   }
 
   return selected;

@@ -21,6 +21,11 @@ import {
   INSTRUMENT_REGISTRY,
 } from '@bun/instruments';
 
+import {
+  FOUNDATIONAL_INSTRUMENTS,
+  MULTIGENRE_INSTRUMENTS,
+} from '@bun/instruments/datasets/instrumentClasses';
+
 describe('detectHarmonic', () => {
   // Lydian variants
   test('detects lydian_dominant for fusion keywords', () => {
@@ -212,7 +217,11 @@ describe('getAmbientInstruments', () => {
     expect(tags.length).toBeLessThanOrEqual(4);
 
     const ambientPools = GENRE_REGISTRY.ambient.pools;
-    const whitelist = new Set<string>(Object.values(ambientPools).flatMap(p => [...p.instruments]));
+    const whitelist = new Set<string>([
+      ...Object.values(ambientPools).flatMap(p => [...p.instruments]),
+      ...MULTIGENRE_INSTRUMENTS,
+      ...FOUNDATIONAL_INSTRUMENTS,
+    ]);
     for (const tag of tags) {
       expect(whitelist.has(tag)).toBe(true);
     }
