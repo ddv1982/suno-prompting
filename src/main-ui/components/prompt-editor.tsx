@@ -134,22 +134,22 @@ export function PromptEditor({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onRemixMood}
-                  disabled={isGenerating}
-                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
-                >
-                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
-                  MOOD
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
                   onClick={onRemixGenre}
                   disabled={isGenerating}
                   className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
                 >
                   <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixGenre' && "animate-spin")} />
                   GENRE
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemixMood}
+                  disabled={isGenerating}
+                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                >
+                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
+                  MOOD
                 </Button>
                 <Button
                   variant="outline"
