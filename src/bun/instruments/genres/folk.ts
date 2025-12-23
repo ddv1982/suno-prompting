@@ -2,7 +2,7 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const FOLK_GENRE: GenreDefinition = {
   name: 'Folk',
-  keywords: ['folk', 'acoustic', 'singer-songwriter', 'country', 'americana', 'bluegrass', 'celtic'],
+  keywords: ['folk', 'acoustic', 'singer-songwriter', 'celtic', 'traditional'],
   description: 'Organic, acoustic music rooted in traditional and storytelling traditions',
   pools: {
     harmonic: {

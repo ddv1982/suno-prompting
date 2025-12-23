@@ -15,8 +15,8 @@ import {
 } from '@bun/instruments';
 
 describe('Genre Registry', () => {
-  test('should have 12 genres registered', () => {
-    expect(Object.keys(GENRE_REGISTRY).length).toBe(12);
+  test('should have 20 genres registered', () => {
+    expect(Object.keys(GENRE_REGISTRY).length).toBe(20);
   });
 
   test('all genres have required properties', () => {
@@ -58,7 +58,19 @@ describe('Genre Detection', () => {
   test('detects rock from keywords', () => {
     expect(detectGenre('rock anthem')).toBe('rock');
     expect(detectGenre('alternative vibes')).toBe('rock');
-    expect(detectGenre('punk energy')).toBe('rock');
+    expect(detectGenre('grunge style')).toBe('rock');
+  });
+
+  test('detects punk from keywords', () => {
+    expect(detectGenre('punk energy')).toBe('punk');
+    expect(detectGenre('pop punk song')).toBe('punk');
+    expect(detectGenre('emo vibes')).toBe('punk');
+  });
+
+  test('detects metal from keywords', () => {
+    expect(detectGenre('heavy metal song')).toBe('metal');
+    expect(detectGenre('doom metal riff')).toBe('metal');
+    expect(detectGenre('progressive metal')).toBe('metal');
   });
 
   test('detects pop from keywords', () => {
@@ -95,15 +107,24 @@ describe('Genre Detection', () => {
   test('detects folk from keywords', () => {
     expect(detectGenre('folk song')).toBe('folk');
     expect(detectGenre('acoustic ballad')).toBe('folk');
-    expect(detectGenre('country road')).toBe('folk');
-    expect(detectGenre('americana style')).toBe('folk');
+    expect(detectGenre('celtic music')).toBe('folk');
+  });
+
+  test('detects country from keywords', () => {
+    expect(detectGenre('country road')).toBe('country');
+    expect(detectGenre('americana style')).toBe('country');
+    expect(detectGenre('bluegrass tune')).toBe('country');
   });
 
   test('detects rnb from keywords', () => {
     expect(detectGenre('rnb groove')).toBe('rnb');
     expect(detectGenre('r&b slow jam')).toBe('rnb');
-    expect(detectGenre('soul music')).toBe('rnb');
     expect(detectGenre('neo-soul vibes')).toBe('rnb');
+  });
+
+  test('detects soul from keywords', () => {
+    expect(detectGenre('soul music')).toBe('soul');
+    expect(detectGenre('motown sound')).toBe('soul');
   });
 
   test('detects ambient from keywords', () => {

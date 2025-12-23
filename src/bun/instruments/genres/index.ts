@@ -10,6 +10,14 @@ import { CINEMATIC_GENRE } from '@bun/instruments/genres/cinematic';
 import { FOLK_GENRE } from '@bun/instruments/genres/folk';
 import { RNB_GENRE } from '@bun/instruments/genres/rnb';
 import { VIDEOGAME_GENRE } from '@bun/instruments/genres/videogame';
+import { COUNTRY_GENRE } from '@bun/instruments/genres/country';
+import { SOUL_GENRE } from '@bun/instruments/genres/soul';
+import { BLUES_GENRE } from '@bun/instruments/genres/blues';
+import { PUNK_GENRE } from '@bun/instruments/genres/punk';
+import { LATIN_GENRE } from '@bun/instruments/genres/latin';
+import { METAL_GENRE } from '@bun/instruments/genres/metal';
+import { TRAP_GENRE } from '@bun/instruments/genres/trap';
+import { RETRO_GENRE } from '@bun/instruments/genres/retro';
 
 export const GENRE_REGISTRY = {
   ambient: AMBIENT_GENRE,
@@ -24,6 +32,14 @@ export const GENRE_REGISTRY = {
   folk: FOLK_GENRE,
   rnb: RNB_GENRE,
   videogame: VIDEOGAME_GENRE,
+  country: COUNTRY_GENRE,
+  soul: SOUL_GENRE,
+  blues: BLUES_GENRE,
+  punk: PUNK_GENRE,
+  latin: LATIN_GENRE,
+  metal: METAL_GENRE,
+  trap: TRAP_GENRE,
+  retro: RETRO_GENRE,
 } as const;
 
 export type GenreType = keyof typeof GENRE_REGISTRY;
@@ -41,5 +57,13 @@ export {
   FOLK_GENRE,
   RNB_GENRE,
   VIDEOGAME_GENRE,
+  COUNTRY_GENRE,
+  SOUL_GENRE,
+  BLUES_GENRE,
+  PUNK_GENRE,
+  LATIN_GENRE,
+  METAL_GENRE,
+  TRAP_GENRE,
+  RETRO_GENRE,
 };
 export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';

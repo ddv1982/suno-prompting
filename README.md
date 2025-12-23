@@ -106,17 +106,25 @@ The body uses section tags like:
 | Genre | Keywords | Key Instruments |
 |-------|----------|-----------------|
 | Ambient | ambient, atmospheric, soundscape | prepared piano, felt piano, harmonium, celesta, strings, guitar, acoustic guitar, fretless guitar, synth pad, analog synth pads, analog synth, digital synth, FM synth, Moog synth, synth, crystalline synth pads, ambient pad, taiko drums, steel pan, Hammond organ, electric piano, Rhodes, Wurlitzer, Clavinet, cello, vibraphone, oboe, bassoon, bowed vibraphone, marimba, kalimba, glockenspiel, bells, glass bells, congas, singing bowls, choir, wordless choir, clarinet, shakuhachi, duduk, breathy EWI, percussion, toms, shaker, frame drum, handpan, sub-bass, snare drum, jazz brushes, cajón, djembe |
-| Jazz | jazz, bebop, swing, cool jazz, fusion, big band, bossa nova | Rhodes, felt piano, acoustic guitar, Hammond organ, Wurlitzer, saxophone, trumpet, trombone, vibraphone, clarinet, flute, upright bass, jazz brushes, drums, congas, bongos, timbales |
+| Jazz | jazz, bebop, swing, cool jazz, fusion, big band, smooth jazz | Rhodes, grand piano, hollowbody guitar, Hammond organ, Wurlitzer, saxophone, tenor sax, trumpet, muted trumpet, trombone, vibraphone, clarinet, flute, upright bass, walking bass, jazz brushes, drums, ride cymbal, congas, bongos |
 | Electronic | edm, electronic, house, techno, trance, dubstep, drum and bass, dnb | synth pad, analog synth, FM synth, arpeggiator, synth, 808, synth bass, kick drum, hi-hat, drums, vocoder |
-| Rock | rock, alternative, indie rock, hard rock, punk, grunge, metal | distorted guitar, Fender Stratocaster, guitar, acoustic guitar, bass, drums, kick drum, electric piano, organ, Clavinet, Hammond organ |
-| Pop | pop, mainstream, top 40, dance pop, synth pop, electropop | felt piano, Fender Stratocaster, guitar, acoustic guitar, synth pad, synth, analog synth, digital synth, arpeggiator, synth piano, bass, drums, 808 |
+| Rock | rock, alternative, indie rock, hard rock, grunge, classic rock, heartland rock | distorted guitar, Fender Stratocaster, guitar, acoustic guitar, Telecaster, bass, drums, kick drum, toms, electric piano, organ, Clavinet, grand piano, Hammond organ, tambourine |
+| Pop | pop, mainstream, top 40, dance pop, synth pop, electropop, future bass | felt piano, Fender Stratocaster, guitar, acoustic guitar, grand piano, synth pad, synth, analog synth, digital synth, arpeggiator, synth piano, supersaw, pluck synth, bass, drums, 808, handclaps, kick drum, FX risers, strings |
 | Classical | classical, orchestral, symphony, chamber, baroque, romantic, opera | strings, felt piano, violin, cello, viola, flute, oboe, clarinet, bassoon, french horn, harp, celesta, timpani |
 | Lo-fi | lofi, lo-fi, chill, study beats, chillhop, bedroom pop | felt piano, Rhodes, electric piano, vibraphone, kalimba, guitar, cello, clarinet, jazz brushes, shaker, percussion, drums, synth pad, ambient pad |
 | Synthwave | synthwave, retrowave, 80s, outrun, vaporwave, darksynth, cyberpunk | analog synth, analog synth pads, FM synth, digital synth, Moog synth, arpeggiator, synth pad, synth, synth bass, 808, kick drum, hi-hat, drums |
-| Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic | strings, felt piano, french horn, cello, choir, wordless choir, violin, celesta, glockenspiel, bells, harp, taiko drums, percussion, toms, timpani |
-| Folk | folk, acoustic, singer-songwriter, country, americana, bluegrass, celtic | acoustic guitar, felt piano, violin, harp, flute, harmonica, accordion, clarinet, cajón, percussion, frame drum, mandolin, banjo |
-| R&B | rnb, r&b, soul, neo-soul, motown, funk, gospel | Rhodes, Wurlitzer, electric piano, felt piano, Clavinet, bass, drums, kick drum, hi-hat, saxophone, strings, trumpet |
+| Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic, hybrid orchestral | strings, grand piano, string ostinato, pizzicato strings, french horn, low brass, cello, choir, wordless choir, violin, celesta, glockenspiel, bells, harp, taiko drums, percussion, toms, timpani, braams, impacts, FX risers, sub-bass |
+| Folk | folk, acoustic, singer-songwriter, celtic, traditional | acoustic guitar, felt piano, violin, harp, flute, harmonica, accordion, clarinet, cajón, percussion, frame drum, mandolin, banjo |
+| R&B | rnb, r&b, neo-soul, contemporary r&b, funk, quiet storm | Rhodes, Wurlitzer, electric piano, grand piano, Clavinet, bass, drums, 808, trap hi hats, slap bass, saxophone, strings, guitar, wah guitar, handclaps, shaker |
 | Video Game | video game, game music, gaming, chiptune, 8-bit, 8 bit, retro game, pixel, arcade, boss battle, level music, rpg, jrpg, adventure game, platformer, nintendo, sega | strings, felt piano, harp, synth pad, arpeggiator, FM synth, analog synth, synth strings, bells, glockenspiel, celesta, choir, french horn, trumpet, drums, percussion, taiko drums, timpani, 808, guitar, vocoder |
+| Country | country, country rock, country pop, americana, bluegrass, country gospel, honky tonk, outlaw country, nashville | acoustic guitar, Telecaster, grand piano, pedal steel, fiddle, harmonica, mandolin, banjo, bass, drums, upright bass, Hammond organ, accordion |
+| Soul | soul, motown, 60s soul, modern soul, gospel soul, northern soul, southern soul, classic soul, quiet storm | Rhodes, grand piano, Hammond organ, Wurlitzer, strings, trumpet, saxophone, low brass, bass, drums, tambourine, handclaps, vibraphone, guitar |
+| Blues | blues, electric blues, blues rock, delta blues, chicago blues, jazz blues, slow blues, blues shuffle, psychedelic blues | hollowbody guitar, guitar, grand piano, slide guitar, bass, drums, upright bass, walking bass, Hammond organ, harmonica, saxophone, wah guitar |
+| Punk | punk, pop punk, emo, emo pop, punk rock, hardcore, y2k pop punk, indie pop punk, skate punk, melodic punk | distorted guitar, guitar, acoustic guitar, picked bass, bass, drums, kick drum, grand piano, organ |
+| Latin | latin, bossa nova, latin jazz, reggae, reggae fusion, latin pop, salsa, tango, flamenco, afro-cuban | nylon string guitar, Rhodes, grand piano, acoustic guitar, upright bass, bass, congas, bongos, timbales, claves, shaker, trumpet, saxophone, flute, bandoneon, castanet, vibraphone |
+| Metal | metal, heavy metal, doom metal, progressive metal, industrial, death metal, black metal, thrash metal, nu metal, gothic metal | distorted guitar, guitar, bass, drums, kick drum, timpani, synth pad, strings, choir, organ, orchestra, braams, low brass |
+| Trap | trap, dark trap, emo rap, cloud rap, cinematic trap, trap soul, melodic trap, drill, phonk | felt piano, guitar, pluck synth, strings, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vinyl noise, pizzicato strings, braams, FX risers |
+| Retro | retro, 50s, 60s, rock and roll, doo-wop, rockabilly, garage rock, surf rock, british invasion, oldies | guitar, tremolo guitar, grand piano, honky tonk piano, upright bass, slap bass, drums, tambourine, handclaps, organ, saxophone, harmonica, finger snaps, bells |
 
 <!-- GENRE_TABLE_END -->
 
@@ -126,7 +134,7 @@ The body uses section tags like:
 
 **Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
 
-**Multi-genre instruments** (wildcards): 808, Clavinet, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, bells, electric piano, guitar, vibraphone
+**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, bells, braams, congas, distorted guitar, electric piano, grand piano, guitar, handclaps, harmonica, low brass, organ, saxophone, shaker, tambourine, toms, upright bass, vibraphone
 
 **Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir
 

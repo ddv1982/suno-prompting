@@ -170,8 +170,8 @@ describe('detectGenre', () => {
     expect(detectGenre('random gibberish xyzzy')).toBeNull();
   });
 
-  test('detects rock genre including metal', () => {
-    expect(detectGenre('heavy metal song')).toBe('rock');
+  test('detects rock and metal as separate genres', () => {
+    expect(detectGenre('heavy metal song')).toBe('metal');
     expect(detectGenre('rock anthem')).toBe('rock');
   });
 });
@@ -334,7 +334,7 @@ describe('instrument registry', () => {
   test('toCanonical converts aliases to canonical names', () => {
     expect(toCanonical('piano')).toBe('felt piano');
     expect(toCanonical('keys')).toBe('felt piano');
-    expect(toCanonical('fiddle')).toBe('violin');
+    expect(toCanonical('fiddle')).toBe('fiddle');
     expect(toCanonical('vibes')).toBe('vibraphone');
   });
 
@@ -369,7 +369,7 @@ describe('matchInstrument', () => {
   test('matches aliases to canonical', () => {
     expect(matchInstrument('piano')).toBe('felt piano');
     expect(matchInstrument('keys')).toBe('felt piano');
-    expect(matchInstrument('fiddle')).toBe('violin');
+    expect(matchInstrument('fiddle')).toBe('fiddle');
   });
 
   test('handles articles', () => {
@@ -406,7 +406,7 @@ describe('extractInstruments', () => {
   test('handles aliases and converts to canonical', () => {
     const result = extractInstruments('A track with keys and fiddle');
     expect(result.found).toContain('felt piano');
-    expect(result.found).toContain('violin');
+    expect(result.found).toContain('fiddle');
   });
 
   test('returns empty array for no instruments', () => {
