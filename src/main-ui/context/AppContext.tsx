@@ -1,14 +1,17 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
 import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+
+export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments';
 
 interface AppContextType {
     sessions: PromptSession[];
     currentSession: PromptSession | null;
     validation: ValidationResult;
     isGenerating: boolean;
+    generatingAction: GeneratingAction;
     chatMessages: ChatMessage[];
     settingsOpen: boolean;
     currentModel: string;
@@ -49,8 +52,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [sessions, setSessions] = useState<PromptSession[]>([]);
     const [currentSession, setCurrentSession] = useState<PromptSession | null>(null);
     const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
     const [settingsOpen, setSettingsOpen] = useState(false);
+    
+    const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [currentModel, setCurrentModel] = useState("");
     const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
@@ -121,7 +126,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const isInitial = !currentPrompt;
 
         try {
-            setIsGenerating(true);
+            setGeneratingAction('generate');
 
             let result;
             if (isInitial) {
@@ -177,7 +182,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 },
             ]);
         } finally {
-            setIsGenerating(false);
+            setGeneratingAction('none');
         }
     }, [isGenerating, currentSession, saveSession]);
 
@@ -190,7 +195,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (isGenerating || !currentSession?.originalInput) return;
 
         try {
-            setIsGenerating(true);
+            setGeneratingAction('remix');
             const result = await api.generateInitial(currentSession.originalInput);
 
             if (!result?.prompt) {
@@ -223,7 +228,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix prompt"}.` },
             ]);
         } finally {
-            setIsGenerating(false);
+            setGeneratingAction('none');
         }
     }, [isGenerating, currentSession, saveSession]);
 
@@ -231,7 +236,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (isGenerating || !currentSession?.currentPrompt || !currentSession?.originalInput) return;
 
         try {
-            setIsGenerating(true);
+            setGeneratingAction('remixInstruments');
             const result = await api.remixInstruments(
                 currentSession.currentPrompt,
                 currentSession.originalInput
@@ -266,7 +271,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix instruments"}.` },
             ]);
         } finally {
-            setIsGenerating(false);
+            setGeneratingAction('none');
         }
     }, [isGenerating, currentSession, saveSession]);
 
@@ -288,6 +293,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             currentSession,
             validation,
             isGenerating,
+            generatingAction,
             chatMessages,
             settingsOpen,
             currentModel,

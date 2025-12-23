@@ -14,10 +14,12 @@ import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult } from "@shared/validation";
 import { type DebugInfo } from "@shared/types";
+import { type GeneratingAction } from "@/context/AppContext";
 
 type PromptEditorProps = {
   currentPrompt: string;
   isGenerating: boolean;
+  generatingAction: GeneratingAction;
   validation: ValidationResult;
   chatMessages: ChatMessage[];
   onGenerate: (input: string) => void;
@@ -32,6 +34,7 @@ type PromptEditorProps = {
 export function PromptEditor({
   currentPrompt,
   isGenerating,
+  generatingAction,
   validation,
   chatMessages,
   onGenerate,
@@ -131,7 +134,7 @@ export function PromptEditor({
                   disabled={isGenerating}
                   className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
                 >
-                  <Shuffle className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
+                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixInstruments' && "animate-spin")} />
                   INSTRUMENTS
                 </Button>
                 <Button
@@ -141,8 +144,8 @@ export function PromptEditor({
                   disabled={isGenerating}
                   className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
                 >
-                  <RefreshCw className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
-                  {isGenerating ? "REMIXING" : "REMIX"}
+                  <RefreshCw className={cn("w-3.5 h-3.5", generatingAction === 'remix' && "animate-spin")} />
+                  {generatingAction === 'remix' ? "REMIXING" : "REMIX"}
                 </Button>
                 <Button
                   variant="outline"

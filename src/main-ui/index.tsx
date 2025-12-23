@@ -20,6 +20,7 @@ function App() {
     currentSession,
     validation,
     isGenerating,
+    generatingAction,
     chatMessages,
     settingsOpen,
     currentModel,
@@ -52,6 +53,7 @@ function App() {
             <PromptEditor
               currentPrompt={currentPrompt}
               isGenerating={isGenerating}
+              generatingAction={generatingAction}
               validation={validation}
               chatMessages={chatMessages}
               onGenerate={handleGenerate}
