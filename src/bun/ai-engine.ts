@@ -9,7 +9,7 @@ import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
-import { buildContextualPrompt, buildSystemPrompt } from '@bun/prompt/builders';
+import { buildContextualPrompt, buildSystemPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine } from '@bun/prompt/remix';
 import { createLogger } from '@bun/logger';
@@ -245,7 +245,10 @@ export class AIEngine {
   async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
     const promptForLLM = lockedPhrase ? swapLockedPhraseIn(currentPrompt, lockedPhrase) : currentPrompt;
-    const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedback}`;
+    const feedbackWithLocked = lockedPhrase
+      ? `${feedback}\n\nLOCKED PHRASE (must preserve exactly as-is in output): ${LOCKED_PLACEHOLDER}`
+      : feedback;
+    const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedbackWithLocked}`;
 
     const result = await this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
       generateText({
@@ -253,7 +256,7 @@ export class AIEngine {
         system: systemPrompt,
         messages: [
           { role: 'assistant', content: promptForLLM },
-          { role: 'user', content: feedback },
+          { role: 'user', content: feedbackWithLocked },
         ],
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
