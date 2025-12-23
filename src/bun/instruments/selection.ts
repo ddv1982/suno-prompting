@@ -1,9 +1,9 @@
 import { generateText } from 'ai';
 import type { LanguageModelV1 } from 'ai';
-import { detectGenre, detectCombination, detectHarmonic, detectPolyrhythmCombination } from './detection';
-import type { GenreType } from './genres';
-import type { CombinationType, HarmonicStyle } from './modes';
-import type { PolyrhythmCombinationType } from './rhythms';
+import { detectGenre, detectCombination, detectHarmonic, detectPolyrhythmCombination } from '@bun/instruments/detection';
+import type { GenreType } from '@bun/instruments/genres';
+import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
+import type { PolyrhythmCombinationType } from '@bun/instruments/rhythms';
 
 export type ModeSelection = {
   genre: GenreType | null;

@@ -1,4 +1,4 @@
-import type { GenreDefinition } from './types';
+import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const ROCK_GENRE: GenreDefinition = {
   name: 'Rock',
@@ -7,7 +7,7 @@ export const ROCK_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['guitar', 'acoustic guitar'],
+      instruments: ['distorted guitar', 'Fender Stratocaster', 'guitar', 'acoustic guitar'],
     },
     color: {
       pick: { min: 0, max: 1 },

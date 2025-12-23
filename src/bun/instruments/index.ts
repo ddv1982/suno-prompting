@@ -35,8 +35,20 @@ export {
   getAllSynthInstruments,
 } from '@bun/instruments/synthReplacements';
 
-export { RHYTHMIC_STYLES, POLYRHYTHMS, ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/data';
-export type { RhythmicStyle, PolyrhythmType, PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/data';
+export {
+  RHYTHMIC_STYLES,
+  POLYRHYTHMS,
+  ALL_POLYRHYTHM_COMBINATIONS,
+  TIME_SIGNATURES,
+  TIME_SIGNATURE_JOURNEYS,
+} from '@bun/instruments/datasets';
+export type {
+  RhythmicStyle,
+  PolyrhythmType,
+  PolyrhythmCombinationType,
+  TimeSignatureType,
+  TimeSignatureJourneyType,
+} from '@bun/instruments/datasets';
 
 // Registry exports
 export {

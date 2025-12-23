@@ -6,7 +6,7 @@ import {
   detectTimeSignatureJourney,
   getTimeSignatureGuidance,
   getTimeSignatureJourneyGuidance,
-} from '../src/bun/instruments';
+} from '@bun/instruments';
 
 describe('TIME_SIGNATURES', () => {
   test('has standard time signatures', () => {

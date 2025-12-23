@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import {
   MODE_PALETTES,
-  EXCLUSION_RULES,
   selectInstrumentsForMode,
+  EXCLUSION_RULES,
   getModePalette,
-} from '../src/bun/instruments/modes';
-import { INSTRUMENT_REGISTRY, getInstrumentsByCategory } from '../src/bun/instruments/registry';
+} from '@bun/instruments/modes';
+import { INSTRUMENT_REGISTRY, getInstrumentsByCategory } from '@bun/instruments/registry';
 
 describe('MODE_PALETTES', () => {
   test('has palettes for all Lydian modes', () => {

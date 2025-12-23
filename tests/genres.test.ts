@@ -160,15 +160,15 @@ describe('Genre Instrument Selection', () => {
   });
 
   test('folk genre may include rare instruments over multiple calls', () => {
-    let foundRare = false;
-    for (let i = 0; i < 30; i++) {
-      const result = getGenreInstruments('folk');
-      if (result.includes('mandolin') || result.includes('banjo')) {
-        foundRare = true;
-        break;
-      }
-    }
-    expect(foundRare).toBe(true);
+    // Use a deterministic RNG sequence to force:
+    // 1) chance check to pass (0 <= chance)
+    // 2) pick count to choose max (near-1)
+    const sequence = [0, 0.999, 0, 0.999, 0, 0.999];
+    let idx = 0;
+    const rng = () => sequence[(idx++) % sequence.length]!;
+
+    const result = getGenreInstruments('folk', { rng });
+    expect(result.includes('mandolin') || result.includes('banjo')).toBe(true);
   });
 
   test('handles user instruments option', () => {

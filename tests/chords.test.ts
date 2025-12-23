@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   NOTES,
+  LYDIAN_SCALE,
   normalizeNote,
   getNoteIndex,
   transposeNote,
@@ -12,9 +13,8 @@ import {
   getLydianChords,
   getAllLydianChords,
   formatLydianChordSummary,
-  LYDIAN_SCALE,
   LYDIAN_DIATONIC,
-} from '../src/bun/instruments/modes';
+} from '@bun/instruments/modes';
 
 describe('scaleChords utilities', () => {
   describe('normalizeNote', () => {

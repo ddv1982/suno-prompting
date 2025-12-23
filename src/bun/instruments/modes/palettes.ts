@@ -1,4 +1,4 @@
-import { getInstrumentsByCategory, type InstrumentCategory } from '../registry';
+import { getInstrumentsByCategory, type InstrumentCategory } from '@bun/instruments/registry';
 
 export type PoolConfig = {
   readonly min: number;

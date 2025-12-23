@@ -1,15 +1,15 @@
-import { AMBIENT_GENRE } from './ambient';
-import { JAZZ_GENRE } from './jazz';
-import { ELECTRONIC_GENRE } from './electronic';
-import { ROCK_GENRE } from './rock';
-import { POP_GENRE } from './pop';
-import { CLASSICAL_GENRE } from './classical';
-import { LOFI_GENRE } from './lofi';
-import { SYNTHWAVE_GENRE } from './synthwave';
-import { CINEMATIC_GENRE } from './cinematic';
-import { FOLK_GENRE } from './folk';
-import { RNB_GENRE } from './rnb';
-import { VIDEOGAME_GENRE } from './videogame';
+import { AMBIENT_GENRE } from '@bun/instruments/genres/ambient';
+import { JAZZ_GENRE } from '@bun/instruments/genres/jazz';
+import { ELECTRONIC_GENRE } from '@bun/instruments/genres/electronic';
+import { ROCK_GENRE } from '@bun/instruments/genres/rock';
+import { POP_GENRE } from '@bun/instruments/genres/pop';
+import { CLASSICAL_GENRE } from '@bun/instruments/genres/classical';
+import { LOFI_GENRE } from '@bun/instruments/genres/lofi';
+import { SYNTHWAVE_GENRE } from '@bun/instruments/genres/synthwave';
+import { CINEMATIC_GENRE } from '@bun/instruments/genres/cinematic';
+import { FOLK_GENRE } from '@bun/instruments/genres/folk';
+import { RNB_GENRE } from '@bun/instruments/genres/rnb';
+import { VIDEOGAME_GENRE } from '@bun/instruments/genres/videogame';
 
 export const GENRE_REGISTRY = {
   ambient: AMBIENT_GENRE,
@@ -42,4 +42,4 @@ export {
   RNB_GENRE,
   VIDEOGAME_GENRE,
 };
-export type { GenreDefinition, InstrumentPool } from './types';
+export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';

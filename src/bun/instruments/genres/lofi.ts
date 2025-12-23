@@ -1,4 +1,4 @@
-import type { GenreDefinition } from './types';
+import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const LOFI_GENRE: GenreDefinition = {
   name: 'Lo-fi',

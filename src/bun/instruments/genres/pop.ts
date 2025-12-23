@@ -1,4 +1,4 @@
-import type { GenreDefinition } from './types';
+import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const POP_GENRE: GenreDefinition = {
   name: 'Pop',
@@ -7,7 +7,7 @@ export const POP_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 1 },
-      instruments: ['felt piano', 'guitar', 'acoustic guitar'],
+      instruments: ['felt piano', 'Fender Stratocaster', 'guitar', 'acoustic guitar'],
     },
     pad: {
       pick: { min: 1, max: 1 },

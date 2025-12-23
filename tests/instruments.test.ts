@@ -10,6 +10,7 @@ import {
   detectPolyrhythmCombination,
   getPolyrhythmCombinationGuidance,
   getGenreInstruments,
+
   getAmbientInstruments,
   GENRE_REGISTRY,
   extractInstruments,
@@ -18,7 +19,7 @@ import {
   isValidInstrument,
   toCanonical,
   INSTRUMENT_REGISTRY,
-} from '../src/bun/instruments';
+} from '@bun/instruments';
 
 describe('detectHarmonic', () => {
   // Lydian variants

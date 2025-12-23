@@ -2,8 +2,10 @@ import { HARMONIC_STYLES, ALL_COMBINATIONS } from '@bun/instruments/modes';
 import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType } from '@bun/instruments/genres';
-import { RHYTHMIC_STYLES, ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/data';
-import type { RhythmicStyle, PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/data';
+import { RHYTHMIC_STYLES } from '@bun/instruments/datasets/rhythm';
+import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
+import { ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
+import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
 
 const HARMONIC_PRIORITY: HarmonicStyle[] = [
   'lydian_dominant', 'lydian_augmented', 'lydian_sharp_two',

@@ -1,4 +1,4 @@
-import type { GenreDefinition } from './types';
+import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const CINEMATIC_GENRE: GenreDefinition = {
   name: 'Cinematic',

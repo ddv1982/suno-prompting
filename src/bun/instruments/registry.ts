@@ -14,6 +14,8 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'celesta', category: 'harmonic', aliases: ['celeste'] },
   { canonical: 'strings', category: 'harmonic', aliases: ['string section', 'orchestral strings', 'string ensemble'] },
   { canonical: 'guitar', category: 'harmonic', aliases: ['electric guitar', 'clean guitar'] },
+  { canonical: 'distorted guitar', category: 'harmonic', aliases: ['overdriven guitar', 'crunch guitar', 'high-gain guitar', 'distortion guitar'] },
+  { canonical: 'Fender Stratocaster', category: 'harmonic', aliases: ['Stratocaster', 'Strat', 'Fender Strat', 'Strat guitar'] },
   { canonical: 'acoustic guitar', category: 'harmonic', aliases: ['nylon guitar', 'classical guitar', 'folk guitar'] },
   { canonical: 'fretless guitar', category: 'harmonic', aliases: [] },
 

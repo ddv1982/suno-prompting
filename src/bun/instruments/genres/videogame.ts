@@ -1,4 +1,4 @@
-import type { GenreDefinition } from './types';
+import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const VIDEOGAME_GENRE: GenreDefinition = {
   name: 'Video Game',

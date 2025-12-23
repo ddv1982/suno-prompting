@@ -1,18 +1,18 @@
-export { POLYRHYTHMS } from './polyrhythms';
-export type { PolyrhythmType, ComplexityLevel } from './polyrhythms';
+export { POLYRHYTHMS } from '@bun/instruments/rhythms/polyrhythms';
+export type { PolyrhythmType, ComplexityLevel } from '@bun/instruments/rhythms/polyrhythms';
 
 export {
   CROSS_RHYTHM_COMBINATIONS,
   MULTI_RHYTHM_COMBINATIONS,
   ALL_POLYRHYTHM_COMBINATIONS,
-} from './combinations';
+} from '@bun/instruments/rhythms/combinations';
 export type {
   CrossRhythmCombination,
   MultiRhythmCombination,
   PolyrhythmCombinationType,
-} from './combinations';
+} from '@bun/instruments/rhythms/combinations';
 
-export { TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from './timeSignatures';
+export { TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms/timeSignatures';
 export type {
   TimeSignatureType,
   TimeSignatureJourneyType,
@@ -20,4 +20,4 @@ export type {
   TimeSignatureJourneyDefinition,
   Subdivision,
   Complexity,
-} from './timeSignatures';
+} from '@bun/instruments/rhythms/timeSignatures';
