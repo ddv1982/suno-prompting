@@ -134,6 +134,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setCurrentSession(null);
         setChatMessages([]);
         setValidation({ ...EMPTY_VALIDATION });
+        setAdvancedSelection(EMPTY_ADVANCED_SELECTION);
+        setLockedPhrase("");
     }, []);
 
     const saveSession = useCallback(async (session: PromptSession) => {
