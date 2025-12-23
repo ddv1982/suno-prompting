@@ -45,6 +45,7 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
         requests: {
             generateInitial: handlers.generateInitial,
             refinePrompt: handlers.refinePrompt,
+            remixInstruments: handlers.remixInstruments,
             getHistory: handlers.getHistory,
             saveSession: handlers.saveSession,
             deleteSession: handlers.deleteSession,
