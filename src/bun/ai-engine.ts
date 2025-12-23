@@ -72,28 +72,25 @@ export function _testStripLeakedMetaLines(text: string): string {
 
 function buildSystemPrompt(useSunoTags: boolean): string {
   const songStructure = useSunoTags ? `
-OUTPUT FORMAT (Top-Anchor Strategy):
+OUTPUT FORMAT (follow this structure exactly):
 
-[Mood], [Genre/Era], Key: [key/mode]
+Line 1 (MANDATORY): [Mood, Genre/Style, Key: key/mode]
 
-Genre: [specific genre name]
-Mood: [2-3 evocative mood descriptors]
-Instruments: [2-4 items max, with CHARACTER adjectives - ONLY use items from SUGGESTED INSTRUMENTS (Suno tags) in technical guidance]
+Genre: <specific genre name>
+Mood: <2-3 evocative mood descriptors>
+Instruments: <2-4 items with character adjectives>
 
-[INTRO] [Natural flowing description: sparse instrumentation setting the scene]
-[VERSE] [Natural flowing description: weave instruments into the narrative with emotion]
-[CHORUS] [Natural flowing description: peak energy with full arrangement and story climax]
-[BRIDGE] [Natural flowing description: contrasting texture, optional]
-[OUTRO] [Natural flowing description: resolution and fade]
+[INTRO] <sparse instrumentation setting the scene>
+[VERSE] <weave instruments into narrative with emotion>
+[CHORUS] <peak energy, full arrangement, story climax>
+[BRIDGE] <contrasting texture, optional>
+[OUTRO] <resolution and fade>
 
-SECTION WRITING RULES:
-- Write in natural phrases, NOT word lists
-- Blend instruments into the story naturally
-- Instruments line: ONLY use SUGGESTED INSTRUMENTS (Suno tags)
-- Sections: only reference instruments from the technical guidance list
-- Never invent instruments outside technical guidance
-
-PERFORMANCE TAGS: (breathy), (belt), (whisper), (ad-lib), (hold)` : '';
+RULES:
+1. Line 1 bracket tag is MANDATORY - never omit it
+2. Write sections as natural flowing phrases, not word lists
+3. Only use instruments from SUGGESTED INSTRUMENTS in technical guidance
+4. Performance tags available: (breathy), (belt), (whisper), (ad-lib), (hold)` : '';
 
   return `You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
 
@@ -282,11 +279,33 @@ export class AIEngine {
     return truncateToLimit(condensed);
   }
 
+  private validateAndFixFormat(text: string): string {
+    const trimmed = text.trim();
+    
+    // Check if output already starts with bracket tag
+    if (trimmed.startsWith('[')) {
+      return trimmed;
+    }
+    
+    // Extract genre and mood from the text to construct missing bracket tag
+    const genreMatch = trimmed.match(/^Genre:\s*(.+)$/m);
+    const moodMatch = trimmed.match(/^Mood:\s*([^,]+)/m);
+    
+    const genre = genreMatch?.[1]?.trim() || 'Cinematic';
+    const mood = moodMatch?.[1]?.trim() || 'Evocative';
+    
+    // Construct the bracket tag and prepend it
+    const bracketTag = `[${mood}, ${genre}, Key: C Major]`;
+    
+    return `${bracketTag}\n\n${trimmed}`;
+  }
+
   private async postProcess(text: string): Promise<string> {
     let result = this.scrubLeakedMeta(text.trim());
     if (hasLeakedMeta(result)) {
       result = await this.rewriteWithoutMeta(result);
     }
+    result = this.validateAndFixFormat(result);
     result = await this.deduplicateWords(result);
     result = await this.ensureLength(result);
     result = this.scrubLeakedMeta(result);
