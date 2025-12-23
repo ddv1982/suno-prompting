@@ -120,18 +120,6 @@ The body uses section tags like:
 
 <!-- INSTRUMENT_CLASSES_END -->
 
-### Synth replacements
-
-| Acoustic | Synth Alternatives |
-|----------|-------------------|
-| strings | synth strings, mellotron |
-| choir | synth choir, mellotron, vocoder |
-| trumpet, trombone, french horn | synth brass |
-| flute | synth flute |
-| bells, glockenspiel | synth bells |
-| bass | synth bass, sub-bass |
-| felt piano | synth piano, electric piano |
-
 <details>
   <summary><strong>More references (modes, combinations, rhythms, time signatures, Lydian chords)</strong></summary>
 
