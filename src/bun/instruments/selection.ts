@@ -129,19 +129,29 @@ export async function selectModes(
   description: string,
   model: LanguageModel
 ): Promise<ModeSelection> {
+  // Keyword detection first for genre (more control)
+  const keywordGenre = detectGenre(description);
+
   try {
-    return await selectModesWithLLM(description, model);
+    const llmResult = await selectModesWithLLM(description, model);
+    return {
+      ...llmResult,
+      genre: keywordGenre ?? llmResult.genre,
+      reasoning: keywordGenre
+        ? `Keyword genre: ${keywordGenre}. ${llmResult.reasoning}`
+        : llmResult.reasoning,
+    };
   } catch (error) {
     console.warn('[Selection] LLM selection failed, falling back to keywords:', error);
     const combination = detectCombination(description);
     return {
-      genre: detectGenre(description),
+      genre: keywordGenre,
       combination,
       singleMode: combination ? null : detectHarmonic(description),
       polyrhythmCombination: detectPolyrhythmCombination(description),
       timeSignature: detectTimeSignature(description),
       timeSignatureJourney: detectTimeSignatureJourney(description),
-      reasoning: 'Fallback to keyword detection',
+      reasoning: 'Keyword detection (LLM failed)',
     };
   }
 }
