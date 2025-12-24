@@ -47,7 +47,19 @@ const GENRE_PRIORITY: GenreType[] = [
 ];
 
 export function detectGenre(description: string): GenreType | null {
-  return detectFromKeywords(description, GENRE_REGISTRY, GENRE_PRIORITY);
+  const lower = description.toLowerCase();
+  for (const key of GENRE_PRIORITY) {
+    const genre = GENRE_REGISTRY[key];
+    // Match against name (case-insensitive)
+    if (lower.includes(genre.name.toLowerCase())) {
+      return key;
+    }
+    // Match against keywords
+    if (genre.keywords.some(kw => lower.includes(kw))) {
+      return key;
+    }
+  }
+  return null;
 }
 
 export function detectAmbient(description: string): boolean {

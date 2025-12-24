@@ -9,6 +9,7 @@ import {
   detectTimeSignature,
   detectTimeSignatureJourney,
 } from '@bun/instruments/detection';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
 import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
@@ -125,33 +126,61 @@ export async function selectModesWithLLM(
   };
 }
 
+async function correctGenreSpelling(
+  description: string,
+  model: LanguageModel
+): Promise<string> {
+  const genreNames = Object.values(GENRE_REGISTRY).map(g => g.name);
+  const { text } = await generateText({
+    model,
+    system: `You are a spelling corrector. Given a music description, identify any misspelled genre names and return the corrected description. Only fix genre-related spelling. Available genres: ${genreNames.join(', ')}.`,
+    prompt: `Correct any genre spelling in: "${description}"`,
+    maxOutputTokens: 200,
+    temperature: 0,
+  });
+  return text.trim();
+}
+
 export async function selectModes(
   description: string,
   model: LanguageModel
 ): Promise<ModeSelection> {
-  // Keyword detection first for genre (more control)
-  const keywordGenre = detectGenre(description);
+  // Tier 1: Direct match on name + keywords
+  let genre = detectGenre(description);
+  let reasoning = genre ? `Direct match: ${genre}` : '';
 
+  // Tier 2: LLM spelling correction → re-match
+  if (!genre) {
+    try {
+      const corrected = await correctGenreSpelling(description, model);
+      genre = detectGenre(corrected);
+      if (genre) {
+        reasoning = `Spelling corrected match: ${genre}`;
+      }
+    } catch (e) {
+      console.warn('[Selection] Spelling correction failed:', e);
+    }
+  }
+
+  // Tier 3: LLM decides genre (final fallback)
   try {
     const llmResult = await selectModesWithLLM(description, model);
     return {
       ...llmResult,
-      genre: keywordGenre ?? llmResult.genre,
-      reasoning: keywordGenre
-        ? `Keyword genre: ${keywordGenre}. ${llmResult.reasoning}`
-        : llmResult.reasoning,
+      genre: genre ?? llmResult.genre,
+      reasoning: reasoning || llmResult.reasoning,
     };
   } catch (error) {
     console.warn('[Selection] LLM selection failed, falling back to keywords:', error);
     const combination = detectCombination(description);
     return {
-      genre: keywordGenre,
+      genre,
       combination,
       singleMode: combination ? null : detectHarmonic(description),
       polyrhythmCombination: detectPolyrhythmCombination(description),
       timeSignature: detectTimeSignature(description),
       timeSignatureJourney: detectTimeSignatureJourney(description),
-      reasoning: 'Keyword detection (LLM failed)',
+      reasoning: reasoning || 'Keyword detection (LLM failed)',
     };
   }
 }
