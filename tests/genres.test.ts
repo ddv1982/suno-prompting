@@ -15,8 +15,8 @@ import {
 } from '@bun/instruments';
 
 describe('Genre Registry', () => {
-  test('should have 20 genres registered', () => {
-    expect(Object.keys(GENRE_REGISTRY).length).toBe(20);
+  test('should have 21 genres registered', () => {
+    expect(Object.keys(GENRE_REGISTRY).length).toBe(21);
   });
 
   test('all genres have required properties', () => {
@@ -71,6 +71,12 @@ describe('Genre Detection', () => {
     expect(detectGenre('heavy metal song')).toBe('metal');
     expect(detectGenre('doom metal riff')).toBe('metal');
     expect(detectGenre('progressive metal')).toBe('metal');
+  });
+
+  test('detects symphonic from keywords', () => {
+    expect(detectGenre('symphonic metal')).toBe('symphonic');
+    expect(detectGenre('symphonic rock')).toBe('symphonic');
+    expect(detectGenre('a symphonic piece')).toBe('symphonic');
   });
 
   test('detects pop from keywords', () => {

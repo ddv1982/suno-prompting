@@ -18,6 +18,7 @@ import { LATIN_GENRE } from '@bun/instruments/genres/latin';
 import { METAL_GENRE } from '@bun/instruments/genres/metal';
 import { TRAP_GENRE } from '@bun/instruments/genres/trap';
 import { RETRO_GENRE } from '@bun/instruments/genres/retro';
+import { SYMPHONIC_GENRE } from '@bun/instruments/genres/symphonic';
 
 export const GENRE_REGISTRY = {
   ambient: AMBIENT_GENRE,
@@ -40,6 +41,7 @@ export const GENRE_REGISTRY = {
   metal: METAL_GENRE,
   trap: TRAP_GENRE,
   retro: RETRO_GENRE,
+  symphonic: SYMPHONIC_GENRE,
 } as const;
 
 export type GenreType = keyof typeof GENRE_REGISTRY;
@@ -65,5 +67,6 @@ export {
   METAL_GENRE,
   TRAP_GENRE,
   RETRO_GENRE,
+  SYMPHONIC_GENRE,
 };
 export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';

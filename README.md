@@ -125,6 +125,7 @@ The body uses section tags like:
 | Metal | metal, heavy metal, doom metal, progressive metal, industrial, death metal, black metal, thrash metal, nu metal, gothic metal | distorted guitar, guitar, bass, drums, kick drum, timpani, synth pad, strings, choir, organ, orchestra, braams, low brass |
 | Trap | trap, dark trap, emo rap, cloud rap, cinematic trap, trap soul, melodic trap, drill, phonk | felt piano, guitar, pluck synth, strings, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vinyl noise, pizzicato strings, braams, FX risers |
 | Retro | retro, 50s, 60s, rock and roll, doo-wop, rockabilly, garage rock, surf rock, british invasion, oldies | guitar, tremolo guitar, grand piano, honky tonk piano, upright bass, slap bass, drums, tambourine, handclaps, organ, saxophone, harmonica, finger snaps, bells |
+| Symphonic | symphonic, symphonic metal, symphonic rock, orchestral metal, orchestral rock, epic metal | distorted guitar, guitar, grand piano, strings, choir, french horn, low brass, violin, cello, orchestra, bass, drums, timpani, kick drum, harp, celesta, braams, wordless choir |
 
 <!-- GENRE_TABLE_END -->
 
