@@ -9,8 +9,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2 } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
@@ -71,6 +72,7 @@ export function PromptEditor({
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation } = useMemo(() => ({
@@ -226,27 +228,42 @@ export function PromptEditor({
 
         <Separator className="opacity-50" />
 
-        <div className="flex-1 flex flex-col min-h-36 overflow-auto">
-          <SectionLabel className="mb-3">Chat History</SectionLabel>
-          <ScrollArea className="flex-1 pr-4" viewportRef={scrollRef}>
-            {chatMessages.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic opacity-40">
-                Conversation history will appear here.
-              </div>
-            ) : (
-              chatMessages.map((msg, i) => (
-                <ChatMessageBubble key={i} role={msg.role} content={msg.content} />
-              ))
-            )}
-            {isGenerating && (
-              <div className="flex w-full mb-3 justify-start">
-                <div className="bg-muted/50 rounded-2xl px-4 py-3 rounded-tl-none border shadow-sm animate-pulse">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+        <Collapsible open={chatExpanded} onOpenChange={setChatExpanded} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <CollapsibleTrigger asChild>
+            <button className="flex items-center gap-2 w-full text-left mb-3 group">
+              <SectionLabel>Chat History</SectionLabel>
+              {chatMessages.length > 0 && (
+                <span className="text-micro text-muted-foreground">
+                  ({chatMessages.length})
+                </span>
+              )}
+              <ChevronDown className={cn(
+                "w-4 h-4 text-muted-foreground transition-transform ml-auto",
+                chatExpanded && "rotate-180"
+              )} />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full pr-4" viewportRef={scrollRef}>
+              {chatMessages.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground italic opacity-40">
+                  Conversation history will appear here.
                 </div>
-              </div>
-            )}
-          </ScrollArea>
-        </div>
+              ) : (
+                chatMessages.map((msg, i) => (
+                  <ChatMessageBubble key={i} role={msg.role} content={msg.content} />
+                ))
+              )}
+              {isGenerating && (
+                <div className="flex w-full mb-3 justify-start">
+                  <div className="bg-muted/50 rounded-2xl px-4 py-3 rounded-tl-none border shadow-sm animate-pulse">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  </div>
+                </div>
+              )}
+            </ScrollArea>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
       <div className="border-t bg-muted/10 p-6 shrink-0">
@@ -459,7 +476,7 @@ function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: st
     <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[85%] rounded-xl px-4 py-2.5 text-xs shadow-sm",
+          "max-w-[85%] rounded-xl px-4 py-2.5 text-sm shadow-sm",
           role === "user"
             ? "bg-primary text-primary-foreground rounded-tr-sm shadow-lg"
             : "bg-background/40 backdrop-blur text-foreground rounded-tl-sm border"

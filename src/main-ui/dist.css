@@ -594,9 +594,6 @@
   .min-h-20 {
     min-height: calc(var(--spacing) * 20);
   }
-  .min-h-36 {
-    min-height: calc(var(--spacing) * 36);
-  }
   .min-h-screen {
     min-height: 100vh;
   }
@@ -751,6 +748,9 @@
   .translate-y-\[-50\%\] {
     --tw-translate-y: -50%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .rotate-180 {
+    rotate: 180deg;
   }
   .animate-pulse {
     animation: var(--animate-pulse);
