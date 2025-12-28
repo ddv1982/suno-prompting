@@ -82,6 +82,14 @@ export function PromptEditor({
     lockedPhraseValidation: validateLockedPhrase(lockedPhrase),
   }), [currentPrompt, input, maxChars, lockedPhrase]);
 
+  const hasAdvancedSelection = editorMode === 'advanced' && (
+    advancedSelection.harmonicStyle ||
+    advancedSelection.harmonicCombination ||
+    advancedSelection.polyrhythmCombination ||
+    advancedSelection.timeSignature ||
+    advancedSelection.timeSignatureJourney
+  );
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -90,7 +98,10 @@ export function PromptEditor({
 
   const handleSend = () => {
     const trimmed = input.trim();
-    if (!trimmed || isGenerating) return;
+    const canRefineWithoutInput = editorMode === 'advanced' && currentPrompt && hasAdvancedSelection;
+    
+    if (!trimmed && !canRefineWithoutInput) return;
+    if (isGenerating) return;
     if (trimmed.length > maxChars) return;
     if (!lockedPhraseValidation.isValid) return;
     onGenerate(trimmed);
@@ -340,7 +351,12 @@ export function PromptEditor({
               />
               <Button
                 onClick={handleSend}
-                disabled={isGenerating || !input.trim() || inputOverLimit || !lockedPhraseValidation.isValid}
+                disabled={
+                  isGenerating ||
+                  inputOverLimit ||
+                  !lockedPhraseValidation.isValid ||
+                  (!input.trim() && !(editorMode === 'advanced' && currentPrompt && hasAdvancedSelection))
+                }
                 size="sm"
                 className={cn(
                   "h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive transition-all duration-300",
