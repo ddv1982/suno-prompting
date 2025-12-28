@@ -11,7 +11,7 @@ import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2, ChevronDown, Lock, MessageSquare } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, RefreshCw, Bug, Shuffle, Settings2, ChevronDown, Lock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
@@ -460,18 +460,15 @@ function ValidationMessages({ errors, warnings }: { errors: string[]; warnings: 
   return (
     <div className="space-y-2 mt-2">
       {errors.map((error, i) => (
-        <Alert key={i} variant="destructive" className="py-2 px-3 border-l-4">
+        <Alert key={i} className="py-2 px-4 glass-panel-subtle border-destructive/30 text-destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-xs ml-2">{error}</AlertDescription>
+          <AlertDescription className="text-tiny ml-2">{error}</AlertDescription>
         </Alert>
       ))}
       {warnings.map((warning, i) => (
-        <Alert
-          key={i}
-          className="py-2 px-3 border-l-4 border-yellow-500 bg-yellow-500/5 text-yellow-600 dark:text-yellow-400"
-        >
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-xs ml-2">{warning}</AlertDescription>
+        <Alert key={i} className="py-2 px-4 glass-panel-subtle border-amber-500/30 text-amber-400">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <AlertDescription className="text-tiny ml-2">{warning}</AlertDescription>
         </Alert>
       ))}
     </div>
