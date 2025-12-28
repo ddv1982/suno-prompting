@@ -8,7 +8,7 @@ import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
-import type { DebugInfo } from '@shared/types';
+import type { DebugInfo, AppConfig } from '@shared/types';
 import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine } from '@bun/prompt/remix';
@@ -101,6 +101,14 @@ export class AIEngine {
 
   setMaxMode(value: boolean) {
     this.maxMode = value;
+  }
+
+  initialize(config: Partial<AppConfig>) {
+    if (config.apiKey) this.apiKey = config.apiKey;
+    if (config.model) this.model = config.model;
+    if (config.useSunoTags !== undefined) this.useSunoTags = config.useSunoTags;
+    if (config.debugMode !== undefined) this.debugMode = config.debugMode;
+    if (config.maxMode !== undefined) this.maxMode = config.maxMode;
   }
 
   private getGroqModel() {

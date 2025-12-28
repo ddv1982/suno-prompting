@@ -70,18 +70,7 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
     console.log('Bun: Initializing backend...');
     await storage.initialize();
     const config = await storage.getConfig();
-    if (config.apiKey) {
-        aiEngine.setApiKey(config.apiKey);
-    }
-    if (config.model) {
-        aiEngine.setModel(config.model);
-    }
-    if (config.useSunoTags !== undefined) {
-        aiEngine.setUseSunoTags(config.useSunoTags);
-    }
-    if (config.debugMode !== undefined) {
-        aiEngine.setDebugMode(config.debugMode);
-    }
+    aiEngine.initialize(config);
     console.log('Bun: Backend initialized, launching window');
 
     new BrowserWindow({
