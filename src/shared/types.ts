@@ -67,6 +67,7 @@ export type SaveAllSettingsParams = {
     model: string;
     useSunoTags: boolean;
     debugMode: boolean;
+    maxMode: boolean;
 };
 
 export type GetAllSettingsResponse = {
@@ -74,6 +75,7 @@ export type GetAllSettingsResponse = {
     model: string;
     useSunoTags: boolean;
     debugMode: boolean;
+    maxMode: boolean;
 };
 
 export type GetHistoryResponse = { sessions: PromptSession[] };
@@ -82,12 +84,14 @@ export type DeleteSessionParams = { id: string };
 export type SetApiKeyParams = { apiKey: string };
 export type SetModelParams = { model: string };
 export type SetSunoTagsParams = { useSunoTags: boolean };
+export type SetMaxModeParams = { maxMode: boolean };
 
 export type AppConfig = {
     apiKey: string | null;
     model: string;
     useSunoTags: boolean;
     debugMode: boolean;
+    maxMode: boolean;
 };
 
 // Handler function types for backend implementation
@@ -108,6 +112,8 @@ export type RPCHandlers = {
     setSunoTags: (params: SetSunoTagsParams) => Promise<{ success: boolean }>;
     getDebugMode: (params: Record<string, never>) => Promise<{ debugMode: boolean }>;
     setDebugMode: (params: SetDebugModeParams) => Promise<{ success: boolean }>;
+    getMaxMode: (params: Record<string, never>) => Promise<{ maxMode: boolean }>;
+    setMaxMode: (params: SetMaxModeParams) => Promise<{ success: boolean }>;
     getAllSettings: (params: Record<string, never>) => Promise<GetAllSettingsResponse>;
     saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
 };
@@ -177,6 +183,14 @@ export type SunoRPCSchema = {
             };
             setDebugMode: {
                 params: SetDebugModeParams;
+                response: { success: boolean };
+            };
+            getMaxMode: {
+                params: Record<string, never>;
+                response: { maxMode: boolean };
+            };
+            setMaxMode: {
+                params: SetMaxModeParams;
                 response: { success: boolean };
             };
             getAllSettings: {

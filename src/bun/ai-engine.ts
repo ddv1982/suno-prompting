@@ -9,7 +9,7 @@ import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
-import { buildContextualPrompt, buildSystemPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
+import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine } from '@bun/prompt/remix';
 import { createLogger } from '@bun/logger';
@@ -81,6 +81,7 @@ export class AIEngine {
   private model: string = APP_CONSTANTS.AI.DEFAULT_MODEL;
   private useSunoTags: boolean = APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS;
   private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
+  private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
 
   setApiKey(key: string) {
     this.apiKey = key;
@@ -98,11 +99,18 @@ export class AIEngine {
     this.debugMode = value;
   }
 
+  setMaxMode(value: boolean) {
+    this.maxMode = value;
+  }
+
   private getGroqModel() {
     return createGroq({ apiKey: this.apiKey || process.env.GROQ_API_KEY })(this.model);
   }
 
   private get systemPrompt(): string {
+    if (this.maxMode) {
+      return buildMaxModeSystemPrompt(MAX_CHARS);
+    }
     return buildSystemPrompt(MAX_CHARS, this.useSunoTags);
   }
 
@@ -222,7 +230,9 @@ export class AIEngine {
 
   async generateInitial(description: string, lockedPhrase?: string): Promise<GenerationResult> {
     const selection = await selectModes(description, this.getGroqModel());
-    const userPrompt = buildContextualPrompt(description, selection, lockedPhrase);
+    const userPrompt = this.maxMode
+      ? buildMaxModeContextualPrompt(description, selection, lockedPhrase)
+      : buildContextualPrompt(description, selection, lockedPhrase);
     const systemPrompt = this.systemPrompt;
 
     const result = await this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>

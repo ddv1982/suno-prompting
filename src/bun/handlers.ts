@@ -143,16 +143,29 @@ export function createHandlers(
                 apiKey: config.apiKey,
                 model: config.model,
                 useSunoTags: config.useSunoTags,
-                debugMode: config.debugMode
+                debugMode: config.debugMode,
+                maxMode: config.maxMode
             };
         },
-        saveAllSettings: async ({ apiKey, model, useSunoTags, debugMode }) => {
+        saveAllSettings: async ({ apiKey, model, useSunoTags, debugMode, maxMode }) => {
             log.info('saveAllSettings');
-            await storage.saveConfig({ apiKey, model, useSunoTags, debugMode });
+            await storage.saveConfig({ apiKey, model, useSunoTags, debugMode, maxMode });
             aiEngine.setApiKey(apiKey);
             aiEngine.setModel(model);
             aiEngine.setUseSunoTags(useSunoTags);
             aiEngine.setDebugMode(debugMode);
+            aiEngine.setMaxMode(maxMode);
+            return { success: true };
+        },
+        getMaxMode: async () => {
+            log.info('getMaxMode');
+            const config = await storage.getConfig();
+            return { maxMode: config.maxMode };
+        },
+        setMaxMode: async ({ maxMode }) => {
+            log.info('setMaxMode', { maxMode });
+            await storage.saveConfig({ maxMode });
+            aiEngine.setMaxMode(maxMode);
             return { success: true };
         }
     };

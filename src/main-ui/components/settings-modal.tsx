@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, Bug, Eye, EyeOff, Settings } from "lucide-react";
+import { AlertCircle, Bug, Eye, EyeOff, Settings, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +24,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [model, setModel] = useState("");
   const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
+  const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           setModel(settings.model || APP_CONSTANTS.AI.DEFAULT_MODEL);
           setUseSunoTags(settings.useSunoTags);
           setDebugMode(settings.debugMode);
+          setMaxMode(settings.maxMode);
         })
         .catch((err) => {
           console.error("Failed to fetch settings", err);
@@ -56,7 +58,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         apiKey: apiKey.trim(),
         model,
         useSunoTags,
-        debugMode
+        debugMode,
+        maxMode
       });
       onClose();
     } catch (e) {
@@ -128,11 +131,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="space-y-2">
             <SectionLabel>Song Structure Tags</SectionLabel>
             <label className="flex items-center gap-3 cursor-pointer py-1">
-              <Switch checked={useSunoTags} onCheckedChange={setUseSunoTags} />
-              <span className="text-sm">Include [VERSE], [CHORUS], etc.</span>
+              <Switch checked={useSunoTags} onCheckedChange={setUseSunoTags} disabled={maxMode} />
+              <span className={`text-sm ${maxMode ? 'text-muted-foreground' : ''}`}>Include [VERSE], [CHORUS], etc.</span>
             </label>
             <p className="text-tiny text-muted-foreground">
               When enabled, prompts include Suno V5 section and performance tags
+              {maxMode && <span className="block text-amber-500 mt-1">Disabled when Max Mode is enabled</span>}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <SectionLabel className="flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Max Mode
+            </SectionLabel>
+            <label className="flex items-center gap-3 cursor-pointer py-1">
+              <Switch checked={maxMode} onCheckedChange={setMaxMode} />
+              <span className="text-sm">Enable Suno Max Mode tags</span>
+            </label>
+            <p className="text-tiny text-muted-foreground">
+              Uses community-discovered prompt format for higher quality output.
+              Best for acoustic, country, rock, and organic genres.
+              Not recommended for electronic music.
             </p>
           </div>
 

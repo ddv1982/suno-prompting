@@ -5,6 +5,7 @@ import {
   buildGuidanceFromSelection,
 } from '@bun/instruments';
 import type { ModeSelection } from '@bun/instruments/selection';
+import { MAX_MODE_HEADER, selectRealismTags, selectElectronicTags, isElectronicGenre } from '@bun/prompt/realism-tags';
 
 export const LOCKED_PLACEHOLDER = '{{LOCKED_PHRASE}}';
 
@@ -80,4 +81,81 @@ export function buildContextualPrompt(
   }
 
   return parts.join('\n\n');
+}
+
+// Max Mode system prompt - uses metadata-style formatting for higher quality
+export function buildMaxModeSystemPrompt(maxChars: number): string {
+  return `You are a music prompt writer for Suno V5 MAX MODE. Generate prompts using the specific metadata format that triggers maximum quality output.
+
+OUTPUT FORMAT (follow EXACTLY - this format is critical):
+
+${MAX_MODE_HEADER}
+
+genre: "<specific genre(s), comma separated>"
+instruments: "<instruments with character adjectives, vocal style descriptors>"
+style tags: "<recording style, texture, atmosphere descriptors>"
+recording: "<performance context, source description>"
+
+CRITICAL RULES:
+1. ALWAYS start with the exact MAX MODE header tags shown above
+2. Use metadata-style formatting with quoted values after colons
+3. NO section tags like [VERSE] or [CHORUS] - these cause lyric bleed-through in max mode
+4. Keep each field on its own line
+5. Instruments should include vocal character (e.g., "BARITONE singer, vocal grit, emotional phrasing")
+6. Style tags describe recording character, NOT music style
+7. If ${LOCKED_PLACEHOLDER} appears in the input, include it in the instruments or style tags field
+
+STYLE TAGS EXAMPLES (use these types of descriptors):
+- Recording: "tape recorder, close-up, raw performance texture, handheld device realism"
+- Space: "narrow mono image, small-bedroom acoustics, dry, limited stereo"
+- Character: "unpolished, authentic take, natural dynamics, imperfections kept"
+
+STRICT CONSTRAINTS:
+- Output MUST be under ${maxChars} characters
+- Output ONLY the formatted prompt - no explanations
+- Every line must follow the format shown above`;
+}
+
+// Max Mode contextual prompt builder
+export function buildMaxModeContextualPrompt(
+  description: string,
+  selection: ModeSelection,
+  lockedPhrase?: string
+): string {
+  const { found: userInstruments } = extractInstruments(description);
+  const detectedGenre = selection.genre || 'acoustic';
+  
+  // Select appropriate style tags based on genre
+  const isElectronic = isElectronicGenre(detectedGenre);
+  const styleTags = isElectronic 
+    ? selectElectronicTags(4)
+    : selectRealismTags(detectedGenre, 4);
+
+  const descriptionWithLocked = lockedPhrase
+    ? `${description}\n\nLOCKED PHRASE (include in output exactly as-is): ${LOCKED_PLACEHOLDER}`
+    : description;
+
+  const parts = [
+    `USER'S SONG CONCEPT:`,
+    descriptionWithLocked,
+    '',
+    'DETECTED CONTEXT:',
+    `Genre: ${detectedGenre}`,
+  ];
+
+  if (userInstruments.length > 0) {
+    parts.push(`User mentioned instruments: ${userInstruments.join(', ')}`);
+  }
+
+  if (styleTags.length > 0) {
+    parts.push(`Suggested style tags for this genre: ${styleTags.join(', ')}`);
+  }
+
+  if (isElectronic) {
+    parts.push('', 'NOTE: This is an electronic genre. Skip realism tags, focus on clarity and punch.');
+  } else {
+    parts.push('', 'NOTE: This is an organic genre. Include realism and recording character tags.');
+  }
+
+  return parts.join('\n');
 }

@@ -78,14 +78,55 @@ The body uses section tags like:
 - **Dynamic instrument selection** from curated pools with exclusion rules.
 - Quick remix buttons for **mood / genre / instruments**.
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
+- **Max Mode**: Community-discovered prompt format for higher quality output (see below).
+
+## Max Mode
+
+Max Mode uses a community-discovered prompt technique that triggers higher quality output in Suno V5. Enable it in Settings.
+
+### How it works
+
+When enabled, prompts are generated with special header tags:
+
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+
+genre: "acoustic, country singer-songwriter"
+instruments: "single acoustic guitar, vocal grit, emotional phrasing"
+style tags: "tape recorder, raw performance texture, narrow mono image"
+recording: "one person, one guitar, natural dynamics"
+```
+
+### Best for
+
+- **Organic genres**: Country, folk, acoustic, blues, jazz, soul, rock
+- **Realism-focused**: Live recordings, authentic performances, analog warmth
+
+### Not recommended for
+
+- **Electronic genres**: EDM, house, techno, synthwave (use normal mode instead)
+
+### Key differences from normal mode
+
+| Aspect | Normal Mode | Max Mode |
+|--------|-------------|----------|
+| Format | Section tags `[VERSE]`, `[CHORUS]` | Metadata style `genre:`, `instruments:` |
+| Focus | Song structure | Recording quality & realism |
+| Tags | Performance tags `(breathy)`, `(belt)` | Realism tags (tape saturation, room acoustics) |
+
+Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
 ## Architecture (high level)
 
 ### Prompt pipeline
 
-- `src/bun/prompt/builders.ts`: constructs the system/context prompts.
+- `src/bun/prompt/builders.ts`: constructs the system/context prompts (normal + max mode).
 - `src/bun/prompt/postprocess.ts`: strips leaked meta, enforces the output contract, truncates to limits.
 - `src/bun/prompt/remix.ts`: field-line replacement helpers used by remix actions.
+- `src/bun/prompt/realism-tags.ts`: max mode header tags, realism descriptors, and genre-to-tag mapping.
 
 ### Instruments + music “knowledge”
 

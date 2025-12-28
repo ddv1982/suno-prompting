@@ -20,7 +20,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false })),
+            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -46,7 +46,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false })),
+            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };

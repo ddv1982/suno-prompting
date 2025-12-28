@@ -83,11 +83,20 @@ export const api = {
         await rpc.request.setDebugMode({ debugMode });
     },
 
-    async getAllSettings(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean }> {
+    async getAllSettings(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean }> {
         return await rpc.request.getAllSettings({});
     },
 
-    async saveAllSettings(settings: { apiKey: string; model: string; useSunoTags: boolean; debugMode: boolean }): Promise<void> {
+    async saveAllSettings(settings: { apiKey: string; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean }): Promise<void> {
         await rpc.request.saveAllSettings(settings);
+    },
+
+    async getMaxMode(): Promise<boolean> {
+        const { maxMode } = await rpc.request.getMaxMode({});
+        return maxMode;
+    },
+
+    async setMaxMode(maxMode: boolean): Promise<void> {
+        await rpc.request.setMaxMode({ maxMode });
     }
 };
