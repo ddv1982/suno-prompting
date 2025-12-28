@@ -11,7 +11,7 @@ import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2, ChevronDown } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2, ChevronDown, Lock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
@@ -116,31 +116,25 @@ export function PromptEditor({
   return (
     <section className="flex-1 flex flex-col bg-background">
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-6xl mx-auto w-full overflow-auto">
-        <div className="flex justify-between items-center">
-          <SectionLabel>Generated Prompt Output</SectionLabel>
-          <Badge
-            variant={promptOverLimit ? "destructive" : "secondary"}
-            className="text-tiny font-mono tabular-nums h-5"
-          >
-            {charCount} / {maxChars}
-          </Badge>
-        </div>
+        {currentPrompt && (
+          <>
+            <div className="flex justify-between items-center">
+              <SectionLabel>Generated Prompt Output</SectionLabel>
+              <Badge
+                variant={promptOverLimit ? "destructive" : "secondary"}
+                className="text-tiny font-mono tabular-nums h-5"
+              >
+                {charCount} / {maxChars}
+              </Badge>
+            </div>
 
-        <Card className="flex-1 relative group border shadow-sm glass-panel overflow-hidden">
-          <ScrollArea className="h-full">
-            <CardContent className="p-6">
-              {currentPrompt ? (
-                <PromptOutput text={currentPrompt} />
-              ) : (
-                <div className="text-sm text-muted-foreground italic">
-                  Start by describing your creative vision below…
-                </div>
-              )}
-            </CardContent>
-          </ScrollArea>
-          <div className="absolute top-4 right-4 flex gap-2">
-            {currentPrompt && (
-              <>
+            <Card className="flex-1 relative group border shadow-sm glass-panel overflow-hidden">
+              <ScrollArea className="h-full">
+                <CardContent className="p-6">
+                  <PromptOutput text={currentPrompt} />
+                </CardContent>
+              </ScrollArea>
+              <div className="absolute top-4 right-4 flex gap-2">
                 {debugInfo && (
                   <Button
                     variant="outline"
@@ -205,10 +199,10 @@ export function PromptEditor({
                   {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied ? "COPIED" : "COPY"}
                 </Button>
-              </>
-            )}
-          </div>
-        </Card>
+              </div>
+            </Card>
+          </>
+        )}
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />
 
@@ -307,11 +301,13 @@ export function PromptEditor({
           {/* Locked Phrase - available in both modes */}
           <div className="space-y-1">
             <FormLabel
+              icon={<Lock className="w-3 h-3" />}
+              badge="optional"
               charCount={lockedPhrase ? lockedPhrase.length : undefined}
               maxChars={lockedPhrase ? APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS : undefined}
               error={!lockedPhraseValidation.isValid}
             >
-              {editorMode === 'advanced' ? 'Additional Locked Text (optional)' : 'Locked Phrase (optional)'}
+              {editorMode === 'advanced' ? 'Additional Locked Text' : 'Locked Phrase'}
             </FormLabel>
             <Textarea
               value={lockedPhrase}
@@ -321,49 +317,48 @@ export function PromptEditor({
                 !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20"
               )}
               placeholder={editorMode === 'advanced' 
-                ? "Additional text to lock (combined with music phrase above)..."
-                : "Text that will appear exactly as written in the output..."}
+                ? "Additional text to lock (combined with music phrase above)"
+                : "Text that will appear exactly as written in the output"}
             />
-            {lockedPhraseValidation.error ? (
+            {lockedPhraseValidation.error && (
               <p className="text-micro text-destructive flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" /> {lockedPhraseValidation.error}
               </p>
-            ) : (
-              <p className="text-micro text-muted-foreground opacity-70">
-                {editorMode === 'advanced'
-                  ? 'This text will be combined with your music selections above.'
-                  : "This text will be preserved verbatim - the AI won't modify it."}
-              </p>
             )}
           </div>
-          <div className="flex gap-3 items-end">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20"
-              placeholder="Describe your song, style, mood, or refine the existing prompt..."
-            />
-            <Button
-              onClick={handleSend}
-              disabled={isGenerating || !input.trim() || inputOverLimit || !lockedPhraseValidation.isValid}
-              size="sm"
-              className={cn(
-                "h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive transition-all duration-300",
-                isGenerating && "w-9 px-0"
-              )}
-            >
-              {isGenerating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span className="font-bold text-tiny tracking-tight">
-                    {currentPrompt ? "REFINE" : "GENERATE"}
-                  </span>
-                </>
-              )}
-            </Button>
+          <div className="space-y-1">
+            <FormLabel icon={<MessageSquare className="w-3 h-3" />}>
+              {currentPrompt ? 'Refine Prompt' : 'Describe Your Song'}
+            </FormLabel>
+            <div className="flex gap-3 items-end">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20"
+                placeholder="Describe your song, style, mood, or refine the existing prompt"
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isGenerating || !input.trim() || inputOverLimit || !lockedPhraseValidation.isValid}
+                size="sm"
+                className={cn(
+                  "h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive transition-all duration-300",
+                  isGenerating && "w-9 px-0"
+                )}
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span className="font-bold text-tiny tracking-tight">
+                      {currentPrompt ? "REFINE" : "GENERATE"}
+                    </span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
 
           {inputOverLimit && (
@@ -373,12 +368,15 @@ export function PromptEditor({
           )}
 
           <div className="flex justify-between items-center px-1">
-            <p className="text-tiny text-muted-foreground flex gap-4 opacity-70">
+            <p className="text-tiny text-muted-foreground/60 flex items-center gap-3">
               <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 border rounded-md bg-background text-micro">Enter</kbd> to send
+                <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-micro font-mono">Enter</kbd>
+                <span>to send</span>
               </span>
+              <span className="text-border">•</span>
               <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 border rounded-md bg-background text-micro">Shift + Enter</kbd> for new line
+                <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-micro font-mono">Shift + Enter</kbd>
+                <span>for new line</span>
               </span>
             </p>
             <div className="flex items-center gap-4">
