@@ -368,9 +368,8 @@ export function PromptEditor({
           )}
 
           <div className="flex justify-between items-center px-1">
-            <p className="text-micro text-muted-foreground/50 flex items-center gap-2 font-mono">
+            <p className="text-tiny text-muted-foreground/50 flex items-center gap-4 font-mono">
               <span>⏎ send</span>
-              <span>•</span>
               <span>⇧⏎ new line</span>
             </p>
             <div className="flex items-center gap-4">
