@@ -368,16 +368,10 @@ export function PromptEditor({
           )}
 
           <div className="flex justify-between items-center px-1">
-            <p className="text-tiny text-muted-foreground/60 flex items-center gap-3">
-              <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-micro font-mono">Enter</kbd>
-                <span>to send</span>
-              </span>
-              <span className="text-border">•</span>
-              <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-micro font-mono">Shift + Enter</kbd>
-                <span>for new line</span>
-              </span>
+            <p className="text-micro text-muted-foreground/50 flex items-center gap-2 font-mono">
+              <span>⏎ send</span>
+              <span>•</span>
+              <span>⇧⏎ new line</span>
             </p>
             <div className="flex items-center gap-4">
               {currentModel && (
