@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormLabel } from "@/components/ui/form-label";
 import { Loader2, Check, Copy, Send, AlertCircle, RefreshCw, Bug, Shuffle, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
@@ -123,7 +124,7 @@ export function PromptEditor({
           </Badge>
         </div>
 
-        <Card className="flex-1 relative group border shadow-sm bg-card/50 backdrop-blur overflow-hidden">
+        <Card className="flex-1 relative group border shadow-sm glass-panel overflow-hidden">
           <ScrollArea className="h-full">
             <CardContent className="p-6">
               {currentPrompt ? (
@@ -143,7 +144,7 @@ export function PromptEditor({
                     variant="outline"
                     size="sm"
                     onClick={() => setDebugOpen(true)}
-                    className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                    className="font-bold glass-control"
                   >
                     <Bug className="w-3.5 h-3.5" />
                     DEBUG
@@ -154,7 +155,7 @@ export function PromptEditor({
                   size="sm"
                   onClick={onRemixGenre}
                   disabled={isGenerating}
-                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                  className="font-bold glass-control"
                 >
                   <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixGenre' && "animate-spin")} />
                   GENRE
@@ -164,7 +165,7 @@ export function PromptEditor({
                   size="sm"
                   onClick={onRemixMood}
                   disabled={isGenerating}
-                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                  className="font-bold glass-control"
                 >
                   <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
                   MOOD
@@ -174,7 +175,7 @@ export function PromptEditor({
                   size="sm"
                   onClick={onRemixInstruments}
                   disabled={isGenerating}
-                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                  className="font-bold glass-control"
                 >
                   <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixInstruments' && "animate-spin")} />
                   INSTRUMENTS
@@ -184,7 +185,7 @@ export function PromptEditor({
                   size="sm"
                   onClick={onRemix}
                   disabled={isGenerating}
-                  className="h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm"
+                  className="font-bold glass-control"
                 >
                   <RefreshCw className={cn("w-3.5 h-3.5", generatingAction === 'remix' && "animate-spin")} />
                   {generatingAction === 'remix' ? "REMIXING" : "REMIX"}
@@ -195,7 +196,7 @@ export function PromptEditor({
                   onClick={handleCopy}
                   disabled={promptOverLimit}
                   className={cn(
-                    "h-8 px-3 text-tiny font-bold gap-2 bg-background/70 backdrop-blur-sm transition-all duration-300",
+                    "font-bold glass-control transition-all duration-300",
                     copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
                   )}
                 >
@@ -254,17 +255,17 @@ export function PromptEditor({
           <div className="flex items-center gap-2">
             <Button
               variant={editorMode === 'simple' ? 'default' : 'outline'}
-              size="sm"
+              size="xs"
               onClick={() => onEditorModeChange('simple')}
-              className="h-7 px-3 text-tiny font-bold"
+              className="font-bold"
             >
               Simple
             </Button>
             <Button
               variant={editorMode === 'advanced' ? 'default' : 'outline'}
-              size="sm"
+              size="xs"
               onClick={() => onEditorModeChange('advanced')}
-              className="h-7 px-3 text-tiny font-bold gap-1.5"
+              className="font-bold"
             >
               <Settings2 className="w-3 h-3" />
               Advanced
@@ -288,24 +289,18 @@ export function PromptEditor({
 
           {/* Locked Phrase - available in both modes */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="text-tiny text-muted-foreground font-medium">
-                {editorMode === 'advanced' ? 'Additional Locked Text (optional)' : 'Locked Phrase (optional)'}
-              </label>
-              {lockedPhrase && (
-                <span className={cn(
-                  "text-micro font-mono tabular-nums",
-                  !lockedPhraseValidation.isValid ? "text-destructive" : "text-muted-foreground"
-                )}>
-                  {lockedPhrase.length} / {APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS}
-                </span>
-              )}
-            </div>
+            <FormLabel
+              charCount={lockedPhrase ? lockedPhrase.length : undefined}
+              maxChars={lockedPhrase ? APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS : undefined}
+              error={!lockedPhraseValidation.isValid}
+            >
+              {editorMode === 'advanced' ? 'Additional Locked Text (optional)' : 'Locked Phrase (optional)'}
+            </FormLabel>
             <Textarea
               value={lockedPhrase}
               onChange={(e) => onLockedPhraseChange(e.target.value)}
               className={cn(
-                "min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg bg-background/40 backdrop-blur focus-visible:ring-primary/20",
+                "min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg glass-control focus-visible:ring-primary/20",
                 !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20"
               )}
               placeholder={editorMode === 'advanced' 
@@ -329,7 +324,7 @@ export function PromptEditor({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl bg-background/40 backdrop-blur focus-visible:ring-primary/20"
+              className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20"
               placeholder="Describe your song, style, mood, or refine the existing prompt..."
             />
             <Button

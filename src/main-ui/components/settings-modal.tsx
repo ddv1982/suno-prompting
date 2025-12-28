@@ -88,7 +88,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="gsk_..."
-                className="pr-10 bg-background/40 backdrop-blur"
+                className="pr-10 glass-control"
               />
               <button
                 type="button"
@@ -114,7 +114,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={loading}
-              className="flex h-10 w-full rounded-lg border border-input bg-background/40 backdrop-blur px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input glass-control px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading && <option value="">Loading...</option>}
               {APP_CONSTANTS.AI.AVAILABLE_MODELS.map((m) => (

@@ -13,6 +13,18 @@
   --text-tiny: 0.625rem;     /* 10px - badges, button labels, status */
   --text-caption: 0.6875rem; /* 11px - help text, descriptions */
 
+  /* Component heights - consistent control sizing */
+  --height-control-xs: 1.75rem;  /* 28px - tiny buttons, small badges */
+  --height-control-sm: 2rem;     /* 32px - secondary controls */
+  --height-control-md: 2.25rem;  /* 36px - default controls */
+  --height-control-lg: 2.5rem;   /* 40px - primary actions */
+
+  /* Spacing scale */
+  --space-panel: 1rem;           /* panel padding */
+  --space-section: 1.5rem;       /* between sections */
+  --space-group: 0.75rem;        /* between related items */
+  --space-inline: 0.5rem;        /* inline elements */
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -279,4 +291,24 @@
   background: var(--panel-2);
   border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
   border-radius: var(--radius);
+}
+
+/* Glass panel variants - unified glass-morphism effect */
+@utility glass-panel {
+  background: color-mix(in oklab, var(--card) 50%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  border-radius: var(--radius);
+}
+
+@utility glass-panel-subtle {
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+  backdrop-filter: blur(4px);
+  border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+  border-radius: var(--radius);
+}
+
+@utility glass-control {
+  background: color-mix(in oklab, var(--background) 40%, transparent);
+  backdrop-filter: blur(4px);
 }

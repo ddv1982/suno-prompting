@@ -52,7 +52,6 @@
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --animate-spin: spin 1s linear infinite;
     --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    --blur-sm: 8px;
     --blur-md: 12px;
     --default-transition-duration: 150ms;
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -61,6 +60,11 @@
     --text-micro: 0.5625rem;
     --text-tiny: 0.625rem;
     --text-caption: 0.6875rem;
+    --height-control-xs: 1.75rem;
+    --height-control-sm: 2rem;
+    --height-control-md: 2.25rem;
+    --height-control-lg: 2.5rem;
+    --space-panel: 1rem;
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -414,9 +418,6 @@
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
   }
-  .mr-1 {
-    margin-right: calc(var(--spacing) * 1);
-  }
   .mr-2 {
     margin-right: calc(var(--spacing) * 2);
   }
@@ -486,6 +487,10 @@
     width: calc(var(--spacing) * 4);
     height: calc(var(--spacing) * 4);
   }
+  .size-7 {
+    width: calc(var(--spacing) * 7);
+    height: calc(var(--spacing) * 7);
+  }
   .size-8 {
     width: calc(var(--spacing) * 8);
     height: calc(var(--spacing) * 8);
@@ -532,9 +537,6 @@
   .h-9 {
     height: calc(var(--spacing) * 9);
   }
-  .h-10 {
-    height: calc(var(--spacing) * 10);
-  }
   .h-12 {
     height: calc(var(--spacing) * 12);
   }
@@ -546,6 +548,18 @@
   }
   .h-64 {
     height: calc(var(--spacing) * 64);
+  }
+  .h-\[var\(--height-control-lg\)\] {
+    height: var(--height-control-lg);
+  }
+  .h-\[var\(--height-control-md\)\] {
+    height: var(--height-control-md);
+  }
+  .h-\[var\(--height-control-sm\)\] {
+    height: var(--height-control-sm);
+  }
+  .h-\[var\(--height-control-xs\)\] {
+    height: var(--height-control-xs);
   }
   .h-\[var\(--radix-select-trigger-height\)\] {
     height: var(--radix-select-trigger-height);
@@ -888,6 +902,30 @@
   .overflow-y-auto {
     overflow-y: auto;
   }
+  .glass-panel {
+    background: var(--card);
+    @supports (color: color-mix(in lab, red, red)) {
+      background: color-mix(in oklab, var(--card) 50%, transparent);
+    }
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    @supports (color: color-mix(in lab, red, red)) {
+      border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+    }
+    border-radius: var(--radius);
+  }
+  .glass-panel-subtle {
+    background: var(--muted);
+    @supports (color: color-mix(in lab, red, red)) {
+      background: color-mix(in oklab, var(--muted) 30%, transparent);
+    }
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--border);
+    @supports (color: color-mix(in lab, red, red)) {
+      border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+    }
+    border-radius: var(--radius);
+  }
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -1026,12 +1064,6 @@
       background-color: color-mix(in oklab, var(--color-background) 60%, transparent);
     }
   }
-  .bg-background\/70 {
-    background-color: var(--color-background);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--color-background) 70%, transparent);
-    }
-  }
   .bg-black\/50 {
     background-color: color-mix(in srgb, #000 50%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -1055,12 +1087,6 @@
   }
   .bg-card {
     background-color: var(--color-card);
-  }
-  .bg-card\/50 {
-    background-color: var(--color-card);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--color-card) 50%, transparent);
-    }
   }
   .bg-card\/70 {
     background-color: var(--color-card);
@@ -1173,6 +1199,9 @@
   .p-8 {
     padding: calc(var(--spacing) * 8);
   }
+  .p-\[var\(--space-panel\)\] {
+    padding: var(--space-panel);
+  }
   .p-px {
     padding: 1px;
   }
@@ -1196,6 +1225,9 @@
   }
   .px-4 {
     padding-inline: calc(var(--spacing) * 4);
+  }
+  .px-5 {
+    padding-inline: calc(var(--spacing) * 5);
   }
   .px-6 {
     padding-inline: calc(var(--spacing) * 6);
@@ -1571,10 +1603,12 @@
     -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
     backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
   }
-  .backdrop-blur-sm {
-    --tw-backdrop-blur: blur(var(--blur-sm));
-    -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
-    backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+  .glass-control {
+    background: var(--background);
+    @supports (color: color-mix(in lab, red, red)) {
+      background: color-mix(in oklab, var(--background) 40%, transparent);
+    }
+    backdrop-filter: blur(4px);
   }
   .transition {
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
@@ -2177,11 +2211,6 @@
   .has-\[\>svg\]\:gap-x-3 {
     &:has(>svg) {
       column-gap: calc(var(--spacing) * 3);
-    }
-  }
-  .has-\[\>svg\]\:px-2\.5 {
-    &:has(>svg) {
-      padding-inline: calc(var(--spacing) * 2.5);
     }
   }
   .has-\[\>svg\]\:px-3 {

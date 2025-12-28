@@ -36,17 +36,17 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
     );
 
     return (
-        <div className="space-y-4 p-4 rounded-lg border bg-muted/30 backdrop-blur">
+        <div className="space-y-4 p-[var(--space-panel)] glass-panel-subtle">
             <div className="flex items-center justify-between">
                 <SectionLabel>Advanced Mode</SectionLabel>
                 {hasAnySelection && (
                     <Button
                         variant="ghost"
-                        size="sm"
+                        size="xs"
                         onClick={onClear}
-                        className="h-6 px-2 text-tiny text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive"
                     >
-                        <X className="w-3 h-3 mr-1" />
+                        <X className="w-3 h-3" />
                         Clear All
                     </Button>
                 )}

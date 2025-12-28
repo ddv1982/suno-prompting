@@ -43,9 +43,9 @@ export function HistorySidebar({
           <div className="ml-auto flex items-center gap-2">
           <Button
             variant="outline"
-            size="sm"
+            size="xs"
             onClick={onNewProject}
-            className="h-7 px-2 text-tiny font-bold gap-1 interactive bg-background/40 backdrop-blur"
+            className="font-bold interactive glass-control"
           >
             <Plus className="w-3 h-3" />
             NEW
@@ -59,7 +59,7 @@ export function HistorySidebar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search projects…"
-            className="pl-9 bg-background/40 backdrop-blur"
+            className="pl-9 glass-control"
           />
         </div>
       </SidebarHeader>
