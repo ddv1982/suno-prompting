@@ -2,7 +2,7 @@ import { Electroview } from 'electrobun/view';
 import { type SunoRPCSchema, type PromptSession } from '@shared/types';
 
 const rpc = Electroview.defineRPC<SunoRPCSchema>({
-    maxRequestTime: 30000,
+    maxRequestTime: 90000,
     handlers: {
         requests: {},
         messages: {}

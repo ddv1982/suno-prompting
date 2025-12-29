@@ -6,7 +6,7 @@ export const APP_CONSTANTS = {
     AI: {
         MAX_RETRIES: 10,
         MAX_LENGTH_RETRIES: 10,
-        TIMEOUT_MS: 30000,
+        TIMEOUT_MS: 90000,
         DEFAULT_PROVIDER: 'groq' as const,
         DEFAULT_MODEL: 'openai/gpt-oss-120b',
         DEFAULT_USE_SUNO_TAGS: true,
