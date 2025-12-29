@@ -2606,6 +2606,11 @@
       }
     }
   }
+  .sm\:pr-36 {
+    @media (width >= 40rem) {
+      padding-right: calc(var(--spacing) * 36);
+    }
+  }
   .sm\:text-left {
     @media (width >= 40rem) {
       text-align: left;

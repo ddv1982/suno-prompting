@@ -159,13 +159,18 @@ Repeat the hook...
 Closing the song...
 ```
 
-### Remix Buttons
+### Section Buttons
 
-Each section has independent remix functionality:
+Each output section (Title, Style Prompt, Lyrics) has consistent button controls:
 
-- **REMIX** (Title) - Regenerates just the title
-- **REMIX** (Style) - Full prompt regeneration with all field buttons
-- **REMIX** (Lyrics) - Regenerates lyrics while keeping title and style
+| Button | Function |
+|--------|----------|
+| **REMIX** | Regenerates that section's content |
+| **COPY** | Copies content to clipboard (shows "COPIED" on success) |
+
+**Style Prompt** has additional field-specific remix buttons:
+- GENRE, INSTRUMENTS, STYLE, RECORDING - Remix individual fields
+- DEBUG - View generation details (when debug mode enabled)
 
 ### Best For
 
