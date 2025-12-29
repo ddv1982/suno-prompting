@@ -23,7 +23,14 @@ export function createHandlers(
             const versionId = Bun.randomUUIDv7();
             const validation = validatePrompt(result.text);
             log.info(`${action}:complete`, { versionId, isValid: validation.isValid, promptLength: result.text.length });
-            return { prompt: result.text, versionId, validation, debugInfo: result.debugInfo };
+            return { 
+                prompt: result.text, 
+                title: result.title,
+                lyrics: result.lyrics,
+                versionId, 
+                validation, 
+                debugInfo: result.debugInfo 
+            };
         } catch (error) {
             log.error(`${action}:failed`, error);
             throw error;

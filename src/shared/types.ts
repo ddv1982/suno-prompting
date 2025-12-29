@@ -23,6 +23,8 @@ export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
 export type PromptVersion = {
     id: string;
     content: string;
+    title?: string;
+    lyrics?: string;
     feedback?: string;
     timestamp: string;
 };
@@ -31,6 +33,8 @@ export type PromptSession = {
     id: string;
     originalInput: string;
     currentPrompt: string;
+    currentTitle?: string;
+    currentLyrics?: string;
     versionHistory: PromptVersion[];
     createdAt: string;
     updatedAt: string;
@@ -56,7 +60,9 @@ export type DebugInfo = {
 // Request/Response type definitions for RPC
 export type GenerateInitialParams = { description: string; lockedPhrase?: string };
 export type GenerateInitialResponse = { 
-    prompt: string; 
+    prompt: string;
+    title?: string;
+    lyrics?: string;
     versionId: string; 
     validation: ValidationResult; 
     debugInfo?: DebugInfo;

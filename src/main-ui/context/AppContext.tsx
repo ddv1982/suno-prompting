@@ -206,7 +206,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }, [editorMode, computedMusicPhrase, lockedPhrase]);
 
     const updateSessionWithResult = useCallback(async (
-        result: { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo },
+        result: { prompt: string; title?: string; lyrics?: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo },
         feedbackLabel: string | undefined,
         successMessage: string,
         isNewSession: boolean,
@@ -217,6 +217,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const newVersion: PromptVersion = {
             id: result.versionId,
             content: result.prompt,
+            title: result.title,
+            lyrics: result.lyrics,
             feedback: feedbackLabel,
             timestamp: now,
         };
@@ -226,6 +228,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 id: generateId(),
                 originalInput,
                 currentPrompt: result.prompt,
+                currentTitle: result.title,
+                currentLyrics: result.lyrics,
                 versionHistory: [newVersion],
                 createdAt: now,
                 updatedAt: now,
@@ -233,6 +237,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             : {
                 ...currentSession,
                 currentPrompt: result.prompt,
+                currentTitle: result.title,
+                currentLyrics: result.lyrics,
                 versionHistory: [...currentSession.versionHistory, newVersion],
                 updatedAt: now,
             };
@@ -342,6 +348,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const newVersion: PromptVersion = {
                 id: result.versionId,
                 content: result.prompt,
+                title: currentSession.currentTitle,
+                lyrics: currentSession.currentLyrics,
                 feedback: `[${feedbackLabel}]`,
                 timestamp: now,
             };
@@ -349,6 +357,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const updatedSession: PromptSession = {
                 ...currentSession,
                 currentPrompt: result.prompt,
+                // Preserve title and lyrics during remix operations
                 versionHistory: [...currentSession.versionHistory, newVersion],
                 updatedAt: now,
             };

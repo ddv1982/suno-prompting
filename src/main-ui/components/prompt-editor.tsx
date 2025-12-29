@@ -24,6 +24,8 @@ import { ChatHistorySection } from "@/components/chat-history-section";
 
 type PromptEditorProps = {
   currentPrompt: string;
+  currentTitle?: string;
+  currentLyrics?: string;
   isGenerating: boolean;
   generatingAction: GeneratingAction;
   validation: ValidationResult;
@@ -54,6 +56,8 @@ type PromptEditorProps = {
 
 export function PromptEditor({
   currentPrompt,
+  currentTitle,
+  currentLyrics,
   isGenerating,
   generatingAction,
   validation,
@@ -134,39 +138,98 @@ export function PromptEditor({
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-6xl mx-auto w-full overflow-auto">
         {currentPrompt && (
           <>
-            <div className="flex justify-between items-center">
-              <SectionLabel>Generated Prompt Output</SectionLabel>
-              <Badge
-                variant={promptOverLimit ? "destructive" : "secondary"}
-                className="text-tiny font-mono tabular-nums h-5"
-              >
-                {charCount} / {maxChars}
-              </Badge>
-            </div>
+            {/* Lyrics Mode: Show 3 separate sections */}
+            {lyricsMode && currentTitle && currentLyrics ? (
+              <div className="space-y-4">
+                {/* Title Section */}
+                <OutputSection
+                  label="Title"
+                  content={currentTitle}
+                  onCopy={() => navigator.clipboard.writeText(currentTitle)}
+                />
 
-            <Card className="flex-1 relative group border shadow-sm glass-panel overflow-hidden">
-              <ScrollArea className="h-full">
-                <CardContent className="p-6">
-                  <PromptOutput text={currentPrompt} />
-                </CardContent>
-              </ScrollArea>
-              <RemixButtonGroup
-                isGenerating={isGenerating}
-                generatingAction={generatingAction}
-                maxMode={maxMode}
-                copied={copied}
-                promptOverLimit={promptOverLimit}
-                hasDebugInfo={!!debugInfo}
-                onDebugOpen={() => setDebugOpen(true)}
-                onRemixGenre={onRemixGenre}
-                onRemixMood={onRemixMood}
-                onRemixInstruments={onRemixInstruments}
-                onRemixStyleTags={onRemixStyleTags}
-                onRemixRecording={onRemixRecording}
-                onRemix={onRemix}
-                onCopy={handleCopy}
-              />
-            </Card>
+                {/* Style Section */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <SectionLabel>Style Prompt</SectionLabel>
+                    <Badge
+                      variant={promptOverLimit ? "destructive" : "secondary"}
+                      className="text-tiny font-mono tabular-nums h-5"
+                    >
+                      {charCount} / {maxChars}
+                    </Badge>
+                  </div>
+                  <Card className="relative group border shadow-sm glass-panel overflow-hidden">
+                    <ScrollArea className="max-h-64">
+                      <CardContent className="p-6">
+                        <PromptOutput text={currentPrompt} />
+                      </CardContent>
+                    </ScrollArea>
+                    <RemixButtonGroup
+                      isGenerating={isGenerating}
+                      generatingAction={generatingAction}
+                      maxMode={maxMode}
+                      copied={copied}
+                      promptOverLimit={promptOverLimit}
+                      hasDebugInfo={!!debugInfo}
+                      onDebugOpen={() => setDebugOpen(true)}
+                      onRemixGenre={onRemixGenre}
+                      onRemixMood={onRemixMood}
+                      onRemixInstruments={onRemixInstruments}
+                      onRemixStyleTags={onRemixStyleTags}
+                      onRemixRecording={onRemixRecording}
+                      onRemix={onRemix}
+                      onCopy={handleCopy}
+                    />
+                  </Card>
+                </div>
+
+                {/* Lyrics Section */}
+                <OutputSection
+                  label="Lyrics"
+                  content={currentLyrics}
+                  onCopy={() => navigator.clipboard.writeText(currentLyrics)}
+                  scrollable
+                />
+              </div>
+            ) : (
+              /* Standard Mode: Single output */
+              <>
+                <div className="flex justify-between items-center">
+                  <SectionLabel>Generated Prompt Output</SectionLabel>
+                  <Badge
+                    variant={promptOverLimit ? "destructive" : "secondary"}
+                    className="text-tiny font-mono tabular-nums h-5"
+                  >
+                    {charCount} / {maxChars}
+                  </Badge>
+                </div>
+
+                <Card className="flex-1 relative group border shadow-sm glass-panel overflow-hidden">
+                  <ScrollArea className="h-full">
+                    <CardContent className="p-6">
+                      <PromptOutput text={currentPrompt} />
+                    </CardContent>
+                  </ScrollArea>
+                  <RemixButtonGroup
+                    isGenerating={isGenerating}
+                    generatingAction={generatingAction}
+                    maxMode={maxMode}
+                    copied={copied}
+                    promptOverLimit={promptOverLimit}
+                    hasDebugInfo={!!debugInfo}
+                    onDebugOpen={() => setDebugOpen(true)}
+                    onRemixGenre={onRemixGenre}
+                    onRemixMood={onRemixMood}
+                    onRemixInstruments={onRemixInstruments}
+                    onRemixStyleTags={onRemixStyleTags}
+                    onRemixRecording={onRemixRecording}
+                    onRemix={onRemix}
+                    onCopy={handleCopy}
+                  />
+                </Card>
+              </>
+            )}
           </>
         )}
 
@@ -410,6 +473,55 @@ function ValidationMessages({ errors, warnings }: { errors: string[]; warnings: 
           <AlertDescription className="text-tiny ml-2">{warning}</AlertDescription>
         </Alert>
       ))}
+    </div>
+  );
+}
+
+function OutputSection({ 
+  label, 
+  content, 
+  onCopy,
+  scrollable = false 
+}: { 
+  label: string; 
+  content: string; 
+  onCopy: () => void;
+  scrollable?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    onCopy();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <SectionLabel>{label}</SectionLabel>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleCopy}
+          className="h-7 px-2 text-muted-foreground hover:text-foreground"
+        >
+          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+        </Button>
+      </div>
+      <Card className="border shadow-sm glass-panel">
+        {scrollable ? (
+          <ScrollArea className="max-h-64">
+            <CardContent className="p-4">
+              <PromptOutput text={content} />
+            </CardContent>
+          </ScrollArea>
+        ) : (
+          <CardContent className="p-4">
+            <div className="font-mono text-sm">{content}</div>
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 }

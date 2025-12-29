@@ -51,6 +51,8 @@ function App() {
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
+  const currentTitle = currentSession?.currentTitle;
+  const currentLyrics = currentSession?.currentLyrics;
 
   return (
     <SidebarProvider>
@@ -67,6 +69,8 @@ function App() {
           <main className="flex-1 min-h-0 overflow-auto">
             <PromptEditor
               currentPrompt={currentPrompt}
+              currentTitle={currentTitle}
+              currentLyrics={currentLyrics}
               isGenerating={isGenerating}
               generatingAction={generatingAction}
               validation={validation}

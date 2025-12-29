@@ -17,13 +17,15 @@ import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { injectBpm } from '@bun/prompt/bpm';
-import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt, formatFullOutput, isLyricsModeOutput, extractStyleSection, rebuildLyricsModeOutput } from '@bun/prompt/lyrics-builder';
+import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt, isLyricsModeOutput, extractStyleSection, rebuildLyricsModeOutput } from '@bun/prompt/lyrics-builder';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
 
 export type GenerationResult = {
   text: string;
+  title?: string;
+  lyrics?: string;
   debugInfo?: DebugInfo;
 };
 
@@ -282,10 +284,8 @@ export class AIEngine {
 
     // If lyrics mode is enabled, generate title and lyrics
     if (this.lyricsMode) {
-      const stylePrompt = result.text;
-      
       // Extract mood from the generated prompt
-      const moodMatch = stylePrompt.match(/^mood:\s*"?([^"\n]+)/mi) || stylePrompt.match(/^Mood:\s*([^\n]+)/mi);
+      const moodMatch = result.text.match(/^mood:\s*"?([^"\n]+)/mi) || result.text.match(/^Mood:\s*([^\n]+)/mi);
       const mood = moodMatch?.[1]?.trim() || 'emotional';
       
       // Generate title
@@ -294,8 +294,9 @@ export class AIEngine {
       // Generate lyrics
       const lyricsResult = await this.generateLyrics(description, genre, mood);
       
-      // Format as 3-section output
-      result.text = formatFullOutput(titleResult.title, stylePrompt, lyricsResult.lyrics);
+      // Store as separate fields (text remains as style-only prompt)
+      result.title = titleResult.title;
+      result.lyrics = lyricsResult.lyrics;
       
       // Add debug info for title and lyrics generation
       if (result.debugInfo) {
