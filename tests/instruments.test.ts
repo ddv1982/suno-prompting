@@ -218,14 +218,17 @@ describe('getAmbientInstruments', () => {
     expect(tags.length).toBeLessThanOrEqual(5);
 
     const ambientPools = GENRE_REGISTRY.ambient.pools;
-    const whitelist = new Set<string>([
+    const whitelist = [
       ...Object.values(ambientPools).flatMap(p => [...p.instruments]),
       ...MULTIGENRE_INSTRUMENTS,
       ...FOUNDATIONAL_INSTRUMENTS,
       ...ORCHESTRAL_COLOR_INSTRUMENTS,
-    ]);
+    ];
+    // Tags may have articulations prepended (e.g., "Arpeggiated Rhodes")
+    // Check if the tag contains any whitelisted instrument
     for (const tag of tags) {
-      expect(whitelist.has(tag)).toBe(true);
+      const hasValidInstrument = whitelist.some(inst => tag.includes(inst));
+      expect(hasValidInstrument).toBe(true);
     }
   });
 
@@ -266,14 +269,18 @@ describe('getAmbientInstruments', () => {
 
   test('always includes a foundation and a texture tag', () => {
     const pools = GENRE_REGISTRY.ambient.pools;
-    const foundation = new Set<string>(pools.foundation!.instruments);
-    const texture = new Set<string>(pools.texture!.instruments);
+    const foundationInstruments = pools.foundation!.instruments;
+    const textureInstruments = pools.texture!.instruments;
+
+    // Check if tag contains any of the instruments (handles articulations like "Arpeggiated Rhodes")
+    const containsInstrument = (tag: string, instruments: readonly string[]) =>
+      instruments.some(inst => tag.includes(inst));
 
     for (let i = 0; i < 30; i++) {
       const guidance = getAmbientInstruments();
       const tags = parseBullets(guidance);
-      expect(tags.some(t => foundation.has(t))).toBe(true);
-      expect(tags.some(t => texture.has(t))).toBe(true);
+      expect(tags.some(t => containsInstrument(t, foundationInstruments))).toBe(true);
+      expect(tags.some(t => containsInstrument(t, textureInstruments))).toBe(true);
     }
   });
 

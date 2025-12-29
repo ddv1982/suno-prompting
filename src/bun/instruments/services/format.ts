@@ -9,6 +9,7 @@ import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
 import type { Rng } from '@bun/instruments/services/random';
 import { shuffle, pickRandom } from '@bun/instruments/services/random';
 import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun/instruments/services/select';
+import { articulateInstrument } from '@bun/prompt/articulations';
 
 export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random): string {
   const s = HARMONIC_STYLES[style];
@@ -187,6 +188,7 @@ export function getGenreInstruments(
   options?: InstrumentSelectionOptions
 ): string {
   const def = GENRE_REGISTRY[genre];
+  const rng = options?.rng ?? Math.random;
   const maxTags = options?.maxTags ?? def.maxTags;
   const userInstruments = options?.userInstruments ?? [];
 
@@ -199,12 +201,30 @@ export function getGenreInstruments(
     '',
   ];
 
+  // Add BPM guidance if available
+  if (def.bpm) {
+    lines.push(`Tempo: ${def.bpm.typical} BPM (range: ${def.bpm.min}-${def.bpm.max})`);
+  }
+
+  // Add mood suggestions if available
+  if (def.moods && def.moods.length > 0) {
+    const shuffledMoods = shuffle([...def.moods], rng);
+    const selectedMoods = shuffledMoods.slice(0, 3);
+    lines.push(`Mood suggestions: ${selectedMoods.join(', ')}`);
+  }
+
+  lines.push('');
+
   if (userSelected.length > 0) {
     lines.push('User specified (MUST use):');
     lines.push(...userSelected.map(t => `- ${t}`));
   }
 
-  const suggested = selected.filter(t => !userSelected.includes(t));
+  // Apply articulations to suggested instruments (40% chance per instrument)
+  const suggested = selected
+    .filter(t => !userSelected.includes(t))
+    .map(t => articulateInstrument(t, rng, 0.4));
+    
   if (suggested.length > 0) {
     if (userSelected.length > 0) {
       lines.push('');
