@@ -57,6 +57,11 @@ function extractGenreFromMaxModePrompt(prompt: string): string {
   return match?.[1]?.trim().toLowerCase() || 'acoustic';
 }
 
+function extractMoodFromPrompt(prompt: string): string {
+  const match = prompt.match(/^mood:\s*"?([^"\n]+)/mi) || prompt.match(/^Mood:\s*([^\n]+)/mi);
+  return match?.[1]?.trim() || 'emotional';
+}
+
 function injectStyleTags(prompt: string, genre: string): string {
   const isElectronic = isElectronicGenre(genre);
   let styleTags = isElectronic 
@@ -470,18 +475,14 @@ export class AIEngine {
 
   async remixTitle(currentPrompt: string, originalInput: string): Promise<{ title: string }> {
     const genre = extractGenreFromMaxModePrompt(currentPrompt);
-    const moodMatch = currentPrompt.match(/^mood:\s*"?([^"\n]+)/mi) || currentPrompt.match(/^Mood:\s*([^\n]+)/mi);
-    const mood = moodMatch?.[1]?.trim() || 'emotional';
-    
+    const mood = extractMoodFromPrompt(currentPrompt);
     const result = await this.generateTitle(originalInput, genre, mood);
     return { title: result.title };
   }
 
   async remixLyrics(currentPrompt: string, originalInput: string): Promise<{ lyrics: string }> {
     const genre = extractGenreFromMaxModePrompt(currentPrompt);
-    const moodMatch = currentPrompt.match(/^mood:\s*"?([^"\n]+)/mi) || currentPrompt.match(/^Mood:\s*([^\n]+)/mi);
-    const mood = moodMatch?.[1]?.trim() || 'emotional';
-    
+    const mood = extractMoodFromPrompt(currentPrompt);
     const result = await this.generateLyrics(originalInput, genre, mood);
     return { lyrics: result.lyrics };
   }

@@ -437,9 +437,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const result = await api.remixTitle(currentSession.currentPrompt, currentSession.originalInput);
 
             const now = new Date().toISOString();
+            const newVersion: PromptVersion = {
+                id: generateId(),
+                content: currentSession.currentPrompt,
+                title: result.title,
+                lyrics: currentSession.currentLyrics,
+                feedback: '[title remix]',
+                timestamp: now,
+            };
+
             const updatedSession: PromptSession = {
                 ...currentSession,
                 currentTitle: result.title,
+                versionHistory: [...currentSession.versionHistory, newVersion],
                 updatedAt: now,
             };
 
@@ -465,9 +475,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const result = await api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput);
 
             const now = new Date().toISOString();
+            const newVersion: PromptVersion = {
+                id: generateId(),
+                content: currentSession.currentPrompt,
+                title: currentSession.currentTitle,
+                lyrics: result.lyrics,
+                feedback: '[lyrics remix]',
+                timestamp: now,
+            };
+
             const updatedSession: PromptSession = {
                 ...currentSession,
                 currentLyrics: result.lyrics,
+                versionHistory: [...currentSession.versionHistory, newVersion],
                 updatedAt: now,
             };
 

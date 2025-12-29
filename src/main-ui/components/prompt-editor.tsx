@@ -484,8 +484,8 @@ function OutputSection({
       <div className="flex justify-between items-center mb-2">
         <SectionLabel>{label}</SectionLabel>
       </div>
-      <Card className="relative border shadow-sm glass-panel">
-        <CardContent className="p-4 pr-32">
+      <Card className="relative border shadow-sm glass-panel overflow-hidden">
+        <CardContent className="p-4 sm:pr-36">
           {scrollable ? (
             <PromptOutput text={content} />
           ) : (
