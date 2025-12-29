@@ -186,3 +186,58 @@ export function buildMaxModeContextualPrompt(
 
   return parts.join('\n');
 }
+
+// Combined system prompt for generating style prompt + title in one call
+export function buildCombinedSystemPrompt(maxChars: number, useSunoTags: boolean, maxMode: boolean): string {
+  const basePrompt = maxMode 
+    ? buildMaxModeSystemPrompt(maxChars)
+    : buildSystemPrompt(maxChars, useSunoTags);
+  
+  return `${basePrompt}
+
+ADDITIONAL OUTPUT REQUIREMENT:
+After generating the music prompt, also create a song title.
+
+OUTPUT FORMAT - Return valid JSON:
+{
+  "prompt": "<the complete music prompt as described above>",
+  "title": "<a short, evocative 1-5 word song title that matches the mood and genre>"
+}
+
+IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
+}
+
+// Combined system prompt for generating style prompt + title + lyrics in one call
+export function buildCombinedWithLyricsSystemPrompt(maxChars: number, useSunoTags: boolean, maxMode: boolean): string {
+  const basePrompt = maxMode 
+    ? buildMaxModeSystemPrompt(maxChars)
+    : buildSystemPrompt(maxChars, useSunoTags);
+
+  const lyricsFormat = maxMode 
+    ? `The lyrics MUST start with: ///*****///
+Then section tags on subsequent lines.`
+    : '';
+  
+  return `${basePrompt}
+
+ADDITIONAL OUTPUT REQUIREMENT:
+After generating the music prompt, also create a song title and complete lyrics.
+
+${lyricsFormat}
+
+OUTPUT FORMAT - Return valid JSON:
+{
+  "prompt": "<the complete music prompt as described above>",
+  "title": "<a short, evocative 1-5 word song title that matches the mood and genre>",
+  "lyrics": "<complete song lyrics with section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]>"
+}
+
+LYRICS REQUIREMENTS:
+- Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+- Each section should have 2-4 lines
+- Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
+- Lyrics should be evocative, poetic, and emotionally resonant
+- Match the genre's typical lyrical style
+
+IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
+}

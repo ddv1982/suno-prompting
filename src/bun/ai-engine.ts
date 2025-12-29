@@ -14,7 +14,7 @@ import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo, AppConfig, AIProvider, APIKeys } from '@shared/types';
-import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
+import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
@@ -276,6 +276,68 @@ export class AIEngine {
     const userPrompt = this.maxMode
       ? buildMaxModeContextualPrompt(description, selection, lockedPhrase)
       : buildContextualPrompt(description, selection, lockedPhrase);
+    
+    // Use combined prompt to generate style + title (+ lyrics if enabled) in one call
+    const systemPrompt = this.lyricsMode
+      ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, this.useSunoTags, this.maxMode)
+      : buildCombinedSystemPrompt(MAX_CHARS, this.useSunoTags, this.maxMode);
+
+    const { text: rawResponse } = await generateText({
+      model: this.getModel(),
+      system: systemPrompt,
+      prompt: userPrompt,
+      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+    });
+
+    // Parse combined JSON response
+    let parsed: { prompt: string; title: string; lyrics?: string };
+    try {
+      const cleaned = rawResponse.trim().replace(/```json\n?|\n?```/g, '');
+      parsed = JSON.parse(cleaned);
+    } catch {
+      log.warn('generateInitial:json_parse_failed', { rawResponse: rawResponse.slice(0, 200) });
+      // Fallback to legacy separate calls
+      return this.generateInitialFallback(description, lockedPhrase, selection, userPrompt);
+    }
+
+    // Post-process the prompt
+    let promptText = await this.postProcess(parsed.prompt);
+    
+    if (lockedPhrase) {
+      promptText = swapLockedPhraseOut(promptText, lockedPhrase);
+    }
+
+    // Extract genre for post-processing
+    const genre = extractGenreFromMaxModePrompt(promptText);
+    
+    // Inject BPM directly (bypass LLM) to get random value from genre range
+    promptText = injectBpm(promptText, genre);
+    
+    // Inject style tags directly (bypass LLM) when in max mode
+    if (this.maxMode) {
+      promptText = injectStyleTags(promptText, genre);
+    }
+
+    const result: GenerationResult = {
+      text: promptText,
+      title: parsed.title?.trim().replace(/^["']|["']$/g, '') || 'Untitled',
+      lyrics: parsed.lyrics?.trim(),
+      debugInfo: this.debugMode
+        ? this.buildDebugInfo(systemPrompt, userPrompt, { combined: true })
+        : undefined,
+    };
+
+    return result;
+  }
+
+  // Fallback method using separate LLM calls (used if JSON parsing fails)
+  private async generateInitialFallback(
+    description: string,
+    lockedPhrase: string | undefined,
+    _selection: Awaited<ReturnType<typeof selectModes>>,
+    userPrompt: string
+  ): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
 
     const result = await this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>
@@ -292,18 +354,13 @@ export class AIEngine {
       result.text = swapLockedPhraseOut(result.text, lockedPhrase);
     }
 
-    // Extract genre for post-processing (regex handles both normal and max mode formats)
     const genre = extractGenreFromMaxModePrompt(result.text);
-    
-    // Inject BPM directly (bypass LLM) to get random value from genre range
     result.text = injectBpm(result.text, genre);
     
-    // Inject style tags directly (bypass LLM) when in max mode
     if (this.maxMode) {
       result.text = injectStyleTags(result.text, genre);
     }
 
-    // Always generate title
     const mood = extractMoodFromPrompt(result.text);
     const titleResult = await this.generateTitle(description, genre, mood);
     result.title = titleResult.title;
@@ -312,7 +369,6 @@ export class AIEngine {
       result.debugInfo.titleGeneration = titleResult.debugInfo;
     }
 
-    // Generate lyrics only if lyrics mode is enabled
     if (this.lyricsMode) {
       const lyricsResult = await this.generateLyrics(description, genre, mood);
       result.lyrics = lyricsResult.lyrics;
