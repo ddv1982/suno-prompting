@@ -151,10 +151,10 @@ Note: Song Structure Tags are automatically disabled when Max Mode is enabled, a
 | Electronic | edm, electronic, house, techno, trance, dubstep, drum and bass, dnb | synth pad, analog synth, FM synth, arpeggiator, synth, 808, synth bass, kick drum, hi-hat, drums, vocoder |
 | Rock | rock, alternative, indie rock, hard rock, grunge, classic rock, heartland rock | distorted guitar, Fender Stratocaster, guitar, acoustic guitar, Telecaster, bass, drums, kick drum, toms, electric piano, organ, Clavinet, grand piano, Hammond organ, tambourine |
 | Pop | pop, mainstream, top 40, dance pop, synth pop, electropop, future bass | felt piano, Fender Stratocaster, guitar, acoustic guitar, grand piano, synth pad, synth, analog synth, digital synth, arpeggiator, synth piano, supersaw, pluck synth, bass, drums, 808, handclaps, kick drum, FX risers, strings |
-| Classical | classical, orchestral, symphony, chamber, baroque, romantic, opera | strings, felt piano, violin, cello, viola, flute, oboe, clarinet, bassoon, french horn, harp, celesta, timpani |
+| Classical | classical, orchestral, symphony, chamber, baroque, romantic, opera | strings, felt piano, violin, cello, viola, flute, piccolo, oboe, english horn, clarinet, bass clarinet, bassoon, contrabassoon, french horn, tuba, trombone, bass trombone, harp, celesta, timpani, orchestral bass drum, suspended cymbal, crash cymbal, tam tam |
 | Lo-fi | lofi, lo-fi, chill, study beats, chillhop, bedroom pop | felt piano, Rhodes, electric piano, vibraphone, kalimba, guitar, cello, clarinet, jazz brushes, shaker, percussion, drums, synth pad, ambient pad |
 | Synthwave | synthwave, retrowave, 80s, outrun, vaporwave, darksynth, cyberpunk | analog synth, analog synth pads, FM synth, digital synth, Moog synth, arpeggiator, synth pad, synth, synth bass, 808, kick drum, hi-hat, drums |
-| Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic, hybrid orchestral | strings, grand piano, string ostinato, pizzicato strings, french horn, low brass, cello, choir, wordless choir, violin, celesta, glockenspiel, bells, harp, taiko drums, percussion, toms, timpani, braams, impacts, FX risers, sub-bass |
+| Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic, hybrid orchestral | strings, grand piano, string ostinato, pizzicato strings, french horn, low brass, tuba, trombone, cello, choir, wordless choir, solo soprano, violin, celesta, glockenspiel, bells, harp, english horn, piccolo, taiko drums, percussion, toms, timpani, orchestral bass drum, tam tam, suspended cymbal, braams, impacts, FX risers, sub-bass |
 | Folk | folk, acoustic, singer-songwriter, celtic, traditional | acoustic guitar, felt piano, violin, harp, flute, harmonica, accordion, clarinet, cajón, percussion, frame drum, mandolin, banjo |
 | R&B | rnb, r&b, neo-soul, contemporary r&b, funk, quiet storm | Rhodes, Wurlitzer, electric piano, grand piano, Clavinet, bass, drums, 808, trap hi hats, slap bass, saxophone, strings, guitar, wah guitar, handclaps, shaker |
 | Video Game | video game, game music, gaming, chiptune, 8-bit, 8 bit, retro game, pixel, arcade, boss battle, level music, rpg, jrpg, adventure game, platformer, nintendo, sega | strings, felt piano, harp, synth pad, arpeggiator, FM synth, analog synth, synth strings, bells, glockenspiel, celesta, choir, french horn, trumpet, drums, percussion, taiko drums, timpani, 808, guitar, vocoder |
@@ -166,7 +166,7 @@ Note: Song Structure Tags are automatically disabled when Max Mode is enabled, a
 | Metal | metal, heavy metal, doom metal, progressive metal, industrial, death metal, black metal, thrash metal, nu metal, gothic metal | distorted guitar, guitar, bass, drums, kick drum, timpani, synth pad, strings, choir, organ, orchestra, braams, low brass |
 | Trap | trap, dark trap, emo rap, cloud rap, cinematic trap, trap soul, melodic trap, drill, phonk | felt piano, guitar, pluck synth, strings, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vinyl noise, pizzicato strings, braams, FX risers |
 | Retro | retro, 50s, 60s, rock and roll, doo-wop, rockabilly, garage rock, surf rock, british invasion, oldies | guitar, tremolo guitar, grand piano, honky tonk piano, upright bass, slap bass, drums, tambourine, handclaps, organ, saxophone, harmonica, finger snaps, bells |
-| Symphonic | symphonic, symphonic metal, symphonic rock, orchestral metal, orchestral rock, epic metal | distorted guitar, guitar, grand piano, strings, choir, french horn, low brass, violin, cello, orchestra, bass, drums, timpani, kick drum, harp, celesta, braams, wordless choir |
+| Symphonic | symphonic, symphonic metal, symphonic rock, orchestral metal, orchestral rock, epic metal | distorted guitar, guitar, grand piano, strings, choir, french horn, low brass, tuba, trombone, violin, cello, orchestra, bass, drums, timpani, kick drum, orchestral bass drum, harp, celesta, braams, wordless choir, solo soprano, tam tam, crash cymbal |
 
 <!-- GENRE_TABLE_END -->
 
@@ -176,9 +176,9 @@ Note: Song Structure Tags are automatically disabled when Max Mode is enabled, a
 
 **Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
 
-**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Fender Stratocaster, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, bells, braams, congas, distorted guitar, electric piano, grand piano, guitar, handclaps, harmonica, hollowbody guitar, low brass, organ, saxophone, shaker, tambourine, toms, upright bass, vibraphone
+**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Fender Stratocaster, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, bells, braams, congas, distorted guitar, electric piano, grand piano, guitar, handclaps, harmonica, hollowbody guitar, low brass, organ, saxophone, shaker, tambourine, toms, trombone, upright bass, vibraphone
 
-**Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir
+**Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir, piccolo, english horn, bass clarinet, contrabassoon, tuba, bass trombone, solo soprano, suspended cymbal, crash cymbal, tam tam, mark tree, orchestral bass drum
 
 <!-- INSTRUMENT_CLASSES_END -->
 

@@ -14,16 +14,16 @@ export const SYMPHONIC_GENRE: GenreDefinition = {
     },
     orchestral: {
       pick: { min: 1, max: 2 },
-      instruments: ['choir', 'french horn', 'low brass', 'violin', 'cello', 'orchestra'],
+      instruments: ['choir', 'french horn', 'low brass', 'tuba', 'trombone', 'violin', 'cello', 'orchestra'],
     },
     movement: {
       pick: { min: 2, max: 2 },
-      instruments: ['bass', 'drums', 'timpani', 'kick drum'],
+      instruments: ['bass', 'drums', 'timpani', 'kick drum', 'orchestral bass drum'],
     },
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['harp', 'celesta', 'braams', 'wordless choir'],
+      instruments: ['harp', 'celesta', 'braams', 'wordless choir', 'solo soprano', 'tam tam', 'crash cymbal'],
     },
   },
   poolOrder: ['harmonic', 'orchestral', 'movement', 'rare'],

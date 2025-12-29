@@ -36,6 +36,22 @@ export const ORCHESTRAL_COLOR_INSTRUMENTS = [
   'taiko drums',
   'choir',
   'wordless choir',
+  // Woodwinds
+  'piccolo',
+  'english horn',
+  'bass clarinet',
+  'contrabassoon',
+  // Brass
+  'tuba',
+  'bass trombone',
+  // Voice
+  'solo soprano',
+  // Percussion
+  'suspended cymbal',
+  'crash cymbal',
+  'tam tam',
+  'mark tree',
+  'orchestral bass drum',
 ] as const;
 
 // Override lists to curate multi-genre “wildcards” for modern Suno prompts.
