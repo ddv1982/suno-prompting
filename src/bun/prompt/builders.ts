@@ -22,6 +22,7 @@ OUTPUT FORMAT (follow this structure exactly):
 Line 1 (MANDATORY): [Mood, Genre/Style, Key: key/mode]
 
 Genre: <specific genre name>
+BPM: <tempo from guidance>
 Mood: <2-3 evocative mood descriptors>
 Instruments: <2-4 items with character adjectives>
 
@@ -98,6 +99,7 @@ OUTPUT FORMAT (follow EXACTLY - this format is critical):
 ${MAX_MODE_HEADER}
 
 genre: "<specific genre(s), comma separated>"
+bpm: "<tempo from guidance>"
 instruments: "<instruments with character adjectives, vocal style descriptors>"
 style tags: "<recording style, texture, atmosphere descriptors>"
 recording: "<performance context, source description>"
