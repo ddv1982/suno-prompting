@@ -12,7 +12,7 @@ import type { DebugInfo, AppConfig } from '@shared/types';
 import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
-import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors } from '@bun/prompt/realism-tags';
+import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
@@ -71,11 +71,15 @@ function extractGenreFromMaxModePrompt(prompt: string): string {
 
 function injectStyleTags(prompt: string, genre: string): string {
   const isElectronic = isElectronicGenre(genre);
-  const styleTags = isElectronic 
+  let styleTags = isElectronic 
     ? selectElectronicTags(4)
     : selectRealismTags(genre, 4);
   
-  if (styleTags.length === 0) return prompt;
+  // Fallback to generic tags if none found for this genre
+  if (styleTags.length === 0) {
+    styleTags = selectGenericTags(4);
+  }
+  
   return replaceStyleTagsLine(prompt, styleTags.join(', '));
 }
 

@@ -203,3 +203,24 @@ export function selectRecordingDescriptors(count: number = 3): string[] {
   const shuffled = [...RECORDING_DESCRIPTORS].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
+
+// Generic fallback tags that work for any genre
+export const GENERIC_STYLE_TAGS = [
+  'natural dynamics',
+  'room tone',
+  'performance authenticity',
+  'subtle imperfections',
+  'organic feel',
+  'dynamic range preserved',
+  'cohesive mix balance',
+  'tasteful arrangement',
+  'musical breathing room',
+  'natural decay',
+  'harmonic richness',
+  'tonal warmth',
+] as const;
+
+export function selectGenericTags(count: number = 4): string[] {
+  const shuffled = [...GENERIC_STYLE_TAGS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
