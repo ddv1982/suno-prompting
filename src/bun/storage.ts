@@ -33,47 +33,8 @@ export class StorageManager {
     async initialize() {
         try {
             await mkdir(this.baseDir, { recursive: true });
-            await this.migrateConfig();
         } catch (error) {
             log.error('initialize:failed', { error: error instanceof Error ? error.message : String(error) });
-        }
-    }
-
-    private async migrateConfig(): Promise<void> {
-        try {
-            const file = Bun.file(this.configPath);
-            if (!(await file.exists())) return;
-            
-            const config = await file.json();
-            
-            // Check if legacy migration needed (old apiKey field -> new apiKeys object)
-            if (config.apiKey && !config.apiKeys) {
-                log.info('migrateConfig:legacy', { hasLegacyKey: true });
-                
-                let decryptedKey: string | null = null;
-                try {
-                    decryptedKey = await decrypt(config.apiKey);
-                } catch (e) {
-                    log.error('migrateConfig:decryptFailed', { error: e instanceof Error ? e.message : String(e) });
-                }
-                
-                // Build migrated config
-                const migratedConfig = {
-                    ...config,
-                    provider: config.provider ?? 'groq',
-                    apiKeys: {
-                        groq: decryptedKey ? await encrypt(decryptedKey) : null,
-                        openai: null,
-                        anthropic: null,
-                    },
-                };
-                delete migratedConfig.apiKey;
-                
-                await Bun.write(this.configPath, JSON.stringify(migratedConfig, null, 2));
-                log.info('migrateConfig:complete');
-            }
-        } catch (error) {
-            log.error('migrateConfig:failed', { error: error instanceof Error ? error.message : String(error) });
         }
     }
 
