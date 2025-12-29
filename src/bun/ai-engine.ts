@@ -348,9 +348,11 @@ export class AIEngine {
     // Replace genre line
     let result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
     
-    // Also update BPM to match new genre (use first genre if multi-genre)
-    const primaryGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
-    const genreDef = GENRE_REGISTRY[primaryGenre as GenreType];
+    // Also update BPM to match new genre
+    // Extract base genre: "jazz fusion" → "jazz", "jazz, rock" → "jazz"
+    const firstGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
+    const baseGenre = firstGenre.split(' ')[0] || firstGenre;
+    const genreDef = GENRE_REGISTRY[baseGenre as GenreType];
     if (genreDef?.bpm) {
       result = replaceFieldLine(result, 'BPM', `${genreDef.bpm.typical}`);
     }
