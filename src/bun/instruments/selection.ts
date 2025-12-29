@@ -13,6 +13,9 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
 import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
+import { createLogger } from '@bun/logger';
+
+const log = createLogger('Selection');
 
 const ALL_GENRES = Object.keys(GENRE_REGISTRY) as [string, ...string[]];
 
@@ -169,7 +172,7 @@ export async function selectModes(
         reasoning = `Spelling corrected match: ${genre}`;
       }
     } catch (e) {
-      console.warn('[Selection] Spelling correction failed:', e);
+      log.warn('spelling correction failed', { error: e instanceof Error ? e.message : String(e) });
     }
   }
 
@@ -182,7 +185,7 @@ export async function selectModes(
       reasoning: reasoning || llmResult.reasoning,
     };
   } catch (error) {
-    console.warn('[Selection] LLM selection failed, falling back to keywords:', error);
+    log.warn('LLM selection failed, falling back to keywords', { error: error instanceof Error ? error.message : String(error) });
     const combination = detectCombination(description);
     return {
       genre,
