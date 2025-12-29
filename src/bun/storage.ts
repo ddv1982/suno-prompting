@@ -124,9 +124,6 @@ export class StorageManager {
             }
             toSave.apiKeys = encryptedKeys;
             
-            // Clean up legacy apiKey field if present
-            delete (toSave as Record<string, unknown>).apiKey;
-            
             await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
         } catch (error) {
             log.error('saveConfig:failed', { error: error instanceof Error ? error.message : String(error) });
