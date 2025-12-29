@@ -10,6 +10,8 @@ import type { Rng } from '@bun/instruments/services/random';
 import { shuffle, pickRandom } from '@bun/instruments/services/random';
 import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun/instruments/services/select';
 import { articulateInstrument } from '@bun/prompt/articulations';
+import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
+import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 
 export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random): string {
   const s = HARMONIC_STYLES[style];
@@ -212,6 +214,14 @@ export function getGenreInstruments(
     const selectedMoods = shuffledMoods.slice(0, 3);
     lines.push(`Mood suggestions: ${selectedMoods.join(', ')}`);
   }
+
+  // Add vocal suggestions
+  const vocalDesc = buildVocalDescriptor(genre, rng);
+  lines.push(`Vocal style: ${vocalDesc}`);
+
+  // Add production suggestions
+  const prodDesc = buildProductionDescriptor(genre, rng);
+  lines.push(`Production: ${prodDesc}`);
 
   lines.push('');
 

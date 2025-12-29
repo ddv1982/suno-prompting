@@ -261,7 +261,8 @@ describe('getAmbientInstruments', () => {
   test('never includes both bells and singing bowls (exclusion rule)', () => {
     for (let i = 0; i < 50; i++) {
       const guidance = getAmbientInstruments().toLowerCase();
-      const hasBells = guidance.includes('bells');
+      // Check for "- bells" as bullet to avoid matching "glass bells"
+      const hasBells = guidance.includes('- bells') || guidance.match(/^bells$/m) !== null;
       const hasBowls = guidance.includes('singing bowls');
       expect(hasBells && hasBowls).toBe(false);
     }
