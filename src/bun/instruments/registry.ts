@@ -51,6 +51,14 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'supersaw', category: 'pad', aliases: ['detuned supersaw', 'supersaws', 'stacked saws'] },
   { canonical: 'pluck synth', category: 'pad', aliases: ['pluck', 'synth pluck', 'plucky synth'] },
   { canonical: 'sidechain pad', category: 'pad', aliases: ['sidechained pad', 'pumping pad'] },
+  
+  // Evolving textures (professional ambient)
+  { canonical: 'granular synth', category: 'pad', aliases: ['granular pad', 'grain synth'] },
+  { canonical: 'wavetable synth', category: 'pad', aliases: ['wavetable pad', 'morphing synth'] },
+  { canonical: 'tape loops', category: 'pad', aliases: ['tape loop', 'tape texture'] },
+  { canonical: 'drone', category: 'pad', aliases: ['sustained drone', 'drone texture'] },
+  { canonical: 'shimmer pad', category: 'pad', aliases: ['shimmer synth', 'shimmer reverb pad'] },
+  
   { canonical: 'synth bass', category: 'movement', aliases: ['bass synth', 'synthetic bass'] },
   { canonical: '808', category: 'movement', aliases: ['808 drums', 'TR-808', '808 kick', '808 sub bass', 'deep 808'] },
 

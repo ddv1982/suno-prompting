@@ -5,11 +5,13 @@ export const AMBIENT_GENRE: GenreDefinition = {
   keywords: ['ambient', 'atmospheric', 'soundscape', 'meditative', 'ethereal'],
   description: 'Soothing, curiosity-sparking soundscapes with unusual textures and gentle movement',
   pools: {
-    // Foundation - warm harmonic base
+    // Foundation - keyboards and strings (NO piano by default)
     foundation: {
       pick: { min: 1, max: 2 },
       instruments: [
-        'felt piano', 'prepared piano', 'harmonium', 'celesta',
+        // Professional keyboard alternatives
+        'Rhodes', 'Wurlitzer', 'electric piano', 'mellotron', 'harmonium', 'celesta',
+        // Strings as foundation
         'strings', 'nylon string guitar', 'fretless guitar',
       ],
     },
@@ -20,6 +22,21 @@ export const AMBIENT_GENRE: GenreDefinition = {
         'synth pad', 'ambient pad', 'crystalline synth pads',
         'analog synth pads', 'synth strings', 'wordless choir',
       ],
+    },
+    // Evolving - professional synth textures
+    evolving: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.6,
+      instruments: [
+        'granular synth', 'wavetable synth', 'tape loops', 'drone',
+        'shimmer pad', 'FM synth', 'Moog synth',
+      ],
+    },
+    // Piano - now optional (only 25% chance)
+    piano: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.25,
+      instruments: ['felt piano', 'prepared piano'],
     },
     // Curiosity - unusual/exotic instruments (high priority)
     curiosity: {
@@ -57,7 +74,7 @@ export const AMBIENT_GENRE: GenreDefinition = {
       instruments: ['waterphone', 'glass armonica', 'theremin', 'prepared piano'],
     },
   },
-  poolOrder: ['foundation', 'texture', 'curiosity', 'world', 'movement', 'rare'],
+  poolOrder: ['foundation', 'texture', 'evolving', 'piano', 'curiosity', 'world', 'movement', 'rare'],
   maxTags: 5,
   exclusionRules: [
     ['singing bowls', 'crystal bowls'],
@@ -65,5 +82,7 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['kalimba', 'tongue drum'],
     ['harp', 'koto'],
     ['prepared piano', 'felt piano'],
+    ['Rhodes', 'Wurlitzer'],
+    ['Rhodes', 'electric piano'],
   ],
 };
