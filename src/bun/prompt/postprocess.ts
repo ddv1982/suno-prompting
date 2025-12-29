@@ -18,13 +18,16 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMod
   }
   
   // Try unquoted format: instruments: piano, guitar OR Instruments: piano, guitar
-  const unquotedMatch = prompt.match(/^(instruments:\s*)([^"\n]+)$/mi);
+  // Use [^\S\n]* for horizontal whitespace only (not newlines), and * to handle empty content
+  const unquotedMatch = prompt.match(/^(instruments:[^\S\n]*)([^"\n]*)$/mi);
   if (unquotedMatch) {
     const existingValue = unquotedMatch[2].trim();
+    // If no existing value, ensure space after colon; if existing, add comma separator
+    const prefix = existingValue ? '' : (unquotedMatch[1].endsWith(' ') ? '' : ' ');
     const separator = existingValue ? ', ' : '';
     return prompt.replace(
-      /^(instruments:\s*)([^"\n]+)$/mi,
-      `$1$2${separator}${lockedPhrase}`
+      /^(instruments:[^\S\n]*)([^"\n]*)$/mi,
+      `$1$2${separator}${prefix}${lockedPhrase}`
     );
   }
   

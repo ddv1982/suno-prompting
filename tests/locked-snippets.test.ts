@@ -97,6 +97,18 @@ Mood: warm, intimate`;
       const result = injectLockedPhrase(prompt, "my phrase", false);
       expect(result).toBe("Instruments: piano, drums, my phrase");
     });
+
+    test("handles instruments: with no content on its own line", () => {
+      const prompt = "genre: jazz\ninstruments:\nstyle: warm";
+      const result = injectLockedPhrase(prompt, "my phrase", true);
+      expect(result).toBe("genre: jazz\ninstruments: my phrase\nstyle: warm");
+    });
+
+    test("does not match next line as instruments content", () => {
+      const prompt = "instruments:\ngenre: jazz";
+      const result = injectLockedPhrase(prompt, "my phrase", true);
+      expect(result).toBe("instruments: my phrase\ngenre: jazz");
+    });
   });
 
   describe("isValidLockedPhrase", () => {
