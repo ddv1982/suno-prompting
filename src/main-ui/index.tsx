@@ -119,4 +119,3 @@ if (container) {
       </ErrorBoundary>
     );
 }
-console.log('Suno Prompting App Initialized');

@@ -3,6 +3,9 @@ import { AIEngine } from '@bun/ai-engine';
 import { StorageManager } from '@bun/storage';
 import { type SunoRPCSchema } from '@shared/types';
 import { createHandlers } from '@bun/handlers';
+import { createLogger } from '@bun/logger';
+
+const log = createLogger('Main');
 
 // Set up application menu for macOS keyboard shortcuts (Cmd+C, Cmd+V, etc.)
 ApplicationMenu.setApplicationMenu([
@@ -49,11 +52,11 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
 
 // Initialize storage, AI engine, and then launch the window
 (async () => {
-    console.log('Bun: Initializing backend...');
+    log.info('init:start');
     await storage.initialize();
     const config = await storage.getConfig();
     aiEngine.initialize(config);
-    console.log('Bun: Backend initialized, launching window');
+    log.info('init:complete');
 
     new BrowserWindow({
         title: 'Suno Prompting App',

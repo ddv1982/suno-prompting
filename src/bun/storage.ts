@@ -5,6 +5,9 @@ import { type PromptSession, type AppConfig } from '@shared/types';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
 import { encrypt, decrypt } from '@bun/crypto';
 import { APP_CONSTANTS } from '@shared/constants';
+import { createLogger } from '@bun/logger';
+
+const log = createLogger('Storage');
 
 const DEFAULT_CONFIG: AppConfig = {
     apiKey: null,
@@ -30,7 +33,7 @@ export class StorageManager {
         try {
             await mkdir(this.baseDir, { recursive: true });
         } catch (error) {
-            console.error('Failed to create storage directory:', error);
+            log.error('initialize:failed', { error: error instanceof Error ? error.message : String(error) });
         }
     }
 
@@ -43,7 +46,7 @@ export class StorageManager {
             const sessions = await file.json();
             return sortByUpdated(sessions);
         } catch (error) {
-            console.error('Failed to read history:', error);
+            log.error('getHistory:failed', { error: error instanceof Error ? error.message : String(error) });
             return [];
         }
     }
@@ -52,7 +55,7 @@ export class StorageManager {
         try {
             await Bun.write(this.historyPath, JSON.stringify(sessions, null, 2));
         } catch (error) {
-            console.error('Failed to save history:', error);
+            log.error('saveHistory:failed', { error: error instanceof Error ? error.message : String(error) });
         }
     }
 
@@ -79,7 +82,7 @@ export class StorageManager {
                 try {
                     config.apiKey = await decrypt(config.apiKey);
                 } catch (e) {
-                    console.error('Failed to decrypt API key, returning null');
+                    log.error('getConfig:decryptFailed', { error: e instanceof Error ? e.message : String(e) });
                     config.apiKey = null;
                 }
             }
@@ -92,7 +95,7 @@ export class StorageManager {
                 lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
             };
         } catch (error) {
-            console.error('Failed to read config:', error);
+            log.error('getConfig:failed', { error: error instanceof Error ? error.message : String(error) });
             return { ...DEFAULT_CONFIG };
         }
     }
@@ -106,7 +109,7 @@ export class StorageManager {
             }
             await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
         } catch (error) {
-            console.error('Failed to save config:', error);
+            log.error('saveConfig:failed', { error: error instanceof Error ? error.message : String(error) });
         }
     }
 }

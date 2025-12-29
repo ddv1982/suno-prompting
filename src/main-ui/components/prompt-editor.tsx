@@ -21,6 +21,7 @@ import { APP_CONSTANTS } from "@shared/constants";
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { RemixButtonGroup } from "@/components/remix-button-group";
 import { ChatHistorySection } from "@/components/chat-history-section";
+import { PromptOutput } from "@/components/prompt-output";
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -402,38 +403,6 @@ export function PromptEditor({
         </div>
       </div>
     </section>
-  );
-}
-
-function PromptOutput({ text }: { text: string }) {
-  const lines = useMemo(() => text.split('\n'), [text]);
-
-  return (
-    <div className="font-mono text-sm leading-relaxed whitespace-pre-wrap break-words">
-      {lines.map((line, idx) => {
-        if (line.trim().length === 0) {
-          return <div key={idx} className="h-4" />;
-        }
-
-        const cleanLine = line.trim();
-        const isSection = /^\[.+\]/.test(cleanLine);
-        const isField = /^(Genre|Mood|Instruments|Tempo|Key):/i.test(cleanLine);
-        const isHeader = /^\[Mood\],.*Key:/.test(cleanLine); // Relaxed header check
-
-        return (
-          <div
-            key={idx}
-            className={cn(
-              isHeader && "text-muted-foreground",
-              isField && "text-foreground font-medium",
-              isSection && !isHeader && "text-primary font-bold tracking-wide"
-            )}
-          >
-            {line}
-          </div>
-        );
-      })}
-    </div>
   );
 }
 
