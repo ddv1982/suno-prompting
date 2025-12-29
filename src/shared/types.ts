@@ -10,6 +10,12 @@ export type APIKeys = {
     anthropic: string | null;
 };
 
+export const DEFAULT_API_KEYS: APIKeys = {
+    groq: null,
+    openai: null,
+    anthropic: null,
+};
+
 // Editor mode types
 export type EditorMode = 'simple' | 'advanced';
 

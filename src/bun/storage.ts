@@ -1,19 +1,13 @@
 import { join } from 'path';
 import { homedir } from 'os';
 import { mkdir } from 'fs/promises';
-import { type PromptSession, type AppConfig, type APIKeys } from '@shared/types';
+import { type PromptSession, type AppConfig, type APIKeys, DEFAULT_API_KEYS } from '@shared/types';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
 import { encrypt, decrypt } from '@bun/crypto';
 import { APP_CONSTANTS } from '@shared/constants';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('Storage');
-
-const DEFAULT_API_KEYS: APIKeys = {
-    groq: null,
-    openai: null,
-    anthropic: null,
-};
 
 const DEFAULT_CONFIG: AppConfig = {
     provider: APP_CONSTANTS.AI.DEFAULT_PROVIDER,
@@ -133,7 +127,7 @@ export class StorageManager {
             const toSave = { ...existing, ...config };
             
             // Encrypt all API keys
-            const encryptedKeys: APIKeys = { groq: null, openai: null, anthropic: null };
+            const encryptedKeys: APIKeys = { ...DEFAULT_API_KEYS };
             for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
                 if (toSave.apiKeys[provider]) {
                     encryptedKeys[provider] = await encrypt(toSave.apiKeys[provider]!);

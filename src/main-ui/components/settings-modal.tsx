@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { SectionLabel } from "@/components/ui/section-label";
 import { api } from "@/services/rpc";
 import { APP_CONSTANTS } from "@shared/constants";
-import type { AIProvider, APIKeys } from "@shared/types";
+import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -25,7 +25,7 @@ const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
-  const [apiKeys, setApiKeys] = useState<APIKeys>({ groq: null, openai: null, anthropic: null });
+  const [apiKeys, setApiKeys] = useState<APIKeys>({ ...DEFAULT_API_KEYS });
   const [model, setModel] = useState("");
   const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
