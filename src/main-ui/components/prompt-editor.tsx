@@ -35,6 +35,8 @@ type PromptEditorProps = {
   editorMode: EditorMode;
   advancedSelection: AdvancedSelection;
   computedMusicPhrase: string;
+  pendingInput: string;
+  onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onEditorModeChange: (mode: EditorMode) => void;
   onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
@@ -69,6 +71,8 @@ export function PromptEditor({
   editorMode,
   advancedSelection,
   computedMusicPhrase,
+  pendingInput,
+  onPendingInputChange,
   onLockedPhraseChange,
   onEditorModeChange,
   onAdvancedSelectionUpdate,
@@ -90,7 +94,6 @@ export function PromptEditor({
   currentModel = "",
   debugInfo,
 }: PromptEditorProps) {
-  const [input, setInput] = useState("");
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -98,9 +101,9 @@ export function PromptEditor({
   const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation } = useMemo(() => ({
     charCount: currentPrompt.length,
     promptOverLimit: currentPrompt.length > maxChars,
-    inputOverLimit: input.trim().length > maxChars,
+    inputOverLimit: pendingInput.trim().length > maxChars,
     lockedPhraseValidation: validateLockedPhrase(lockedPhrase),
-  }), [currentPrompt, input, maxChars, lockedPhrase]);
+  }), [currentPrompt, pendingInput, maxChars, lockedPhrase]);
 
   const hasAdvancedSelection = editorMode === 'advanced' && (
     advancedSelection.harmonicStyle ||
@@ -111,7 +114,7 @@ export function PromptEditor({
   );
 
   const handleSend = () => {
-    const trimmed = input.trim();
+    const trimmed = pendingInput.trim();
     const canRefineWithoutInput = editorMode === 'advanced' && currentPrompt && hasAdvancedSelection;
     
     if (!trimmed && !canRefineWithoutInput) return;
@@ -119,7 +122,7 @@ export function PromptEditor({
     if (trimmed.length > maxChars) return;
     if (!lockedPhraseValidation.isValid) return;
     onGenerate(trimmed);
-    setInput("");
+    // Input will be cleared by context after successful generation
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -313,10 +316,14 @@ export function PromptEditor({
             </FormLabel>
             <div className="flex gap-3 items-end">
               <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={pendingInput}
+                onChange={(e) => onPendingInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20"
+                disabled={isGenerating}
+                className={cn(
+                  "min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20",
+                  isGenerating && "opacity-70"
+                )}
                 placeholder={lyricsMode 
                   ? "Describe your song's theme, story, and emotions for title + lyrics generation"
                   : "Describe your song, style, mood, or refine the existing prompt"
@@ -328,7 +335,7 @@ export function PromptEditor({
                   isGenerating ||
                   inputOverLimit ||
                   !lockedPhraseValidation.isValid ||
-                  (!input.trim() && !(editorMode === 'advanced' && currentPrompt && hasAdvancedSelection))
+                  (!pendingInput.trim() && !(editorMode === 'advanced' && currentPrompt && hasAdvancedSelection))
                 }
                 size="sm"
                 className={cn(

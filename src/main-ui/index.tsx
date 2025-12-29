@@ -29,6 +29,8 @@ function App() {
     editorMode,
     advancedSelection,
     computedMusicPhrase,
+    pendingInput,
+    setPendingInput,
     setSettingsOpen,
     setLockedPhrase,
     setEditorMode,
@@ -81,6 +83,8 @@ function App() {
               editorMode={editorMode}
               advancedSelection={advancedSelection}
               computedMusicPhrase={computedMusicPhrase}
+              pendingInput={pendingInput}
+              onPendingInputChange={setPendingInput}
               onLockedPhraseChange={setLockedPhrase}
               onEditorModeChange={setEditorMode}
               onAdvancedSelectionUpdate={updateAdvancedSelection}

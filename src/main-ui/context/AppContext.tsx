@@ -29,6 +29,8 @@ interface AppContextType {
     editorMode: EditorMode;
     advancedSelection: AdvancedSelection;
     computedMusicPhrase: string;
+    pendingInput: string;
+    setPendingInput: (input: string) => void;
     
     setSettingsOpen: (open: boolean) => void;
     setValidation: (v: ValidationResult) => void;
@@ -88,6 +90,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [lockedPhrase, setLockedPhrase] = useState("");
     const [editorMode, setEditorMode] = useState<EditorMode>('simple');
     const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
+    const [pendingInput, setPendingInput] = useState("");
 
     const computedMusicPhrase = useMemo(() => {
         return buildMusicPhrase(advancedSelection);
@@ -283,12 +286,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 isInitial,
                 input
             );
+            
+            // Clear pending input only on success
+            setPendingInput("");
         } catch (error) {
             console.error("Generation failed:", error);
             setChatMessages(prev => [
                 ...prev,
                 { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate prompt"}.` },
             ]);
+            // Keep pending input on error so user can retry
         } finally {
             setGeneratingAction('none');
         }
@@ -538,6 +545,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             editorMode,
             advancedSelection,
             computedMusicPhrase,
+            pendingInput,
+            setPendingInput,
             setSettingsOpen,
             setValidation,
             setLockedPhrase,
