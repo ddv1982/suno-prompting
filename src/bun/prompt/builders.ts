@@ -204,6 +204,8 @@ OUTPUT FORMAT - Return valid JSON:
   "title": "<a short, evocative 1-5 word song title that matches the mood and genre>"
 }
 
+CRITICAL: If ${LOCKED_PLACEHOLDER} appears in the input, it MUST appear exactly once in the "prompt" field - do not modify, omit, or paraphrase it.
+
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
 }
 
@@ -238,6 +240,8 @@ LYRICS REQUIREMENTS:
 - Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
 - Lyrics should be evocative, poetic, and emotionally resonant
 - Match the genre's typical lyrical style
+
+CRITICAL: If ${LOCKED_PLACEHOLDER} appears in the input, it MUST appear exactly once in the "prompt" field - do not modify, omit, or paraphrase it.
 
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
 }
