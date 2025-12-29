@@ -57,6 +57,7 @@ The generated prompt is constrained to a strict structure so Suno V5 responds co
 ### Required metadata lines
 
 - `Genre:`
+- `BPM:`
 - `Mood:`
 - `Instruments:` (comma-separated)
 
@@ -95,6 +96,7 @@ When enabled, prompts are generated with special header tags:
 [REAL_INSTRUMENTS: MAX](MAX)
 
 genre: "acoustic, country singer-songwriter"
+bpm: "95"
 instruments: "single acoustic guitar, vocal grit, emotional phrasing"
 style tags: "tape recorder, raw performance texture, narrow mono image"
 recording: "one person, one guitar, natural dynamics"
