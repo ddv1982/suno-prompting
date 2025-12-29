@@ -100,7 +100,7 @@ export class StorageManager {
             // Decrypt all API keys
             const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
             if (config.apiKeys) {
-                for (const provider of ['groq', 'openai', 'anthropic'] as const) {
+                for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
                     if (config.apiKeys[provider]) {
                         try {
                             apiKeys[provider] = await decrypt(config.apiKeys[provider]);
@@ -134,12 +134,15 @@ export class StorageManager {
             
             // Encrypt all API keys
             const encryptedKeys: APIKeys = { groq: null, openai: null, anthropic: null };
-            for (const provider of ['groq', 'openai', 'anthropic'] as const) {
+            for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
                 if (toSave.apiKeys[provider]) {
                     encryptedKeys[provider] = await encrypt(toSave.apiKeys[provider]!);
                 }
             }
             toSave.apiKeys = encryptedKeys;
+            
+            // Clean up legacy apiKey field if present
+            delete (toSave as Record<string, unknown>).apiKey;
             
             await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
         } catch (error) {

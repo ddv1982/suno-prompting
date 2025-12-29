@@ -13,6 +13,7 @@ export const APP_CONSTANTS = {
         DEFAULT_DEBUG_MODE: false,
         DEFAULT_MAX_MODE: false,
         DEFAULT_LYRICS_MODE: false,
+        PROVIDER_IDS: ['groq', 'openai', 'anthropic'] as const,
         PROVIDERS: [
             { id: 'groq' as const, name: 'Groq', keyPlaceholder: 'gsk_...', keyUrl: 'https://console.groq.com/keys' },
             { id: 'openai' as const, name: 'OpenAI', keyPlaceholder: 'sk-...', keyUrl: 'https://platform.openai.com/api-keys' },

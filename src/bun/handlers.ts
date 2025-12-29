@@ -1,5 +1,6 @@
 import { type RPCHandlers } from '@shared/types';
 import { validatePrompt } from '@shared/validation';
+import { APP_CONSTANTS } from '@shared/constants';
 import { type AIEngine } from '@bun/ai-engine';
 import { type StorageManager } from '@bun/storage';
 import { createLogger } from '@bun/logger';
@@ -175,7 +176,7 @@ export function createHandlers(
             log.info('saveAllSettings', { provider });
             await storage.saveConfig({ provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode });
             aiEngine.setProvider(provider);
-            for (const p of ['groq', 'openai', 'anthropic'] as const) {
+            for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
                 if (apiKeys[p]) {
                     aiEngine.setApiKey(p, apiKeys[p]!);
                 }

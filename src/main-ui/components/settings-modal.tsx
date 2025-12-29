@@ -48,7 +48,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         .then((settings) => {
           setProvider(settings.provider);
           setApiKeys(settings.apiKeys);
-          setModel(settings.model || APP_CONSTANTS.AI.DEFAULT_MODEL);
+          // Validate model exists in provider's model list
+          const providerModels = MODELS_BY_PROVIDER[settings.provider];
+          const modelExists = providerModels.some(m => m.id === settings.model);
+          setModel(modelExists ? settings.model : providerModels[0].id);
           setUseSunoTags(settings.useSunoTags);
           setDebugMode(settings.debugMode);
           setMaxMode(settings.maxMode);
@@ -64,6 +67,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const handleProviderChange = (newProvider: AIProvider) => {
     setProvider(newProvider);
+    setShowKey(false); // Reset password visibility when switching providers
     // Auto-select first model for new provider
     const models = MODELS_BY_PROVIDER[newProvider];
     if (models.length > 0) {
@@ -151,6 +155,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <p className="text-tiny text-muted-foreground">
               Get your key from <a href={currentProvider.keyUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{currentProvider.keyUrl.replace('https://', '')}</a>
             </p>
+            {!currentApiKey && !loading && (
+              <p className="text-tiny text-amber-500">
+                No API key configured for {currentProvider.name}. Generation will fail.
+              </p>
+            )}
             {error && (
               <p className="text-caption text-destructive flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" /> {error}
