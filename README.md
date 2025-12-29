@@ -131,7 +131,7 @@ The app includes a comprehensive prompt enhancement system based on professional
 SUGGESTED INSTRUMENTS (Suno tags):
 Jazz: Sophisticated, improvisational music with complex harmonies
 
-Tempo: 96 BPM (range: 72-140)
+Tempo: 110 BPM (range: 80-160)
 Mood suggestions: Smooth, Warm, Sophisticated
 Vocal style: Tenor, Crooner Style Delivery, Scat Fills
 Production: Analog Warmth, Long Hall Reverb
@@ -145,18 +145,27 @@ Chord progression: The 2-5-1 (ii-V-I): The cornerstone of jazz harmony
 
 ### BPM Ranges
 
-Each genre has a defined tempo range with a typical BPM:
+Each genre has a defined tempo range with a typical BPM (researched from industry sources):
 
 | Genre | Typical BPM | Range |
 |-------|-------------|-------|
-| Ambient | 78 | 60-90 |
-| Jazz | 96 | 72-140 |
-| Lo-fi | 80 | 70-90 |
-| R&B | 88 | 70-100 |
-| Pop | 118 | 100-130 |
-| Rock | 120 | 100-160 |
+| Ambient | 65 | 50-80 |
+| Blues | 88 | 68-132 |
+| Classical | 90 | 60-140 |
+| Country | 110 | 90-140 |
 | Electronic | 128 | 120-150 |
-| Punk | 172 | 150-200 |
+| Folk | 100 | 80-120 |
+| Jazz | 110 | 80-160 |
+| Latin | 98 | 80-140 |
+| Lo-fi | 80 | 70-90 |
+| Metal | 140 | 100-180 |
+| Pop | 118 | 100-130 |
+| Punk | 175 | 160-200 |
+| R&B | 88 | 70-100 |
+| Rock | 120 | 100-160 |
+| Soul | 96 | 80-110 |
+| Synthwave | 115 | 100-130 |
+| Trap | 145 | 130-170 |
 
 ### Mood Pools
 
