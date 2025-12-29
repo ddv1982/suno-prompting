@@ -12,6 +12,7 @@ import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { buildProductionDescriptor } from '@bun/prompt/production-elements';
+import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 
 export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random): string {
   const s = HARMONIC_STYLES[style];
@@ -222,6 +223,10 @@ export function getGenreInstruments(
   // Add production suggestions
   const prodDesc = buildProductionDescriptor(genre, rng);
   lines.push(`Production: ${prodDesc}`);
+
+  // Add chord progression suggestion
+  const progDesc = buildProgressionDescriptor(genre, rng);
+  lines.push(`Chord progression: ${progDesc}`);
 
   lines.push('');
 
