@@ -22,6 +22,7 @@ type SettingsModalProps = {
 
 const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
 const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
+const selectClassName = "flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
@@ -114,14 +115,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             Application Settings
           </DialogTitle>
         </DialogHeader>
-        <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto">
+        <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto pr-2">
           <div className="space-y-2">
             <SectionLabel>AI Provider</SectionLabel>
             <select
               value={provider}
               onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
               disabled={loading}
-              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className={selectClassName}
             >
               {PROVIDERS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -173,7 +174,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={loading}
-              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className={selectClassName}
             >
               {loading && <option value="">Loading...</option>}
               {availableModels.map((m) => (

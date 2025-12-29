@@ -583,6 +583,9 @@
   .max-h-24 {
     max-height: calc(var(--spacing) * 24);
   }
+  .max-h-\[60vh\] {
+    max-height: 60vh;
+  }
   .min-h-0 {
     min-height: calc(var(--spacing) * 0);
   }
@@ -1100,12 +1103,6 @@
   }
   .bg-card {
     background-color: var(--color-card);
-  }
-  .bg-card\/70 {
-    background-color: var(--color-card);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--color-card) 70%, transparent);
-    }
   }
   .bg-destructive {
     background-color: var(--color-destructive);
