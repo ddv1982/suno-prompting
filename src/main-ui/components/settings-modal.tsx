@@ -115,7 +115,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             Application Settings
           </DialogTitle>
         </DialogHeader>
-        <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto pr-2 is-scrolling">
           <div className="space-y-2">
             <SectionLabel>AI Provider</SectionLabel>
             <select
