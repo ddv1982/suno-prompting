@@ -107,21 +107,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-106.25 bg-card/70 backdrop-blur border shadow-2xl">
+      <DialogContent className="sm:max-w-106.25 bg-card border shadow-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Application Settings
           </DialogTitle>
         </DialogHeader>
-        <div className="py-6 space-y-6">
+        <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto">
           <div className="space-y-2">
             <SectionLabel>AI Provider</SectionLabel>
             <select
               value={provider}
               onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
               disabled={loading}
-              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input glass-control px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {PROVIDERS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -142,7 +142,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 value={currentApiKey}
                 onChange={(e) => handleApiKeyChange(e.target.value)}
                 placeholder={currentProvider.keyPlaceholder}
-                className="pr-10 glass-control"
+                className="pr-10 bg-input"
               />
               <button
                 type="button"
@@ -173,7 +173,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={loading}
-              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input glass-control px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading && <option value="">Loading...</option>}
               {availableModels.map((m) => (
