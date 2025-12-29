@@ -351,28 +351,43 @@ export class AIEngine {
   }
 
   async remixGenre(currentPrompt: string): Promise<GenerationResult> {
-    // Extract current genre from prompt (handle both regular and max mode formats)
-    const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n,]+)/mi);
-    const currentGenre = genreMatch?.[1]?.trim().toLowerCase() || '';
+    // Extract full genre value (handle both regular and max mode formats)
+    const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
+    const fullGenreValue = genreMatch?.[1]?.trim() || '';
     
-    // Detect if current genre is multi-genre
-    if (isMultiGenre(currentGenre)) {
-      // Pick from multi-genre pool, excluding current
-      const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== currentGenre);
-      const newGenre = available[Math.floor(Math.random() * available.length)]!;
+    // Parse comma-separated genres
+    const currentGenres = fullGenreValue.split(',').map(g => g.trim().toLowerCase()).filter(Boolean);
+    const genreCount = currentGenres.length;
+    
+    // Available genres pool (registry + multi-genre combinations)
+    const allSingleGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
+    const allGenreOptions = [...allSingleGenres, ...MULTI_GENRE_COMBINATIONS];
+    
+    if (genreCount <= 1) {
+      // Single genre - check if it's a multi-word genre like "jazz fusion"
+      const singleGenre = currentGenres[0] || '';
+      
+      if (isMultiGenre(singleGenre)) {
+        // Pick from multi-genre pool, excluding current
+        const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== singleGenre);
+        const newGenre = available[Math.floor(Math.random() * available.length)]!;
+        return { text: replaceFieldLine(currentPrompt, 'Genre', newGenre) };
+      }
+      
+      // Single word genre - pick from registry
+      const availableGenres = allSingleGenres.filter(g => g !== singleGenre);
+      if (availableGenres.length === 0) return { text: currentPrompt };
+      const newGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)]!;
       return { text: replaceFieldLine(currentPrompt, 'Genre', newGenre) };
     }
     
-    // Single genre - pick from registry
-    const allGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
-    const availableGenres = allGenres.filter(g => g !== currentGenre);
-
-    if (availableGenres.length === 0) {
-      return { text: currentPrompt };
-    }
-
-    const newGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)]!;
-    return { text: replaceFieldLine(currentPrompt, 'Genre', newGenre) };
+    // Multiple comma-separated genres - generate same count of different genres
+    const availableGenres = allGenreOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
+    const shuffled = [...availableGenres].sort(() => Math.random() - 0.5);
+    const selectedGenres = shuffled.slice(0, genreCount);
+    const newGenreValue = selectedGenres.join(', ');
+    
+    return { text: replaceFieldLine(currentPrompt, 'Genre', newGenreValue) };
   }
 
   async remixMood(currentPrompt: string): Promise<GenerationResult> {
