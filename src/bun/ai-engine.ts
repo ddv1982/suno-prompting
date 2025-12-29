@@ -295,10 +295,16 @@ export class AIEngine {
     try {
       const cleaned = rawResponse.trim().replace(/```json\n?|\n?```/g, '');
       parsed = JSON.parse(cleaned);
-    } catch {
-      log.warn('generateInitial:json_parse_failed', { rawResponse: rawResponse.slice(0, 200) });
+      if (!parsed.prompt) {
+        throw new Error('Missing prompt in response');
+      }
+    } catch (e) {
+      log.warn('generateInitial:json_parse_failed', { 
+        error: e instanceof Error ? e.message : 'Unknown error',
+        rawResponse: rawResponse.slice(0, 200) 
+      });
       // Fallback to legacy separate calls
-      return this.generateInitialFallback(description, lockedPhrase, selection, userPrompt);
+      return this.generateInitialFallback(description, lockedPhrase, userPrompt);
     }
 
     // Post-process the prompt
@@ -335,7 +341,6 @@ export class AIEngine {
   private async generateInitialFallback(
     description: string,
     lockedPhrase: string | undefined,
-    _selection: Awaited<ReturnType<typeof selectModes>>,
     userPrompt: string
   ): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
