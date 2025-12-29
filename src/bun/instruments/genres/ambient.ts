@@ -2,56 +2,68 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const AMBIENT_GENRE: GenreDefinition = {
   name: 'Ambient',
-  keywords: ['ambient', 'atmospheric', 'soundscape'],
-  description: 'Warm, intimate, emotional soundscapes with gentle movement',
+  keywords: ['ambient', 'atmospheric', 'soundscape', 'meditative', 'ethereal'],
+  description: 'Soothing, curiosity-sparking soundscapes with unusual textures and gentle movement',
   pools: {
-    harmonicAnchor: {
-      pick: { min: 1, max: 1 },
+    // Foundation - warm harmonic base
+    foundation: {
+      pick: { min: 1, max: 2 },
       instruments: [
-        'prepared piano', 'felt piano', 'harmonium', 'celesta',
-        'strings', 'guitar', 'acoustic guitar', 'fretless guitar',
-        'nylon string guitar', 'Fender Stratocaster', 'slide guitar',
-        'hollowbody guitar',
+        'felt piano', 'prepared piano', 'harmonium', 'celesta',
+        'strings', 'nylon string guitar', 'fretless guitar',
       ],
     },
-    padOrSynth: {
-      pick: { min: 1, max: 1 },
+    // Texture - pads and atmosphere
+    texture: {
+      pick: { min: 1, max: 2 },
       instruments: [
-        'synth pad', 'analog synth pads', 'analog synth', 'digital synth',
-        'FM synth', 'Moog synth', 'synth', 'crystalline synth pads', 'ambient pad',
+        'synth pad', 'ambient pad', 'crystalline synth pads',
+        'analog synth pads', 'synth strings', 'wordless choir',
       ],
     },
-    rare: {
+    // Curiosity - unusual/exotic instruments (high priority)
+    curiosity: {
+      pick: { min: 1, max: 2 },
+      chanceToInclude: 0.8,
+      instruments: [
+        'singing bowls', 'crystal bowls', 'kalimba', 'glass bells',
+        'bansuri', 'shakuhachi', 'duduk', 'tongue drum', 'handpan',
+        'koto', 'bowed vibraphone', 'mark tree', 'tam tam',
+        'english horn', 'oboe', 'solo soprano',
+      ],
+    },
+    // World color - ethnic instruments
+    world: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.25,
-      instruments: ['taiko drums', 'steel pan', 'Hammond organ'],
-    },
-    color: {
-      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.5,
       instruments: [
-        'electric piano', 'Rhodes', 'Wurlitzer', 'Clavinet',
-        'cello', 'vibraphone', 'oboe', 'bassoon', 'bowed vibraphone',
-        'marimba', 'kalimba', 'glockenspiel', 'bells', 'glass bells',
-        'congas', 'singing bowls', 'choir', 'wordless choir',
-        'clarinet', 'shakuhachi', 'duduk', 'breathy EWI', 'pedal steel',
+        'sitar', 'erhu', 'oud', 'marimba', 'steel pan',
+        'vibraphone', 'cello', 'harp',
       ],
     },
+    // Gentle movement - subtle rhythm
     movement: {
       pick: { min: 0, max: 1 },
+      chanceToInclude: 0.3,
       instruments: [
-        'percussion', 'toms', 'shaker', 'frame drum', 'handpan',
-        'sub-bass', 'snare drum', 'jazz brushes', 'cajón', 'djembe',
+        'rain stick', 'ocean drum', 'shaker', 'frame drum',
+        'jazz brushes', 'suspended cymbal', 'finger snaps',
       ],
     },
+    // Rare texture - very unusual
+    rare: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.15,
+      instruments: ['waterphone', 'glass armonica', 'theremin', 'prepared piano'],
+    },
   },
-  poolOrder: ['harmonicAnchor', 'padOrSynth', 'rare', 'color', 'movement'],
-  maxTags: 4,
+  poolOrder: ['foundation', 'texture', 'curiosity', 'world', 'movement', 'rare'],
+  maxTags: 5,
   exclusionRules: [
-    ['acoustic piano', 'Rhodes'],
-    ['Rhodes', 'Wurlitzer'],
-    ['bells', 'singing bowls'],
-    ['guitar', 'Fender Stratocaster'],
-    ['acoustic guitar', 'nylon string guitar'],
-    ['slide guitar', 'pedal steel'],
+    ['singing bowls', 'crystal bowls'],
+    ['bansuri', 'shakuhachi'],
+    ['kalimba', 'tongue drum'],
+    ['harp', 'koto'],
+    ['prepared piano', 'felt piano'],
   ],
 };

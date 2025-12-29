@@ -208,14 +208,14 @@ describe('getAmbientInstruments', () => {
     const guidance = getAmbientInstruments();
     expect(guidance).toContain('SUGGESTED INSTRUMENTS (Suno tags)');
     expect(guidance).toContain('Ambient:');
-    expect(guidance.toLowerCase()).toContain('warm, intimate, emotional soundscapes');
+    expect(guidance.toLowerCase()).toContain('soothing, curiosity-sparking soundscapes');
   });
 
-  test('picks 2-4 Suno canonical tags', () => {
+  test('picks 2-5 Suno canonical tags', () => {
     const guidance = getAmbientInstruments();
     const tags = parseBullets(guidance);
     expect(tags.length).toBeGreaterThanOrEqual(2);
-    expect(tags.length).toBeLessThanOrEqual(4);
+    expect(tags.length).toBeLessThanOrEqual(5);
 
     const ambientPools = GENRE_REGISTRY.ambient.pools;
     const whitelist = new Set<string>([
@@ -264,16 +264,16 @@ describe('getAmbientInstruments', () => {
     }
   });
 
-  test('always includes a harmonic anchor and a pad/synth tag', () => {
+  test('always includes a foundation and a texture tag', () => {
     const pools = GENRE_REGISTRY.ambient.pools;
-    const anchor = new Set<string>(pools.harmonicAnchor!.instruments);
-    const pad = new Set<string>(pools.padOrSynth!.instruments);
+    const foundation = new Set<string>(pools.foundation!.instruments);
+    const texture = new Set<string>(pools.texture!.instruments);
 
     for (let i = 0; i < 30; i++) {
       const guidance = getAmbientInstruments();
       const tags = parseBullets(guidance);
-      expect(tags.some(t => anchor.has(t))).toBe(true);
-      expect(tags.some(t => pad.has(t))).toBe(true);
+      expect(tags.some(t => foundation.has(t))).toBe(true);
+      expect(tags.some(t => texture.has(t))).toBe(true);
     }
   });
 
@@ -288,7 +288,7 @@ describe('getAmbientInstruments', () => {
     const guidance = getAmbientInstruments({ userInstruments: ['cello'] });
     const lines = guidance.split('\n').filter(l => l.startsWith('- '));
     expect(lines.length).toBeGreaterThan(1);
-    expect(lines.length).toBeLessThanOrEqual(4);
+    expect(lines.length).toBeLessThanOrEqual(5);
   });
 
   test('respects maxTags option', () => {
