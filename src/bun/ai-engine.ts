@@ -321,6 +321,8 @@ export class AIEngine {
     const allSingleGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
     const allGenreOptions = [...allSingleGenres, ...MULTI_GENRE_COMBINATIONS];
     
+    let newGenreValue: string;
+    
     if (genreCount <= 1) {
       // Single genre - check if it's a multi-word genre like "jazz fusion"
       const singleGenre = currentGenres[0] || '';
@@ -328,24 +330,32 @@ export class AIEngine {
       if (isMultiGenre(singleGenre)) {
         // Pick from multi-genre pool, excluding current
         const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== singleGenre);
-        const newGenre = available[Math.floor(Math.random() * available.length)]!;
-        return { text: replaceFieldLine(currentPrompt, 'Genre', newGenre) };
+        newGenreValue = available[Math.floor(Math.random() * available.length)]!;
+      } else {
+        // Single word genre - pick from registry
+        const availableGenres = allSingleGenres.filter(g => g !== singleGenre);
+        if (availableGenres.length === 0) return { text: currentPrompt };
+        newGenreValue = availableGenres[Math.floor(Math.random() * availableGenres.length)]!;
       }
-      
-      // Single word genre - pick from registry
-      const availableGenres = allSingleGenres.filter(g => g !== singleGenre);
-      if (availableGenres.length === 0) return { text: currentPrompt };
-      const newGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)]!;
-      return { text: replaceFieldLine(currentPrompt, 'Genre', newGenre) };
+    } else {
+      // Multiple comma-separated genres - generate same count of different genres
+      const availableGenres = allGenreOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
+      const shuffled = [...availableGenres].sort(() => Math.random() - 0.5);
+      const selectedGenres = shuffled.slice(0, genreCount);
+      newGenreValue = selectedGenres.join(', ');
     }
     
-    // Multiple comma-separated genres - generate same count of different genres
-    const availableGenres = allGenreOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
-    const shuffled = [...availableGenres].sort(() => Math.random() - 0.5);
-    const selectedGenres = shuffled.slice(0, genreCount);
-    const newGenreValue = selectedGenres.join(', ');
+    // Replace genre line
+    let result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
     
-    return { text: replaceFieldLine(currentPrompt, 'Genre', newGenreValue) };
+    // Also update BPM to match new genre (use first genre if multi-genre)
+    const primaryGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
+    const genreDef = GENRE_REGISTRY[primaryGenre as GenreType];
+    if (genreDef?.bpm) {
+      result = replaceFieldLine(result, 'BPM', `${genreDef.bpm.typical}`);
+    }
+    
+    return { text: result };
   }
 
   async remixMood(currentPrompt: string): Promise<GenerationResult> {

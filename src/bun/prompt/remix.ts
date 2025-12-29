@@ -1,4 +1,4 @@
-export function replaceFieldLine(prompt: string, field: 'Genre' | 'Mood' | 'Instruments', value: string): string {
+export function replaceFieldLine(prompt: string, field: 'Genre' | 'Mood' | 'Instruments' | 'BPM', value: string): string {
   // Try max mode format first (lowercase with quotes): genre: "value"
   const maxModeRegex = new RegExp(`^${field.toLowerCase()}:\\s*"[^"]*"`, 'mi');
   if (maxModeRegex.test(prompt)) {

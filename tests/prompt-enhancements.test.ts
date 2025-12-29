@@ -95,7 +95,7 @@ describe('Articulations', () => {
       const rng = createRng(42);
       const articulation = getArticulationForInstrument('guitar', rng);
       expect(articulation).not.toBeNull();
-      expect(ARTICULATIONS.guitar).toContain(articulation);
+      expect(ARTICULATIONS.guitar).toContain(articulation!);
     });
 
     it('returns null for unknown instrument', () => {
@@ -120,7 +120,6 @@ describe('Articulations', () => {
     });
 
     it('returns articulated instrument when chance succeeds', () => {
-      const rng = createRng(42);
       // Run multiple times to find one that articulates
       let found = false;
       for (let i = 0; i < 20; i++) {
@@ -180,23 +179,26 @@ describe('Vocal Descriptors', () => {
 
     it('has styles for major genres', () => {
       for (const genre of EXPECTED_GENRES) {
-        expect(GENRE_VOCAL_STYLES[genre]).toBeDefined();
-        expect(GENRE_VOCAL_STYLES[genre].ranges.length).toBeGreaterThan(0);
-        expect(GENRE_VOCAL_STYLES[genre].deliveries.length).toBeGreaterThan(0);
-        expect(GENRE_VOCAL_STYLES[genre].techniques.length).toBeGreaterThan(0);
+        const style = GENRE_VOCAL_STYLES[genre];
+        expect(style).toBeDefined();
+        expect(style!.ranges.length).toBeGreaterThan(0);
+        expect(style!.deliveries.length).toBeGreaterThan(0);
+        expect(style!.techniques.length).toBeGreaterThan(0);
       }
     });
 
     it('jazz has appropriate vocal style', () => {
       const jazz = GENRE_VOCAL_STYLES.jazz;
-      expect(jazz.deliveries).toContain('Smooth');
-      expect(jazz.techniques).toContain('Scat Fills');
+      expect(jazz).toBeDefined();
+      expect(jazz!.deliveries).toContain('Smooth');
+      expect(jazz!.techniques).toContain('Scat Fills');
     });
 
     it('metal has appropriate vocal style', () => {
       const metal = GENRE_VOCAL_STYLES.metal;
-      expect(metal.deliveries).toContain('Powerful');
-      expect(metal.techniques).toContain('Shouted Hooks');
+      expect(metal).toBeDefined();
+      expect(metal!.deliveries).toContain('Powerful');
+      expect(metal!.techniques).toContain('Shouted Hooks');
     });
   });
 
@@ -267,22 +269,25 @@ describe('Production Elements', () => {
 
     it('has styles for major genres', () => {
       for (const genre of EXPECTED_GENRES) {
-        expect(GENRE_PRODUCTION_STYLES[genre]).toBeDefined();
-        expect(GENRE_PRODUCTION_STYLES[genre].reverbs.length).toBeGreaterThan(0);
-        expect(GENRE_PRODUCTION_STYLES[genre].textures.length).toBeGreaterThan(0);
+        const style = GENRE_PRODUCTION_STYLES[genre];
+        expect(style).toBeDefined();
+        expect(style!.reverbs.length).toBeGreaterThan(0);
+        expect(style!.textures.length).toBeGreaterThan(0);
       }
     });
 
     it('lofi has appropriate production style', () => {
       const lofi = GENRE_PRODUCTION_STYLES.lofi;
-      expect(lofi.textures).toContain('Lo-Fi Dusty');
-      expect(lofi.textures).toContain('Vintage Warmth');
+      expect(lofi).toBeDefined();
+      expect(lofi!.textures).toContain('Lo-Fi Dusty');
+      expect(lofi!.textures).toContain('Vintage Warmth');
     });
 
     it('metal has appropriate production style', () => {
       const metal = GENRE_PRODUCTION_STYLES.metal;
-      expect(metal.reverbs).toContain('Tight Dry Room');
-      expect(metal.dynamics).toContain('Compressed Punch');
+      expect(metal).toBeDefined();
+      expect(metal!.reverbs).toContain('Tight Dry Room');
+      expect(metal!.dynamics).toContain('Compressed Punch');
     });
   });
 
@@ -330,7 +335,7 @@ describe('Chord Progressions', () => {
   describe('Progression collections', () => {
     it('POP_PROGRESSIONS has expected progressions', () => {
       expect(POP_PROGRESSIONS.the_standard).toBeDefined();
-      expect(POP_PROGRESSIONS.the_standard.pattern).toBe('I-V-vi-IV');
+      expect(POP_PROGRESSIONS.the_standard!.pattern).toBe('I-V-vi-IV');
       expect(POP_PROGRESSIONS.the_doo_wop).toBeDefined();
       expect(POP_PROGRESSIONS.the_sensitive).toBeDefined();
     });
@@ -343,7 +348,7 @@ describe('Chord Progressions', () => {
 
     it('JAZZ_PROGRESSIONS has expected progressions', () => {
       expect(JAZZ_PROGRESSIONS.the_two_five_one).toBeDefined();
-      expect(JAZZ_PROGRESSIONS.the_two_five_one.pattern).toBe('ii-V-I');
+      expect(JAZZ_PROGRESSIONS.the_two_five_one!.pattern).toBe('ii-V-I');
       expect(JAZZ_PROGRESSIONS.the_blues).toBeDefined();
       expect(JAZZ_PROGRESSIONS.the_bossa).toBeDefined();
     });
@@ -358,7 +363,7 @@ describe('Chord Progressions', () => {
 
   describe('Progression structure', () => {
     it('each progression has required fields', () => {
-      for (const [key, prog] of Object.entries(ALL_PROGRESSIONS)) {
+      for (const [, prog] of Object.entries(ALL_PROGRESSIONS)) {
         expect(prog.name).toBeDefined();
         expect(prog.pattern).toBeDefined();
         expect(prog.numerals).toBeDefined();
@@ -376,8 +381,9 @@ describe('Chord Progressions', () => {
 
     it('has mappings for major genres', () => {
       for (const genre of EXPECTED_GENRES) {
-        expect(GENRE_PROGRESSIONS[genre]).toBeDefined();
-        expect(GENRE_PROGRESSIONS[genre].length).toBeGreaterThan(0);
+        const progressions = GENRE_PROGRESSIONS[genre];
+        expect(progressions).toBeDefined();
+        expect(progressions!.length).toBeGreaterThan(0);
       }
     });
 
