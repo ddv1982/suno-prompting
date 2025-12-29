@@ -121,6 +121,57 @@ recording: "one person, one guitar, natural dynamics"
 
 Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
+## Lyrics Mode
+
+Lyrics Mode generates complete song content including title, style prompt, and lyrics in a single generation. Enable it in Settings or via the toggle in the input area.
+
+### Output Format
+
+When enabled, the app generates three separate sections:
+
+1. **Title** - AI-generated song title based on your description
+2. **Style Prompt** - The standard Suno-ready prompt (same as normal mode)
+3. **Lyrics** - Structured song lyrics with section tags
+
+### Lyrics Structure
+
+```
+[VERSE]
+First verse lyrics here...
+
+[PRE-CHORUS]
+Building anticipation...
+
+[CHORUS]
+Main hook and memorable lines...
+
+[VERSE]
+Second verse continues the story...
+
+[BRIDGE]
+Emotional shift or new perspective...
+
+[CHORUS]
+Repeat the hook...
+
+[OUTRO]
+Closing the song...
+```
+
+### Remix Buttons
+
+Each section has independent remix functionality:
+
+- **REMIX** (Title) - Regenerates just the title
+- **REMIX** (Style) - Full prompt regeneration with all field buttons
+- **REMIX** (Lyrics) - Regenerates lyrics while keeping title and style
+
+### Best For
+
+- Songs where you want AI-generated lyrics
+- Quick songwriting inspiration
+- Complete song packages ready for Suno
+
 ## Prompt Enhancement System
 
 The app includes a comprehensive prompt enhancement system based on professional prompt patterns. When a genre is detected, the guidance includes:
