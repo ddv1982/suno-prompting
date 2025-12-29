@@ -119,6 +119,109 @@ recording: "one person, one guitar, natural dynamics"
 
 Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
+## Prompt Enhancement System
+
+The app includes a comprehensive prompt enhancement system based on professional prompt patterns. When a genre is detected, the guidance includes:
+
+### Example Output
+
+```
+SUGGESTED INSTRUMENTS (Suno tags):
+Jazz: Sophisticated, improvisational music with complex harmonies
+
+Tempo: 96 BPM (range: 72-140)
+Mood suggestions: Smooth, Warm, Sophisticated
+Vocal style: Tenor, Crooner Style Delivery, Scat Fills
+Production: Analog Warmth, Long Hall Reverb
+Chord progression: The 2-5-1 (ii-V-I): The cornerstone of jazz harmony
+
+- Arpeggiated Rhodes
+- Walking upright bass
+- Brushed drums
+- tenor sax
+```
+
+### BPM Ranges
+
+Each genre has a defined tempo range with a typical BPM:
+
+| Genre | Typical BPM | Range |
+|-------|-------------|-------|
+| Ambient | 78 | 60-90 |
+| Jazz | 96 | 72-140 |
+| Lo-fi | 80 | 70-90 |
+| R&B | 88 | 70-100 |
+| Pop | 118 | 100-130 |
+| Rock | 120 | 100-160 |
+| Electronic | 128 | 120-150 |
+| Punk | 172 | 150-200 |
+
+### Mood Pools
+
+Genre-specific mood vocabulary (8-9 moods per genre):
+
+- **Jazz**: Smooth, Warm, Sophisticated, Intimate, Late Night, Elegant, Groovy, Laid Back, Cool
+- **Rock**: Driving, Powerful, Energetic, Rebellious, Raw, Intense, Confident, Gritty, Anthemic
+- **Ambient**: Dreamy, Ethereal, Meditative, Calm, Floaty, Spacious, Otherworldly, Serene, Hypnotic
+- **Cinematic**: Epic, Dramatic, Triumphant, Tense, Majestic, Heroic, Suspenseful, Powerful, Emotional
+
+### Instrument Articulations
+
+40% of suggested instruments receive articulation prefixes:
+
+| Category | Example Articulations |
+|----------|----------------------|
+| Guitar | Arpeggiated, Strummed, Palm Muted, Jangly, Fingerpicked |
+| Piano | Comping, Rolling, Gentle, Dramatic |
+| Bass | Walking, Slapped, Round, Deep, Groovy |
+| Drums | Brushed, Tight, Punchy, Laid Back, Driving |
+| Strings | Legato, Staccato, Pizzicato, Swelling, Lush |
+| Brass | Muted, Bold, Fanfare, Stabs, Swells |
+
+### Vocal Descriptors
+
+Genre-appropriate vocal suggestions:
+
+- **Ranges**: Soprano, Mezzo Soprano, Alto, Tenor, Baritone, Bass
+- **Deliveries**: Belting, Intimate, Breathy, Raspy, Smooth, Falsetto, Crooner Style, Melismatic
+- **Techniques**: Stacked Harmonies, Call And Response, Ad Libs, Gospel Style Backing, Scat Fills
+
+### Production Elements
+
+Recording character suggestions per genre:
+
+- **Reverb types**: Long Hall, Plate, Spring, Cathedral, Studio, Chamber
+- **Textures**: Polished Production, Analog Warmth, Lo-Fi Dusty, Vintage Warmth, Raw Performance
+
+### Chord Progressions
+
+26 named progressions organized by category:
+
+**Pop Essentials**
+| Name | Pattern | Best For |
+|------|---------|----------|
+| The Standard | I-V-vi-IV | Radio hits, anthems |
+| The Doo-Wop | I-vi-IV-V | Romantic, nostalgic |
+| The Sensitive | vi-IV-I-V | Emotional ballads |
+| The Rock & Roll | I-IV-V | High energy, party |
+| The Jazz Pop | ii-V-I | Sophisticated, smooth |
+
+**Dark & Cinematic**
+| Name | Pattern | Best For |
+|------|---------|----------|
+| The Andalusian | i-VII-VI-V | Dramatic, flamenco |
+| The Phrygian | i-bII-i | Dark, exotic |
+| The Sad Loop | i-VI-i-VII | Trap, melancholic |
+| The Suspense | V-VI-V-VI | Tension building |
+
+**Jazz & Soul**
+| Name | Pattern | Best For |
+|------|---------|----------|
+| The 2-5-1 | ii-V-I | Jazz standards |
+| The Soul Vamp | i-IV | Groovy, hypnotic |
+| The Blues | I-IV-I-V | Blues, rock |
+| The Bossa Nova | Imaj7-ii7-V7 | Latin jazz |
+
 ## Architecture (high level)
 
 ### Prompt pipeline
@@ -127,6 +230,10 @@ Note: Song Structure Tags are automatically disabled when Max Mode is enabled, a
 - `src/bun/prompt/postprocess.ts`: strips leaked meta, enforces the output contract, truncates to limits.
 - `src/bun/prompt/remix.ts`: field-line replacement helpers used by remix actions.
 - `src/bun/prompt/realism-tags.ts`: max mode header tags, realism descriptors, and genre-to-tag mapping.
+- `src/bun/prompt/articulations.ts`: instrument articulation system (10 categories, 100+ articulations).
+- `src/bun/prompt/vocal-descriptors.ts`: vocal ranges, deliveries, and techniques per genre.
+- `src/bun/prompt/production-elements.ts`: reverb types and recording textures per genre.
+- `src/bun/prompt/chord-progressions.ts`: 26 named chord progressions with genre mappings.
 
 ### Instruments + music “knowledge”
 
