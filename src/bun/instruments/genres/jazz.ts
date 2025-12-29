@@ -36,6 +36,6 @@ export const JAZZ_GENRE: GenreDefinition = {
     ['saxophone', 'tenor sax'],
     ['trumpet', 'muted trumpet'],
   ],
-  bpm: { min: 72, max: 140, typical: 96 },
+  bpm: { min: 80, max: 160, typical: 110 },
   moods: ['Smooth', 'Warm', 'Sophisticated', 'Intimate', 'Late Night', 'Elegant', 'Groovy', 'Laid Back', 'Cool'],
 };

@@ -28,6 +28,6 @@ export const PUNK_GENRE: GenreDefinition = {
     ['bass', 'picked bass'],
     ['distorted guitar', 'guitar'],
   ],
-  bpm: { min: 150, max: 200, typical: 172 },
+  bpm: { min: 160, max: 200, typical: 175 },
   moods: ['Energetic', 'Rebellious', 'Raw', 'Youthful', 'Urgent', 'Cathartic', 'Defiant', 'Emotional', 'Driving'],
 };

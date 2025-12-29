@@ -33,6 +33,6 @@ export const TRAP_GENRE: GenreDefinition = {
     ['strings', 'pizzicato strings'],
     ['synth pad', 'ambient pad'],
   ],
-  bpm: { min: 130, max: 160, typical: 140 },
+  bpm: { min: 65, max: 85, typical: 70 },
   moods: ['Dark', 'Heavy', 'Menacing', 'Brooding', 'Ominous', 'Hard', 'Emotional', 'Moody', 'Aggressive'],
 };

@@ -85,6 +85,6 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['Rhodes', 'Wurlitzer'],
     ['Rhodes', 'electric piano'],
   ],
-  bpm: { min: 60, max: 90, typical: 78 },
+  bpm: { min: 50, max: 80, typical: 65 },
   moods: ['Dreamy', 'Ethereal', 'Meditative', 'Calm', 'Floaty', 'Spacious', 'Otherworldly', 'Serene', 'Hypnotic'],
 };
