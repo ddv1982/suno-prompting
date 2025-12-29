@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, RefreshCw, Bug, Shuffle, Settings2, ChevronDown, Lock, MessageSquare } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, Bug, Settings2, Lock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
@@ -19,6 +18,8 @@ import { type DebugInfo, type EditorMode, type AdvancedSelection } from "@shared
 import { type GeneratingAction } from "@/context/AppContext";
 import { APP_CONSTANTS } from "@shared/constants";
 import { AdvancedPanel } from "@/components/advanced-panel";
+import { RemixButtonGroup } from "@/components/remix-button-group";
+import { ChatHistorySection } from "@/components/chat-history-section";
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -79,7 +80,6 @@ export function PromptEditor({
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation } = useMemo(() => ({
     charCount: currentPrompt.length,
@@ -95,12 +95,6 @@ export function PromptEditor({
     advancedSelection.timeSignature ||
     advancedSelection.timeSignatureJourney
   );
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chatMessages]);
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -151,98 +145,22 @@ export function PromptEditor({
                   <PromptOutput text={currentPrompt} />
                 </CardContent>
               </ScrollArea>
-              <div className="absolute top-4 right-4 flex gap-2">
-                {debugInfo && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDebugOpen(true)}
-                    className="font-bold glass-control"
-                  >
-                    <Bug className="w-3.5 h-3.5" />
-                    DEBUG
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onRemixGenre}
-                  disabled={isGenerating}
-                  className="font-bold glass-control"
-                >
-                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixGenre' && "animate-spin")} />
-                  GENRE
-                </Button>
-                {!maxMode && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onRemixMood}
-                    disabled={isGenerating}
-                    className="font-bold glass-control"
-                  >
-                    <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
-                    MOOD
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onRemixInstruments}
-                  disabled={isGenerating}
-                  className="font-bold glass-control"
-                >
-                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixInstruments' && "animate-spin")} />
-                  INSTRUMENTS
-                </Button>
-                {maxMode && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onRemixStyleTags}
-                    disabled={isGenerating}
-                    className="font-bold glass-control"
-                  >
-                    <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixStyleTags' && "animate-spin")} />
-                    STYLE
-                  </Button>
-                )}
-                {maxMode && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onRemixRecording}
-                    disabled={isGenerating}
-                    className="font-bold glass-control"
-                  >
-                    <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixRecording' && "animate-spin")} />
-                    RECORDING
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onRemix}
-                  disabled={isGenerating}
-                  className="font-bold glass-control"
-                >
-                  <RefreshCw className={cn("w-3.5 h-3.5", generatingAction === 'remix' && "animate-spin")} />
-                  {generatingAction === 'remix' ? "REMIXING" : "REMIX"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopy}
-                  disabled={promptOverLimit}
-                  className={cn(
-                    "font-bold glass-control transition-all duration-300",
-                    copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
-                  )}
-                >
-                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? "COPIED" : "COPY"}
-                </Button>
-              </div>
+              <RemixButtonGroup
+                isGenerating={isGenerating}
+                generatingAction={generatingAction}
+                maxMode={maxMode}
+                copied={copied}
+                promptOverLimit={promptOverLimit}
+                hasDebugInfo={!!debugInfo}
+                onDebugOpen={() => setDebugOpen(true)}
+                onRemixGenre={onRemixGenre}
+                onRemixMood={onRemixMood}
+                onRemixInstruments={onRemixInstruments}
+                onRemixStyleTags={onRemixStyleTags}
+                onRemixRecording={onRemixRecording}
+                onRemix={onRemix}
+                onCopy={handleCopy}
+              />
             </Card>
           </>
         )}
@@ -265,42 +183,12 @@ export function PromptEditor({
 
         <Separator className="opacity-50" />
 
-        <Collapsible open={chatExpanded} onOpenChange={setChatExpanded} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <CollapsibleTrigger asChild>
-            <button className="flex items-center gap-2 w-full text-left mb-3 group">
-              <SectionLabel>Chat History</SectionLabel>
-              {chatMessages.length > 0 && (
-                <span className="text-micro text-muted-foreground">
-                  ({chatMessages.length})
-                </span>
-              )}
-              <ChevronDown className={cn(
-                "w-4 h-4 text-muted-foreground transition-transform ml-auto",
-                chatExpanded && "rotate-180"
-              )} />
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full pr-4" viewportRef={scrollRef}>
-              {chatMessages.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground italic opacity-40">
-                  Conversation history will appear here.
-                </div>
-              ) : (
-                chatMessages.map((msg, i) => (
-                  <ChatMessageBubble key={i} role={msg.role} content={msg.content} />
-                ))
-              )}
-              {isGenerating && (
-                <div className="flex w-full mb-3 justify-start">
-                  <div className="bg-muted/50 rounded-2xl px-4 py-3 rounded-tl-none border shadow-sm animate-pulse">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  </div>
-                </div>
-              )}
-            </ScrollArea>
-          </CollapsibleContent>
-        </Collapsible>
+        <ChatHistorySection
+          chatMessages={chatMessages}
+          isGenerating={isGenerating}
+          expanded={chatExpanded}
+          onExpandedChange={setChatExpanded}
+        />
       </div>
 
       <div className="border-t bg-muted/10 p-6 shrink-0">
@@ -503,26 +391,6 @@ function ValidationMessages({ errors, warnings }: { errors: string[]; warnings: 
           <AlertDescription className="text-tiny ml-2">{warning}</AlertDescription>
         </Alert>
       ))}
-    </div>
-  );
-}
-
-function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }) {
-  return (
-    <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
-      <div
-        className={cn(
-          "max-w-[85%] rounded-xl px-4 py-2.5 text-sm shadow-sm",
-          role === "user"
-            ? "bg-primary text-primary-foreground rounded-tr-sm shadow-lg"
-            : "bg-background/40 backdrop-blur text-foreground rounded-tl-sm border"
-        )}
-      >
-        <div className="font-bold opacity-70 mb-1 text-micro uppercase tracking-wider">
-          {role === "user" ? "You" : "Assistant"}
-        </div>
-        <div className="leading-relaxed whitespace-pre-wrap">{content}</div>
-      </div>
     </div>
   );
 }
