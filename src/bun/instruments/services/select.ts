@@ -7,7 +7,7 @@ import {
   isFoundationalInstrument,
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
-} from '@bun/instruments/datasets/instrumentClasses';
+} from '@bun/instruments/datasets/instrument-classes';
 import type { Rng } from '@bun/instruments/services/random';
 import { shuffle, randomIntInclusive, rollChance } from '@bun/instruments/services/random';
 

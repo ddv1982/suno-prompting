@@ -5,7 +5,7 @@ import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
   ORCHESTRAL_COLOR_INSTRUMENTS,
-} from '@bun/instruments/datasets/instrumentClasses';
+} from '@bun/instruments/datasets/instrument-classes';
 
 export const GENRE_TABLE_START = '<!-- GENRE_TABLE_START -->';
 export const GENRE_TABLE_END = '<!-- GENRE_TABLE_END -->';

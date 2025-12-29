@@ -5,7 +5,7 @@ import {
   isFoundationalInstrument,
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
-} from '@bun/instruments/datasets/instrumentClasses';
+} from '@bun/instruments/datasets/instrument-classes';
 
 describe('Multi-genre + foundational selection', () => {
   test('injects 1-2 multigenre instruments when none are present in pools (when slots allow)', () => {

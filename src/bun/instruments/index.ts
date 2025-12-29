@@ -33,7 +33,7 @@ export {
   hasSynthAlternative,
   suggestSynthReplacement,
   getAllSynthInstruments,
-} from '@bun/instruments/synthReplacements';
+} from '@bun/instruments/synth-replacements';
 
 export {
   RHYTHMIC_STYLES,

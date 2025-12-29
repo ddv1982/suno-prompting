@@ -25,7 +25,7 @@ import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
   ORCHESTRAL_COLOR_INSTRUMENTS,
-} from '@bun/instruments/datasets/instrumentClasses';
+} from '@bun/instruments/datasets/instrument-classes';
 
 describe('detectHarmonic', () => {
   // Lydian variants

@@ -10,7 +10,7 @@ import {
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
   computeMultiGenreInstruments,
-} from '@bun/instruments/datasets/instrumentClasses';
+} from '@bun/instruments/datasets/instrument-classes';
 import { isValidInstrument } from '@bun/instruments/registry';
 
 describe('Instrument classes', () => {

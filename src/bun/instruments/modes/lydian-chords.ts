@@ -10,7 +10,7 @@ import {
   formatChordWithNotes,
   getTriadNotes,
   getSeventhChordNotes,
-} from '@bun/instruments/modes/scaleChords';
+} from '@bun/instruments/modes/scale-chords';
 
 export const LYDIAN_SCALE: ScaleDefinition = {
   name: 'Lydian',

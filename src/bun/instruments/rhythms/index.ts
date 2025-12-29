@@ -12,7 +12,7 @@ export type {
   PolyrhythmCombinationType,
 } from '@bun/instruments/rhythms/combinations';
 
-export { TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms/timeSignatures';
+export { TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms/time-signatures';
 export type {
   TimeSignatureType,
   TimeSignatureJourneyType,
@@ -20,4 +20,4 @@ export type {
   TimeSignatureJourneyDefinition,
   Subdivision,
   Complexity,
-} from '@bun/instruments/rhythms/timeSignatures';
+} from '@bun/instruments/rhythms/time-signatures';

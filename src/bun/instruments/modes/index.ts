@@ -19,8 +19,8 @@ export {
   formatLydianChordSummary,
   LYDIAN_CHORD_DESCRIPTIONS,
   LYDIAN_PROGRESSION_TEMPLATES,
-} from '@bun/instruments/modes/lydianChords';
-export type { LydianScaleChords, ExtendedChord } from '@bun/instruments/modes/lydianChords';
+} from '@bun/instruments/modes/lydian-chords';
+export type { LydianScaleChords, ExtendedChord } from '@bun/instruments/modes/lydian-chords';
 
 export {
   NOTES,
@@ -35,8 +35,8 @@ export {
   getSeventhChordNotes,
   buildScaleChords,
   formatChordWithNotes,
-} from '@bun/instruments/modes/scaleChords';
-export type { Note, NoteFlatVariant, AnyNote, ChordQuality, ScaleChord, ScaleDefinition } from '@bun/instruments/modes/scaleChords';
+} from '@bun/instruments/modes/scale-chords';
+export type { Note, NoteFlatVariant, AnyNote, ChordQuality, ScaleChord, ScaleDefinition } from '@bun/instruments/modes/scale-chords';
 
 export {
   MODE_PALETTES,

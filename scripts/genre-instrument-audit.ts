@@ -7,7 +7,7 @@ import {
   isFoundationalInstrument,
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
-} from '@bun/instruments/datasets/instrumentClasses';
+} from '@bun/instruments/datasets/instrument-classes';
 
 function uniqLower(items: readonly string[]): string[] {
   const seen = new Set<string>();
