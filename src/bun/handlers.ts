@@ -73,6 +73,28 @@ export function createHandlers(
         remixRecording: async ({ currentPrompt }) => {
             return runRemixAction('remixRecording', () => aiEngine.remixRecording(currentPrompt));
         },
+        remixTitle: async ({ currentPrompt, originalInput }) => {
+            log.info('remixTitle');
+            try {
+                const result = await aiEngine.remixTitle(currentPrompt, originalInput);
+                log.info('remixTitle:complete');
+                return { title: result.title };
+            } catch (error) {
+                log.error('remixTitle:failed', error);
+                throw error;
+            }
+        },
+        remixLyrics: async ({ currentPrompt, originalInput }) => {
+            log.info('remixLyrics');
+            try {
+                const result = await aiEngine.remixLyrics(currentPrompt, originalInput);
+                log.info('remixLyrics:complete');
+                return { lyrics: result.lyrics };
+            } catch (error) {
+                log.error('remixLyrics:failed', error);
+                throw error;
+            }
+        },
         getHistory: async () => {
             log.info('getHistory');
             const sessions = await storage.getHistory();

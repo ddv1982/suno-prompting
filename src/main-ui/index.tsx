@@ -45,6 +45,8 @@ function App() {
     handleRemixMood,
     handleRemixStyleTags,
     handleRemixRecording,
+    handleRemixTitle,
+    handleRemixLyrics,
     maxMode,
     lyricsMode,
     setLyricsMode
@@ -91,6 +93,8 @@ function App() {
               onRemixMood={handleRemixMood}
               onRemixStyleTags={handleRemixStyleTags}
               onRemixRecording={handleRemixRecording}
+              onRemixTitle={handleRemixTitle}
+              onRemixLyrics={handleRemixLyrics}
               maxMode={maxMode}
               lyricsMode={lyricsMode}
               onLyricsModeChange={setLyricsMode}

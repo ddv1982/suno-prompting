@@ -55,6 +55,14 @@ export const api = {
         return await rpc.request.remixRecording({ currentPrompt });
     },
 
+    async remixTitle(currentPrompt: string, originalInput: string): Promise<BunRequests['remixTitle']['response']> {
+        return await rpc.request.remixTitle({ currentPrompt, originalInput });
+    },
+
+    async remixLyrics(currentPrompt: string, originalInput: string): Promise<BunRequests['remixLyrics']['response']> {
+        return await rpc.request.remixLyrics({ currentPrompt, originalInput });
+    },
+
     async getApiKey(): Promise<string> {
         const { apiKey } = await rpc.request.getApiKey({});
         return apiKey || '';

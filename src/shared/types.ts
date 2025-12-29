@@ -86,6 +86,12 @@ export type RemixStyleTagsResponse = { prompt: string; versionId: string; valida
 export type RemixRecordingParams = { currentPrompt: string };
 export type RemixRecordingResponse = { prompt: string; versionId: string; validation: ValidationResult };
 
+export type RemixTitleParams = { currentPrompt: string; originalInput: string };
+export type RemixTitleResponse = { title: string };
+
+export type RemixLyricsParams = { currentPrompt: string; originalInput: string };
+export type RemixLyricsResponse = { lyrics: string };
+
 export type SetDebugModeParams = { debugMode: boolean };
 
 export type SaveAllSettingsParams = {
@@ -133,6 +139,8 @@ export type RPCHandlers = {
     remixMood: (params: RemixMoodParams) => Promise<RemixMoodResponse>;
     remixStyleTags: (params: RemixStyleTagsParams) => Promise<RemixStyleTagsResponse>;
     remixRecording: (params: RemixRecordingParams) => Promise<RemixRecordingResponse>;
+    remixTitle: (params: RemixTitleParams) => Promise<RemixTitleResponse>;
+    remixLyrics: (params: RemixLyricsParams) => Promise<RemixLyricsResponse>;
     getHistory: (params: Record<string, never>) => Promise<GetHistoryResponse>;
     saveSession: (params: SaveSessionParams) => Promise<{ success: boolean }>;
     deleteSession: (params: DeleteSessionParams) => Promise<{ success: boolean }>;
@@ -182,6 +190,14 @@ export type SunoRPCSchema = {
             remixRecording: {
                 params: RemixRecordingParams;
                 response: RemixRecordingResponse;
+            };
+            remixTitle: {
+                params: RemixTitleParams;
+                response: RemixTitleResponse;
+            };
+            remixLyrics: {
+                params: RemixLyricsParams;
+                response: RemixLyricsResponse;
             };
             getHistory: {
                 params: Record<string, never>;

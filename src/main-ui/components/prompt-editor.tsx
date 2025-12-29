@@ -10,7 +10,7 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, Bug, Settings2, Lock, MessageSquare, Music2 } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, Bug, Settings2, Lock, MessageSquare, Music2, Shuffle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
@@ -47,6 +47,8 @@ type PromptEditorProps = {
   onRemixMood: () => void;
   onRemixStyleTags: () => void;
   onRemixRecording: () => void;
+  onRemixTitle: () => void;
+  onRemixLyrics: () => void;
   maxMode: boolean;
   lyricsMode: boolean;
   onLyricsModeChange: (mode: boolean) => void;
@@ -79,6 +81,8 @@ export function PromptEditor({
   onRemixMood,
   onRemixStyleTags,
   onRemixRecording,
+  onRemixTitle,
+  onRemixLyrics,
   maxMode,
   lyricsMode,
   onLyricsModeChange,
@@ -147,6 +151,9 @@ export function PromptEditor({
                   label="Title"
                   content={currentTitle}
                   onCopy={() => navigator.clipboard.writeText(currentTitle)}
+                  onRemix={onRemixTitle}
+                  isGenerating={isGenerating}
+                  isRemixing={generatingAction === 'remixTitle'}
                 />
 
                 {/* Style Section */}
@@ -188,6 +195,9 @@ export function PromptEditor({
                   label="Lyrics"
                   content={currentLyrics}
                   onCopy={() => navigator.clipboard.writeText(currentLyrics)}
+                  onRemix={onRemixLyrics}
+                  isGenerating={isGenerating}
+                  isRemixing={generatingAction === 'remixLyrics'}
                   scrollable
                 />
               </div>
@@ -448,11 +458,17 @@ function OutputSection({
   label, 
   content, 
   onCopy,
+  onRemix,
+  isGenerating = false,
+  isRemixing = false,
   scrollable = false 
 }: { 
   label: string; 
   content: string; 
   onCopy: () => void;
+  onRemix?: () => void;
+  isGenerating?: boolean;
+  isRemixing?: boolean;
   scrollable?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
@@ -467,23 +483,41 @@ function OutputSection({
     <div>
       <div className="flex justify-between items-center mb-2">
         <SectionLabel>{label}</SectionLabel>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCopy}
-          className="h-7 px-2 text-muted-foreground hover:text-foreground"
-        >
-          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-        </Button>
       </div>
-      <Card className="border shadow-sm glass-panel">
-        <CardContent className="p-4">
+      <Card className="relative border shadow-sm glass-panel">
+        <CardContent className="p-4 pr-32">
           {scrollable ? (
             <PromptOutput text={content} />
           ) : (
             <div className="font-mono text-sm">{content}</div>
           )}
         </CardContent>
+        <div className="absolute top-4 right-4 flex gap-2">
+          {onRemix && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRemix}
+              disabled={isGenerating}
+              className="font-bold glass-control"
+            >
+              <Shuffle className={cn("w-3.5 h-3.5", isRemixing && "animate-spin")} />
+              REMIX
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopy}
+            className={cn(
+              "font-bold glass-control transition-all duration-300",
+              copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
+            )}
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? "COPIED" : "COPY"}
+          </Button>
+        </div>
       </Card>
     </div>
   );

@@ -5,7 +5,7 @@ import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { buildMusicPhrase } from '@shared/music-phrase';
 
-export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments' | 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording';
+export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments' | 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording' | 'remixTitle' | 'remixLyrics';
 
 const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [
     ['harmonicStyle', 'harmonicCombination'],
@@ -50,6 +50,8 @@ interface AppContextType {
     handleRemixMood: () => Promise<void>;
     handleRemixStyleTags: () => Promise<void>;
     handleRemixRecording: () => Promise<void>;
+    handleRemixTitle: () => Promise<void>;
+    handleRemixLyrics: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -426,6 +428,62 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         );
     }, [currentSession, executeRemixAction]);
 
+    const handleRemixTitle = useCallback(async () => {
+        if (!currentSession?.currentPrompt || !currentSession?.originalInput) return;
+        if (isGenerating) return;
+
+        try {
+            setGeneratingAction('remixTitle');
+            const result = await api.remixTitle(currentSession.currentPrompt, currentSession.originalInput);
+
+            const now = new Date().toISOString();
+            const updatedSession: PromptSession = {
+                ...currentSession,
+                currentTitle: result.title,
+                updatedAt: now,
+            };
+
+            setChatMessages((prev) => [...prev, { role: "ai", content: "Title remixed." }]);
+            await saveSession(updatedSession);
+        } catch (error) {
+            console.error("Title remix failed:", error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix title"}.` },
+            ]);
+        } finally {
+            setGeneratingAction('none');
+        }
+    }, [isGenerating, currentSession, saveSession]);
+
+    const handleRemixLyrics = useCallback(async () => {
+        if (!currentSession?.currentPrompt || !currentSession?.originalInput) return;
+        if (isGenerating) return;
+
+        try {
+            setGeneratingAction('remixLyrics');
+            const result = await api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput);
+
+            const now = new Date().toISOString();
+            const updatedSession: PromptSession = {
+                ...currentSession,
+                currentLyrics: result.lyrics,
+                updatedAt: now,
+            };
+
+            setChatMessages((prev) => [...prev, { role: "ai", content: "Lyrics remixed." }]);
+            await saveSession(updatedSession);
+        } catch (error) {
+            console.error("Lyrics remix failed:", error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix lyrics"}.` },
+            ]);
+        } finally {
+            setGeneratingAction('none');
+        }
+    }, [isGenerating, currentSession, saveSession]);
+
     useEffect(() => {
         loadHistory();
         loadModel();
@@ -479,7 +537,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             handleRemixGenre,
             handleRemixMood,
             handleRemixStyleTags,
-            handleRemixRecording
+            handleRemixRecording,
+            handleRemixTitle,
+            handleRemixLyrics
         }}>
             {children}
         </AppContext.Provider>

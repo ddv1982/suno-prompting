@@ -467,4 +467,22 @@ export class AIEngine {
     const descriptors = selectRecordingDescriptors(3);
     return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
   }
+
+  async remixTitle(currentPrompt: string, originalInput: string): Promise<{ title: string }> {
+    const genre = extractGenreFromMaxModePrompt(currentPrompt);
+    const moodMatch = currentPrompt.match(/^mood:\s*"?([^"\n]+)/mi) || currentPrompt.match(/^Mood:\s*([^\n]+)/mi);
+    const mood = moodMatch?.[1]?.trim() || 'emotional';
+    
+    const result = await this.generateTitle(originalInput, genre, mood);
+    return { title: result.title };
+  }
+
+  async remixLyrics(currentPrompt: string, originalInput: string): Promise<{ lyrics: string }> {
+    const genre = extractGenreFromMaxModePrompt(currentPrompt);
+    const moodMatch = currentPrompt.match(/^mood:\s*"?([^"\n]+)/mi) || currentPrompt.match(/^Mood:\s*([^\n]+)/mi);
+    const mood = moodMatch?.[1]?.trim() || 'emotional';
+    
+    const result = await this.generateLyrics(originalInput, genre, mood);
+    return { lyrics: result.lyrics };
+  }
 }
