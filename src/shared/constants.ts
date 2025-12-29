@@ -30,7 +30,7 @@ export const APP_CONSTANTS = {
             ],
             anthropic: [
                 { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5' },
-                { id: 'claude-haiku-4-5-20250929', name: 'Claude Haiku 4.5' },
+                { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5' },
             ],
         },
     }
