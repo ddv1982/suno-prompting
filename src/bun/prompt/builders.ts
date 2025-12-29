@@ -13,8 +13,6 @@ import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 
-export const LOCKED_PLACEHOLDER = '{{LOCKED_PHRASE}}';
-
 export function buildSystemPrompt(maxChars: number, useSunoTags: boolean): string {
   const songStructure = useSunoTags ? `
 OUTPUT FORMAT (follow this structure exactly):
@@ -45,7 +43,6 @@ CRITICAL RULES:
 2. Use technical guidance as creative COLOR, blending it naturally with the story
 3. NEVER repeat words or phrases - each significant word should appear only ONCE
 4. Create a cohesive, non-redundant prompt that flows naturally
-5. If ${LOCKED_PLACEHOLDER} appears in the input, include it EXACTLY ONCE in your output - never modify, omit, or paraphrase it
 ${songStructure}
 STRICT CONSTRAINTS:
 - Output MUST be under ${maxChars} characters.
@@ -54,19 +51,14 @@ STRICT CONSTRAINTS:
 
 export function buildContextualPrompt(
   description: string,
-  selection: ModeSelection,
-  lockedPhrase?: string
+  selection: ModeSelection
 ): string {
   const rhythmic = detectRhythmic(description);
   const { found: userInstruments } = extractInstruments(description);
 
-  const descriptionWithLocked = lockedPhrase
-    ? `${description}\n\nLOCKED PHRASE (include exactly as-is): ${LOCKED_PLACEHOLDER}`
-    : description;
-
   const parts = [
     `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
-    descriptionWithLocked,
+    description,
   ];
 
   const hasGuidance =
@@ -111,7 +103,6 @@ CRITICAL RULES:
 4. Keep each field on its own line
 5. Instruments should include vocal character (e.g., "BARITONE singer, vocal grit, emotional phrasing")
 6. Style tags describe recording character, NOT music style
-7. If ${LOCKED_PLACEHOLDER} appears in the input, include it in the instruments or style tags field
 
 STYLE TAGS EXAMPLES (use these types of descriptors):
 - Recording: "tape recorder, close-up, raw performance texture, handheld device realism"
@@ -127,19 +118,14 @@ STRICT CONSTRAINTS:
 // Max Mode contextual prompt builder
 export function buildMaxModeContextualPrompt(
   description: string,
-  selection: ModeSelection,
-  lockedPhrase?: string
+  selection: ModeSelection
 ): string {
   const { found: userInstruments } = extractInstruments(description);
   const detectedGenre = selection.genre || 'acoustic';
 
-  const descriptionWithLocked = lockedPhrase
-    ? `${description}\n\nLOCKED PHRASE (include in output exactly as-is): ${LOCKED_PLACEHOLDER}`
-    : description;
-
   const parts = [
     `USER'S SONG CONCEPT:`,
-    descriptionWithLocked,
+    description,
     '',
     'DETECTED CONTEXT:',
     `Genre: ${detectedGenre}`,
@@ -204,8 +190,6 @@ OUTPUT FORMAT - Return valid JSON:
   "title": "<a short, evocative 1-5 word song title that matches the mood and genre>"
 }
 
-CRITICAL: If ${LOCKED_PLACEHOLDER} appears in the input, it MUST appear exactly once in the "prompt" field - do not modify, omit, or paraphrase it.
-
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
 }
 
@@ -240,8 +224,6 @@ LYRICS REQUIREMENTS:
 - Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
 - Lyrics should be evocative, poetic, and emotionally resonant
 - Match the genre's typical lyrical style
-
-CRITICAL: If ${LOCKED_PLACEHOLDER} appears in the input, it MUST appear exactly once in the "prompt" field - do not modify, omit, or paraphrase it.
 
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
 }

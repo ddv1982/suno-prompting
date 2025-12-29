@@ -14,8 +14,8 @@ import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo, AppConfig, AIProvider, APIKeys } from '@shared/types';
-import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
-import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
+import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt } from '@bun/prompt/builders';
+import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -274,8 +274,8 @@ export class AIEngine {
   async generateInitial(description: string, lockedPhrase?: string): Promise<GenerationResult> {
     const selection = await selectModes(description, this.getModel());
     const userPrompt = this.maxMode
-      ? buildMaxModeContextualPrompt(description, selection, lockedPhrase)
-      : buildContextualPrompt(description, selection, lockedPhrase);
+      ? buildMaxModeContextualPrompt(description, selection)
+      : buildContextualPrompt(description, selection);
     
     // Use combined prompt to generate style + title (+ lyrics if enabled) in one call
     const systemPrompt = this.lyricsMode
@@ -309,10 +309,6 @@ export class AIEngine {
 
     // Post-process the prompt
     let promptText = await this.postProcess(parsed.prompt);
-    
-    if (lockedPhrase) {
-      promptText = swapLockedPhraseOut(promptText, lockedPhrase);
-    }
 
     // Extract genre for post-processing
     const genre = extractGenreFromMaxModePrompt(promptText);
@@ -323,6 +319,11 @@ export class AIEngine {
     // Inject style tags directly (bypass LLM) when in max mode
     if (this.maxMode) {
       promptText = injectStyleTags(promptText, genre);
+    }
+
+    // Inject locked phrase directly (bypass LLM) into instruments field
+    if (lockedPhrase) {
+      promptText = injectLockedPhrase(promptText, lockedPhrase, this.maxMode);
     }
 
     const result: GenerationResult = {
@@ -355,15 +356,16 @@ export class AIEngine {
       })
     );
 
-    if (lockedPhrase) {
-      result.text = swapLockedPhraseOut(result.text, lockedPhrase);
-    }
-
     const genre = extractGenreFromMaxModePrompt(result.text);
     result.text = injectBpm(result.text, genre);
     
     if (this.maxMode) {
       result.text = injectStyleTags(result.text, genre);
+    }
+
+    // Inject locked phrase directly (bypass LLM) into instruments field
+    if (lockedPhrase) {
+      result.text = injectLockedPhrase(result.text, lockedPhrase, this.maxMode);
     }
 
     const mood = extractMoodFromPrompt(result.text);
@@ -439,11 +441,11 @@ export class AIEngine {
 
   async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
-    const promptForLLM = lockedPhrase ? swapLockedPhraseIn(currentPrompt, lockedPhrase) : currentPrompt;
-    const feedbackWithLocked = lockedPhrase
-      ? `${feedback}\n\nLOCKED PHRASE (must preserve exactly as-is in output): ${LOCKED_PLACEHOLDER}`
-      : feedback;
-    const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedbackWithLocked}`;
+    // Remove locked phrase from prompt before sending to LLM (will re-inject after)
+    const promptForLLM = lockedPhrase 
+      ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
+      : currentPrompt;
+    const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedback}`;
 
     const result = await this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
       generateText({
@@ -451,15 +453,16 @@ export class AIEngine {
         system: systemPrompt,
         messages: [
           { role: 'assistant', content: promptForLLM },
-          { role: 'user', content: feedbackWithLocked },
+          { role: 'user', content: feedback },
         ],
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       })
     );
 
+    // Re-inject locked phrase directly (bypass LLM)
     if (lockedPhrase) {
-      result.text = swapLockedPhraseOut(result.text, lockedPhrase);
+      result.text = injectLockedPhrase(result.text, lockedPhrase, this.maxMode);
     }
 
     return result;

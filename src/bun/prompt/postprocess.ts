@@ -1,18 +1,33 @@
-import { LOCKED_PLACEHOLDER } from './builders';
-
 export function isValidLockedPhrase(phrase: string): boolean {
   if (!phrase) return true;
   return !phrase.includes('{{') && !phrase.includes('}}');
 }
 
-export function swapLockedPhraseIn(text: string, lockedPhrase: string): string {
-  if (!lockedPhrase) return text;
-  return text.replaceAll(lockedPhrase, LOCKED_PLACEHOLDER);
-}
-
-export function swapLockedPhraseOut(text: string, lockedPhrase: string): string {
-  if (!lockedPhrase) return text;
-  return text.replaceAll(LOCKED_PLACEHOLDER, lockedPhrase);
+export function injectLockedPhrase(prompt: string, lockedPhrase: string, maxMode: boolean): string {
+  if (!lockedPhrase) return prompt;
+  
+  if (maxMode) {
+    // Inject into instruments field (max mode format: instruments: "...")
+    const match = prompt.match(/^(instruments:\s*")([^"]*)/mi);
+    if (match) {
+      return prompt.replace(
+        /^(instruments:\s*")([^"]*)/mi,
+        `$1$2, ${lockedPhrase}`
+      );
+    }
+  } else {
+    // Inject into Instruments line (normal mode format: Instruments: ...)
+    const match = prompt.match(/^(Instruments:\s*)(.+)$/mi);
+    if (match) {
+      return prompt.replace(
+        /^(Instruments:\s*)(.+)$/mi,
+        `$1$2, ${lockedPhrase}`
+      );
+    }
+  }
+  
+  // Fallback: append to end if no instruments field found
+  return `${prompt}\n${lockedPhrase}`;
 }
 
 export const LEAKED_META_SUBSTRINGS = [

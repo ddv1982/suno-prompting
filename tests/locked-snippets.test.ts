@@ -1,105 +1,77 @@
 import { expect, test, describe } from "bun:test";
-import { LOCKED_PLACEHOLDER } from "@bun/prompt/builders";
 import {
-  swapLockedPhraseIn,
-  swapLockedPhraseOut,
-  truncateToLimit,
-  stripLeakedMetaLines,
+  injectLockedPhrase,
   isValidLockedPhrase,
 } from "@bun/prompt/postprocess";
 import { validateLockedPhrase } from "@shared/validation";
 import { APP_CONSTANTS } from "@shared/constants";
 
-describe("locked phrase placeholder", () => {
-  const testPhrase = "A beautiful electric guitar lead building in emotion";
-
-  describe("swapLockedPhraseIn", () => {
-    test("replaces locked phrase with placeholder", () => {
-      const text = `[VERSE] ${testPhrase} with soft piano.`;
-      const result = swapLockedPhraseIn(text, testPhrase);
-      expect(result).toBe(`[VERSE] ${LOCKED_PLACEHOLDER} with soft piano.`);
-      expect(result).not.toContain(testPhrase);
+describe("locked phrase", () => {
+  describe("injectLockedPhrase", () => {
+    test("injects into max mode instruments field", () => {
+      const prompt = 'instruments: "piano, guitar"';
+      const result = injectLockedPhrase(prompt, "my locked phrase", true);
+      expect(result).toBe('instruments: "piano, guitar, my locked phrase"');
     });
 
-    test("returns original text when phrase is empty", () => {
-      const text = "Some prompt text";
-      expect(swapLockedPhraseIn(text, "")).toBe(text);
+    test("injects into normal mode Instruments line", () => {
+      const prompt = "Instruments: piano, guitar";
+      const result = injectLockedPhrase(prompt, "my locked phrase", false);
+      expect(result).toBe("Instruments: piano, guitar, my locked phrase");
     });
 
-    test("returns original text when phrase not found", () => {
-      const text = "Some prompt text";
-      expect(swapLockedPhraseIn(text, "not found")).toBe(text);
-    });
-  });
-
-  describe("swapLockedPhraseOut", () => {
-    test("replaces placeholder with locked phrase", () => {
-      const text = `[VERSE] ${LOCKED_PLACEHOLDER} with soft piano.`;
-      const result = swapLockedPhraseOut(text, testPhrase);
-      expect(result).toBe(`[VERSE] ${testPhrase} with soft piano.`);
-      expect(result).not.toContain(LOCKED_PLACEHOLDER);
+    test("returns original prompt when no locked phrase", () => {
+      const prompt = 'instruments: "piano"';
+      expect(injectLockedPhrase(prompt, "", true)).toBe(prompt);
     });
 
-    test("returns original text when phrase is empty", () => {
-      const text = `Some ${LOCKED_PLACEHOLDER} text`;
-      expect(swapLockedPhraseOut(text, "")).toBe(text);
+    test("appends to end if no instruments field found in max mode", () => {
+      const prompt = 'genre: "jazz"';
+      const result = injectLockedPhrase(prompt, "my phrase", true);
+      expect(result).toBe('genre: "jazz"\nmy phrase');
     });
 
-    test("preserves typos and unconventional text exactly", () => {
-      const phraseWithTypo = "buildling intensity supported by beautful melody";
-      const text = `[CHORUS] ${LOCKED_PLACEHOLDER} rising.`;
-      const result = swapLockedPhraseOut(text, phraseWithTypo);
-      expect(result).toContain("buildling");
-      expect(result).toContain("beautful");
-    });
-  });
-
-  describe("placeholder survives post-processing", () => {
-    test("placeholder survives truncation", () => {
-      const textWithPlaceholder = `[Intro] Some text ${LOCKED_PLACEHOLDER} more text at the end for padding to make it longer`;
-      const truncated = truncateToLimit(textWithPlaceholder, 100);
-      expect(truncated).toContain(LOCKED_PLACEHOLDER);
-    });
-
-    test("placeholder survives meta stripping", () => {
-      const textWithPlaceholder = `Remove word repetition\n[VERSE] ${LOCKED_PLACEHOLDER} with emotion.`;
-      const stripped = stripLeakedMetaLines(textWithPlaceholder);
-      expect(stripped).toContain(LOCKED_PLACEHOLDER);
-      expect(stripped).not.toContain("Remove word repetition");
-    });
-  });
-
-  describe("round-trip preservation", () => {
-    test("swap in and out preserves original text exactly", () => {
-      const originalPrompt = `[VERSE] ${testPhrase} with soft piano accompaniment.`;
-      const swappedIn = swapLockedPhraseIn(originalPrompt, testPhrase);
-      const swappedOut = swapLockedPhraseOut(swappedIn, testPhrase);
-      expect(swappedOut).toBe(originalPrompt);
+    test("appends to end if no instruments field found in normal mode", () => {
+      const prompt = "Genre: jazz";
+      const result = injectLockedPhrase(prompt, "my phrase", false);
+      expect(result).toBe("Genre: jazz\nmy phrase");
     });
 
     test("preserves special characters in locked phrase", () => {
-      const specialPhrase = "Guitar (electric) & bass - building intensity!";
-      const originalPrompt = `[VERSE] ${specialPhrase} more content.`;
-      const swappedIn = swapLockedPhraseIn(originalPrompt, specialPhrase);
-      const swappedOut = swapLockedPhraseOut(swappedIn, specialPhrase);
-      expect(swappedOut).toBe(originalPrompt);
-    });
-  });
-
-  describe("replaceAll behavior", () => {
-    test("replaces all occurrences of locked phrase", () => {
-      const phrase = "repeating melody";
-      const text = `[VERSE] ${phrase} [CHORUS] ${phrase} [OUTRO] ${phrase}`;
-      const result = swapLockedPhraseIn(text, phrase);
-      const occurrences = (result.match(new RegExp(LOCKED_PLACEHOLDER, 'g')) || []).length;
-      expect(occurrences).toBe(3);
+      const phrase = "Guitar (electric) & bass - building intensity!";
+      const prompt = 'instruments: "piano"';
+      const result = injectLockedPhrase(prompt, phrase, true);
+      expect(result).toContain(phrase);
     });
 
-    test("restores all placeholder occurrences", () => {
-      const phrase = "test phrase";
-      const text = `${LOCKED_PLACEHOLDER} and ${LOCKED_PLACEHOLDER}`;
-      const result = swapLockedPhraseOut(text, phrase);
-      expect(result).toBe(`${phrase} and ${phrase}`);
+    test("handles multiline max mode prompt", () => {
+      const prompt = `genre: "jazz"
+bpm: "120"
+instruments: "piano, drums"
+style tags: "warm, intimate"`;
+      const result = injectLockedPhrase(prompt, "my phrase", true);
+      expect(result).toContain('instruments: "piano, drums, my phrase"');
+      expect(result).toContain('genre: "jazz"');
+      expect(result).toContain('style tags: "warm, intimate"');
+    });
+
+    test("handles multiline normal mode prompt", () => {
+      const prompt = `[Emotional, Jazz, Key: C Major]
+
+Genre: jazz
+BPM: 120
+Instruments: piano, drums
+Mood: warm, intimate`;
+      const result = injectLockedPhrase(prompt, "my phrase", false);
+      expect(result).toContain("Instruments: piano, drums, my phrase");
+      expect(result).toContain("Genre: jazz");
+      expect(result).toContain("Mood: warm, intimate");
+    });
+
+    test("is case-insensitive for field matching", () => {
+      const prompt = 'INSTRUMENTS: "piano"';
+      const result = injectLockedPhrase(prompt, "phrase", true);
+      expect(result).toContain("phrase");
     });
   });
 
@@ -120,8 +92,8 @@ describe("locked phrase placeholder", () => {
       expect(isValidLockedPhrase("test }} content")).toBe(false);
     });
 
-    test("returns false for phrases containing placeholder", () => {
-      expect(isValidLockedPhrase(`contains ${LOCKED_PLACEHOLDER}`)).toBe(false);
+    test("returns true for phrases with other special characters", () => {
+      expect(isValidLockedPhrase("Guitar (electric) & bass!")).toBe(true);
     });
   });
 
