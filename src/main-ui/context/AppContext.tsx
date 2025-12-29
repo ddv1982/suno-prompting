@@ -137,13 +137,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const handleSetLyricsMode = useCallback(async (mode: boolean) => {
+        const previousMode = lyricsMode;
+        setLyricsMode(mode); // Optimistic update
         try {
             await api.setLyricsMode(mode);
-            setLyricsMode(mode);
         } catch (error) {
             console.error("Failed to set lyricsMode", error);
+            setLyricsMode(previousMode); // Rollback on error
         }
-    }, []);
+    }, [lyricsMode]);
 
     const loadHistory = useCallback(async (retries = 1) => {
         try {

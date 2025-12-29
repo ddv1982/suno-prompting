@@ -219,18 +219,18 @@ export function PromptEditor({
                 Advanced
               </Button>
               {editorMode === 'simple' && (
-                <span className="text-micro text-muted-foreground ml-2">
+                <span className="text-micro text-muted-foreground ml-2 hidden sm:inline">
                   AI auto-selects harmonic style, rhythm, and time signature
                 </span>
               )}
             </div>
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer shrink-0">
               <Music2 className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-tiny text-muted-foreground">Lyrics</span>
               <Switch 
                 checked={lyricsMode} 
                 onCheckedChange={onLyricsModeChange}
-                className="scale-90"
+                size="sm"
               />
             </label>
           </div>
