@@ -22,6 +22,7 @@ interface AppContextType {
     settingsOpen: boolean;
     currentModel: string;
     maxMode: boolean;
+    lyricsMode: boolean;
     debugInfo: DebugInfo | undefined;
     lockedPhrase: string;
     editorMode: EditorMode;
@@ -79,6 +80,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [currentModel, setCurrentModel] = useState("");
     const [maxMode, setMaxMode] = useState(false);
+    const [lyricsMode, setLyricsMode] = useState(false);
     const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
     const [lockedPhrase, setLockedPhrase] = useState("");
     const [editorMode, setEditorMode] = useState<EditorMode>('simple');
@@ -121,6 +123,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setMaxMode(mode);
         } catch (error) {
             console.error("Failed to load maxMode", error);
+        }
+    }, []);
+
+    const loadLyricsMode = useCallback(async () => {
+        try {
+            const mode = await api.getLyricsMode();
+            setLyricsMode(mode);
+        } catch (error) {
+            console.error("Failed to load lyricsMode", error);
         }
     }, []);
 
@@ -398,15 +409,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         loadHistory();
         loadModel();
         loadMaxMode();
-    }, [loadHistory, loadModel, loadMaxMode]);
+        loadLyricsMode();
+    }, [loadHistory, loadModel, loadMaxMode, loadLyricsMode]);
 
     // Reload settings when settings modal closes
     useEffect(() => {
         if (!settingsOpen) {
             loadModel();
             loadMaxMode();
+            loadLyricsMode();
         }
-    }, [settingsOpen, loadModel, loadMaxMode]);
+    }, [settingsOpen, loadModel, loadMaxMode, loadLyricsMode]);
 
     return (
         <AppContext.Provider value={{
@@ -419,6 +432,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             settingsOpen,
             currentModel,
             maxMode,
+            lyricsMode,
             debugInfo,
             lockedPhrase,
             editorMode,

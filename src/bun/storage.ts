@@ -12,6 +12,7 @@ const DEFAULT_CONFIG: AppConfig = {
     useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS,
     debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
     maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
+    lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
 };
 
 export class StorageManager {
@@ -88,6 +89,7 @@ export class StorageManager {
                 useSunoTags: config.useSunoTags ?? DEFAULT_CONFIG.useSunoTags,
                 debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
                 maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
+                lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
             };
         } catch (error) {
             console.error('Failed to read config:', error);

@@ -91,11 +91,11 @@ export const api = {
         await rpc.request.setDebugMode({ debugMode });
     },
 
-    async getAllSettings(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean }> {
+    async getAllSettings(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean; lyricsMode: boolean }> {
         return await rpc.request.getAllSettings({});
     },
 
-    async saveAllSettings(settings: { apiKey: string; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean }): Promise<void> {
+    async saveAllSettings(settings: { apiKey: string; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean; lyricsMode: boolean }): Promise<void> {
         await rpc.request.saveAllSettings(settings);
     },
 
@@ -106,5 +106,14 @@ export const api = {
 
     async setMaxMode(maxMode: boolean): Promise<void> {
         await rpc.request.setMaxMode({ maxMode });
+    },
+
+    async getLyricsMode(): Promise<boolean> {
+        const { lyricsMode } = await rpc.request.getLyricsMode({});
+        return lyricsMode;
+    },
+
+    async setLyricsMode(lyricsMode: boolean): Promise<void> {
+        await rpc.request.setLyricsMode({ lyricsMode });
     }
 };

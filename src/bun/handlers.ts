@@ -134,17 +134,19 @@ export function createHandlers(
                 model: config.model,
                 useSunoTags: config.useSunoTags,
                 debugMode: config.debugMode,
-                maxMode: config.maxMode
+                maxMode: config.maxMode,
+                lyricsMode: config.lyricsMode
             };
         },
-        saveAllSettings: async ({ apiKey, model, useSunoTags, debugMode, maxMode }) => {
+        saveAllSettings: async ({ apiKey, model, useSunoTags, debugMode, maxMode, lyricsMode }) => {
             log.info('saveAllSettings');
-            await storage.saveConfig({ apiKey, model, useSunoTags, debugMode, maxMode });
+            await storage.saveConfig({ apiKey, model, useSunoTags, debugMode, maxMode, lyricsMode });
             aiEngine.setApiKey(apiKey);
             aiEngine.setModel(model);
             aiEngine.setUseSunoTags(useSunoTags);
             aiEngine.setDebugMode(debugMode);
             aiEngine.setMaxMode(maxMode);
+            aiEngine.setLyricsMode(lyricsMode);
             return { success: true };
         },
         getMaxMode: async () => {
@@ -156,6 +158,17 @@ export function createHandlers(
             log.info('setMaxMode', { maxMode });
             await storage.saveConfig({ maxMode });
             aiEngine.setMaxMode(maxMode);
+            return { success: true };
+        },
+        getLyricsMode: async () => {
+            log.info('getLyricsMode');
+            const config = await storage.getConfig();
+            return { lyricsMode: config.lyricsMode };
+        },
+        setLyricsMode: async ({ lyricsMode }) => {
+            log.info('setLyricsMode', { lyricsMode });
+            await storage.saveConfig({ lyricsMode });
+            aiEngine.setLyricsMode(lyricsMode);
             return { success: true };
         }
     };

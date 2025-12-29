@@ -17,6 +17,7 @@ import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { injectBpm } from '@bun/prompt/bpm';
+import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt, formatFullOutput } from '@bun/prompt/lyrics-builder';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
@@ -87,6 +88,7 @@ export class AIEngine {
   private useSunoTags: boolean = APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS;
   private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
+  private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
 
   setApiKey(key: string) {
     this.apiKey = key;
@@ -108,12 +110,17 @@ export class AIEngine {
     this.maxMode = value;
   }
 
+  setLyricsMode(value: boolean) {
+    this.lyricsMode = value;
+  }
+
   initialize(config: Partial<AppConfig>) {
     if (config.apiKey) this.apiKey = config.apiKey;
     if (config.model) this.model = config.model;
     if (config.useSunoTags !== undefined) this.useSunoTags = config.useSunoTags;
     if (config.debugMode !== undefined) this.debugMode = config.debugMode;
     if (config.maxMode !== undefined) this.maxMode = config.maxMode;
+    if (config.lyricsMode !== undefined) this.lyricsMode = config.lyricsMode;
   }
 
   private getGroqModel() {
@@ -273,7 +280,65 @@ export class AIEngine {
       result.text = injectStyleTags(result.text, genre);
     }
 
+    // If lyrics mode is enabled, generate title and lyrics
+    if (this.lyricsMode) {
+      const stylePrompt = result.text;
+      
+      // Extract mood from the generated prompt
+      const moodMatch = stylePrompt.match(/^mood:\s*"?([^"\n]+)/mi) || stylePrompt.match(/^Mood:\s*([^\n]+)/mi);
+      const mood = moodMatch?.[1]?.trim() || 'emotional';
+      
+      // Generate title
+      const title = await this.generateTitle(description, genre, mood);
+      
+      // Generate lyrics
+      const lyrics = await this.generateLyrics(description, genre, mood);
+      
+      // Format as 3-section output
+      result.text = formatFullOutput(title, stylePrompt, lyrics);
+    }
+
     return result;
+  }
+
+  private async generateTitle(description: string, genre: string, mood: string): Promise<string> {
+    try {
+      const systemPrompt = buildTitleSystemPrompt();
+      const userPrompt = buildTitleUserPrompt(description, genre, mood);
+      
+      const { text } = await generateText({
+        model: this.getGroqModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: 3,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+      
+      return text.trim().replace(/^["']|["']$/g, ''); // Remove any quotes
+    } catch (error) {
+      log.warn('generateTitle:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+      return 'Untitled';
+    }
+  }
+
+  private async generateLyrics(description: string, genre: string, mood: string): Promise<string> {
+    try {
+      const systemPrompt = buildLyricsSystemPrompt(this.maxMode);
+      const userPrompt = buildLyricsUserPrompt(description, genre, mood);
+      
+      const { text } = await generateText({
+        model: this.getGroqModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: 3,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+      
+      return text.trim();
+    } catch (error) {
+      log.warn('generateLyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+      return '[VERSE]\nLyrics generation failed...';
+    }
   }
 
   async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {

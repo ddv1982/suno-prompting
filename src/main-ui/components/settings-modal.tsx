@@ -25,6 +25,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
   const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
+  const [lyricsMode, setLyricsMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,6 +42,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           setUseSunoTags(settings.useSunoTags);
           setDebugMode(settings.debugMode);
           setMaxMode(settings.maxMode);
+          setLyricsMode(settings.lyricsMode);
         })
         .catch((err) => {
           console.error("Failed to fetch settings", err);
@@ -59,7 +61,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         model,
         useSunoTags,
         debugMode,
-        maxMode
+        maxMode,
+        lyricsMode
       });
       onClose();
     } catch (e) {
@@ -153,6 +156,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               Uses community-discovered prompt format for higher quality output.
               Best for acoustic, country, rock, and organic genres.
               Not recommended for electronic music.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <SectionLabel className="flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Lyrics Mode
+            </SectionLabel>
+            <label className="flex items-center gap-3 cursor-pointer py-1">
+              <Switch checked={lyricsMode} onCheckedChange={setLyricsMode} />
+              <span className="text-sm">Generate lyrics with prompts</span>
+            </label>
+            <p className="text-tiny text-muted-foreground">
+              When enabled, generates a song title, style prompt, and lyrics in three sections.
+              {maxMode && <span className="block text-amber-500 mt-1">In Max Mode, lyrics start with ///*****///</span>}
             </p>
           </div>
 

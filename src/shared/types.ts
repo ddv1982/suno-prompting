@@ -46,7 +46,15 @@ export type DebugInfo = {
 
 // Request/Response type definitions for RPC
 export type GenerateInitialParams = { description: string; lockedPhrase?: string };
-export type GenerateInitialResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
+export type GenerateInitialResponse = { 
+    prompt: string; 
+    title?: string;
+    style?: string;
+    lyrics?: string;
+    versionId: string; 
+    validation: ValidationResult; 
+    debugInfo?: DebugInfo;
+};
 
 export type RefinePromptParams = { currentPrompt: string; feedback: string; lockedPhrase?: string };
 export type RefinePromptResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
@@ -74,6 +82,7 @@ export type SaveAllSettingsParams = {
     useSunoTags: boolean;
     debugMode: boolean;
     maxMode: boolean;
+    lyricsMode: boolean;
 };
 
 export type GetAllSettingsResponse = {
@@ -82,6 +91,7 @@ export type GetAllSettingsResponse = {
     useSunoTags: boolean;
     debugMode: boolean;
     maxMode: boolean;
+    lyricsMode: boolean;
 };
 
 export type GetHistoryResponse = { sessions: PromptSession[] };
@@ -91,6 +101,7 @@ export type SetApiKeyParams = { apiKey: string };
 export type SetModelParams = { model: string };
 export type SetSunoTagsParams = { useSunoTags: boolean };
 export type SetMaxModeParams = { maxMode: boolean };
+export type SetLyricsModeParams = { lyricsMode: boolean };
 
 export type AppConfig = {
     apiKey: string | null;
@@ -98,6 +109,7 @@ export type AppConfig = {
     useSunoTags: boolean;
     debugMode: boolean;
     maxMode: boolean;
+    lyricsMode: boolean;
 };
 
 // Handler function types for backend implementation
@@ -122,6 +134,8 @@ export type RPCHandlers = {
     setDebugMode: (params: SetDebugModeParams) => Promise<{ success: boolean }>;
     getMaxMode: (params: Record<string, never>) => Promise<{ maxMode: boolean }>;
     setMaxMode: (params: SetMaxModeParams) => Promise<{ success: boolean }>;
+    getLyricsMode: (params: Record<string, never>) => Promise<{ lyricsMode: boolean }>;
+    setLyricsMode: (params: SetLyricsModeParams) => Promise<{ success: boolean }>;
     getAllSettings: (params: Record<string, never>) => Promise<GetAllSettingsResponse>;
     saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
 };
@@ -207,6 +221,14 @@ export type SunoRPCSchema = {
             };
             setMaxMode: {
                 params: SetMaxModeParams;
+                response: { success: boolean };
+            };
+            getLyricsMode: {
+                params: Record<string, never>;
+                response: { lyricsMode: boolean };
+            };
+            setLyricsMode: {
+                params: SetLyricsModeParams;
                 response: { success: boolean };
             };
             getAllSettings: {
