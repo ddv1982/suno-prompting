@@ -1,6 +1,15 @@
 import { type RPCSchema } from 'electrobun';
 import { type ValidationResult } from '@shared/validation';
 
+// AI Provider types
+export type AIProvider = 'groq' | 'openai' | 'anthropic';
+
+export type APIKeys = {
+    groq: string | null;
+    openai: string | null;
+    anthropic: string | null;
+};
+
 // Editor mode types
 export type EditorMode = 'simple' | 'advanced';
 
@@ -95,7 +104,8 @@ export type RemixLyricsResponse = { lyrics: string };
 export type SetDebugModeParams = { debugMode: boolean };
 
 export type SaveAllSettingsParams = {
-    apiKey: string;
+    provider: AIProvider;
+    apiKeys: APIKeys;
     model: string;
     useSunoTags: boolean;
     debugMode: boolean;
@@ -104,7 +114,8 @@ export type SaveAllSettingsParams = {
 };
 
 export type GetAllSettingsResponse = {
-    apiKey: string | null;
+    provider: AIProvider;
+    apiKeys: APIKeys;
     model: string;
     useSunoTags: boolean;
     debugMode: boolean;
@@ -122,7 +133,8 @@ export type SetMaxModeParams = { maxMode: boolean };
 export type SetLyricsModeParams = { lyricsMode: boolean };
 
 export type AppConfig = {
-    apiKey: string | null;
+    provider: AIProvider;
+    apiKeys: APIKeys;
     model: string;
     useSunoTags: boolean;
     debugMode: boolean;

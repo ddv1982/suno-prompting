@@ -1,5 +1,7 @@
 import { createGroq } from '@ai-sdk/groq';
-import { generateText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { generateText, type LanguageModel } from 'ai';
 import {
   selectInstrumentsForGenre,
   GENRE_REGISTRY,
@@ -11,7 +13,7 @@ import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
-import type { DebugInfo, AppConfig } from '@shared/types';
+import type { DebugInfo, AppConfig, AIProvider, APIKeys } from '@shared/types';
 import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
@@ -90,15 +92,20 @@ function formatRequestBody(body: unknown): string {
 // truncateToLimit now lives in @bun/prompt/postprocess
 
 export class AIEngine {
-  private apiKey: string | null = null;
+  private provider: AIProvider = APP_CONSTANTS.AI.DEFAULT_PROVIDER;
+  private apiKeys: APIKeys = { groq: null, openai: null, anthropic: null };
   private model: string = APP_CONSTANTS.AI.DEFAULT_MODEL;
   private useSunoTags: boolean = APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS;
   private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
   private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
 
-  setApiKey(key: string) {
-    this.apiKey = key;
+  setProvider(provider: AIProvider) {
+    this.provider = provider;
+  }
+
+  setApiKey(provider: AIProvider, key: string) {
+    this.apiKeys[provider] = key;
   }
 
   setModel(model: string) {
@@ -122,7 +129,8 @@ export class AIEngine {
   }
 
   initialize(config: Partial<AppConfig>) {
-    if (config.apiKey) this.apiKey = config.apiKey;
+    if (config.provider) this.provider = config.provider;
+    if (config.apiKeys) this.apiKeys = { ...this.apiKeys, ...config.apiKeys };
     if (config.model) this.model = config.model;
     if (config.useSunoTags !== undefined) this.useSunoTags = config.useSunoTags;
     if (config.debugMode !== undefined) this.debugMode = config.debugMode;
@@ -130,8 +138,16 @@ export class AIEngine {
     if (config.lyricsMode !== undefined) this.lyricsMode = config.lyricsMode;
   }
 
-  private getGroqModel() {
-    return createGroq({ apiKey: this.apiKey || process.env.GROQ_API_KEY })(this.model);
+  private getModel(): LanguageModel {
+    switch (this.provider) {
+      case 'openai':
+        return createOpenAI({ apiKey: this.apiKeys.openai || process.env.OPENAI_API_KEY })(this.model) as unknown as LanguageModel;
+      case 'anthropic':
+        return createAnthropic({ apiKey: this.apiKeys.anthropic || process.env.ANTHROPIC_API_KEY })(this.model) as unknown as LanguageModel;
+      case 'groq':
+      default:
+        return createGroq({ apiKey: this.apiKeys.groq || process.env.GROQ_API_KEY })(this.model) as LanguageModel;
+    }
   }
 
   private get systemPrompt(): string {
@@ -154,7 +170,7 @@ export class AIEngine {
   private async condenseWithDedup(text: string, repeatedWords: string[]): Promise<string> {
     try {
       const { text: condensed } = await generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: [
           'Rewrite the given music prompt to remove word repetition while preserving meaning and musical quality.',
           'Return ONLY the rewritten prompt text.',
@@ -177,7 +193,7 @@ export class AIEngine {
     
     try {
       const { text: condensed } = await generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: [
           `Rewrite the given music prompt to be under ${targetChars} characters while preserving musical quality and key details.`,
           'Return ONLY the rewritten prompt text.',
@@ -208,7 +224,7 @@ export class AIEngine {
   private async rewriteWithoutMeta(text: string): Promise<string> {
     try {
       const { text: rewritten } = await generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: [
           'Rewrite the given music prompt text.',
           'Remove any meta-instructions or assistant chatter.',
@@ -256,7 +272,7 @@ export class AIEngine {
   }
 
   async generateInitial(description: string, lockedPhrase?: string): Promise<GenerationResult> {
-    const selection = await selectModes(description, this.getGroqModel());
+    const selection = await selectModes(description, this.getModel());
     const userPrompt = this.maxMode
       ? buildMaxModeContextualPrompt(description, selection, lockedPhrase)
       : buildContextualPrompt(description, selection, lockedPhrase);
@@ -264,7 +280,7 @@ export class AIEngine {
 
     const result = await this.runGeneration('generate prompt', systemPrompt, userPrompt, async () =>
       generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: systemPrompt,
         prompt: userPrompt,
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
@@ -319,7 +335,7 @@ export class AIEngine {
     
     try {
       const { text } = await generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: systemPrompt,
         prompt: userPrompt,
         maxRetries: 3,
@@ -346,7 +362,7 @@ export class AIEngine {
     
     try {
       const { text } = await generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: systemPrompt,
         prompt: userPrompt,
         maxRetries: 3,
@@ -370,7 +386,7 @@ export class AIEngine {
 
     const result = await this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
       generateText({
-        model: this.getGroqModel(),
+        model: this.getModel(),
         system: systemPrompt,
         messages: [
           { role: 'assistant', content: promptForLLM },
@@ -390,7 +406,7 @@ export class AIEngine {
 
   async remixInstruments(currentPrompt: string, originalInput: string): Promise<GenerationResult> {
     // Detect genre from original input
-    const selection = await selectModes(originalInput, this.getGroqModel());
+    const selection = await selectModes(originalInput, this.getModel());
     const genre = selection.genre || 'ambient';
     
     // Generate new instruments from genre pool

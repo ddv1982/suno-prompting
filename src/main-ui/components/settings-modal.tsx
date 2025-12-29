@@ -13,14 +13,19 @@ import { Switch } from "@/components/ui/switch";
 import { SectionLabel } from "@/components/ui/section-label";
 import { api } from "@/services/rpc";
 import { APP_CONSTANTS } from "@shared/constants";
+import type { AIProvider, APIKeys } from "@shared/types";
 
 type SettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
+const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
+const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
+
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
+  const [apiKeys, setApiKeys] = useState<APIKeys>({ groq: null, openai: null, anthropic: null });
   const [model, setModel] = useState("");
   const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
@@ -31,13 +36,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const currentProvider = PROVIDERS.find(p => p.id === provider) || PROVIDERS[0];
+  const availableModels = MODELS_BY_PROVIDER[provider];
+  const currentApiKey = apiKeys[provider] || '';
+
   useEffect(() => {
     if (isOpen) {
       setError(null);
       setLoading(true);
       api.getAllSettings()
         .then((settings) => {
-          setApiKey(settings.apiKey || '');
+          setProvider(settings.provider);
+          setApiKeys(settings.apiKeys);
           setModel(settings.model || APP_CONSTANTS.AI.DEFAULT_MODEL);
           setUseSunoTags(settings.useSunoTags);
           setDebugMode(settings.debugMode);
@@ -52,12 +62,30 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   }, [isOpen]);
 
+  const handleProviderChange = (newProvider: AIProvider) => {
+    setProvider(newProvider);
+    // Auto-select first model for new provider
+    const models = MODELS_BY_PROVIDER[newProvider];
+    if (models.length > 0) {
+      setModel(models[0].id);
+    }
+  };
+
+  const handleApiKeyChange = (value: string) => {
+    setApiKeys(prev => ({ ...prev, [provider]: value || null }));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     try {
       await api.saveAllSettings({
-        apiKey: apiKey.trim(),
+        provider,
+        apiKeys: {
+          groq: apiKeys.groq?.trim() || null,
+          openai: apiKeys.openai?.trim() || null,
+          anthropic: apiKeys.anthropic?.trim() || null,
+        },
         model,
         useSunoTags,
         debugMode,
@@ -84,13 +112,32 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </DialogHeader>
         <div className="py-6 space-y-6">
           <div className="space-y-2">
-            <SectionLabel>Groq API Key</SectionLabel>
+            <SectionLabel>AI Provider</SectionLabel>
+            <select
+              value={provider}
+              onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
+              disabled={loading}
+              className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input glass-control px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {PROVIDERS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-tiny text-muted-foreground">
+              Select your preferred AI provider
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <SectionLabel>{currentProvider.name} API Key</SectionLabel>
             <div className="relative">
               <Input
                 type={showKey ? "text" : "password"}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="gsk_..."
+                value={currentApiKey}
+                onChange={(e) => handleApiKeyChange(e.target.value)}
+                placeholder={currentProvider.keyPlaceholder}
                 className="pr-10 glass-control"
               />
               <button
@@ -102,7 +149,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </button>
             </div>
             <p className="text-tiny text-muted-foreground">
-              Get your key from <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-primary hover:underline">console.groq.com</a>
+              Get your key from <a href={currentProvider.keyUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{currentProvider.keyUrl.replace('https://', '')}</a>
             </p>
             {error && (
               <p className="text-caption text-destructive flex items-center gap-2">
@@ -120,7 +167,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               className="flex h-[var(--height-control-md)] w-full rounded-lg border border-input glass-control px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading && <option value="">Loading...</option>}
-              {APP_CONSTANTS.AI.AVAILABLE_MODELS.map((m) => (
+              {availableModels.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
                 </option>
@@ -181,7 +228,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </SectionLabel>
             <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={debugMode} onCheckedChange={setDebugMode} />
-              <span className="text-sm">Show AI prompts sent to Groq</span>
+              <span className="text-sm">Show AI prompts sent to provider</span>
             </label>
             <p className="text-tiny text-muted-foreground">
               When enabled, displays the system and user prompts sent to the AI model

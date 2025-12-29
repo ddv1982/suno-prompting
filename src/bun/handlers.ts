@@ -114,12 +114,15 @@ export function createHandlers(
         getApiKey: async () => {
             log.info('getApiKey');
             const config = await storage.getConfig();
-            return { apiKey: config.apiKey };
+            // Return the API key for current provider (for backwards compatibility)
+            return { apiKey: config.apiKeys[config.provider] };
         },
         setApiKey: async ({ apiKey }) => {
             log.info('setApiKey');
-            await storage.saveConfig({ apiKey });
-            aiEngine.setApiKey(apiKey);
+            const config = await storage.getConfig();
+            const newApiKeys = { ...config.apiKeys, [config.provider]: apiKey };
+            await storage.saveConfig({ apiKeys: newApiKeys });
+            aiEngine.setApiKey(config.provider, apiKey);
             return { success: true };
         },
         getModel: async () => {
@@ -159,7 +162,8 @@ export function createHandlers(
             log.info('getAllSettings');
             const config = await storage.getConfig();
             return {
-                apiKey: config.apiKey,
+                provider: config.provider,
+                apiKeys: config.apiKeys,
                 model: config.model,
                 useSunoTags: config.useSunoTags,
                 debugMode: config.debugMode,
@@ -167,10 +171,15 @@ export function createHandlers(
                 lyricsMode: config.lyricsMode
             };
         },
-        saveAllSettings: async ({ apiKey, model, useSunoTags, debugMode, maxMode, lyricsMode }) => {
-            log.info('saveAllSettings');
-            await storage.saveConfig({ apiKey, model, useSunoTags, debugMode, maxMode, lyricsMode });
-            aiEngine.setApiKey(apiKey);
+        saveAllSettings: async ({ provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode }) => {
+            log.info('saveAllSettings', { provider });
+            await storage.saveConfig({ provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode });
+            aiEngine.setProvider(provider);
+            for (const p of ['groq', 'openai', 'anthropic'] as const) {
+                if (apiKeys[p]) {
+                    aiEngine.setApiKey(p, apiKeys[p]!);
+                }
+            }
             aiEngine.setModel(model);
             aiEngine.setUseSunoTags(useSunoTags);
             aiEngine.setDebugMode(debugMode);

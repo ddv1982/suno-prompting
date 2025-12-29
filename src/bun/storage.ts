@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { homedir } from 'os';
 import { mkdir } from 'fs/promises';
-import { type PromptSession, type AppConfig } from '@shared/types';
+import { type PromptSession, type AppConfig, type APIKeys } from '@shared/types';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
 import { encrypt, decrypt } from '@bun/crypto';
 import { APP_CONSTANTS } from '@shared/constants';
@@ -9,8 +9,15 @@ import { createLogger } from '@bun/logger';
 
 const log = createLogger('Storage');
 
+const DEFAULT_API_KEYS: APIKeys = {
+    groq: null,
+    openai: null,
+    anthropic: null,
+};
+
 const DEFAULT_CONFIG: AppConfig = {
-    apiKey: null,
+    provider: APP_CONSTANTS.AI.DEFAULT_PROVIDER,
+    apiKeys: { ...DEFAULT_API_KEYS },
     model: APP_CONSTANTS.AI.DEFAULT_MODEL,
     useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS,
     debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
@@ -75,19 +82,39 @@ export class StorageManager {
         try {
             const file = Bun.file(this.configPath);
             if (!(await file.exists())) {
-                return { ...DEFAULT_CONFIG };
+                return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
             }
             const config = await file.json();
-            if (config.apiKey) {
+            
+            // Handle legacy single apiKey migration
+            if (config.apiKey && !config.apiKeys) {
                 try {
-                    config.apiKey = await decrypt(config.apiKey);
+                    const decryptedKey = await decrypt(config.apiKey);
+                    config.apiKeys = { groq: decryptedKey, openai: null, anthropic: null };
                 } catch (e) {
-                    log.error('getConfig:decryptFailed', { error: e instanceof Error ? e.message : String(e) });
-                    config.apiKey = null;
+                    log.error('getConfig:legacyDecryptFailed', { error: e instanceof Error ? e.message : String(e) });
+                    config.apiKeys = { ...DEFAULT_API_KEYS };
                 }
             }
+            
+            // Decrypt all API keys
+            const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
+            if (config.apiKeys) {
+                for (const provider of ['groq', 'openai', 'anthropic'] as const) {
+                    if (config.apiKeys[provider]) {
+                        try {
+                            apiKeys[provider] = await decrypt(config.apiKeys[provider]);
+                        } catch (e) {
+                            log.error('getConfig:decryptFailed', { provider, error: e instanceof Error ? e.message : String(e) });
+                            apiKeys[provider] = null;
+                        }
+                    }
+                }
+            }
+            
             return {
-                apiKey: config.apiKey ?? DEFAULT_CONFIG.apiKey,
+                provider: config.provider ?? DEFAULT_CONFIG.provider,
+                apiKeys,
                 model: config.model ?? DEFAULT_CONFIG.model,
                 useSunoTags: config.useSunoTags ?? DEFAULT_CONFIG.useSunoTags,
                 debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
@@ -96,7 +123,7 @@ export class StorageManager {
             };
         } catch (error) {
             log.error('getConfig:failed', { error: error instanceof Error ? error.message : String(error) });
-            return { ...DEFAULT_CONFIG };
+            return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
         }
     }
 
@@ -104,9 +131,16 @@ export class StorageManager {
         try {
             const existing = await this.getConfig();
             const toSave = { ...existing, ...config };
-            if (toSave.apiKey) {
-                toSave.apiKey = await encrypt(toSave.apiKey);
+            
+            // Encrypt all API keys
+            const encryptedKeys: APIKeys = { groq: null, openai: null, anthropic: null };
+            for (const provider of ['groq', 'openai', 'anthropic'] as const) {
+                if (toSave.apiKeys[provider]) {
+                    encryptedKeys[provider] = await encrypt(toSave.apiKeys[provider]!);
+                }
             }
+            toSave.apiKeys = encryptedKeys;
+            
             await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
         } catch (error) {
             log.error('saveConfig:failed', { error: error instanceof Error ? error.message : String(error) });

@@ -20,7 +20,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false })),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -46,7 +46,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ apiKey: null, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false })),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -84,15 +84,24 @@ describe("RPC Handlers", () => {
         const mockAiEngine: Pick<AIEngine, 'setApiKey'> = {
             setApiKey: mock()
         };
-        const mockStorage: Pick<StorageManager, 'saveConfig'> = {
-            saveConfig: mock(async () => {})
+        const mockStorage: Pick<StorageManager, 'saveConfig' | 'getConfig'> = {
+            saveConfig: mock(async () => {}),
+            getConfig: mock(async () => ({ 
+                provider: 'groq' as const, 
+                apiKeys: { groq: null, openai: null, anthropic: null },
+                model: APP_CONSTANTS.AI.DEFAULT_MODEL, 
+                useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, 
+                debugMode: false, 
+                maxMode: false, 
+                lyricsMode: false 
+            }))
         };
 
         const handlers = createHandlers(mockAiEngine as AIEngine, mockStorage as StorageManager);
         const result = await handlers.setApiKey({ apiKey: "test-key" });
 
         expect(result.success).toBe(true);
-        expect(mockStorage.saveConfig).toHaveBeenCalledWith({ apiKey: "test-key" });
-        expect(mockAiEngine.setApiKey).toHaveBeenCalledWith("test-key");
+        expect(mockStorage.saveConfig).toHaveBeenCalledWith({ apiKeys: { groq: "test-key", openai: null, anthropic: null } });
+        expect(mockAiEngine.setApiKey).toHaveBeenCalledWith("groq", "test-key");
     });
 });

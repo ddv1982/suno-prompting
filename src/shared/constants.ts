@@ -7,15 +7,30 @@ export const APP_CONSTANTS = {
         MAX_RETRIES: 10,
         MAX_LENGTH_RETRIES: 10,
         TIMEOUT_MS: 30000,
+        DEFAULT_PROVIDER: 'groq' as const,
         DEFAULT_MODEL: 'openai/gpt-oss-120b',
         DEFAULT_USE_SUNO_TAGS: true,
         DEFAULT_DEBUG_MODE: false,
         DEFAULT_MAX_MODE: false,
         DEFAULT_LYRICS_MODE: false,
-        AVAILABLE_MODELS: [
-            { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B' },
-            { id: 'moonshotai/kimi-k2-instruct-0905', name: 'Kimi K2 Instruct' },
-            { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' },
+        PROVIDERS: [
+            { id: 'groq' as const, name: 'Groq', keyPlaceholder: 'gsk_...', keyUrl: 'https://console.groq.com/keys' },
+            { id: 'openai' as const, name: 'OpenAI', keyPlaceholder: 'sk-...', keyUrl: 'https://platform.openai.com/api-keys' },
+            { id: 'anthropic' as const, name: 'Anthropic', keyPlaceholder: 'sk-ant-...', keyUrl: 'https://console.anthropic.com/settings/keys' },
         ],
+        MODELS_BY_PROVIDER: {
+            groq: [
+                { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B' },
+                { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' },
+            ],
+            openai: [
+                { id: 'gpt-5-mini', name: 'GPT-5 Mini' },
+                { id: 'gpt-5', name: 'GPT-5' },
+            ],
+            anthropic: [
+                { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5' },
+                { id: 'claude-haiku-4-5-20250929', name: 'Claude Haiku 4.5' },
+            ],
+        },
     }
 } as const;

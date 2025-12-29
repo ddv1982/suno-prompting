@@ -99,11 +99,11 @@ export const api = {
         await rpc.request.setDebugMode({ debugMode });
     },
 
-    async getAllSettings(): Promise<{ apiKey: string | null; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean; lyricsMode: boolean }> {
+    async getAllSettings(): Promise<BunRequests['getAllSettings']['response']> {
         return await rpc.request.getAllSettings({});
     },
 
-    async saveAllSettings(settings: { apiKey: string; model: string; useSunoTags: boolean; debugMode: boolean; maxMode: boolean; lyricsMode: boolean }): Promise<void> {
+    async saveAllSettings(settings: BunRequests['saveAllSettings']['params']): Promise<void> {
         await rpc.request.saveAllSettings(settings);
     },
 
