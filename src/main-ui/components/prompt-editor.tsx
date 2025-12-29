@@ -10,7 +10,8 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, Bug, Settings2, Lock, MessageSquare } from "lucide-react";
+import { Loader2, Check, Copy, Send, AlertCircle, AlertTriangle, Bug, Settings2, Lock, MessageSquare, Music2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
@@ -44,6 +45,8 @@ type PromptEditorProps = {
   onRemixStyleTags: () => void;
   onRemixRecording: () => void;
   maxMode: boolean;
+  lyricsMode: boolean;
+  onLyricsModeChange: (mode: boolean) => void;
   maxChars?: number;
   currentModel?: string;
   debugInfo?: DebugInfo;
@@ -72,6 +75,8 @@ export function PromptEditor({
   onRemixStyleTags,
   onRemixRecording,
   maxMode,
+  lyricsMode,
+  onLyricsModeChange,
   maxChars = 1000,
   currentModel = "",
   debugInfo,
@@ -194,29 +199,40 @@ export function PromptEditor({
       <div className="border-t bg-muted/10 p-6 shrink-0">
         <div className="max-w-6xl mx-auto w-full space-y-4">
           {/* Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant={editorMode === 'simple' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => onEditorModeChange('simple')}
-              className="font-bold"
-            >
-              Simple
-            </Button>
-            <Button
-              variant={editorMode === 'advanced' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => onEditorModeChange('advanced')}
-              className="font-bold"
-            >
-              <Settings2 className="w-3 h-3" />
-              Advanced
-            </Button>
-            {editorMode === 'simple' && (
-              <span className="text-micro text-muted-foreground ml-2">
-                AI auto-selects harmonic style, rhythm, and time signature
-              </span>
-            )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant={editorMode === 'simple' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => onEditorModeChange('simple')}
+                className="font-bold"
+              >
+                Simple
+              </Button>
+              <Button
+                variant={editorMode === 'advanced' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => onEditorModeChange('advanced')}
+                className="font-bold"
+              >
+                <Settings2 className="w-3 h-3" />
+                Advanced
+              </Button>
+              {editorMode === 'simple' && (
+                <span className="text-micro text-muted-foreground ml-2">
+                  AI auto-selects harmonic style, rhythm, and time signature
+                </span>
+              )}
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Music2 className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-tiny text-muted-foreground">Lyrics</span>
+              <Switch 
+                checked={lyricsMode} 
+                onCheckedChange={onLyricsModeChange}
+                className="scale-90"
+              />
+            </label>
           </div>
 
           {/* Advanced Panel */}
@@ -267,7 +283,10 @@ export function PromptEditor({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20"
-                placeholder="Describe your song, style, mood, or refine the existing prompt"
+                placeholder={lyricsMode 
+                  ? "Describe your song's theme, story, and emotions for title + lyrics generation"
+                  : "Describe your song, style, mood, or refine the existing prompt"
+                }
               />
               <Button
                 onClick={handleSend}

@@ -45,7 +45,9 @@ function App() {
     handleRemixMood,
     handleRemixStyleTags,
     handleRemixRecording,
-    maxMode
+    maxMode,
+    lyricsMode,
+    setLyricsMode
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
@@ -86,6 +88,8 @@ function App() {
               onRemixStyleTags={handleRemixStyleTags}
               onRemixRecording={handleRemixRecording}
               maxMode={maxMode}
+              lyricsMode={lyricsMode}
+              onLyricsModeChange={setLyricsMode}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
               currentModel={currentModel}
               debugInfo={debugInfo}

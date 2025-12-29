@@ -23,6 +23,7 @@ interface AppContextType {
     currentModel: string;
     maxMode: boolean;
     lyricsMode: boolean;
+    setLyricsMode: (mode: boolean) => void;
     debugInfo: DebugInfo | undefined;
     lockedPhrase: string;
     editorMode: EditorMode;
@@ -132,6 +133,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setLyricsMode(mode);
         } catch (error) {
             console.error("Failed to load lyricsMode", error);
+        }
+    }, []);
+
+    const handleSetLyricsMode = useCallback(async (mode: boolean) => {
+        try {
+            await api.setLyricsMode(mode);
+            setLyricsMode(mode);
+        } catch (error) {
+            console.error("Failed to set lyricsMode", error);
         }
     }, []);
 
@@ -433,6 +443,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             currentModel,
             maxMode,
             lyricsMode,
+            setLyricsMode: handleSetLyricsMode,
             debugInfo,
             lockedPhrase,
             editorMode,
