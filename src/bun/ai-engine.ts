@@ -17,7 +17,7 @@ import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { injectBpm } from '@bun/prompt/bpm';
-import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt, isLyricsModeOutput, extractStyleSection, rebuildLyricsModeOutput } from '@bun/prompt/lyrics-builder';
+import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
@@ -360,11 +360,8 @@ export class AIEngine {
   }
 
   async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {
-    const isLyricsMode = isLyricsModeOutput(currentPrompt);
-    const styleSection = extractStyleSection(currentPrompt);
-    
     const systemPrompt = this.systemPrompt;
-    const promptForLLM = lockedPhrase ? swapLockedPhraseIn(styleSection, lockedPhrase) : styleSection;
+    const promptForLLM = lockedPhrase ? swapLockedPhraseIn(currentPrompt, lockedPhrase) : currentPrompt;
     const feedbackWithLocked = lockedPhrase
       ? `${feedback}\n\nLOCKED PHRASE (must preserve exactly as-is in output): ${LOCKED_PLACEHOLDER}`
       : feedback;
@@ -387,37 +384,22 @@ export class AIEngine {
       result.text = swapLockedPhraseOut(result.text, lockedPhrase);
     }
 
-    // Rebuild lyrics mode output with refined style section
-    if (isLyricsMode) {
-      result.text = rebuildLyricsModeOutput(currentPrompt, result.text);
-    }
-
     return result;
   }
 
   async remixInstruments(currentPrompt: string, originalInput: string): Promise<GenerationResult> {
-    const isLyricsMode = isLyricsModeOutput(currentPrompt);
-    const styleSection = extractStyleSection(currentPrompt);
-    
     // Detect genre from original input
     const selection = await selectModes(originalInput, this.getGroqModel());
     const genre = selection.genre || 'ambient';
     
     // Generate new instruments from genre pool
     const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });
-    const newStyle = replaceFieldLine(styleSection, 'Instruments', instruments.join(', '));
-    
-    return { 
-      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
-    };
+    return { text: replaceFieldLine(currentPrompt, 'Instruments', instruments.join(', ')) };
   }
 
   async remixGenre(currentPrompt: string): Promise<GenerationResult> {
-    const isLyricsMode = isLyricsModeOutput(currentPrompt);
-    const styleSection = extractStyleSection(currentPrompt);
-    
     // Extract full genre value (handle both regular and max mode formats)
-    const genreMatch = styleSection.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
+    const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
     const fullGenreValue = genreMatch?.[1]?.trim() || '';
     
     // Parse comma-separated genres
@@ -453,10 +435,9 @@ export class AIEngine {
     }
     
     // Replace genre line
-    let result = replaceFieldLine(styleSection, 'Genre', newGenreValue);
+    let result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
     
     // Also update BPM to match new genre
-    // Extract base genre: "jazz fusion" → "jazz", "jazz, rock" → "jazz"
     const firstGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
     const baseGenre = firstGenre.split(' ')[0] || firstGenre;
     const genreDef = GENRE_REGISTRY[baseGenre as GenreType];
@@ -464,48 +445,26 @@ export class AIEngine {
       result = replaceFieldLine(result, 'BPM', `${genreDef.bpm.typical}`);
     }
     
-    return { 
-      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, result) : result 
-    };
+    return { text: result };
   }
 
   async remixMood(currentPrompt: string): Promise<GenerationResult> {
-    const isLyricsMode = isLyricsModeOutput(currentPrompt);
-    const styleSection = extractStyleSection(currentPrompt);
-    
     // Select 2-3 random mood descriptors
     const count = Math.random() < 0.5 ? 2 : 3;
     const shuffled = [...MOOD_POOL].sort(() => Math.random() - 0.5);
     const selectedMoods = shuffled.slice(0, count);
     const moodLine = selectedMoods.join(', ');
     
-    const newStyle = replaceFieldLine(styleSection, 'Mood', moodLine);
-    return { 
-      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
-    };
+    return { text: replaceFieldLine(currentPrompt, 'Mood', moodLine) };
   }
 
   async remixStyleTags(currentPrompt: string): Promise<GenerationResult> {
-    const isLyricsMode = isLyricsModeOutput(currentPrompt);
-    const styleSection = extractStyleSection(currentPrompt);
-    
-    const genre = extractGenreFromMaxModePrompt(styleSection);
-    const newStyle = injectStyleTags(styleSection, genre);
-    
-    return { 
-      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
-    };
+    const genre = extractGenreFromMaxModePrompt(currentPrompt);
+    return { text: injectStyleTags(currentPrompt, genre) };
   }
 
   async remixRecording(currentPrompt: string): Promise<GenerationResult> {
-    const isLyricsMode = isLyricsModeOutput(currentPrompt);
-    const styleSection = extractStyleSection(currentPrompt);
-    
     const descriptors = selectRecordingDescriptors(3);
-    const newStyle = replaceRecordingLine(styleSection, descriptors.join(', '));
-    
-    return { 
-      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
-    };
+    return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
   }
 }
