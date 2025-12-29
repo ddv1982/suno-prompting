@@ -287,25 +287,21 @@ export class AIEngine {
       result.text = injectStyleTags(result.text, genre);
     }
 
-    // If lyrics mode is enabled, generate title and lyrics
+    // Always generate title
+    const mood = extractMoodFromPrompt(result.text);
+    const titleResult = await this.generateTitle(description, genre, mood);
+    result.title = titleResult.title;
+    
+    if (result.debugInfo) {
+      result.debugInfo.titleGeneration = titleResult.debugInfo;
+    }
+
+    // Generate lyrics only if lyrics mode is enabled
     if (this.lyricsMode) {
-      // Extract mood from the generated prompt
-      const moodMatch = result.text.match(/^mood:\s*"?([^"\n]+)/mi) || result.text.match(/^Mood:\s*([^\n]+)/mi);
-      const mood = moodMatch?.[1]?.trim() || 'emotional';
-      
-      // Generate title
-      const titleResult = await this.generateTitle(description, genre, mood);
-      
-      // Generate lyrics
       const lyricsResult = await this.generateLyrics(description, genre, mood);
-      
-      // Store as separate fields (text remains as style-only prompt)
-      result.title = titleResult.title;
       result.lyrics = lyricsResult.lyrics;
       
-      // Add debug info for title and lyrics generation
       if (result.debugInfo) {
-        result.debugInfo.titleGeneration = titleResult.debugInfo;
         result.debugInfo.lyricsGeneration = lyricsResult.debugInfo;
       }
     }

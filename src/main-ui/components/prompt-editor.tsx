@@ -142,104 +142,66 @@ export function PromptEditor({
     <section className="flex-1 flex flex-col bg-background">
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-6xl mx-auto w-full overflow-auto">
         {currentPrompt && (
-          <>
-            {/* Lyrics Mode: Show 3 separate sections */}
-            {lyricsMode && currentTitle && currentLyrics ? (
-              <div className="space-y-4">
-                {/* Title Section */}
-                <OutputSection
-                  label="Title"
-                  content={currentTitle}
-                  onCopy={() => navigator.clipboard.writeText(currentTitle)}
-                  onRemix={onRemixTitle}
-                  isGenerating={isGenerating}
-                  isRemixing={generatingAction === 'remixTitle'}
-                />
-
-                {/* Style Section */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <SectionLabel>Style Prompt</SectionLabel>
-                    <Badge
-                      variant={promptOverLimit ? "destructive" : "secondary"}
-                      className="text-tiny font-mono tabular-nums h-5"
-                    >
-                      {charCount} / {maxChars}
-                    </Badge>
-                  </div>
-                  <Card className="relative group border shadow-sm glass-panel overflow-hidden">
-                    <CardContent className="p-6">
-                      <PromptOutput text={currentPrompt} />
-                    </CardContent>
-                    <RemixButtonGroup
-                      isGenerating={isGenerating}
-                      generatingAction={generatingAction}
-                      maxMode={maxMode}
-                      copied={copied}
-                      promptOverLimit={promptOverLimit}
-                      hasDebugInfo={!!debugInfo}
-                      onDebugOpen={() => setDebugOpen(true)}
-                      onRemixGenre={onRemixGenre}
-                      onRemixMood={onRemixMood}
-                      onRemixInstruments={onRemixInstruments}
-                      onRemixStyleTags={onRemixStyleTags}
-                      onRemixRecording={onRemixRecording}
-                      onRemix={onRemix}
-                      onCopy={handleCopy}
-                    />
-                  </Card>
-                </div>
-
-                {/* Lyrics Section */}
-                <OutputSection
-                  label="Lyrics"
-                  content={currentLyrics}
-                  onCopy={() => navigator.clipboard.writeText(currentLyrics)}
-                  onRemix={onRemixLyrics}
-                  isGenerating={isGenerating}
-                  isRemixing={generatingAction === 'remixLyrics'}
-                  scrollable
-                />
-              </div>
-            ) : (
-              /* Standard Mode: Single output */
-              <>
-                <div className="flex justify-between items-center">
-                  <SectionLabel>Generated Prompt Output</SectionLabel>
-                  <Badge
-                    variant={promptOverLimit ? "destructive" : "secondary"}
-                    className="text-tiny font-mono tabular-nums h-5"
-                  >
-                    {charCount} / {maxChars}
-                  </Badge>
-                </div>
-
-                <Card className="flex-1 relative group border shadow-sm glass-panel overflow-hidden">
-                  <ScrollArea className="h-full">
-                    <CardContent className="p-6">
-                      <PromptOutput text={currentPrompt} />
-                    </CardContent>
-                  </ScrollArea>
-                  <RemixButtonGroup
-                    isGenerating={isGenerating}
-                    generatingAction={generatingAction}
-                    maxMode={maxMode}
-                    copied={copied}
-                    promptOverLimit={promptOverLimit}
-                    hasDebugInfo={!!debugInfo}
-                    onDebugOpen={() => setDebugOpen(true)}
-                    onRemixGenre={onRemixGenre}
-                    onRemixMood={onRemixMood}
-                    onRemixInstruments={onRemixInstruments}
-                    onRemixStyleTags={onRemixStyleTags}
-                    onRemixRecording={onRemixRecording}
-                    onRemix={onRemix}
-                    onCopy={handleCopy}
-                  />
-                </Card>
-              </>
+          <div className="space-y-4">
+            {/* Title Section - always shown when available */}
+            {currentTitle && (
+              <OutputSection
+                label="Title"
+                content={currentTitle}
+                onCopy={() => navigator.clipboard.writeText(currentTitle)}
+                onRemix={onRemixTitle}
+                isGenerating={isGenerating}
+                isRemixing={generatingAction === 'remixTitle'}
+              />
             )}
-          </>
+
+            {/* Style Prompt Section - always shown */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <SectionLabel>Style Prompt</SectionLabel>
+                <Badge
+                  variant={promptOverLimit ? "destructive" : "secondary"}
+                  className="text-tiny font-mono tabular-nums h-5"
+                >
+                  {charCount} / {maxChars}
+                </Badge>
+              </div>
+              <Card className="relative group border shadow-sm glass-panel overflow-hidden">
+                <CardContent className="p-6">
+                  <PromptOutput text={currentPrompt} />
+                </CardContent>
+                <RemixButtonGroup
+                  isGenerating={isGenerating}
+                  generatingAction={generatingAction}
+                  maxMode={maxMode}
+                  copied={copied}
+                  promptOverLimit={promptOverLimit}
+                  hasDebugInfo={!!debugInfo}
+                  onDebugOpen={() => setDebugOpen(true)}
+                  onRemixGenre={onRemixGenre}
+                  onRemixMood={onRemixMood}
+                  onRemixInstruments={onRemixInstruments}
+                  onRemixStyleTags={onRemixStyleTags}
+                  onRemixRecording={onRemixRecording}
+                  onRemix={onRemix}
+                  onCopy={handleCopy}
+                />
+              </Card>
+            </div>
+
+            {/* Lyrics Section - only shown when lyrics mode is enabled */}
+            {lyricsMode && currentLyrics && (
+              <OutputSection
+                label="Lyrics"
+                content={currentLyrics}
+                onCopy={() => navigator.clipboard.writeText(currentLyrics)}
+                onRemix={onRemixLyrics}
+                isGenerating={isGenerating}
+                isRemixing={generatingAction === 'remixLyrics'}
+                scrollable
+              />
+            )}
+          </div>
         )}
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />

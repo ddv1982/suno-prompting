@@ -121,17 +121,18 @@ recording: "one person, one guitar, natural dynamics"
 
 Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
-## Lyrics Mode
+## Title & Lyrics
 
-Lyrics Mode generates complete song content including title, style prompt, and lyrics in a single generation. Enable it in Settings or via the toggle in the input area.
+The app always generates an AI-powered song title alongside your style prompt. Optionally enable Lyrics Mode to also generate structured song lyrics.
 
 ### Output Format
 
-When enabled, the app generates three separate sections:
+| Mode | Output |
+|------|--------|
+| Normal | Title + Style Prompt |
+| Lyrics Mode | Title + Style Prompt + Lyrics |
 
-1. **Title** - AI-generated song title based on your description
-2. **Style Prompt** - The standard Suno-ready prompt (same as normal mode)
-3. **Lyrics** - Structured song lyrics with section tags
+Enable Lyrics Mode in Settings or via the toggle in the input area.
 
 ### Lyrics Structure
 
