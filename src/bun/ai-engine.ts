@@ -17,7 +17,7 @@ import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { injectBpm } from '@bun/prompt/bpm';
-import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt, formatFullOutput } from '@bun/prompt/lyrics-builder';
+import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt, formatFullOutput, isLyricsModeOutput, extractStyleSection, rebuildLyricsModeOutput } from '@bun/prompt/lyrics-builder';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
@@ -289,23 +289,33 @@ export class AIEngine {
       const mood = moodMatch?.[1]?.trim() || 'emotional';
       
       // Generate title
-      const title = await this.generateTitle(description, genre, mood);
+      const titleResult = await this.generateTitle(description, genre, mood);
       
       // Generate lyrics
-      const lyrics = await this.generateLyrics(description, genre, mood);
+      const lyricsResult = await this.generateLyrics(description, genre, mood);
       
       // Format as 3-section output
-      result.text = formatFullOutput(title, stylePrompt, lyrics);
+      result.text = formatFullOutput(titleResult.title, stylePrompt, lyricsResult.lyrics);
+      
+      // Add debug info for title and lyrics generation
+      if (result.debugInfo) {
+        result.debugInfo.titleGeneration = titleResult.debugInfo;
+        result.debugInfo.lyricsGeneration = lyricsResult.debugInfo;
+      }
     }
 
     return result;
   }
 
-  private async generateTitle(description: string, genre: string, mood: string): Promise<string> {
+  private async generateTitle(description: string, genre: string, mood: string): Promise<{
+    title: string;
+    debugInfo: { systemPrompt: string; userPrompt: string };
+  }> {
+    const systemPrompt = buildTitleSystemPrompt();
+    const userPrompt = buildTitleUserPrompt(description, genre, mood);
+    const debugInfo = { systemPrompt, userPrompt };
+    
     try {
-      const systemPrompt = buildTitleSystemPrompt();
-      const userPrompt = buildTitleUserPrompt(description, genre, mood);
-      
       const { text } = await generateText({
         model: this.getGroqModel(),
         system: systemPrompt,
@@ -314,18 +324,25 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
       
-      return text.trim().replace(/^["']|["']$/g, ''); // Remove any quotes
+      return { 
+        title: text.trim().replace(/^["']|["']$/g, ''),
+        debugInfo
+      };
     } catch (error) {
       log.warn('generateTitle:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
-      return 'Untitled';
+      return { title: 'Untitled', debugInfo };
     }
   }
 
-  private async generateLyrics(description: string, genre: string, mood: string): Promise<string> {
+  private async generateLyrics(description: string, genre: string, mood: string): Promise<{
+    lyrics: string;
+    debugInfo: { systemPrompt: string; userPrompt: string };
+  }> {
+    const systemPrompt = buildLyricsSystemPrompt(this.maxMode);
+    const userPrompt = buildLyricsUserPrompt(description, genre, mood);
+    const debugInfo = { systemPrompt, userPrompt };
+    
     try {
-      const systemPrompt = buildLyricsSystemPrompt(this.maxMode);
-      const userPrompt = buildLyricsUserPrompt(description, genre, mood);
-      
       const { text } = await generateText({
         model: this.getGroqModel(),
         system: systemPrompt,
@@ -334,16 +351,19 @@ export class AIEngine {
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
       });
       
-      return text.trim();
+      return { lyrics: text.trim(), debugInfo };
     } catch (error) {
       log.warn('generateLyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
-      return '[VERSE]\nLyrics generation failed...';
+      return { lyrics: '[VERSE]\nLyrics generation failed...', debugInfo };
     }
   }
 
   async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {
+    const isLyricsMode = isLyricsModeOutput(currentPrompt);
+    const styleSection = extractStyleSection(currentPrompt);
+    
     const systemPrompt = this.systemPrompt;
-    const promptForLLM = lockedPhrase ? swapLockedPhraseIn(currentPrompt, lockedPhrase) : currentPrompt;
+    const promptForLLM = lockedPhrase ? swapLockedPhraseIn(styleSection, lockedPhrase) : styleSection;
     const feedbackWithLocked = lockedPhrase
       ? `${feedback}\n\nLOCKED PHRASE (must preserve exactly as-is in output): ${LOCKED_PLACEHOLDER}`
       : feedback;
@@ -366,22 +386,37 @@ export class AIEngine {
       result.text = swapLockedPhraseOut(result.text, lockedPhrase);
     }
 
+    // Rebuild lyrics mode output with refined style section
+    if (isLyricsMode) {
+      result.text = rebuildLyricsModeOutput(currentPrompt, result.text);
+    }
+
     return result;
   }
 
   async remixInstruments(currentPrompt: string, originalInput: string): Promise<GenerationResult> {
+    const isLyricsMode = isLyricsModeOutput(currentPrompt);
+    const styleSection = extractStyleSection(currentPrompt);
+    
     // Detect genre from original input
     const selection = await selectModes(originalInput, this.getGroqModel());
     const genre = selection.genre || 'ambient';
     
     // Generate new instruments from genre pool
     const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });
-    return { text: replaceFieldLine(currentPrompt, 'Instruments', instruments.join(', ')) };
+    const newStyle = replaceFieldLine(styleSection, 'Instruments', instruments.join(', '));
+    
+    return { 
+      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
+    };
   }
 
   async remixGenre(currentPrompt: string): Promise<GenerationResult> {
+    const isLyricsMode = isLyricsModeOutput(currentPrompt);
+    const styleSection = extractStyleSection(currentPrompt);
+    
     // Extract full genre value (handle both regular and max mode formats)
-    const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
+    const genreMatch = styleSection.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
     const fullGenreValue = genreMatch?.[1]?.trim() || '';
     
     // Parse comma-separated genres
@@ -417,7 +452,7 @@ export class AIEngine {
     }
     
     // Replace genre line
-    let result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
+    let result = replaceFieldLine(styleSection, 'Genre', newGenreValue);
     
     // Also update BPM to match new genre
     // Extract base genre: "jazz fusion" → "jazz", "jazz, rock" → "jazz"
@@ -428,26 +463,48 @@ export class AIEngine {
       result = replaceFieldLine(result, 'BPM', `${genreDef.bpm.typical}`);
     }
     
-    return { text: result };
+    return { 
+      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, result) : result 
+    };
   }
 
   async remixMood(currentPrompt: string): Promise<GenerationResult> {
+    const isLyricsMode = isLyricsModeOutput(currentPrompt);
+    const styleSection = extractStyleSection(currentPrompt);
+    
     // Select 2-3 random mood descriptors
     const count = Math.random() < 0.5 ? 2 : 3;
     const shuffled = [...MOOD_POOL].sort(() => Math.random() - 0.5);
     const selectedMoods = shuffled.slice(0, count);
     const moodLine = selectedMoods.join(', ');
     
-    return { text: replaceFieldLine(currentPrompt, 'Mood', moodLine) };
+    const newStyle = replaceFieldLine(styleSection, 'Mood', moodLine);
+    return { 
+      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
+    };
   }
 
   async remixStyleTags(currentPrompt: string): Promise<GenerationResult> {
-    const genre = extractGenreFromMaxModePrompt(currentPrompt);
-    return { text: injectStyleTags(currentPrompt, genre) };
+    const isLyricsMode = isLyricsModeOutput(currentPrompt);
+    const styleSection = extractStyleSection(currentPrompt);
+    
+    const genre = extractGenreFromMaxModePrompt(styleSection);
+    const newStyle = injectStyleTags(styleSection, genre);
+    
+    return { 
+      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
+    };
   }
 
   async remixRecording(currentPrompt: string): Promise<GenerationResult> {
+    const isLyricsMode = isLyricsModeOutput(currentPrompt);
+    const styleSection = extractStyleSection(currentPrompt);
+    
     const descriptors = selectRecordingDescriptors(3);
-    return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
+    const newStyle = replaceRecordingLine(styleSection, descriptors.join(', '));
+    
+    return { 
+      text: isLyricsMode ? rebuildLyricsModeOutput(currentPrompt, newStyle) : newStyle 
+    };
   }
 }

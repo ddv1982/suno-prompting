@@ -102,12 +102,12 @@ export function parseFullOutput(fullOutput: string): {
 } {
   const result: { title?: string; style?: string; lyrics?: string } = {};
 
-  const titleMatch = fullOutput.match(/=== TITLE ===\n([\s\S]*?)(?==== |$)/);
+  const titleMatch = fullOutput.match(/=== TITLE ===\n([\s\S]*?)(?=\n=== |$)/);
   if (titleMatch) {
     result.title = titleMatch[1]?.trim();
   }
 
-  const styleMatch = fullOutput.match(/=== STYLE ===\n([\s\S]*?)(?==== |$)/);
+  const styleMatch = fullOutput.match(/=== STYLE ===\n([\s\S]*?)(?=\n=== |$)/);
   if (styleMatch) {
     result.style = styleMatch[1]?.trim();
   }
@@ -118,4 +118,24 @@ export function parseFullOutput(fullOutput: string): {
   }
 
   return result;
+}
+
+export function isLyricsModeOutput(text: string): boolean {
+  return text.includes('=== STYLE ===') && text.includes('=== LYRICS ===');
+}
+
+export function extractStyleSection(text: string): string {
+  if (!isLyricsModeOutput(text)) {
+    return text;
+  }
+  const parsed = parseFullOutput(text);
+  return parsed.style || text;
+}
+
+export function rebuildLyricsModeOutput(
+  originalOutput: string,
+  newStyle: string
+): string {
+  const parsed = parseFullOutput(originalOutput);
+  return formatFullOutput(parsed.title, newStyle, parsed.lyrics);
 }

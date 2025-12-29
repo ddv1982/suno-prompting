@@ -42,15 +42,21 @@ export type DebugInfo = {
     model: string;
     timestamp: string;
     requestBody: string;
+    // Lyrics mode additional debug info
+    titleGeneration?: {
+        systemPrompt: string;
+        userPrompt: string;
+    };
+    lyricsGeneration?: {
+        systemPrompt: string;
+        userPrompt: string;
+    };
 };
 
 // Request/Response type definitions for RPC
 export type GenerateInitialParams = { description: string; lockedPhrase?: string };
 export type GenerateInitialResponse = { 
     prompt: string; 
-    title?: string;
-    style?: string;
-    lyrics?: string;
     versionId: string; 
     validation: ValidationResult; 
     debugInfo?: DebugInfo;
