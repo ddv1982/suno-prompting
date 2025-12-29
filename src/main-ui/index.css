@@ -217,7 +217,10 @@
   }
   /* Show scrollbar when element has .is-scrolling class */
   .is-scrolling {
-    scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
+    scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) color-mix(in oklab, var(--muted) 30%, transparent);
+  }
+  .is-scrolling::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--muted) 30%, transparent);
   }
   .is-scrolling::-webkit-scrollbar-thumb {
     background: color-mix(in oklab, var(--primary) 30%, var(--muted));

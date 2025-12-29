@@ -3037,9 +3037,15 @@
     transition: background 0.3s ease;
   }
   .is-scrolling {
-    scrollbar-color: var(--primary) transparent;
+    scrollbar-color: var(--primary) var(--muted);
     @supports (color: color-mix(in lab, red, red)) {
-      scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
+      scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) color-mix(in oklab, var(--muted) 30%, transparent);
+    }
+  }
+  .is-scrolling::-webkit-scrollbar-track {
+    background: var(--muted);
+    @supports (color: color-mix(in lab, red, red)) {
+      background: color-mix(in oklab, var(--muted) 30%, transparent);
     }
   }
   .is-scrolling::-webkit-scrollbar-thumb {
