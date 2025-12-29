@@ -179,7 +179,6 @@ export function isElectronicGenre(genre: string): boolean {
 export const RECORDING_DESCRIPTORS = [
   'live symphonic venue capture with atmospheric miking',
   'tape recorder, close-up, raw performance texture',
-  'handheld device realism, lo-fi capture',
   'studio session, warm analog console',
   'intimate bedroom recording, DIY aesthetic',
   'outdoor field recording ambience',
