@@ -14,8 +14,10 @@ import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
 import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
 
+const ALL_GENRES = Object.keys(GENRE_REGISTRY) as [string, ...string[]];
+
 const LLMResponseSchema = z.object({
-  genre: z.enum(['ambient', 'jazz', 'electronic', 'rock', 'pop', 'classical', 'lofi', 'synthwave', 'cinematic', 'folk', 'rnb', 'videogame']).nullable().optional(),
+  genre: z.enum(ALL_GENRES).nullable().optional(),
   combination: z.string().nullable().optional(),
   singleMode: z.string().nullable().optional(),
   polyrhythmCombination: z.string().nullable().optional(),
@@ -73,15 +75,24 @@ AVAILABLE GENRES:
 - ambient: atmospheric, soundscape, ethereal textures
 - jazz: bebop, swing, cool jazz, fusion, big band, bossa nova
 - electronic: edm, house, techno, dubstep, trance
-- rock: alternative, punk, metal, grunge, hard rock
+- rock: alternative, grunge, hard rock, classic rock
 - pop: mainstream, dance pop, synth pop
 - classical: orchestral, symphony, baroque, romantic
 - lofi: lo-fi, chill beats, study music, relaxing
 - synthwave: retrowave, outrun, 80s synth, neon
 - cinematic: film score, epic, trailer, dramatic orchestral
-- folk: acoustic, bluegrass, country, americana, celtic
-- rnb: r&b, soul, neo-soul, motown
-- videogame: video game, chiptune, 8-bit, arcade, rpg, jrpg, boss battle
+- folk: acoustic, bluegrass, americana, celtic
+- rnb: r&b, neo-soul, contemporary r&b
+- videogame: video game, chiptune, 8-bit, arcade, rpg, jrpg
+- country: country rock, americana, bluegrass, honky tonk
+- blues: electric blues, delta blues, chicago blues
+- punk: punk rock, pop punk, emo, hardcore
+- metal: heavy metal, doom, progressive metal, thrash
+- latin: bossa nova, salsa, tango, flamenco, afro-cuban
+- soul: motown, gospel soul, classic soul
+- trap: dark trap, melodic trap, drill, phonk
+- retro: 50s, 60s, rock and roll, doo-wop, surf rock
+- symphonic: symphonic metal, orchestral rock, epic metal
 
 SELECTION RULES:
 1. Match EMOTIONAL ARC to combination's arc when possible

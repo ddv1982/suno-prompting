@@ -30,6 +30,20 @@ export function createHandlers(
         }
     }
 
+    async function runRemixAction(name: string, operation: () => Promise<GenerationResult>) {
+        log.info(name);
+        try {
+            const result = await operation();
+            const versionId = Bun.randomUUIDv7();
+            const validation = validatePrompt(result.text);
+            log.info(`${name}:complete`, { versionId, promptLength: result.text.length });
+            return { prompt: result.text, versionId, validation };
+        } catch (error) {
+            log.error(`${name}:failed`, error);
+            throw error;
+        }
+    }
+
     return {
         generateInitial: async ({ description, lockedPhrase }) => {
             return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description, lockedPhrase));
@@ -38,69 +52,19 @@ export function createHandlers(
             return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase));
         },
         remixInstruments: async ({ currentPrompt, originalInput }) => {
-            log.info('remixInstruments');
-            try {
-                const result = await aiEngine.remixInstruments(currentPrompt, originalInput);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('remixInstruments:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation };
-            } catch (error) {
-                log.error('remixInstruments:failed', error);
-                throw error;
-            }
+            return runRemixAction('remixInstruments', () => aiEngine.remixInstruments(currentPrompt, originalInput));
         },
         remixGenre: async ({ currentPrompt }) => {
-            log.info('remixGenre');
-            try {
-                const result = await aiEngine.remixGenre(currentPrompt);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('remixGenre:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation };
-            } catch (error) {
-                log.error('remixGenre:failed', error);
-                throw error;
-            }
+            return runRemixAction('remixGenre', () => aiEngine.remixGenre(currentPrompt));
         },
         remixMood: async ({ currentPrompt }) => {
-            log.info('remixMood');
-            try {
-                const result = await aiEngine.remixMood(currentPrompt);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('remixMood:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation };
-            } catch (error) {
-                log.error('remixMood:failed', error);
-                throw error;
-            }
+            return runRemixAction('remixMood', () => aiEngine.remixMood(currentPrompt));
         },
         remixStyleTags: async ({ currentPrompt }) => {
-            log.info('remixStyleTags');
-            try {
-                const result = await aiEngine.remixStyleTags(currentPrompt);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('remixStyleTags:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation };
-            } catch (error) {
-                log.error('remixStyleTags:failed', error);
-                throw error;
-            }
+            return runRemixAction('remixStyleTags', () => aiEngine.remixStyleTags(currentPrompt));
         },
         remixRecording: async ({ currentPrompt }) => {
-            log.info('remixRecording');
-            try {
-                const result = await aiEngine.remixRecording(currentPrompt);
-                const versionId = Bun.randomUUIDv7();
-                const validation = validatePrompt(result.text);
-                log.info('remixRecording:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, validation };
-            } catch (error) {
-                log.error('remixRecording:failed', error);
-                throw error;
-            }
+            return runRemixAction('remixRecording', () => aiEngine.remixRecording(currentPrompt));
         },
         getHistory: async () => {
             log.info('getHistory');

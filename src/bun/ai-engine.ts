@@ -3,7 +3,10 @@ import { generateText } from 'ai';
 import {
   selectInstrumentsForGenre,
   GENRE_REGISTRY,
+  MULTI_GENRE_COMBINATIONS,
+  isMultiGenre,
 } from '@bun/instruments';
+import { MOOD_POOL } from '@bun/instruments/datasets';
 import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
@@ -23,51 +26,6 @@ export type GenerationResult = {
 };
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
-
-const MOOD_POOL = [
-  // Energetic
-  'euphoric', 'explosive', 'triumphant', 'exhilarating', 'electrifying', 'uplifting',
-  // Calm
-  'serene', 'peaceful', 'tranquil', 'meditative', 'soothing', 'gentle',
-  // Dark
-  'haunting', 'sinister', 'ominous', 'menacing', 'foreboding',
-  // Emotional
-  'melancholic', 'wistful', 'bittersweet', 'yearning', 'nostalgic', 'tender',
-  // Playful
-  'whimsical', 'mischievous', 'carefree', 'lighthearted', 'jovial', 'quirky',
-  // Intense
-  'passionate', 'fierce', 'relentless', 'urgent', 'raw', 'visceral',
-  // Atmospheric
-  'ethereal', 'dreamy', 'mysterious', 'hypnotic', 'otherworldly', 'cosmic',
-  // Additional variety
-  'introspective', 'defiant', 'hopeful', 'rebellious', 'contemplative', 'cinematic',
-] as const;
-
-const MULTI_GENRE_COMBINATIONS = [
-  // Fusion styles
-  'jazz fusion', 'jazz funk', 'jazz hip-hop', 'nu jazz', 'acid jazz',
-  // Electronic blends
-  'electronic rock', 'electro pop', 'synth pop', 'future bass', 'chillwave', 'vaporwave',
-  // Folk blends
-  'folk rock', 'folk pop', 'indie folk', 'chamber folk',
-  // Rock blends
-  'blues rock', 'southern rock', 'progressive rock', 'psychedelic rock', 'art rock', 'indie rock', 'alternative rock',
-  // Soul/R&B blends
-  'neo soul', 'psychedelic soul', 'funk soul',
-  // World/Latin blends
-  'latin jazz', 'bossa nova', 'afrobeat', 'reggae fusion',
-  // Metal blends
-  'progressive metal', 'symphonic metal', 'doom metal',
-  // Hip-hop blends
-  'trip hop', 'lo-fi hip hop',
-  // Ambient blends
-  'dark ambient', 'space ambient', 'drone ambient',
-] as const;
-
-function isMultiGenre(genre: string): boolean {
-  const words = genre.toLowerCase().trim().split(/\s+/);
-  return words.length >= 2;
-}
 
 export function _testStripLeakedMetaLines(text: string): string {
   // Back-compat export for tests

@@ -23,8 +23,10 @@ export {
   FOLK_GENRE,
   RNB_GENRE,
   VIDEOGAME_GENRE,
+  MULTI_GENRE_COMBINATIONS,
+  isMultiGenre,
 } from '@bun/instruments/genres';
-export type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
+export type { GenreType, GenreDefinition, InstrumentPool, MultiGenreCombination } from '@bun/instruments/genres';
 
 export {
   RHYTHMIC_STYLES,

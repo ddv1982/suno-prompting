@@ -70,3 +70,4 @@ export {
   SYMPHONIC_GENRE,
 };
 export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
+export { MULTI_GENRE_COMBINATIONS, isMultiGenre, type MultiGenreCombination } from '@bun/instruments/genres/combinations';
