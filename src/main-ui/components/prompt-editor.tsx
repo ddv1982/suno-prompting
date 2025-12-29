@@ -161,11 +161,9 @@ export function PromptEditor({
                     </Badge>
                   </div>
                   <Card className="relative group border shadow-sm glass-panel overflow-hidden">
-                    <ScrollArea className="max-h-64">
-                      <CardContent className="p-6">
-                        <PromptOutput text={currentPrompt} />
-                      </CardContent>
-                    </ScrollArea>
+                    <CardContent className="p-6">
+                      <PromptOutput text={currentPrompt} />
+                    </CardContent>
                     <RemixButtonGroup
                       isGenerating={isGenerating}
                       generatingAction={generatingAction}
@@ -479,17 +477,13 @@ function OutputSection({
         </Button>
       </div>
       <Card className="border shadow-sm glass-panel">
-        {scrollable ? (
-          <ScrollArea className="max-h-64">
-            <CardContent className="p-4">
-              <PromptOutput text={content} />
-            </CardContent>
-          </ScrollArea>
-        ) : (
-          <CardContent className="p-4">
+        <CardContent className="p-4">
+          {scrollable ? (
+            <PromptOutput text={content} />
+          ) : (
             <div className="font-mono text-sm">{content}</div>
-          </CardContent>
-        )}
+          )}
+        </CardContent>
       </Card>
     </div>
   );
