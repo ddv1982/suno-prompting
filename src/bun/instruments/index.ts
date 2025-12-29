@@ -26,15 +26,6 @@ export {
 } from '@bun/instruments/genres';
 export type { GenreType, GenreDefinition, InstrumentPool } from '@bun/instruments/genres';
 
-// Synth replacements
-export {
-  SYNTH_REPLACEMENTS,
-  getSynthAlternatives,
-  hasSynthAlternative,
-  suggestSynthReplacement,
-  getAllSynthInstruments,
-} from '@bun/instruments/synth-replacements';
-
 export {
   RHYTHMIC_STYLES,
   POLYRHYTHMS,
