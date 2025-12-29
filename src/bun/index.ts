@@ -24,6 +24,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             remixInstruments: handlers.remixInstruments,
             remixGenre: handlers.remixGenre,
             remixMood: handlers.remixMood,
+            remixStyleTags: handlers.remixStyleTags,
+            remixRecording: handlers.remixRecording,
             getHistory: handlers.getHistory,
             saveSession: handlers.saveSession,
             deleteSession: handlers.deleteSession,
@@ -35,6 +37,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             setSunoTags: handlers.setSunoTags,
             getDebugMode: handlers.getDebugMode,
             setDebugMode: handlers.setDebugMode,
+            getMaxMode: handlers.getMaxMode,
+            setMaxMode: handlers.setMaxMode,
             getAllSettings: handlers.getAllSettings,
             saveAllSettings: handlers.saveAllSettings,
         }

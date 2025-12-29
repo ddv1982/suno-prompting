@@ -40,6 +40,9 @@ type PromptEditorProps = {
   onRemixInstruments: () => void;
   onRemixGenre: () => void;
   onRemixMood: () => void;
+  onRemixStyleTags: () => void;
+  onRemixRecording: () => void;
+  maxMode: boolean;
   maxChars?: number;
   currentModel?: string;
   debugInfo?: DebugInfo;
@@ -65,6 +68,9 @@ export function PromptEditor({
   onRemixInstruments,
   onRemixGenre,
   onRemixMood,
+  onRemixStyleTags,
+  onRemixRecording,
+  maxMode,
   maxChars = 1000,
   currentModel = "",
   debugInfo,
@@ -167,16 +173,18 @@ export function PromptEditor({
                   <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixGenre' && "animate-spin")} />
                   GENRE
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onRemixMood}
-                  disabled={isGenerating}
-                  className="font-bold glass-control"
-                >
-                  <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
-                  MOOD
-                </Button>
+                {!maxMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRemixMood}
+                    disabled={isGenerating}
+                    className="font-bold glass-control"
+                  >
+                    <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
+                    MOOD
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -187,6 +195,30 @@ export function PromptEditor({
                   <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixInstruments' && "animate-spin")} />
                   INSTRUMENTS
                 </Button>
+                {maxMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRemixStyleTags}
+                    disabled={isGenerating}
+                    className="font-bold glass-control"
+                  >
+                    <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixStyleTags' && "animate-spin")} />
+                    STYLE
+                  </Button>
+                )}
+                {maxMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRemixRecording}
+                    disabled={isGenerating}
+                    className="font-bold glass-control"
+                  >
+                    <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixRecording' && "animate-spin")} />
+                    RECORDING
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

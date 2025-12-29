@@ -174,3 +174,32 @@ export function isElectronicGenre(genre: string): boolean {
     normalizedGenre.includes('synth') ||
     normalizedGenre.includes('edm');
 }
+
+// Recording context descriptors for max mode
+export const RECORDING_DESCRIPTORS = [
+  'live symphonic venue capture with atmospheric miking',
+  'tape recorder, close-up, raw performance texture',
+  'handheld device realism, lo-fi capture',
+  'studio session, warm analog console',
+  'intimate bedroom recording, DIY aesthetic',
+  'outdoor field recording ambience',
+  'vintage vinyl warmth, needle crackle',
+  'radio broadcast compression character',
+  'concert hall natural acoustics',
+  'basement jam session energy',
+  'late night studio session vibe',
+  'bootleg live recording character',
+  'demo tape roughness',
+  'rehearsal room authenticity',
+  'home studio intimacy',
+  'professional mastering polish',
+  'analog four-track warmth',
+  'cassette tape saturation',
+  'direct-to-disc recording',
+  'single microphone capture',
+] as const;
+
+export function selectRecordingDescriptors(count: number = 3): string[] {
+  const shuffled = [...RECORDING_DESCRIPTORS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}

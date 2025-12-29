@@ -42,7 +42,10 @@ function App() {
     handleRemix,
     handleRemixInstruments,
     handleRemixGenre,
-    handleRemixMood
+    handleRemixMood,
+    handleRemixStyleTags,
+    handleRemixRecording,
+    maxMode
   } = useAppContext();
 
   const currentPrompt = currentSession?.currentPrompt || "";
@@ -80,6 +83,9 @@ function App() {
               onRemixInstruments={handleRemixInstruments}
               onRemixGenre={handleRemixGenre}
               onRemixMood={handleRemixMood}
+              onRemixStyleTags={handleRemixStyleTags}
+              onRemixRecording={handleRemixRecording}
+              maxMode={maxMode}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
               currentModel={currentModel}
               debugInfo={debugInfo}

@@ -47,6 +47,14 @@ export const api = {
         return await rpc.request.remixMood({ currentPrompt });
     },
 
+    async remixStyleTags(currentPrompt: string): Promise<BunRequests['remixStyleTags']['response']> {
+        return await rpc.request.remixStyleTags({ currentPrompt });
+    },
+
+    async remixRecording(currentPrompt: string): Promise<BunRequests['remixRecording']['response']> {
+        return await rpc.request.remixRecording({ currentPrompt });
+    },
+
     async getApiKey(): Promise<string> {
         const { apiKey } = await rpc.request.getApiKey({});
         return apiKey || '';

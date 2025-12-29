@@ -60,6 +60,12 @@ export type RemixGenreResponse = { prompt: string; versionId: string; validation
 export type RemixMoodParams = { currentPrompt: string };
 export type RemixMoodResponse = { prompt: string; versionId: string; validation: ValidationResult };
 
+export type RemixStyleTagsParams = { currentPrompt: string };
+export type RemixStyleTagsResponse = { prompt: string; versionId: string; validation: ValidationResult };
+
+export type RemixRecordingParams = { currentPrompt: string };
+export type RemixRecordingResponse = { prompt: string; versionId: string; validation: ValidationResult };
+
 export type SetDebugModeParams = { debugMode: boolean };
 
 export type SaveAllSettingsParams = {
@@ -101,6 +107,8 @@ export type RPCHandlers = {
     remixInstruments: (params: RemixInstrumentsParams) => Promise<RemixInstrumentsResponse>;
     remixGenre: (params: RemixGenreParams) => Promise<RemixGenreResponse>;
     remixMood: (params: RemixMoodParams) => Promise<RemixMoodResponse>;
+    remixStyleTags: (params: RemixStyleTagsParams) => Promise<RemixStyleTagsResponse>;
+    remixRecording: (params: RemixRecordingParams) => Promise<RemixRecordingResponse>;
     getHistory: (params: Record<string, never>) => Promise<GetHistoryResponse>;
     saveSession: (params: SaveSessionParams) => Promise<{ success: boolean }>;
     deleteSession: (params: DeleteSessionParams) => Promise<{ success: boolean }>;
@@ -140,6 +148,14 @@ export type SunoRPCSchema = {
             remixMood: {
                 params: RemixMoodParams;
                 response: RemixMoodResponse;
+            };
+            remixStyleTags: {
+                params: RemixStyleTagsParams;
+                response: RemixStyleTagsResponse;
+            };
+            remixRecording: {
+                params: RemixRecordingParams;
+                response: RemixRecordingResponse;
             };
             getHistory: {
                 params: Record<string, never>;

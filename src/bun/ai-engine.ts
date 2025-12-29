@@ -11,7 +11,8 @@ import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo, AppConfig } from '@shared/types';
 import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, buildMaxModeContextualPrompt, LOCKED_PLACEHOLDER } from '@bun/prompt/builders';
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
-import { replaceFieldLine } from '@bun/prompt/remix';
+import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
+import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors } from '@bun/prompt/realism-tags';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
@@ -61,6 +62,21 @@ export function _testStripLeakedMetaLines(text: string): string {
     })
     .join('\n')
     .trim();
+}
+
+function extractGenreFromMaxModePrompt(prompt: string): string {
+  const match = prompt.match(/^genre:\s*"?([^"\n,]+)/mi);
+  return match?.[1]?.trim().toLowerCase() || 'acoustic';
+}
+
+function injectStyleTags(prompt: string, genre: string): string {
+  const isElectronic = isElectronicGenre(genre);
+  const styleTags = isElectronic 
+    ? selectElectronicTags(4)
+    : selectRealismTags(genre, 4);
+  
+  if (styleTags.length === 0) return prompt;
+  return replaceStyleTagsLine(prompt, styleTags.join(', '));
 }
 
 function formatRequestBody(body: unknown): string {
@@ -257,6 +273,12 @@ export class AIEngine {
       result.text = swapLockedPhraseOut(result.text, lockedPhrase);
     }
 
+    // Inject style tags directly (bypass LLM) when in max mode
+    if (this.maxMode) {
+      const genre = extractGenreFromMaxModePrompt(result.text);
+      result.text = injectStyleTags(result.text, genre);
+    }
+
     return result;
   }
 
@@ -301,8 +323,8 @@ export class AIEngine {
   async remixGenre(currentPrompt: string): Promise<GenerationResult> {
     const allGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
     
-    // Extract current genre from prompt
-    const genreMatch = currentPrompt.match(/^Genre:\s*(.+)$/m);
+    // Extract current genre from prompt (handle both regular and max mode formats)
+    const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n,]+)/mi);
     const currentGenre = genreMatch?.[1]?.trim().toLowerCase() || '';
     
     // Filter out current genre and select a random different one
@@ -325,5 +347,15 @@ export class AIEngine {
     const moodLine = selectedMoods.join(', ');
     
     return { text: replaceFieldLine(currentPrompt, 'Mood', moodLine) };
+  }
+
+  async remixStyleTags(currentPrompt: string): Promise<GenerationResult> {
+    const genre = extractGenreFromMaxModePrompt(currentPrompt);
+    return { text: injectStyleTags(currentPrompt, genre) };
+  }
+
+  async remixRecording(currentPrompt: string): Promise<GenerationResult> {
+    const descriptors = selectRecordingDescriptors(3);
+    return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
   }
 }

@@ -5,7 +5,7 @@ import {
   buildGuidanceFromSelection,
 } from '@bun/instruments';
 import type { ModeSelection } from '@bun/instruments/selection';
-import { MAX_MODE_HEADER, selectRealismTags, selectElectronicTags, isElectronicGenre } from '@bun/prompt/realism-tags';
+import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 
 export const LOCKED_PLACEHOLDER = '{{LOCKED_PHRASE}}';
 
@@ -124,12 +124,6 @@ export function buildMaxModeContextualPrompt(
 ): string {
   const { found: userInstruments } = extractInstruments(description);
   const detectedGenre = selection.genre || 'acoustic';
-  
-  // Select appropriate style tags based on genre
-  const isElectronic = isElectronicGenre(detectedGenre);
-  const styleTags = isElectronic 
-    ? selectElectronicTags(4)
-    : selectRealismTags(detectedGenre, 4);
 
   const descriptionWithLocked = lockedPhrase
     ? `${description}\n\nLOCKED PHRASE (include in output exactly as-is): ${LOCKED_PLACEHOLDER}`
@@ -145,16 +139,6 @@ export function buildMaxModeContextualPrompt(
 
   if (userInstruments.length > 0) {
     parts.push(`User mentioned instruments: ${userInstruments.join(', ')}`);
-  }
-
-  if (styleTags.length > 0) {
-    parts.push(`Suggested style tags for this genre: ${styleTags.join(', ')}`);
-  }
-
-  if (isElectronic) {
-    parts.push('', 'NOTE: This is an electronic genre. Skip realism tags, focus on clarity and punch.');
-  } else {
-    parts.push('', 'NOTE: This is an organic genre. Include realism and recording character tags.');
   }
 
   return parts.join('\n');

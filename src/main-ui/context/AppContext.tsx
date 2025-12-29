@@ -5,7 +5,12 @@ import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { buildMusicPhrase } from '@shared/music-phrase';
 
-export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments' | 'remixGenre' | 'remixMood';
+export type GeneratingAction = 'none' | 'generate' | 'remix' | 'remixInstruments' | 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording';
+
+const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [
+    ['harmonicStyle', 'harmonicCombination'],
+    ['timeSignature', 'timeSignatureJourney'],
+];
 
 interface AppContextType {
     sessions: PromptSession[];
@@ -16,6 +21,7 @@ interface AppContextType {
     chatMessages: ChatMessage[];
     settingsOpen: boolean;
     currentModel: string;
+    maxMode: boolean;
     debugInfo: DebugInfo | undefined;
     lockedPhrase: string;
     editorMode: EditorMode;
@@ -40,6 +46,8 @@ interface AppContextType {
     handleRemixInstruments: () => Promise<void>;
     handleRemixGenre: () => Promise<void>;
     handleRemixMood: () => Promise<void>;
+    handleRemixStyleTags: () => Promise<void>;
+    handleRemixRecording: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -70,6 +78,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [currentModel, setCurrentModel] = useState("");
+    const [maxMode, setMaxMode] = useState(false);
     const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
     const [lockedPhrase, setLockedPhrase] = useState("");
     const [editorMode, setEditorMode] = useState<EditorMode>('simple');
@@ -82,17 +91,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const updateAdvancedSelection = useCallback((updates: Partial<AdvancedSelection>) => {
         setAdvancedSelection(prev => {
             const next = { ...prev, ...updates };
-            // Mutual exclusivity: harmonicStyle vs harmonicCombination
-            if (updates.harmonicStyle && updates.harmonicStyle !== null) {
-                next.harmonicCombination = null;
-            } else if (updates.harmonicCombination && updates.harmonicCombination !== null) {
-                next.harmonicStyle = null;
-            }
-            // Mutual exclusivity: timeSignature vs timeSignatureJourney
-            if (updates.timeSignature && updates.timeSignature !== null) {
-                next.timeSignatureJourney = null;
-            } else if (updates.timeSignatureJourney && updates.timeSignatureJourney !== null) {
-                next.timeSignature = null;
+            for (const [fieldA, fieldB] of MUTUALLY_EXCLUSIVE_FIELDS) {
+                if (updates[fieldA] !== undefined && updates[fieldA] !== null) {
+                    next[fieldB] = null;
+                } else if (updates[fieldB] !== undefined && updates[fieldB] !== null) {
+                    next[fieldA] = null;
+                }
             }
             return next;
         });
@@ -108,6 +112,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setCurrentModel(model);
         } catch (error) {
             console.error("Failed to load model", error);
+        }
+    }, []);
+
+    const loadMaxMode = useCallback(async () => {
+        try {
+            const mode = await api.getMaxMode();
+            setMaxMode(mode);
+        } catch (error) {
+            console.error("Failed to load maxMode", error);
         }
     }, []);
 
@@ -163,78 +176,92 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [currentSession?.id, newProject]);
 
+    const getEffectiveLockedPhrase = useCallback(() => {
+        return editorMode === 'advanced'
+            ? [computedMusicPhrase, lockedPhrase.trim()].filter(Boolean).join(', ') || undefined
+            : lockedPhrase.trim() || undefined;
+    }, [editorMode, computedMusicPhrase, lockedPhrase]);
+
+    const updateSessionWithResult = useCallback(async (
+        result: { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo },
+        feedbackLabel: string | undefined,
+        successMessage: string,
+        isNewSession: boolean,
+        originalInput: string
+    ) => {
+        setDebugInfo(result.debugInfo);
+        const now = new Date().toISOString();
+        const newVersion: PromptVersion = {
+            id: result.versionId,
+            content: result.prompt,
+            feedback: feedbackLabel,
+            timestamp: now,
+        };
+
+        const updatedSession: PromptSession = isNewSession || !currentSession
+            ? {
+                id: generateId(),
+                originalInput,
+                currentPrompt: result.prompt,
+                versionHistory: [newVersion],
+                createdAt: now,
+                updatedAt: now,
+            }
+            : {
+                ...currentSession,
+                currentPrompt: result.prompt,
+                versionHistory: [...currentSession.versionHistory, newVersion],
+                updatedAt: now,
+            };
+
+        if (isNewSession) {
+            setChatMessages(buildChatMessages(updatedSession));
+        } else {
+            setChatMessages(prev => [...prev, { role: "ai", content: successMessage }]);
+        }
+
+        setValidation(result.validation);
+        await saveSession(updatedSession);
+    }, [currentSession, saveSession]);
+
     const handleGenerate = useCallback(async (input: string) => {
         if (isGenerating) return;
         
         const currentPrompt = currentSession?.currentPrompt || "";
         const isInitial = !currentPrompt;
-        
-        // In advanced mode, combine music phrase with user's additional locked text
-        // In simple mode, use the user's manual locked phrase only
-        const effectiveLockedPhrase = editorMode === 'advanced'
-            ? [computedMusicPhrase, lockedPhrase.trim()].filter(Boolean).join(', ') || undefined
-            : lockedPhrase.trim() || undefined;
+        const effectiveLockedPhrase = getEffectiveLockedPhrase();
 
         try {
             setGeneratingAction('generate');
-
-            let result;
-            if (isInitial) {
-                result = await api.generateInitial(input, effectiveLockedPhrase);
-            } else {
-                setChatMessages((prev) => [...prev, { role: "user", content: input }]);
-                result = await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase);
+            if (!isInitial) {
+                setChatMessages(prev => [...prev, { role: "user", content: input }]);
             }
+
+            const result = isInitial
+                ? await api.generateInitial(input, effectiveLockedPhrase)
+                : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase);
 
             if (!result?.prompt) {
                 throw new Error("Invalid result received from generation");
             }
 
-            setDebugInfo(result.debugInfo);
-            const now = new Date().toISOString();
-            const newVersion: PromptVersion = {
-                    id: result.versionId,
-                content: result.prompt,
-                feedback: !isInitial ? input : undefined,
-                timestamp: now,
-            };
-
-            let updatedSession: PromptSession;
-            if (isInitial || !currentSession) {
-                updatedSession = {
-                    id: generateId(),
-                    originalInput: input,
-                    currentPrompt: result.prompt,
-                    versionHistory: [newVersion],
-                    createdAt: now,
-                    updatedAt: now,
-                };
-                setChatMessages(buildChatMessages(updatedSession));
-            } else {
-                updatedSession = {
-                    ...currentSession,
-                    currentPrompt: result.prompt,
-                    versionHistory: [...currentSession.versionHistory, newVersion],
-                    updatedAt: now,
-                };
-                setChatMessages((prev) => [...prev, { role: "ai", content: "Updated prompt generated." }]);
-            }
-
-            setValidation(result.validation);
-            await saveSession(updatedSession);
+            await updateSessionWithResult(
+                result,
+                isInitial ? undefined : input,
+                "Updated prompt generated.",
+                isInitial,
+                input
+            );
         } catch (error) {
             console.error("Generation failed:", error);
-            setChatMessages((prev) => [
+            setChatMessages(prev => [
                 ...prev,
-                {
-                    role: "ai",
-                    content: `Error: ${error instanceof Error ? error.message : "Failed to generate prompt"}.`,
-                },
+                { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate prompt"}.` },
             ]);
         } finally {
             setGeneratingAction('none');
         }
-    }, [isGenerating, currentSession, saveSession, lockedPhrase, editorMode, computedMusicPhrase]);
+    }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult]);
 
     const handleCopy = useCallback(() => {
         const prompt = currentSession?.currentPrompt || "";
@@ -243,11 +270,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const handleRemix = useCallback(async () => {
         if (isGenerating || !currentSession?.originalInput) return;
-        
-        // In advanced mode, combine music phrase with user's additional locked text
-        const effectiveLockedPhrase = editorMode === 'advanced'
-            ? [computedMusicPhrase, lockedPhrase.trim()].filter(Boolean).join(', ') || undefined
-            : lockedPhrase.trim() || undefined;
+        const effectiveLockedPhrase = getEffectiveLockedPhrase();
 
         try {
             setGeneratingAction('remix');
@@ -257,35 +280,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 throw new Error("Invalid result received from remix");
             }
 
-            setDebugInfo(result.debugInfo);
-            const now = new Date().toISOString();
-            const newVersion: PromptVersion = {
-                id: result.versionId,
-                content: result.prompt,
-                feedback: "[remix]",
-                timestamp: now,
-            };
-
-            const updatedSession: PromptSession = {
-                ...currentSession,
-                currentPrompt: result.prompt,
-                versionHistory: [...currentSession.versionHistory, newVersion],
-                updatedAt: now,
-            };
-
-            setChatMessages((prev) => [...prev, { role: "ai", content: "Remixed prompt generated." }]);
-            setValidation(result.validation);
-            await saveSession(updatedSession);
+            await updateSessionWithResult(
+                result,
+                "[remix]",
+                "Remixed prompt generated.",
+                false,
+                currentSession.originalInput
+            );
         } catch (error) {
             console.error("Remix failed:", error);
-            setChatMessages((prev) => [
+            setChatMessages(prev => [
                 ...prev,
                 { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix prompt"}.` },
             ]);
         } finally {
             setGeneratingAction('none');
         }
-    }, [isGenerating, currentSession, saveSession, lockedPhrase, editorMode, computedMusicPhrase]);
+    }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult]);
 
     const executeRemixAction = useCallback(async (
         action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
@@ -297,6 +308,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             setGeneratingAction(action);
+            setDebugInfo(undefined); // Clear stale debug info (field remixes don't call the LLM)
             const result = await apiCall();
 
             if (!result?.prompt) {
@@ -362,17 +374,39 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         );
     }, [currentSession, executeRemixAction]);
 
+    const handleRemixStyleTags = useCallback(async () => {
+        if (!currentSession?.currentPrompt) return;
+        await executeRemixAction(
+            'remixStyleTags',
+            () => api.remixStyleTags(currentSession.currentPrompt),
+            'style tags remix',
+            'Style tags remixed.'
+        );
+    }, [currentSession, executeRemixAction]);
+
+    const handleRemixRecording = useCallback(async () => {
+        if (!currentSession?.currentPrompt) return;
+        await executeRemixAction(
+            'remixRecording',
+            () => api.remixRecording(currentSession.currentPrompt),
+            'recording remix',
+            'Recording remixed.'
+        );
+    }, [currentSession, executeRemixAction]);
+
     useEffect(() => {
         loadHistory();
         loadModel();
-    }, [loadHistory, loadModel]);
+        loadMaxMode();
+    }, [loadHistory, loadModel, loadMaxMode]);
 
-    // Reload model when settings modal closes
+    // Reload settings when settings modal closes
     useEffect(() => {
         if (!settingsOpen) {
             loadModel();
+            loadMaxMode();
         }
-    }, [settingsOpen, loadModel]);
+    }, [settingsOpen, loadModel, loadMaxMode]);
 
     return (
         <AppContext.Provider value={{
@@ -384,6 +418,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             chatMessages,
             settingsOpen,
             currentModel,
+            maxMode,
             debugInfo,
             lockedPhrase,
             editorMode,
@@ -406,7 +441,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             handleRemix,
             handleRemixInstruments,
             handleRemixGenre,
-            handleRemixMood
+            handleRemixMood,
+            handleRemixStyleTags,
+            handleRemixRecording
         }}>
             {children}
         </AppContext.Provider>

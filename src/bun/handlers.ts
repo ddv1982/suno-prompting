@@ -76,6 +76,32 @@ export function createHandlers(
                 throw error;
             }
         },
+        remixStyleTags: async ({ currentPrompt }) => {
+            log.info('remixStyleTags');
+            try {
+                const result = await aiEngine.remixStyleTags(currentPrompt);
+                const versionId = Bun.randomUUIDv7();
+                const validation = validatePrompt(result.text);
+                log.info('remixStyleTags:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation };
+            } catch (error) {
+                log.error('remixStyleTags:failed', error);
+                throw error;
+            }
+        },
+        remixRecording: async ({ currentPrompt }) => {
+            log.info('remixRecording');
+            try {
+                const result = await aiEngine.remixRecording(currentPrompt);
+                const versionId = Bun.randomUUIDv7();
+                const validation = validatePrompt(result.text);
+                log.info('remixRecording:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, validation };
+            } catch (error) {
+                log.error('remixRecording:failed', error);
+                throw error;
+            }
+        },
         getHistory: async () => {
             log.info('getHistory');
             const sessions = await storage.getHistory();
