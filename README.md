@@ -34,7 +34,7 @@ Artifacts land in `build/`.
 
 ## Configuration
 
-Settings (including your Groq API key) are stored locally:
+Settings (including your AI provider API keys) are stored locally:
 
 | Platform | Location |
 |----------|----------|
@@ -42,7 +42,19 @@ Settings (including your Groq API key) are stored locally:
 | Linux | `~/.suno-prompting-app/config.json` |
 | Windows | `C:\Users\<username>\.suno-prompting-app\config.json` |
 
-The API key is encrypted at rest using AES-256-GCM.
+API keys are encrypted at rest using AES-256-GCM.
+
+## AI Providers
+
+The app supports multiple AI providers. Configure your preferred provider in Settings.
+
+| Provider | Models | Get API Key |
+|----------|--------|-------------|
+| Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
+| OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
+
+Each provider's API key is stored separately and encrypted independently.
 
 ## Output Format Contract
 
@@ -487,5 +499,5 @@ Recording character suggestions per genre:
 
 - Runtime: [Electrobun](https://electrobun.dev/)
 - UI: React 19 + shadcn/ui + Tailwind CSS v4
-- AI: AI SDK v5 + Groq models
+- AI: AI SDK v5 (Groq, OpenAI, Anthropic)
 - Package manager/runtime: Bun
