@@ -3,9 +3,15 @@ import {
   getRhythmicGuidance,
   extractInstruments,
   buildGuidanceFromSelection,
+  selectInstrumentsForGenre,
 } from '@bun/instruments';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import type { ModeSelection } from '@bun/instruments/selection';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
+import { articulateInstrument } from '@bun/prompt/articulations';
+import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
+import { buildProductionDescriptor } from '@bun/prompt/production-elements';
+import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 
 export const LOCKED_PLACEHOLDER = '{{LOCKED_PHRASE}}';
 
@@ -137,7 +143,42 @@ export function buildMaxModeContextualPrompt(
     `Genre: ${detectedGenre}`,
   ];
 
+  // Add enhanced guidance if genre is detected
+  if (selection.genre) {
+    const genreDef = GENRE_REGISTRY[selection.genre];
+    
+    // BPM
+    if (genreDef?.bpm) {
+      parts.push(`Tempo: ${genreDef.bpm.typical} BPM (range: ${genreDef.bpm.min}-${genreDef.bpm.max})`);
+    }
+    
+    // Moods
+    if (genreDef?.moods && genreDef.moods.length > 0) {
+      const selectedMoods = [...genreDef.moods].sort(() => Math.random() - 0.5).slice(0, 3);
+      parts.push(`Mood suggestions: ${selectedMoods.join(', ')}`);
+    }
+    
+    // Vocal style
+    parts.push(`Vocal style: ${buildVocalDescriptor(selection.genre)}`);
+    
+    // Production
+    parts.push(`Production: ${buildProductionDescriptor(selection.genre)}`);
+    
+    // Chord progression
+    parts.push(`Chord progression: ${buildProgressionDescriptor(selection.genre)}`);
+    
+    // Suggested instruments with articulations
+    const instruments = selectInstrumentsForGenre(selection.genre, { userInstruments });
+    const articulatedInstruments = instruments.map(i => articulateInstrument(i, Math.random, 0.4));
+    if (articulatedInstruments.length > 0) {
+      parts.push('');
+      parts.push('Suggested instruments:');
+      parts.push(...articulatedInstruments.map(i => `- ${i}`));
+    }
+  }
+
   if (userInstruments.length > 0) {
+    parts.push('');
     parts.push(`User mentioned instruments: ${userInstruments.join(', ')}`);
   }
 
