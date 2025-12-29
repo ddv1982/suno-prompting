@@ -34,4 +34,6 @@ export const LATIN_GENRE: GenreDefinition = {
     ['congas', 'bongos'],
     ['nylon string guitar', 'acoustic guitar'],
   ],
+  bpm: { min: 80, max: 140, typical: 98 },
+  moods: ['Groovy', 'Romantic', 'Sunny', 'Playful', 'Passionate', 'Rhythmic', 'Sensual', 'Laid Back', 'Breezy'],
 };

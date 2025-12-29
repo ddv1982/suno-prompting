@@ -48,4 +48,6 @@ export const CINEMATIC_GENRE: GenreDefinition = {
     ['strings', 'pizzicato strings'],
     ['french horn', 'low brass'],
   ],
+  bpm: { min: 80, max: 140, typical: 110 },
+  moods: ['Epic', 'Dramatic', 'Triumphant', 'Tense', 'Majestic', 'Heroic', 'Suspenseful', 'Powerful', 'Emotional'],
 };

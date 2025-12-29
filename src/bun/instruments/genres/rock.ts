@@ -30,4 +30,6 @@ export const ROCK_GENRE: GenreDefinition = {
     ['organ', 'Hammond organ'],
     ['distorted guitar', 'guitar'],
   ],
+  bpm: { min: 100, max: 160, typical: 120 },
+  moods: ['Driving', 'Powerful', 'Energetic', 'Rebellious', 'Raw', 'Intense', 'Confident', 'Gritty', 'Anthemic'],
 };

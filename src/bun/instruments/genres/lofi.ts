@@ -29,4 +29,6 @@ export const LOFI_GENRE: GenreDefinition = {
     ['felt piano', 'Rhodes'],
     ['Rhodes', 'electric piano'],
   ],
+  bpm: { min: 70, max: 90, typical: 80 },
+  moods: ['Chill', 'Nostalgic', 'Relaxed', 'Cozy', 'Mellow', 'Warm', 'Dreamy', 'Laid Back', 'Intimate'],
 };

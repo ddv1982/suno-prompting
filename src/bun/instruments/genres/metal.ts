@@ -33,4 +33,6 @@ export const METAL_GENRE: GenreDefinition = {
     ['distorted guitar', 'guitar'],
     ['choir', 'strings'],
   ],
+  bpm: { min: 100, max: 180, typical: 140 },
+  moods: ['Aggressive', 'Intense', 'Dark', 'Heavy', 'Brutal', 'Epic', 'Menacing', 'Powerful', 'Crushing'],
 };

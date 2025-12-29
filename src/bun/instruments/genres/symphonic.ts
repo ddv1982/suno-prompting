@@ -33,4 +33,6 @@ export const SYMPHONIC_GENRE: GenreDefinition = {
     ['choir', 'wordless choir'],
     ['french horn', 'low brass'],
   ],
+  bpm: { min: 100, max: 160, typical: 130 },
+  moods: ['Epic', 'Powerful', 'Majestic', 'Dramatic', 'Soaring', 'Triumphant', 'Intense', 'Grand', 'Dark'],
 };

@@ -43,4 +43,6 @@ export const CLASSICAL_GENRE: GenreDefinition = {
     ['violin', 'viola'],
     ['cello', 'viola'],
   ],
+  bpm: { min: 60, max: 140, typical: 90 },
+  moods: ['Majestic', 'Elegant', 'Dramatic', 'Tender', 'Noble', 'Triumphant', 'Melancholic', 'Regal', 'Soaring'],
 };

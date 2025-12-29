@@ -33,4 +33,6 @@ export const SOUL_GENRE: GenreDefinition = {
     ['Rhodes', 'grand piano'],
     ['trumpet', 'low brass'],
   ],
+  bpm: { min: 80, max: 110, typical: 96 },
+  moods: ['Soulful', 'Emotional', 'Heartfelt', 'Warm', 'Passionate', 'Uplifting', 'Powerful', 'Groovy', 'Joyful'],
 };

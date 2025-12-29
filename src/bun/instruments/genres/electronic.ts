@@ -25,4 +25,6 @@ export const ELECTRONIC_GENRE: GenreDefinition = {
     ['808', 'drums'],
     ['synth bass', 'bass'],
   ],
+  bpm: { min: 120, max: 150, typical: 128 },
+  moods: ['Euphoric', 'Energetic', 'Hypnotic', 'Driving', 'Pulsing', 'High Energy', 'Danceable', 'Intense'],
 };

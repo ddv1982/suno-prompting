@@ -30,4 +30,6 @@ export const BLUES_GENRE: GenreDefinition = {
     ['upright bass', 'walking bass'],
     ['guitar', 'hollowbody guitar'],
   ],
+  bpm: { min: 68, max: 132, typical: 88 },
+  moods: ['Smoky', 'Soulful', 'Gritty', 'Emotional', 'Laid Back', 'Mournful', 'Raw', 'Hypnotic', 'Groovy'],
 };

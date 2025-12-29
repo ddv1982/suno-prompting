@@ -38,4 +38,6 @@ export const VIDEOGAME_GENRE: GenreDefinition = {
     ['bells', 'glockenspiel'],
     ['taiko drums', 'timpani'],
   ],
+  bpm: { min: 100, max: 160, typical: 130 },
+  moods: ['Adventurous', 'Heroic', 'Exciting', 'Mysterious', 'Energetic', 'Triumphant', 'Whimsical', 'Intense', 'Nostalgic'],
 };

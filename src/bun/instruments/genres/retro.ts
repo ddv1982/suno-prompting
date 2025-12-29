@@ -34,4 +34,6 @@ export const RETRO_GENRE: GenreDefinition = {
     ['grand piano', 'honky tonk piano'],
     ['guitar', 'tremolo guitar'],
   ],
+  bpm: { min: 100, max: 160, typical: 140 },
+  moods: ['Nostalgic', 'Fun', 'Energetic', 'Playful', 'Romantic', 'Danceable', 'Carefree', 'Sunny', 'Charming'],
 };

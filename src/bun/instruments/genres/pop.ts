@@ -28,4 +28,6 @@ export const POP_GENRE: GenreDefinition = {
   exclusionRules: [
     ['808', 'drums'],
   ],
+  bpm: { min: 100, max: 130, typical: 118 },
+  moods: ['Energetic', 'Uplifting', 'Catchy', 'Bright', 'Fun', 'Confident', 'Romantic', 'Playful', 'Anthemic'],
 };

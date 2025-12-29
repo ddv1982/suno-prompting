@@ -26,4 +26,6 @@ export const FOLK_GENRE: GenreDefinition = {
   },
   poolOrder: ['harmonic', 'color', 'movement', 'rare'],
   maxTags: 4,
+  bpm: { min: 80, max: 120, typical: 100 },
+  moods: ['Warm', 'Intimate', 'Nostalgic', 'Heartfelt', 'Earthy', 'Rustic', 'Tender', 'Story Driven', 'Cozy'],
 };

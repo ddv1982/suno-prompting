@@ -32,4 +32,6 @@ export const COUNTRY_GENRE: GenreDefinition = {
     ['bass', 'upright bass'],
     ['fiddle', 'mandolin'],
   ],
+  bpm: { min: 90, max: 140, typical: 110 },
+  moods: ['Heartfelt', 'Nostalgic', 'Honest', 'Hopeful', 'Uplifting', 'Story Driven', 'Warm', 'Confident', 'Bittersweet'],
 };
