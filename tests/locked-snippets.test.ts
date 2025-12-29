@@ -71,7 +71,31 @@ Mood: warm, intimate`;
     test("is case-insensitive for field matching", () => {
       const prompt = 'INSTRUMENTS: "piano"';
       const result = injectLockedPhrase(prompt, "phrase", true);
-      expect(result).toContain("phrase");
+      expect(result).toBe('INSTRUMENTS: "piano, phrase"');
+    });
+
+    test("handles unquoted format (both modes)", () => {
+      const prompt = "instruments: piano, guitar";
+      expect(injectLockedPhrase(prompt, "my phrase", true)).toBe("instruments: piano, guitar, my phrase");
+      expect(injectLockedPhrase(prompt, "my phrase", false)).toBe("instruments: piano, guitar, my phrase");
+    });
+
+    test("handles empty quoted instruments", () => {
+      const prompt = 'instruments: ""';
+      const result = injectLockedPhrase(prompt, "my phrase", true);
+      expect(result).toBe('instruments: "my phrase"');
+    });
+
+    test("handles empty unquoted instruments", () => {
+      const prompt = "instruments: ";
+      const result = injectLockedPhrase(prompt, "my phrase", true);
+      expect(result).toBe("instruments: my phrase");
+    });
+
+    test("handles capitalized unquoted format", () => {
+      const prompt = "Instruments: piano, drums";
+      const result = injectLockedPhrase(prompt, "my phrase", false);
+      expect(result).toBe("Instruments: piano, drums, my phrase");
     });
   });
 

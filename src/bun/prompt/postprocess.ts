@@ -3,27 +3,29 @@ export function isValidLockedPhrase(phrase: string): boolean {
   return !phrase.includes('{{') && !phrase.includes('}}');
 }
 
-export function injectLockedPhrase(prompt: string, lockedPhrase: string, maxMode: boolean): string {
+export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMode: boolean): string {
   if (!lockedPhrase) return prompt;
   
-  if (maxMode) {
-    // Inject into instruments field (max mode format: instruments: "...")
-    const match = prompt.match(/^(instruments:\s*")([^"]*)/mi);
-    if (match) {
-      return prompt.replace(
-        /^(instruments:\s*")([^"]*)/mi,
-        `$1$2, ${lockedPhrase}`
-      );
-    }
-  } else {
-    // Inject into Instruments line (normal mode format: Instruments: ...)
-    const match = prompt.match(/^(Instruments:\s*)(.+)$/mi);
-    if (match) {
-      return prompt.replace(
-        /^(Instruments:\s*)(.+)$/mi,
-        `$1$2, ${lockedPhrase}`
-      );
-    }
+  // Try quoted format first: instruments: "piano, guitar"
+  const quotedMatch = prompt.match(/^(instruments:\s*")([^"]*)/mi);
+  if (quotedMatch) {
+    const existingValue = quotedMatch[2].trim();
+    const separator = existingValue ? ', ' : '';
+    return prompt.replace(
+      /^(instruments:\s*")([^"]*)/mi,
+      `$1$2${separator}${lockedPhrase}`
+    );
+  }
+  
+  // Try unquoted format: instruments: piano, guitar OR Instruments: piano, guitar
+  const unquotedMatch = prompt.match(/^(instruments:\s*)([^"\n]+)$/mi);
+  if (unquotedMatch) {
+    const existingValue = unquotedMatch[2].trim();
+    const separator = existingValue ? ', ' : '';
+    return prompt.replace(
+      /^(instruments:\s*)([^"\n]+)$/mi,
+      `$1$2${separator}${lockedPhrase}`
+    );
   }
   
   // Fallback: append to end if no instruments field found
