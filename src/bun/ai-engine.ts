@@ -16,6 +16,7 @@ import { buildContextualPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, bui
 import { postProcessPrompt, swapLockedPhraseIn, swapLockedPhraseOut } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
+import { injectBpm } from '@bun/prompt/bpm';
 import { createLogger } from '@bun/logger';
 
 const log = createLogger('AIEngine');
@@ -261,9 +262,14 @@ export class AIEngine {
       result.text = swapLockedPhraseOut(result.text, lockedPhrase);
     }
 
+    // Extract genre for post-processing (regex handles both normal and max mode formats)
+    const genre = extractGenreFromMaxModePrompt(result.text);
+    
+    // Inject BPM directly (bypass LLM) to get random value from genre range
+    result.text = injectBpm(result.text, genre);
+    
     // Inject style tags directly (bypass LLM) when in max mode
     if (this.maxMode) {
-      const genre = extractGenreFromMaxModePrompt(result.text);
       result.text = injectStyleTags(result.text, genre);
     }
 
