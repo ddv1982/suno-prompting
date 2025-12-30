@@ -37,7 +37,7 @@ export function QuickVibesPanel({
 }: QuickVibesPanelProps) {
   const charCount = input.customDescription.length;
   const isRefineMode = hasCurrentPrompt;
-  const canGenerate = isRefineMode 
+  const canSubmit = isRefineMode 
     ? input.customDescription.trim().length > 0
     : input.category !== null || input.customDescription.trim().length > 0;
 
@@ -50,7 +50,7 @@ export function QuickVibesPanel({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey && canGenerate && !isGenerating) {
+    if (e.key === "Enter" && !e.shiftKey && canSubmit && !isGenerating) {
       e.preventDefault();
       if (isRefineMode) {
         onRefine(input.customDescription);
@@ -142,7 +142,7 @@ export function QuickVibesPanel({
       {/* Generate / Refine Button */}
       <Button
         onClick={handleSubmit}
-        disabled={!canGenerate || isGenerating}
+        disabled={!canSubmit || isGenerating}
         className="w-full h-11 font-bold text-sm shadow-lg shadow-primary/10 gap-2"
       >
         {isGenerating ? (

@@ -170,6 +170,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         setValidation({ ...EMPTY_VALIDATION });
         await saveSession(updatedSession);
         setPendingInput("");
+        resetQuickVibesInput();
       } catch (error) {
         log.error("refineQuickVibes:failed", error);
         setChatMessages(prev => [
