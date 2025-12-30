@@ -10,7 +10,7 @@ import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
-import { generateTitle, generateLyrics } from '@bun/content-generator';
+import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
 
 export type RemixResult = {
   text: string;

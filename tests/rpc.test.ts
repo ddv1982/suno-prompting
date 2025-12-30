@@ -1,6 +1,6 @@
 import { expect, test, describe, mock } from "bun:test";
 import { createHandlers } from "@bun/handlers";
-import { type AIEngine } from "@bun/ai-engine";
+import { type AIEngine } from "@bun/ai";
 import { type StorageManager } from "@bun/storage";
 import { type PromptSession } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";

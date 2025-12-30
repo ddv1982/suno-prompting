@@ -1,10 +1,10 @@
 import { type RPCHandlers } from '@shared/types';
 import { validatePrompt } from '@shared/validation';
 import { APP_CONSTANTS } from '@shared/constants';
-import { type AIEngine } from '@bun/ai-engine';
+import { type AIEngine } from '@bun/ai';
 import { type StorageManager } from '@bun/storage';
 import { createLogger } from '@bun/logger';
-import type { GenerationResult } from '@bun/ai-engine';
+import type { GenerationResult } from '@bun/ai';
 
 const log = createLogger('RPC');
 

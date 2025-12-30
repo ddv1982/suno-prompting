@@ -7,9 +7,9 @@ import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSyste
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
 import { createLogger } from '@bun/logger';
-import { AIConfig } from '@bun/ai-config';
-import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/llm-rewriter';
-import { generateTitle, generateLyrics } from '@bun/content-generator';
+import { AIConfig } from '@bun/ai/config';
+import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
+import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
 import {
   extractGenreFromPrompt,
   extractMoodFromPrompt,
@@ -21,7 +21,7 @@ import {
   remixRecording as remixRecordingImpl,
   remixTitle as remixTitleImpl,
   remixLyrics as remixLyricsImpl,
-} from '@bun/remix-engine';
+} from '@bun/ai/remix';
 
 const log = createLogger('AIEngine');
 

@@ -9,7 +9,7 @@ import {
   _testCleanTitle,
   _testCleanLyrics,
   _testParseJsonResponse,
-} from '@bun/ai-engine';
+} from '@bun/ai/engine';
 
 describe('Prompt Builder Refinement', () => {
   describe('buildCombinedSystemPrompt with refinement', () => {

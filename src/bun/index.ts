@@ -1,5 +1,5 @@
 import { BrowserWindow, BrowserView, ApplicationMenu } from 'electrobun/bun';
-import { AIEngine } from '@bun/ai-engine';
+import { AIEngine } from '@bun/ai';
 import { StorageManager } from '@bun/storage';
 import { type SunoRPCSchema } from '@shared/types';
 import { createHandlers } from '@bun/handlers';
