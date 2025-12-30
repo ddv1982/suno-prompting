@@ -100,6 +100,55 @@ describe("RPC Handlers", () => {
         );
     });
 
+    test("refinePrompt should pass lyricsTopic to aiEngine", async () => {
+        const mockAiEngine: MockAIEngine = {
+            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            refinePrompt: mock(async () => ({ 
+                text: "Refined Prompt", 
+                title: "Refined Title",
+                lyrics: "[VERSE]\nRefined lyrics about love",
+                debugInfo: undefined 
+            })),
+            setApiKey: mock(),
+        };
+
+        const mockStorage: MockStorageManager = {
+            getHistory: mock(async () => []),
+            saveSession: mock(async () => {}),
+            deleteSession: mock(async () => {}),
+            getConfig: mock(async () => ({ 
+                provider: 'groq' as const, 
+                apiKeys: { groq: null, openai: null, anthropic: null }, 
+                model: APP_CONSTANTS.AI.DEFAULT_MODEL, 
+                useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, 
+                debugMode: false, 
+                maxMode: false, 
+                lyricsMode: true 
+            })),
+            saveConfig: mock(async () => {}),
+            initialize: mock(async () => {})
+        };
+
+        const handlers = createHandlers(mockAiEngine as AIEngine, mockStorage as StorageManager);
+        const result = await handlers.refinePrompt({ 
+            currentPrompt: "Old prompt", 
+            feedback: "Make the lyrics more emotional",
+            currentTitle: "Old Title",
+            currentLyrics: "[VERSE]\nOld lyrics",
+            lyricsTopic: "A story about lost love"
+        });
+
+        expect(result.prompt).toBe("Refined Prompt");
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
+            "Old prompt", 
+            "Make the lyrics more emotional", 
+            undefined, 
+            "Old Title", 
+            "[VERSE]\nOld lyrics",
+            "A story about lost love"
+        );
+    });
+
     test("refinePrompt should return title from aiEngine response", async () => {
         const mockAiEngine: MockAIEngine = {
             generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
