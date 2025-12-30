@@ -137,6 +137,48 @@ The body uses section tags like:
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
 
+## Genre & Mode Detection
+
+The app uses a 3-tier detection system to identify genre and select harmonic/rhythmic modes:
+
+### Tier 1: Keyword Matching
+
+Direct match against genre names and keywords. Genres are checked in priority order (first match wins):
+
+```
+videogame → synthwave → lofi → cinematic → jazz → classical → folk → rnb →
+country → soul → blues → punk → latin → symphonic → metal → trap → retro →
+electronic → rock → pop → ambient
+```
+
+Example: "symphonic rock retro ballad" matches `symphonic` first (higher priority than `retro`).
+
+### Tier 2: Spelling Correction
+
+If no keyword match, the LLM attempts to correct potential typos and re-matches against keywords.
+
+### Tier 3: LLM Selection
+
+Full LLM analysis selects:
+- **Genre** (if not already detected in Tier 1/2)
+- **Harmonic combination** (e.g., `major_minor`, `lydian_exploration`) OR **single mode** (e.g., `dorian`, `phrygian`)
+- **Polyrhythm combination** (e.g., `complexity_build`, `tension_arc`)
+- **Reasoning** for the selection
+
+**Important**: Keyword-detected genre (Tier 1) always takes precedence over LLM-selected genre.
+
+### Detection Priority
+
+The system detects multiple musical concepts independently:
+
+| Concept | Detection Method | Example Keywords |
+|---------|------------------|------------------|
+| Genre | Keywords → LLM | "jazz", "synthwave", "cinematic" |
+| Harmonic Mode | Keywords + LLM | "lydian", "dorian", "harmonic minor" |
+| Modal Combination | Keywords + LLM | "bittersweet", "happy-sad", "emotional arc" |
+| Polyrhythm | Keywords + LLM | "building rhythm", "complex throughout" |
+| Time Signature | Keywords | "7/8", "waltz", "take five" |
+
 ## Max Mode
 
 Max Mode uses a community-discovered prompt technique that triggers higher quality output in Suno V5. Enable it in Settings.
