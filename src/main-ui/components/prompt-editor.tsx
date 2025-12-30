@@ -549,7 +549,7 @@ function RequestInspector({
             {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </Button>
         </div>
-        <ScrollArea className="h-48 rounded-lg border bg-background/50">
+        <ScrollArea className="h-48 rounded-lg border bg-background/50 is-scrolling">
           <pre className="p-3 text-caption font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
         </ScrollArea>
       </div>
@@ -576,7 +576,7 @@ function RequestInspector({
       </div>
 
       {showRawJson ? (
-        <ScrollArea className="h-64 rounded-lg border bg-background/50">
+        <ScrollArea className="h-64 rounded-lg border bg-background/50 is-scrolling">
           <pre className="p-3 text-caption font-mono whitespace-pre-wrap text-muted-foreground">{requestBody}</pre>
         </ScrollArea>
       ) : (
