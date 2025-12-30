@@ -2,6 +2,32 @@
 
 Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with enforced formatting, genre/mood/instrument guidance, and guardrails.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Architecture](#architecture-high-level)
+  - [AI Engine](#ai-engine)
+  - [Prompt Pipeline](#prompt-pipeline)
+  - [Instruments + Music Knowledge](#instruments--music-knowledge)
+- [AI Providers](#ai-providers)
+- [Output Format Contract](#output-format-contract)
+- [Features](#features)
+- [Genre & Mode Detection](#genre--mode-detection)
+  - [Tier 1: Keyword Matching](#tier-1-keyword-matching)
+  - [Tier 2: Spelling Correction](#tier-2-spelling-correction)
+  - [Tier 3: LLM Selection](#tier-3-llm-selection)
+- [Max Mode](#max-mode)
+- [Title & Lyrics](#title--lyrics)
+- [Prompt Enhancement System](#prompt-enhancement-system)
+  - [BPM Ranges](#bpm-ranges)
+  - [Mood Pools](#mood-pools)
+  - [Chord Progressions](#chord-progressions)
+- [Reference Tables](#reference-tables)
+  - [Genres](#genres-keywords--palette)
+  - [Instrument Layers](#instrument-layers)
+- [Tech Stack](#tech-stack)
+
 ## Quick Start
 
 Prereq: [Bun](https://bun.sh/)
