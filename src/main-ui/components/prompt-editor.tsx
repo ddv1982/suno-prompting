@@ -610,8 +610,8 @@ function RequestInspector({
                 </div>
                 <div className="p-3">
                   {isExpanded ? (
-                    <ScrollArea className="max-h-64 is-scrolling">
-                      <pre className="text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed pr-3">
+                    <ScrollArea className="h-64 rounded-lg border bg-background/50 is-scrolling">
+                      <pre className="p-3 text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
                         {msg.content}
                       </pre>
                     </ScrollArea>
