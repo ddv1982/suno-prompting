@@ -231,10 +231,11 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const handleRemix = useCallback(async () => {
     if (isGenerating || !currentSession?.originalInput) return;
     const effectiveLockedPhrase = getEffectiveLockedPhrase();
+    const genreOverride = advancedSelection.singleGenre || advancedSelection.genreCombination || undefined;
 
     try {
       setGeneratingAction('remix');
-      const result = await api.generateInitial(currentSession.originalInput, effectiveLockedPhrase);
+      const result = await api.generateInitial(currentSession.originalInput, effectiveLockedPhrase, currentSession.lyricsTopic, genreOverride);
 
       if (!result?.prompt) {
         throw new Error("Invalid result received from remix");
@@ -258,7 +259,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, advancedSelection]);
 
   const executeRemixAction = useCallback(async (
     action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
