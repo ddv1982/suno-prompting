@@ -7,6 +7,7 @@ import { PromptOutput } from "@/components/prompt-output";
 import { RefreshCw, Copy, Check, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
+import { stripMaxModeHeader } from "@shared/prompt-utils";
 
 type QuickVibesOutputProps = {
   prompt: string;
@@ -26,7 +27,8 @@ export function QuickVibesOutput({
   onDebugOpen,
 }: QuickVibesOutputProps) {
   const [copied, setCopied] = useState(false);
-  const charCount = prompt.length;
+  const contentOnly = stripMaxModeHeader(prompt);
+  const charCount = contentOnly.length;
   const isOverLimit = charCount > APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 
   const handleCopy = () => {

@@ -1,6 +1,7 @@
 import type { QuickVibesCategory } from '@shared/types';
 import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS } from '@bun/prompt/quick-vibes-categories';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
+export { stripMaxModeHeader } from '@shared/prompt-utils';
 
 // Lo-fi appropriate realism tags for Max Mode
 const LOFI_MAX_TAGS = [
@@ -128,20 +129,6 @@ export function applyQuickVibesMaxMode(prompt: string, maxMode: boolean, maxChar
   
   const withTags = injectQuickVibesMaxTags(prompt, maxChars);
   return `${MAX_MODE_HEADER}\n${withTags}`;
-}
-
-/**
- * Strips MAX_MODE_HEADER from prompt if present (for refinement)
- */
-export function stripMaxModeHeader(prompt: string): string {
-  if (prompt.startsWith('[Is_MAX_MODE:')) {
-    const lines = prompt.split('\n');
-    const contentStart = lines.findIndex((line, i) => i > 0 && !line.startsWith('['));
-    if (contentStart > 0) {
-      return lines.slice(contentStart).join('\n').trim();
-    }
-  }
-  return prompt;
 }
 
 /**
