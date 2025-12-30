@@ -6,6 +6,7 @@ import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
 import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes, injectQuickVibesMaxTags, buildQuickVibesRefineSystemPrompt, buildQuickVibesRefineUserPrompt } from '@bun/prompt/quick-vibes-builder';
 import { QUICK_VIBES_MAX_CHARS } from '@bun/prompt/quick-vibes-categories';
+import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -401,9 +402,10 @@ export class AIEngine {
 
       let result = postProcessQuickVibes(rawResponse);
       
-      // Inject Max Mode realism tags if enabled and space permits
+      // Inject Max Mode header and realism tags if enabled
       if (this.config.isMaxMode()) {
         result = injectQuickVibesMaxTags(result, QUICK_VIBES_MAX_CHARS);
+        result = `${MAX_MODE_HEADER}\n${result}`;
       }
 
       return {
@@ -444,8 +446,10 @@ export class AIEngine {
 
       let result = postProcessQuickVibes(rawResponse);
       
+      // Inject Max Mode header and realism tags if enabled
       if (this.config.isMaxMode()) {
         result = injectQuickVibesMaxTags(result, QUICK_VIBES_MAX_CHARS);
+        result = `${MAX_MODE_HEADER}\n${result}`;
       }
 
       return {
