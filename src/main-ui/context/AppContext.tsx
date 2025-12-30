@@ -216,7 +216,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         feedbackLabel: string | undefined,
         successMessage: string,
         isNewSession: boolean,
-        originalInput: string
+        originalInput: string,
+        lockedPhrase?: string
     ) => {
         setDebugInfo(result.debugInfo);
         const now = new Date().toISOString();
@@ -226,6 +227,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             title: result.title,
             lyrics: result.lyrics,
             feedback: feedbackLabel,
+            lockedPhrase,
             timestamp: now,
         };
 
@@ -285,7 +287,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 isInitial ? undefined : input,
                 "Updated prompt generated.",
                 isInitial,
-                input
+                input,
+                effectiveLockedPhrase
             );
             
             // Clear pending input only on success
@@ -324,7 +327,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 "[remix]",
                 "Remixed prompt generated.",
                 false,
-                currentSession.originalInput
+                currentSession.originalInput,
+                effectiveLockedPhrase
             );
         } catch (error) {
             console.error("Remix failed:", error);

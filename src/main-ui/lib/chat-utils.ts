@@ -8,11 +8,17 @@ export function buildChatMessages(session: PromptSession): ChatMessage[] {
 
   session.versionHistory.forEach((version, index) => {
     if (index === 0) {
+      if (version.lockedPhrase) {
+        messages.push({ role: "ai", content: `Locked: "${version.lockedPhrase}"` });
+      }
       messages.push({ role: "ai", content: "Initial prompt generated." });
       return;
     }
     if (version.feedback) {
       messages.push({ role: "user", content: version.feedback });
+    }
+    if (version.lockedPhrase) {
+      messages.push({ role: "ai", content: `Locked: "${version.lockedPhrase}"` });
     }
     messages.push({ role: "ai", content: "Updated prompt generated." });
   });

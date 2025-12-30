@@ -41,6 +41,7 @@ export type PromptVersion = {
     title?: string;
     lyrics?: string;
     feedback?: string;
+    lockedPhrase?: string;
     timestamp: string;
 };
 
