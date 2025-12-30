@@ -50,7 +50,7 @@ export type RemixRecordingResponse = { prompt: string; versionId: string; valida
 export type RemixTitleParams = { currentPrompt: string; originalInput: string };
 export type RemixTitleResponse = { title: string };
 
-export type RemixLyricsParams = { currentPrompt: string; originalInput: string };
+export type RemixLyricsParams = { currentPrompt: string; originalInput: string; lyricsTopic?: string };
 export type RemixLyricsResponse = { lyrics: string };
 
 // Settings endpoints

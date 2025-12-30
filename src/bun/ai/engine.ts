@@ -369,8 +369,8 @@ export class AIEngine {
     return remixTitleImpl(currentPrompt, originalInput, this.getModel);
   }
 
-  async remixLyrics(currentPrompt: string, originalInput: string): Promise<{ lyrics: string }> {
-    return remixLyricsImpl(currentPrompt, originalInput, this.config.isMaxMode(), this.getModel);
+  async remixLyrics(currentPrompt: string, originalInput: string, lyricsTopic?: string): Promise<{ lyrics: string }> {
+    return remixLyricsImpl(currentPrompt, originalInput, lyricsTopic, this.config.isMaxMode(), this.getModel);
   }
 }
 

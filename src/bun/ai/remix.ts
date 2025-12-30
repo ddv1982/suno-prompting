@@ -129,11 +129,13 @@ export async function remixTitle(
 export async function remixLyrics(
   currentPrompt: string,
   originalInput: string,
+  lyricsTopic: string | undefined,
   maxMode: boolean,
   getModel: () => LanguageModel
 ): Promise<{ lyrics: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
-  const result = await generateLyrics(originalInput, genre, mood, maxMode, getModel);
+  const topicForLyrics = lyricsTopic?.trim() || originalInput;
+  const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel);
   return { lyrics: result.lyrics };
 }

@@ -59,8 +59,8 @@ export const api = {
         return await rpc.request.remixTitle({ currentPrompt, originalInput });
     },
 
-    async remixLyrics(currentPrompt: string, originalInput: string): Promise<BunRequests['remixLyrics']['response']> {
-        return await rpc.request.remixLyrics({ currentPrompt, originalInput });
+    async remixLyrics(currentPrompt: string, originalInput: string, lyricsTopic?: string): Promise<BunRequests['remixLyrics']['response']> {
+        return await rpc.request.remixLyrics({ currentPrompt, originalInput, lyricsTopic });
     },
 
     async getApiKey(): Promise<string> {

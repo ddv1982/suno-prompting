@@ -65,7 +65,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     setCurrentSession(session);
     setChatMessages(buildChatMessages(session));
     setValidation({ ...EMPTY_VALIDATION });
-  }, [setCurrentSession]);
+    setLyricsTopic(session.lyricsTopic || "");
+  }, [setCurrentSession, setLyricsTopic]);
 
   const newProject = useCallback(() => {
     setCurrentSession(null);
@@ -80,7 +81,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     successMessage: string,
     isNewSession: boolean,
     originalInput: string,
-    lockedPhrase?: string
+    lockedPhrase?: string,
+    sessionLyricsTopic?: string
   ) => {
     setDebugInfo(result.debugInfo);
     const now = new Date().toISOString();
@@ -98,6 +100,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       ? {
           id: generateId(),
           originalInput,
+          lyricsTopic: sessionLyricsTopic,
           currentPrompt: result.prompt,
           currentTitle: result.title,
           currentLyrics: result.lyrics,
@@ -154,7 +157,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         "Updated prompt generated.",
         isInitial,
         input,
-        effectiveLockedPhrase
+        effectiveLockedPhrase,
+        isInitial ? effectiveLyricsTopic : undefined
       );
       
       setPendingInput("");
@@ -170,7 +174,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic]);
 
   const handleCopy = useCallback(() => {
     const prompt = currentSession?.currentPrompt || "";
@@ -195,7 +199,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         "Remixed prompt generated.",
         false,
         currentSession.originalInput,
-        effectiveLockedPhrase
+        effectiveLockedPhrase,
+        currentSession.lyricsTopic
       );
     } catch (error) {
       log.error("remix:failed", error);
@@ -350,7 +355,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setGeneratingAction('remixLyrics');
-      const result = await api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput);
+      const result = await api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput, currentSession.lyricsTopic);
 
       const now = new Date().toISOString();
       const newVersion: PromptVersion = {

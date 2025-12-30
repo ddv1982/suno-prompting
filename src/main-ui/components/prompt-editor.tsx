@@ -103,12 +103,13 @@ export function PromptEditor({
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
 
-  const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation } = useMemo(() => ({
+  const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation, lyricsTopicOverLimit } = useMemo(() => ({
     charCount: currentPrompt.length,
     promptOverLimit: currentPrompt.length > maxChars,
     inputOverLimit: pendingInput.trim().length > maxChars,
     lockedPhraseValidation: validateLockedPhrase(lockedPhrase),
-  }), [currentPrompt, pendingInput, maxChars, lockedPhrase]);
+    lyricsTopicOverLimit: lyricsTopic.length > APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS,
+  }), [currentPrompt, pendingInput, maxChars, lockedPhrase, lyricsTopic]);
 
   const hasAdvancedSelection = editorMode === 'advanced' && (
     advancedSelection.harmonicStyle ||
@@ -126,6 +127,7 @@ export function PromptEditor({
     if (isGenerating) return;
     if (trimmed.length > maxChars) return;
     if (!lockedPhraseValidation.isValid) return;
+    if (lyricsTopicOverLimit) return;
     onGenerate(trimmed);
     // Input will be cleared by context after successful generation
   };
@@ -343,6 +345,7 @@ export function PromptEditor({
                 disabled={
                   isGenerating ||
                   inputOverLimit ||
+                  lyricsTopicOverLimit ||
                   !lockedPhraseValidation.isValid ||
                   (!pendingInput.trim() && !(editorMode === 'advanced' && currentPrompt && hasAdvancedSelection))
                 }
@@ -372,6 +375,9 @@ export function PromptEditor({
               <FormLabel
                 icon={<Music2 className="w-3 h-3" />}
                 badge="optional"
+                charCount={lyricsTopic ? lyricsTopic.length : undefined}
+                maxChars={lyricsTopic ? APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS : undefined}
+                error={lyricsTopicOverLimit}
               >
                 Song Topic (for lyrics)
               </FormLabel>
@@ -381,13 +387,20 @@ export function PromptEditor({
                 disabled={isGenerating}
                 className={cn(
                   "min-h-16 max-h-32 resize-none shadow-sm text-sm p-3 rounded-lg glass-control focus-visible:ring-primary/20",
+                  lyricsTopicOverLimit && "border-destructive focus-visible:ring-destructive/20",
                   isGenerating && "opacity-70"
                 )}
                 placeholder="What is the song about? (e.g., 'the meaning of life', 'lost love', 'summer road trip')"
               />
-              <p className="text-micro text-muted-foreground">
-                If provided, lyrics will focus on this topic instead of the musical style description above.
-              </p>
+              {lyricsTopicOverLimit ? (
+                <p className="text-micro text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> Song topic exceeds {APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS} characters.
+                </p>
+              ) : (
+                <p className="text-micro text-muted-foreground">
+                  If provided, lyrics will focus on this topic instead of the musical style description above.
+                </p>
+              )}
             </div>
           )}
 

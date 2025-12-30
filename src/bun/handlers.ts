@@ -92,9 +92,9 @@ export function createHandlers(
                 return { title: result.title };
             });
         },
-        remixLyrics: async ({ currentPrompt, originalInput }) => {
+        remixLyrics: async ({ currentPrompt, originalInput, lyricsTopic }) => {
             return runSingleFieldRemix('remixLyrics', async () => {
-                const result = await aiEngine.remixLyrics(currentPrompt, originalInput);
+                const result = await aiEngine.remixLyrics(currentPrompt, originalInput, lyricsTopic);
                 return { lyrics: result.lyrics };
             });
         },
