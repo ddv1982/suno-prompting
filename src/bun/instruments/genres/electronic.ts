@@ -7,7 +7,7 @@ export const ELECTRONIC_GENRE: GenreDefinition = {
   pools: {
     pad: {
       pick: { min: 1, max: 2 },
-      instruments: ['synth pad', 'analog synth', 'FM synth', 'arpeggiator', 'synth'],
+      instruments: ['synth pad', 'analog synth', 'FM synth', 'arpeggiator', 'synth', 'synth choir'],
     },
     movement: {
       pick: { min: 2, max: 3 },

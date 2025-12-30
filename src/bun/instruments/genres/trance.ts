@@ -17,7 +17,7 @@ export const TRANCE_GENRE: GenreDefinition = {
     color: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.4,
-      instruments: ['choir', 'wordless choir', 'solo soprano'],
+      instruments: ['choir', 'wordless choir', 'solo soprano', 'synth choir'],
     },
     movement: {
       pick: { min: 1, max: 2 },

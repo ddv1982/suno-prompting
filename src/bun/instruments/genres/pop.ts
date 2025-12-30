@@ -11,7 +11,7 @@ export const POP_GENRE: GenreDefinition = {
     },
     pad: {
       pick: { min: 1, max: 1 },
-      instruments: ['synth pad', 'synth', 'analog synth', 'digital synth', 'arpeggiator', 'synth piano', 'supersaw', 'pluck synth'],
+      instruments: ['synth pad', 'synth', 'analog synth', 'digital synth', 'arpeggiator', 'synth piano', 'supersaw', 'pluck synth', 'synth choir'],
     },
     movement: {
       pick: { min: 1, max: 2 },

@@ -68,6 +68,13 @@ export const MULTIGENRE_FORCE_INCLUDE = [
   'bells',
   'guitar',
   'acoustic guitar',
+  // Added from multi-genre audit (2024-12-30)
+  'muted trumpet',
+  'mellotron',
+  'marimba',
+  'pedal steel',
+  'finger snaps',
+  'synth choir',
 ] as const;
 
 export const MULTIGENRE_FORCE_EXCLUDE = [
