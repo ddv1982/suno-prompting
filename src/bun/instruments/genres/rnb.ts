@@ -2,7 +2,7 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const RNB_GENRE: GenreDefinition = {
   name: 'R&B',
-  keywords: ['rnb', 'r&b', 'neo-soul', 'contemporary r&b', 'funk', 'quiet storm'],
+  keywords: ['rnb', 'r&b', 'neo-soul', 'contemporary r&b', 'quiet storm'],
   description: 'Soulful, groove-oriented music with rich harmonies and expressive vocals',
   pools: {
     harmonic: {

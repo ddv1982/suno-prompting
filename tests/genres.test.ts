@@ -63,6 +63,66 @@ describe('Genre Detection', () => {
     expect(detectGenre('psytrance festival')).toBe('trance');
   });
 
+  test('detects disco from keywords', () => {
+    expect(detectGenre('disco vibes')).toBe('disco');
+    expect(detectGenre('nu-disco track')).toBe('disco');
+  });
+
+  test('detects funk from keywords', () => {
+    expect(detectGenre('funky groove')).toBe('funk');
+    expect(detectGenre('p-funk style')).toBe('funk');
+  });
+
+  test('detects reggae from keywords', () => {
+    expect(detectGenre('reggae rhythm')).toBe('reggae');
+    expect(detectGenre('dancehall beat')).toBe('reggae');
+  });
+
+  test('detects afrobeat from keywords', () => {
+    expect(detectGenre('afrobeats track')).toBe('afrobeat');
+    expect(detectGenre('amapiano song')).toBe('afrobeat');
+  });
+
+  test('detects downtempo from keywords', () => {
+    expect(detectGenre('downtempo vibes')).toBe('downtempo');
+    expect(detectGenre('trip hop beat')).toBe('downtempo');
+  });
+
+  test('detects dreampop from keywords', () => {
+    expect(detectGenre('dream pop sound')).toBe('dreampop');
+    expect(detectGenre('shoegaze wall')).toBe('dreampop');
+  });
+
+  test('detects chillwave from keywords', () => {
+    expect(detectGenre('chillwave summer')).toBe('chillwave');
+    expect(detectGenre('hypnagogic vibes')).toBe('chillwave');
+  });
+
+  test('detects newage from keywords', () => {
+    expect(detectGenre('new age meditation')).toBe('newage');
+    expect(detectGenre('healing spa music')).toBe('newage');
+  });
+
+  test('detects hyperpop from keywords', () => {
+    expect(detectGenre('hyperpop chaos')).toBe('hyperpop');
+    expect(detectGenre('pc music style')).toBe('hyperpop');
+  });
+
+  test('detects drill from keywords', () => {
+    expect(detectGenre('uk drill beat')).toBe('drill');
+    expect(detectGenre('chicago drill')).toBe('drill');
+  });
+
+  test('detects melodictechno from keywords', () => {
+    expect(detectGenre('melodic techno')).toBe('melodictechno');
+    expect(detectGenre('afterhours set')).toBe('melodictechno');
+  });
+
+  test('detects indie from keywords', () => {
+    expect(detectGenre('indie rock song')).toBe('indie');
+    expect(detectGenre('bedroom indie vibes')).toBe('indie');
+  });
+
   test('detects rock from keywords', () => {
     expect(detectGenre('rock anthem')).toBe('rock');
     expect(detectGenre('alternative vibes')).toBe('rock');
@@ -102,7 +162,7 @@ describe('Genre Detection', () => {
   test('detects lofi from keywords', () => {
     expect(detectGenre('lofi beats')).toBe('lofi');
     expect(detectGenre('lo-fi study music')).toBe('lofi');
-    expect(detectGenre('chill vibes')).toBe('lofi');
+    expect(detectGenre('chillhop vibes')).toBe('lofi');
   });
 
   test('detects synthwave from keywords', () => {

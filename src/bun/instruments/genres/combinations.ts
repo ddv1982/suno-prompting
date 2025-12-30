@@ -22,7 +22,7 @@ export const MULTI_GENRE_COMBINATIONS = [
   // House/Techno blends
   'deep house', 'tech house', 'afro house', 'melodic house',
   // Reggae/Dub blends
-  'dub techno', 'reggae fusion', 'roots reggae',
+  'dub techno', 'roots reggae',
   // Dream/Chill blends
   'dream pop shoegaze', 'chillhop', 'downtempo electronica', 'lo-fi chill',
   // Drill/Hyperpop blends

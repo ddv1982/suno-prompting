@@ -2,7 +2,7 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const LOFI_GENRE: GenreDefinition = {
   name: 'Lo-fi',
-  keywords: ['lofi', 'lo-fi', 'chill', 'study beats', 'chillhop', 'bedroom pop'],
+  keywords: ['lofi', 'lo-fi', 'study beats', 'chillhop', 'lofi hip hop', 'lofi beats'],
   description: 'Relaxed, nostalgic music with warm textures and mellow beats',
   pools: {
     harmonic: {

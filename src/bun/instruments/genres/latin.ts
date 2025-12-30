@@ -3,7 +3,7 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const LATIN_GENRE: GenreDefinition = {
   name: 'Latin',
   keywords: [
-    'latin', 'bossa nova', 'latin jazz', 'reggae', 'reggae fusion',
+    'latin', 'bossa nova', 'latin jazz',
     'latin pop', 'salsa', 'tango', 'flamenco', 'afro-cuban',
   ],
   description: 'Rhythmic, groove-driven music with syncopated patterns, warm harmonies, and Latin percussion',

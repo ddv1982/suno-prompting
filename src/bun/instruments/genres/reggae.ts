@@ -17,13 +17,13 @@ export const REGGAE_GENRE: GenreDefinition = {
       pick: { min: 1, max: 2 },
       instruments: ['drums', 'nyabinghi drums', 'hi-hat', 'percussion'],
     },
-    texture: {
+    rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.4,
       instruments: ['spring reverb', 'tape delay', 'dub siren'],
     },
   },
-  poolOrder: ['harmonic', 'color', 'movement', 'texture'],
+  poolOrder: ['harmonic', 'color', 'movement', 'rare'],
   maxTags: 4,
   exclusionRules: [
     ['organ', 'Rhodes'],
