@@ -11,7 +11,9 @@ export function buildChatMessages(session: PromptSession): ChatMessage[] {
       if (version.lockedPhrase) {
         messages.push({ role: "ai", content: `Locked: "${version.lockedPhrase}"` });
       }
-      messages.push({ role: "ai", content: "Initial prompt generated." });
+      const titlePart = version.title ? ` - "${version.title}"` : "";
+      const lyricsPart = version.lyrics ? " with lyrics" : "";
+      messages.push({ role: "ai", content: `Generated prompt${titlePart}${lyricsPart}.` });
       return;
     }
     if (version.feedback) {
@@ -20,7 +22,9 @@ export function buildChatMessages(session: PromptSession): ChatMessage[] {
     if (version.lockedPhrase) {
       messages.push({ role: "ai", content: `Locked: "${version.lockedPhrase}"` });
     }
-    messages.push({ role: "ai", content: "Updated prompt generated." });
+    const titlePart = version.title ? ` - "${version.title}"` : "";
+    const lyricsPart = version.lyrics ? " with lyrics" : "";
+    messages.push({ role: "ai", content: `Refined prompt${titlePart}${lyricsPart}.` });
   });
 
   return messages;

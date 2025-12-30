@@ -27,7 +27,10 @@ export function HistorySidebar({
 
   const q = query.trim().toLowerCase();
   const filtered = q
-    ? sessions.filter(s => (s.originalInput || "").toLowerCase().includes(q))
+    ? sessions.filter(s => 
+        (s.originalInput || "").toLowerCase().includes(q) ||
+        (s.currentTitle || "").toLowerCase().includes(q)
+      )
     : sessions;
 
   return (
@@ -141,7 +144,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
                 isActive && "font-semibold"
               )}
             >
-              {session.originalInput || "Untitled Project"}
+              {session.currentTitle || session.originalInput || "Untitled Project"}
             </span>
             <span className="text-micro text-sidebar-foreground/50">
               {date.toLocaleDateString()}
