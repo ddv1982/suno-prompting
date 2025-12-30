@@ -151,12 +151,20 @@ export class AIEngine {
     userPrompt: string,
     messages?: Array<{ role: string; content: string }>
   ): DebugInfo {
+    // Build messages array in universal OpenAI-compatible format
+    const requestMessages = messages 
+      ? [{ role: 'system', content: systemPrompt }, ...messages]
+      : [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ];
+    
     const requestBody = {
       provider: this.provider,
       model: this.model,
-      system: systemPrompt,
-      ...(messages ? { messages } : { prompt: userPrompt }),
+      messages: requestMessages,
     };
+    
     return {
       systemPrompt,
       userPrompt,
