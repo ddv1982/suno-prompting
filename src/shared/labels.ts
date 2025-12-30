@@ -77,7 +77,7 @@ export const TIME_JOURNEY_LABELS: Record<string, string> = {
   gentle_odd: '3/4→5/4→6/8 gentle',
 };
 
-// Genre labels for music phrase output
+// Genre labels for music phrase output and UI dropdowns
 export const GENRE_LABELS: Record<string, string> = {
   ambient: 'Ambient',
   jazz: 'Jazz',
@@ -116,44 +116,8 @@ export const GENRE_LABELS: Record<string, string> = {
   indie: 'Indie',
 };
 
-// Genre display names for UI dropdowns
-export const GENRE_DISPLAY_NAMES: Record<string, string> = {
-  ambient: 'Ambient',
-  jazz: 'Jazz',
-  electronic: 'Electronic',
-  rock: 'Rock',
-  pop: 'Pop',
-  classical: 'Classical',
-  lofi: 'Lo-Fi',
-  synthwave: 'Synthwave',
-  cinematic: 'Cinematic',
-  folk: 'Folk',
-  rnb: 'R&B',
-  videogame: 'Videogame',
-  country: 'Country',
-  soul: 'Soul',
-  blues: 'Blues',
-  punk: 'Punk',
-  latin: 'Latin',
-  metal: 'Metal',
-  trap: 'Trap',
-  retro: 'Retro',
-  symphonic: 'Symphonic',
-  disco: 'Disco',
-  funk: 'Funk',
-  reggae: 'Reggae',
-  afrobeat: 'Afrobeat',
-  house: 'House',
-  trance: 'Trance',
-  downtempo: 'Downtempo',
-  dreampop: 'Dream Pop',
-  chillwave: 'Chillwave',
-  newage: 'New Age',
-  hyperpop: 'Hyperpop',
-  drill: 'Drill',
-  melodictechno: 'Melodic Techno',
-  indie: 'Indie',
-};
+// Alias for UI dropdowns (same as GENRE_LABELS)
+export const GENRE_DISPLAY_NAMES = GENRE_LABELS;
 
 // Genre combination display names (as-is, already readable)
 export const GENRE_COMBINATION_DISPLAY_NAMES: Record<string, string> = {

@@ -25,6 +25,7 @@ interface ComboboxProps {
   emptyText?: string;
   disabled?: boolean;
   className?: string;
+  "aria-label"?: string;
 }
 
 export function Combobox({
@@ -36,6 +37,7 @@ export function Combobox({
   emptyText = "No results found.",
   disabled = false,
   className,
+  "aria-label": ariaLabel,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -48,6 +50,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={ariaLabel}
           disabled={disabled}
           className={cn(
             "h-8 w-full justify-between text-sm font-normal",

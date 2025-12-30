@@ -67,6 +67,46 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Genre (single) */}
+                <div className="space-y-1.5">
+                    <label className="text-tiny text-muted-foreground font-medium">
+                        Genre
+                        {selection.genreCombination && (
+                            <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
+                        )}
+                    </label>
+                    <Combobox
+                        options={GENRE_OPTIONS}
+                        value={selection.singleGenre}
+                        onValueChange={(val) => onUpdate({ singleGenre: val })}
+                        disabled={!!selection.genreCombination}
+                        placeholder="Select genre..."
+                        searchPlaceholder="Search genres..."
+                        emptyText="No genre found."
+                        className={cn(selection.genreCombination && "opacity-50")}
+                    />
+                </div>
+
+                {/* Genre Combination */}
+                <div className="space-y-1.5">
+                    <label className="text-tiny text-muted-foreground font-medium">
+                        Genre Combination
+                        {selection.singleGenre && (
+                            <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
+                        )}
+                    </label>
+                    <Combobox
+                        options={GENRE_COMBINATION_OPTIONS}
+                        value={selection.genreCombination}
+                        onValueChange={(val) => onUpdate({ genreCombination: val })}
+                        disabled={!!selection.singleGenre}
+                        placeholder="Select combination..."
+                        searchPlaceholder="Search combinations..."
+                        emptyText="No combination found."
+                        className={cn(selection.singleGenre && "opacity-50")}
+                    />
+                </div>
+
                 {/* Harmonic Style (single mode) */}
                 <div className="space-y-1.5">
                     <label className="text-tiny text-muted-foreground font-medium">
@@ -203,46 +243,6 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
-
-                {/* Genre (single) */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
-                        Genre
-                        {selection.genreCombination && (
-                            <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
-                        )}
-                    </label>
-                    <Combobox
-                        options={GENRE_OPTIONS}
-                        value={selection.singleGenre}
-                        onValueChange={(val) => onUpdate({ singleGenre: val })}
-                        disabled={!!selection.genreCombination}
-                        placeholder="Select genre..."
-                        searchPlaceholder="Search genres..."
-                        emptyText="No genre found."
-                        className={cn(selection.genreCombination && "opacity-50")}
-                    />
-                </div>
-
-                {/* Genre Combination */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
-                        Genre Combination
-                        {selection.singleGenre && (
-                            <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
-                        )}
-                    </label>
-                    <Combobox
-                        options={GENRE_COMBINATION_OPTIONS}
-                        value={selection.genreCombination}
-                        onValueChange={(val) => onUpdate({ genreCombination: val })}
-                        disabled={!!selection.singleGenre}
-                        placeholder="Select combination..."
-                        searchPlaceholder="Search combinations..."
-                        emptyText="No combination found."
-                        className={cn(selection.singleGenre && "opacity-50")}
-                    />
                 </div>
             </div>
 
