@@ -334,7 +334,9 @@ export function PromptEditor({
                   isGenerating && "opacity-70"
                 )}
                 placeholder={currentPrompt 
-                  ? "Describe how you want to refine the prompt"
+                  ? (lyricsMode 
+                    ? "How should the style change? (e.g., 'more epic', 'add orchestra')"
+                    : "How should the prompt change? (e.g., 'more energy', 'darker mood')")
                   : (lyricsMode 
                     ? "Describe the musical style, genre, mood, and instrumentation"
                     : "Describe your song, style, mood, or refine the existing prompt")

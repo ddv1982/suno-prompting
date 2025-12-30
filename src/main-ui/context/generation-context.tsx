@@ -162,6 +162,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       );
       
       setPendingInput("");
+      setLyricsTopic("");
     } catch (error) {
       log.error("generate:failed", error);
       setChatMessages(prev => [
