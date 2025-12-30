@@ -8,7 +8,7 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Send, AlertCircle, Bug, Settings2, Lock, MessageSquare, Music2 } from "lucide-react";
+import { Loader2, Send, AlertCircle, Bug, Settings2, Lock, MessageSquare, Music2, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
@@ -66,6 +66,7 @@ type PromptEditorProps = {
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
   maxMode: boolean;
+  onMaxModeChange: (mode: boolean) => void;
   lyricsMode: boolean;
   onLyricsModeChange: (mode: boolean) => void;
   maxChars?: number;
@@ -112,6 +113,7 @@ export function PromptEditor({
   onRemixTitle,
   onRemixLyrics,
   maxMode,
+  onMaxModeChange,
   lyricsMode,
   onLyricsModeChange,
   maxChars = 1000,
@@ -287,10 +289,12 @@ export function PromptEditor({
             <QuickVibesPanel
               input={quickVibesInput}
               withWordlessVocals={withWordlessVocals}
+              maxMode={maxMode}
               isGenerating={isGenerating}
               hasCurrentPrompt={!!currentPrompt}
               onInputChange={onQuickVibesInputChange}
               onWordlessVocalsChange={onWordlessVocalsChange}
+              onMaxModeChange={onMaxModeChange}
               onGenerate={() => onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals)}
               onRefine={(feedback) => onGenerate(feedback)}
             />
@@ -329,6 +333,15 @@ export function PromptEditor({
                   <Switch 
                     checked={lyricsMode} 
                     onCheckedChange={onLyricsModeChange}
+                    size="sm"
+                  />
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer shrink-0">
+                  <Zap className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-tiny text-muted-foreground">Max</span>
+                  <Switch 
+                    checked={maxMode} 
+                    onCheckedChange={onMaxModeChange}
                     size="sm"
                   />
                 </label>

@@ -33,6 +33,7 @@ export const useAppContext = () => {
     lyricsMode: settings.lyricsMode,
     settingsOpen: settings.settingsOpen,
     setSettingsOpen: settings.setSettingsOpen,
+    setMaxMode: settings.setMaxMode,
     setLyricsMode: settings.setLyricsMode,
     
     // Editor

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
 import { Switch } from "@/components/ui/switch";
-import { Sparkles, Loader2, MessageSquare, Mic, RefreshCw } from "lucide-react";
+import { Sparkles, Loader2, MessageSquare, Mic, RefreshCw, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
@@ -17,10 +17,12 @@ const getCategoryLabel = (categoryId: QuickVibesCategory): string => {
 type QuickVibesPanelProps = {
   input: QuickVibesInput;
   withWordlessVocals: boolean;
+  maxMode: boolean;
   isGenerating: boolean;
   hasCurrentPrompt: boolean;
   onInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void;
+  onMaxModeChange: (value: boolean) => void;
   onGenerate: () => void;
   onRefine: (feedback: string) => void;
 };
@@ -28,10 +30,12 @@ type QuickVibesPanelProps = {
 export function QuickVibesPanel({
   input,
   withWordlessVocals,
+  maxMode,
   isGenerating,
   hasCurrentPrompt,
   onInputChange,
   onWordlessVocalsChange,
+  onMaxModeChange,
   onGenerate,
   onRefine,
 }: QuickVibesPanelProps) {
@@ -136,6 +140,26 @@ export function QuickVibesPanel({
           size="sm"
         />
       </label>
+
+      {/* Max Mode Toggle with Info */}
+      <div className="space-y-1">
+        <label className="flex items-center gap-3 py-2 cursor-pointer">
+          <Zap className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-sm">Max Mode</span>
+          <Switch
+            checked={maxMode}
+            onCheckedChange={onMaxModeChange}
+            disabled={isGenerating}
+            size="sm"
+          />
+        </label>
+        <p className="text-micro text-muted-foreground pl-6">
+          {maxMode 
+            ? "Creates a slightly different flavour with real instruments and subtle realism tags. Can be really nice!"
+            : "Keeps quick vibe genres more pure and focused."
+          }
+        </p>
+      </div>
 
       {/* Generate / Refine Button */}
       <Button

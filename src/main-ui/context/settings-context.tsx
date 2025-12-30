@@ -10,6 +10,7 @@ interface SettingsContextType {
   lyricsMode: boolean;
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
+  setMaxMode: (mode: boolean) => void;
   setLyricsMode: (mode: boolean) => void;
   reloadSettings: () => Promise<void>;
 }
@@ -55,6 +56,17 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const handleSetMaxMode = useCallback(async (mode: boolean) => {
+    const previousMode = maxMode;
+    setMaxMode(mode);
+    try {
+      await api.setMaxMode(mode);
+    } catch (error) {
+      log.error("setMaxMode:failed", error);
+      setMaxMode(previousMode);
+    }
+  }, [maxMode]);
+
   const handleSetLyricsMode = useCallback(async (mode: boolean) => {
     const previousMode = lyricsMode;
     setLyricsMode(mode);
@@ -84,6 +96,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       lyricsMode,
       settingsOpen,
       setSettingsOpen,
+      setMaxMode: handleSetMaxMode,
       setLyricsMode: handleSetLyricsMode,
       reloadSettings,
     }}>

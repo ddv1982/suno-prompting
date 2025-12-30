@@ -60,6 +60,7 @@ function App() {
     handleRemixTitle,
     handleRemixLyrics,
     maxMode,
+    setMaxMode,
     lyricsMode,
     setLyricsMode
   } = useAppContext();
@@ -120,6 +121,7 @@ function App() {
               onRemixTitle={handleRemixTitle}
               onRemixLyrics={handleRemixLyrics}
               maxMode={maxMode}
+              onMaxModeChange={setMaxMode}
               lyricsMode={lyricsMode}
               onLyricsModeChange={setLyricsMode}
               maxChars={APP_CONSTANTS.MAX_PROMPT_CHARS}
