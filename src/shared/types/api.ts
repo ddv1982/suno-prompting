@@ -110,6 +110,7 @@ export type RefineQuickVibesParams = {
   currentPrompt: string;
   feedback: string;
   withWordlessVocals: boolean;
+  category?: QuickVibesCategory | null;
 };
 
 export type RefineQuickVibesResponse = {

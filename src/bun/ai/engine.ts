@@ -419,11 +419,12 @@ export class AIEngine {
   async refineQuickVibes(
     currentPrompt: string,
     feedback: string,
-    withWordlessVocals: boolean
+    withWordlessVocals: boolean,
+    category?: QuickVibesCategory | null
   ): Promise<GenerationResult> {
     const cleanPrompt = stripMaxModeHeader(currentPrompt);
     const systemPrompt = buildQuickVibesRefineSystemPrompt(this.config.isMaxMode(), withWordlessVocals);
-    const userPrompt = buildQuickVibesRefineUserPrompt(cleanPrompt, feedback);
+    const userPrompt = buildQuickVibesRefineUserPrompt(cleanPrompt, feedback, category);
 
     try {
       const { text: rawResponse } = await generateText({

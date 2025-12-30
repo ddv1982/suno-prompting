@@ -234,10 +234,10 @@ export function createHandlers(
                 throw error;
             }
         },
-        refineQuickVibes: async ({ currentPrompt, feedback, withWordlessVocals }) => {
-            log.info('refineQuickVibes', { currentPrompt, feedback, withWordlessVocals });
+        refineQuickVibes: async ({ currentPrompt, feedback, withWordlessVocals, category }) => {
+            log.info('refineQuickVibes', { currentPrompt, feedback, withWordlessVocals, category });
             try {
-                const result = await aiEngine.refineQuickVibes(currentPrompt, feedback, withWordlessVocals);
+                const result = await aiEngine.refineQuickVibes(currentPrompt, feedback, withWordlessVocals, category);
                 const versionId = Bun.randomUUIDv7();
                 log.info('refineQuickVibes:complete', { versionId, promptLength: result.text.length });
                 return { prompt: result.text, versionId, debugInfo: result.debugInfo };

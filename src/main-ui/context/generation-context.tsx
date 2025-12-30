@@ -55,7 +55,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput } = useEditorContext();
 
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -145,7 +145,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         setGeneratingAction('quickVibes');
         setChatMessages(prev => [...prev, { role: "user", content: input }]);
 
-        const result = await api.refineQuickVibes(currentPrompt, input, withWordlessVocals);
+        const result = await api.refineQuickVibes(currentPrompt, input, withWordlessVocals, quickVibesInput.category);
 
         if (!result?.prompt) {
           throw new Error("Invalid result received from Quick Vibes refinement");

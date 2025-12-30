@@ -145,8 +145,9 @@ export const api = {
     async refineQuickVibes(
         currentPrompt: string,
         feedback: string,
-        withWordlessVocals: boolean
+        withWordlessVocals: boolean,
+        category: QuickVibesCategory | null
     ): Promise<BunRequests['refineQuickVibes']['response']> {
-        return await rpc.request.refineQuickVibes({ currentPrompt, feedback, withWordlessVocals });
+        return await rpc.request.refineQuickVibes({ currentPrompt, feedback, withWordlessVocals, category });
     }
 };

@@ -117,10 +117,24 @@ Keep the same general vibe but apply the requested changes.`;
 /**
  * Builds the user prompt for Quick Vibes refinement
  */
-export function buildQuickVibesRefineUserPrompt(currentPrompt: string, feedback: string): string {
-  return `Current prompt: "${currentPrompt}"
+export function buildQuickVibesRefineUserPrompt(
+  currentPrompt: string, 
+  feedback: string,
+  category?: QuickVibesCategory | null
+): string {
+  let prompt = `Current prompt: "${currentPrompt}"`;
 
-User feedback: ${feedback}
+  if (feedback.trim()) {
+    prompt += `\n\nUser feedback: ${feedback}`;
+  }
 
-Generate the refined prompt:`;
+  if (category) {
+    const catDef = QUICK_VIBES_CATEGORIES[category];
+    prompt += `\n\nRefine toward this category style:
+- Category: ${catDef.label}
+- Keywords: ${catDef.keywords.join(', ')}`;
+  }
+
+  prompt += `\n\nGenerate the refined prompt:`;
+  return prompt;
 }

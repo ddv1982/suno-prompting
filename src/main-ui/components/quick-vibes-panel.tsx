@@ -42,7 +42,7 @@ export function QuickVibesPanel({
   const charCount = input.customDescription.length;
   const isRefineMode = hasCurrentPrompt;
   const canSubmit = isRefineMode 
-    ? input.customDescription.trim().length > 0
+    ? input.customDescription.trim().length > 0 || input.category !== null
     : input.category !== null || input.customDescription.trim().length > 0;
 
   const handleCategorySelect = (categoryId: QuickVibesCategory | null) => {
@@ -74,19 +74,17 @@ export function QuickVibesPanel({
 
   return (
     <div className="space-y-4">
-      {/* Category Selection - only shown for initial generation */}
-      {!isRefineMode && (
-        <div className="space-y-2">
-          <FormLabel icon={<Sparkles className="w-3 h-3" />} badge="optional">
-            Category
-          </FormLabel>
-          <CategorySelector
-            selectedCategory={input.category}
-            onSelect={handleCategorySelect}
-            disabled={isGenerating}
-          />
-        </div>
-      )}
+      {/* Category Selection */}
+      <div className="space-y-2">
+        <FormLabel icon={<Sparkles className="w-3 h-3" />} badge="optional">
+          {isRefineMode ? "Refine toward category" : "Category"}
+        </FormLabel>
+        <CategorySelector
+          selectedCategory={input.category}
+          onSelect={handleCategorySelect}
+          disabled={isGenerating}
+        />
+      </div>
 
       {/* Description / Feedback Input */}
       <div className="space-y-1">
@@ -120,7 +118,9 @@ export function QuickVibesPanel({
         />
         <p className="text-micro text-muted-foreground">
           {isRefineMode 
-            ? "Describe how you'd like to adjust the current vibe."
+            ? input.category
+              ? `Will refine toward "${getCategoryLabel(input.category)}". Add feedback or leave blank.`
+              : "Describe how you'd like to adjust the current vibe, or select a category above."
             : input.category 
               ? `Category "${getCategoryLabel(input.category)}" selected. Add custom details or leave blank.`
               : "Describe the mood, setting, or activity for your music."
