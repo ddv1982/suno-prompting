@@ -1,38 +1,25 @@
 import type { QuickVibesCategory } from '@shared/types';
-import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS } from '@bun/prompt/quick-vibes-categories';
+import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_GENERATION_LIMIT } from '@bun/prompt/quick-vibes-categories';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 export { stripMaxModeHeader } from '@shared/prompt-utils';
-
-// Lo-fi appropriate realism tags for Max Mode
-const LOFI_MAX_TAGS = [
-  'vinyl warmth',
-  'tape hiss',
-  'lo-fi dusty',
-  'analog warmth',
-  'tape saturation',
-] as const;
 
 /**
  * Builds the system prompt for Quick Vibes generation
  */
-export function buildQuickVibesSystemPrompt(maxMode: boolean, withWordlessVocals: boolean): string {
+export function buildQuickVibesSystemPrompt(_maxMode: boolean, withWordlessVocals: boolean): string {
   const vocalInstruction = withWordlessVocals 
     ? 'Include WORDLESS vocals only (e.g., "with soft humming", "gentle vocalizations", "ethereal oohs and aahs"). NO actual lyrics or words.'
     : 'This is instrumental music - do NOT mention vocals or singing.';
 
-  const maxModeInstructions = maxMode 
-    ? `\n7. Add subtle realism tags if appropriate (e.g., "vinyl warmth", "tape hiss", "lo-fi dusty").`
-    : '';
-
   return `You are a Quick Vibes prompt writer for Suno V5. Generate short, evocative music prompts that capture a mood or atmosphere.
 
 RULES:
-1. Output MUST be under ${QUICK_VIBES_MAX_CHARS} characters
+1. Output MUST be under ${QUICK_VIBES_GENERATION_LIMIT} characters - be CONCISE
 2. Focus on VIBE and FEELING, not technical specifications
 3. Use vivid, emotional language (dreamy, cozy, warm, chill, mellow)
 4. Include activity or setting context when relevant (to study to, for a rainy day)
 5. ${vocalInstruction}
-6. Do NOT list instruments or technical specs, do NOT use section tags like [VERSE] or [CHORUS]${maxModeInstructions}
+6. Do NOT list instruments or technical specs, do NOT use section tags like [VERSE] or [CHORUS]
 
 OUTPUT: Return ONLY the prompt text, nothing else.`;
 }
@@ -93,11 +80,11 @@ export function postProcessQuickVibes(text: string): string {
   }
   
   // Enforce max length - truncate gracefully at word boundary if needed
-  if (result.length > QUICK_VIBES_MAX_CHARS) {
+  if (result.length > QUICK_VIBES_GENERATION_LIMIT) {
     // Find last space before limit
-    const truncated = result.slice(0, QUICK_VIBES_MAX_CHARS);
+    const truncated = result.slice(0, QUICK_VIBES_GENERATION_LIMIT);
     const lastSpace = truncated.lastIndexOf(' ');
-    if (lastSpace > QUICK_VIBES_MAX_CHARS * 0.7) {
+    if (lastSpace > QUICK_VIBES_GENERATION_LIMIT * 0.7) {
       result = truncated.slice(0, lastSpace).trim();
     } else {
       result = truncated.trim();
@@ -108,27 +95,11 @@ export function postProcessQuickVibes(text: string): string {
 }
 
 /**
- * Injects lo-fi realism tags for Max Mode if space permits
+ * Applies Max Mode processing: prepends header only (no realism tags for purer genres)
  */
-export function injectQuickVibesMaxTags(prompt: string, maxChars: number): string {
-  const shuffled = [...LOFI_MAX_TAGS].sort(() => Math.random() - 0.5);
-  const tag = shuffled[0];
-  const withTag = `${prompt}, ${tag}`;
-  
-  if (withTag.length <= maxChars) {
-    return withTag;
-  }
-  return prompt;
-}
-
-/**
- * Applies Max Mode processing: injects realism tags and prepends header
- */
-export function applyQuickVibesMaxMode(prompt: string, maxMode: boolean, maxChars: number): string {
+export function applyQuickVibesMaxMode(prompt: string, maxMode: boolean): string {
   if (!maxMode) return prompt;
-  
-  const withTags = injectQuickVibesMaxTags(prompt, maxChars);
-  return `${MAX_MODE_HEADER}\n${withTags}`;
+  return `${MAX_MODE_HEADER}\n${prompt}`;
 }
 
 /**

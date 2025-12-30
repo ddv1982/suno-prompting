@@ -5,7 +5,6 @@ import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
 import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes, applyQuickVibesMaxMode, stripMaxModeHeader, buildQuickVibesRefineSystemPrompt, buildQuickVibesRefineUserPrompt } from '@bun/prompt/quick-vibes-builder';
-import { QUICK_VIBES_MAX_CHARS } from '@bun/prompt/quick-vibes-categories';
 import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -400,7 +399,7 @@ export class AIEngine {
       }
 
       let result = postProcessQuickVibes(rawResponse);
-      result = applyQuickVibesMaxMode(result, this.config.isMaxMode(), QUICK_VIBES_MAX_CHARS);
+      result = applyQuickVibesMaxMode(result, this.config.isMaxMode());
 
       return {
         text: result,
@@ -440,7 +439,7 @@ export class AIEngine {
       }
 
       let result = postProcessQuickVibes(rawResponse);
-      result = applyQuickVibesMaxMode(result, this.config.isMaxMode(), QUICK_VIBES_MAX_CHARS);
+      result = applyQuickVibesMaxMode(result, this.config.isMaxMode());
 
       return {
         text: result,

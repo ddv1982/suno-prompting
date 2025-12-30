@@ -48,6 +48,7 @@ export const QUICK_VIBES_CATEGORIES: Record<QuickVibesCategory, QuickVibesCatego
 };
 
 export const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
+export const QUICK_VIBES_GENERATION_LIMIT = APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT;
 
 // Helper to get category list for UI
 export const QUICK_VIBES_CATEGORY_LIST = Object.entries(QUICK_VIBES_CATEGORIES).map(

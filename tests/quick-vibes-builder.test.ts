@@ -3,19 +3,18 @@ import {
   buildQuickVibesSystemPrompt,
   buildQuickVibesUserPrompt,
   postProcessQuickVibes,
-  injectQuickVibesMaxTags,
   applyQuickVibesMaxMode,
   stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt
 } from "@bun/prompt/quick-vibes-builder";
-import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS } from "@bun/prompt/quick-vibes-categories";
+import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS, QUICK_VIBES_GENERATION_LIMIT } from "@bun/prompt/quick-vibes-categories";
 
 describe("Quick Vibes Builder", () => {
   describe("buildQuickVibesSystemPrompt", () => {
     it("includes char limit instruction", () => {
       const prompt = buildQuickVibesSystemPrompt(false, false);
-      expect(prompt).toContain(`${QUICK_VIBES_MAX_CHARS} characters`);
+      expect(prompt).toContain(`${QUICK_VIBES_GENERATION_LIMIT} characters`);
     });
 
     it("handles instrumental mode (no vocals)", () => {
@@ -30,13 +29,14 @@ describe("Quick Vibes Builder", () => {
       expect(prompt).toContain("humming");
     });
 
-    it("includes Max Mode realism tags when enabled", () => {
-      const prompt = buildQuickVibesSystemPrompt(true, false);
-      expect(prompt).toContain("realism tags");
-      expect(prompt).toContain("vinyl warmth");
+    it("generates same prompt regardless of Max Mode flag", () => {
+      const promptWithMax = buildQuickVibesSystemPrompt(true, false);
+      const promptWithoutMax = buildQuickVibesSystemPrompt(false, false);
+      // Max Mode processing happens at post-processing, not in system prompt
+      expect(promptWithMax).toBe(promptWithoutMax);
     });
 
-    it("excludes Max Mode tags when disabled", () => {
+    it("excludes realism tags instructions", () => {
       const prompt = buildQuickVibesSystemPrompt(false, false);
       expect(prompt).not.toContain("vinyl warmth");
     });
@@ -80,7 +80,7 @@ describe("Quick Vibes Builder", () => {
     it("enforces max character limit", () => {
       const longText = "a".repeat(200);
       const result = postProcessQuickVibes(longText);
-      expect(result.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
+      expect(result.length).toBeLessThanOrEqual(QUICK_VIBES_GENERATION_LIMIT);
     });
 
     it("removes section tags", () => {
@@ -142,34 +142,10 @@ describe("Quick Vibes Categories", () => {
   });
 });
 
-describe("injectQuickVibesMaxTags", () => {
-  it("adds a lo-fi tag when space permits", () => {
-    const prompt = "dreamy lo-fi beats";
-    const result = injectQuickVibesMaxTags(prompt, QUICK_VIBES_MAX_CHARS);
-    expect(result.length).toBeGreaterThan(prompt.length);
-    expect(result).toContain(prompt);
-    expect(result).toContain(", ");
-  });
-
-  it("returns original prompt if tag would exceed limit", () => {
-    const prompt = "a".repeat(QUICK_VIBES_MAX_CHARS - 5);
-    const result = injectQuickVibesMaxTags(prompt, QUICK_VIBES_MAX_CHARS);
-    expect(result).toBe(prompt);
-  });
-
-  it("adds one of the known lo-fi tags", () => {
-    const prompt = "chill vibes";
-    const result = injectQuickVibesMaxTags(prompt, QUICK_VIBES_MAX_CHARS);
-    const knownTags = ["vinyl warmth", "tape hiss", "lo-fi dusty", "analog warmth", "tape saturation"];
-    const hasKnownTag = knownTags.some(tag => result.includes(tag));
-    expect(hasKnownTag).toBe(true);
-  });
-});
-
 describe("buildQuickVibesRefineSystemPrompt", () => {
   it("includes base Quick Vibes instructions", () => {
     const prompt = buildQuickVibesRefineSystemPrompt(false, false);
-    expect(prompt).toContain(`${QUICK_VIBES_MAX_CHARS} characters`);
+    expect(prompt).toContain(`${QUICK_VIBES_GENERATION_LIMIT} characters`);
     expect(prompt).toContain("Quick Vibes");
   });
 
@@ -179,9 +155,10 @@ describe("buildQuickVibesRefineSystemPrompt", () => {
     expect(prompt).toContain("user feedback");
   });
 
-  it("includes Max Mode instructions when enabled", () => {
+  it("excludes realism tags instructions even with Max Mode", () => {
     const prompt = buildQuickVibesRefineSystemPrompt(true, false);
-    expect(prompt).toContain("realism tags");
+    expect(prompt).not.toContain("realism tags");
+    expect(prompt).not.toContain("vinyl warmth");
   });
 
   it("includes wordless vocals instructions when enabled", () => {
@@ -211,22 +188,22 @@ describe("buildQuickVibesRefineUserPrompt", () => {
 
 describe("applyQuickVibesMaxMode", () => {
   it("prepends MAX_MODE_HEADER when maxMode is true", () => {
-    const result = applyQuickVibesMaxMode("chill vibes", true, QUICK_VIBES_MAX_CHARS);
+    const result = applyQuickVibesMaxMode("chill vibes", true);
     expect(result).toContain("[Is_MAX_MODE: MAX]");
     expect(result).toContain("[QUALITY: MAX]");
     expect(result).toContain("chill vibes");
   });
 
   it("returns prompt unchanged when maxMode is false", () => {
-    const result = applyQuickVibesMaxMode("chill vibes", false, QUICK_VIBES_MAX_CHARS);
+    const result = applyQuickVibesMaxMode("chill vibes", false);
     expect(result).toBe("chill vibes");
   });
 
-  it("injects lo-fi tags before prepending header", () => {
-    const result = applyQuickVibesMaxMode("dreamy beats", true, QUICK_VIBES_MAX_CHARS);
-    const knownTags = ["vinyl warmth", "tape hiss", "lo-fi dusty", "analog warmth", "tape saturation"];
-    const hasKnownTag = knownTags.some(tag => result.includes(tag));
-    expect(hasKnownTag).toBe(true);
+  it("preserves prompt content without adding realism tags", () => {
+    const result = applyQuickVibesMaxMode("dreamy beats", true);
+    expect(result).toContain("dreamy beats");
+    expect(result).not.toContain("vinyl warmth");
+    expect(result).not.toContain("tape hiss");
   });
 });
 
