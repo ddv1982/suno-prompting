@@ -496,8 +496,13 @@ export class AIEngine {
         error: e instanceof Error ? e.message : 'Unknown error',
         rawResponse: rawResponse.slice(0, 200) 
       });
-      // Fallback to legacy refinement
-      return this.refinePromptFallback(promptForLLM, feedback, lockedPhrase);
+      // Fallback to legacy refinement - preserve original title/lyrics
+      const fallbackResult = await this.refinePromptFallback(promptForLLM, feedback, lockedPhrase);
+      return {
+        ...fallbackResult,
+        title: currentTitle,
+        lyrics: this.lyricsMode ? currentLyrics : undefined,
+      };
     }
 
     // Post-process the prompt
