@@ -405,7 +405,7 @@ function DebugDrawerBody({ debugInfo }: { debugInfo: DebugInfo }) {
           {debugInfo.model.split('/').pop()}
         </span>
       </div>
-      <RequestInspector requestBody={debugInfo.requestBody} onCopy={copyToClipboard} copiedSection={copiedSection} />
+      <RequestInspector requestBody={debugInfo.requestBody} provider={debugInfo.provider} onCopy={copyToClipboard} copiedSection={copiedSection} />
     </div>
   );
 }
@@ -504,11 +504,13 @@ type RequestMessage = { role: string; content: string };
 type ParsedRequest = { model?: string; messages?: RequestMessage[]; [key: string]: unknown };
 
 function RequestInspector({ 
-  requestBody, 
+  requestBody,
+  provider,
   onCopy, 
   copiedSection 
 }: { 
-  requestBody: string; 
+  requestBody: string;
+  provider: string;
   onCopy: (text: string, section: string) => void;
   copiedSection: string | null;
 }) {
@@ -542,7 +544,7 @@ function RequestInspector({
     return (
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <SectionLabel>Groq Request Body</SectionLabel>
+          <SectionLabel>{provider.toUpperCase()} Request Body</SectionLabel>
           <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => onCopy(requestBody, 'request')}>
             {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </Button>
@@ -559,7 +561,7 @@ function RequestInspector({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <SectionLabel>Groq Request Body</SectionLabel>
+        <SectionLabel>{provider.toUpperCase()} Request Body</SectionLabel>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowRawJson(!showRawJson)}
