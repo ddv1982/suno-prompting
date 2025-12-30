@@ -38,7 +38,7 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'hurdy gurdy', category: 'rare', aliases: ['hurdy-gurdy', 'wheel fiddle', 'vielle'] },
   { canonical: 'nyckelharpa', category: 'rare', aliases: ['keyed fiddle', 'swedish keyed fiddle'] },
   { canonical: 'concertina', category: 'color', aliases: ['english concertina', 'anglo concertina'] },
-  { canonical: 'jews harp', category: 'rare', aliases: ['jaw harp', 'mouth harp', 'ozark harp'] },
+  { canonical: 'jaw harp', category: 'rare', aliases: ['jews harp', 'mouth harp', 'ozark harp'] },
 
   // Country/Americana
   { canonical: 'dobro', category: 'harmonic', aliases: ['resonator guitar', 'resophonic guitar', 'reso guitar'] },

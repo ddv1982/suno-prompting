@@ -21,7 +21,7 @@ export const FOLK_GENRE: GenreDefinition = {
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['mandolin', 'banjo', 'hurdy gurdy', 'jews harp', 'nyckelharpa'],
+      instruments: ['mandolin', 'banjo', 'hurdy gurdy', 'jaw harp', 'nyckelharpa'],
     },
   },
   poolOrder: ['harmonic', 'color', 'movement', 'rare'],

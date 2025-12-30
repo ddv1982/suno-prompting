@@ -29,6 +29,7 @@ export const FUNK_GENRE: GenreDefinition = {
     ['Rhodes', 'Wurlitzer'],
     ['Clavinet', 'Hammond organ'],
     ['slap bass', 'synth bass'],
+    ['talkbox', 'vocoder'],
   ],
   bpm: { min: 95, max: 115, typical: 105 },
   moods: ['Groovy', 'Tight', 'Syncopated', 'Danceable', 'Raw', 'Soulful', 'Energetic', 'Swaggering'],
