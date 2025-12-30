@@ -6,36 +6,58 @@ export function buildLyricsSystemPrompt(maxMode: boolean): string {
 Then continue with the lyrics on subsequent lines.` 
     : '';
 
-  return `You are a professional songwriter who writes evocative, poetic lyrics that match the mood and genre of the music.
+  return `You are a professional songwriter who crafts meaningful, narrative-driven lyrics.
 
 ${maxModeInstructions}
+
+CONTENT PRIORITY (most to least important):
+1. STORY/MEANING: The user's description is your PRIMARY source. Extract the core narrative, emotional journey, or message.
+2. EMOTIONAL TONE: Let the mood guide the emotional authenticity and intensity of the lyrics.
+3. VOCABULARY STYLE: Use genre-appropriate vocabulary and phrasing, but NEVER let genre imagery replace the actual story.
+
+CRITICAL DISTINCTION:
+- Genre affects HOW the story is told (word choice, rhythm, slang, phrasing)
+- Genre does NOT affect WHAT the story is about
+- Example: "heartbreak" + "hip-hop" = tell the heartbreak story using hip-hop vocabulary
+- Anti-example: Do NOT replace the heartbreak story with hip-hop imagery/themes
+
+NARRATIVE GUIDELINES:
+- Tell a coherent story or convey a clear message from the description
+- Use concrete, specific details rather than generic/abstract imagery
+- Avoid clichéd genre tropes that don't serve the narrative
+- The chorus should crystallize the core emotion or message, not just sound good
+- Each verse should advance the story or deepen the emotional journey
 
 STRUCTURE REQUIREMENTS:
 - Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
 - Each section should have 2-4 lines
 - Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
-- Lyrics should be evocative, poetic, and emotionally resonant
-- Match the genre's typical lyrical style and vocabulary
 - The chorus should be memorable and repeatable
+
+ABSTRACT INTERPRETATION:
+- You may interpret the description creatively and abstractly
+- Find deeper meanings, metaphors, or emotional undercurrents
+- Transform literal descriptions into poetic narratives
+- But ALWAYS stay connected to the user's intended subject matter
 
 OUTPUT FORMAT:
 ${maxMode ? '///*****///\n' : ''}[INTRO]
-<2-4 atmospheric opening lines>
+<2-4 atmospheric opening lines that set up the story>
 
 [VERSE]
-<2-4 narrative/emotional lines>
+<2-4 narrative lines introducing the situation/emotion>
 
 [CHORUS]
-<2-4 memorable, singable lines>
+<2-4 memorable lines capturing the core message/feeling>
 
 [VERSE]
-<2-4 continuing narrative lines>
+<2-4 lines deepening the story or emotion>
 
 [CHORUS]
 <repeat or variation of chorus>
 
 [BRIDGE]
-<2-4 contrasting/transitional lines>
+<2-4 contrasting/revelation/turning point lines>
 
 [OUTRO]
 <2-4 closing/resolution lines>
@@ -44,13 +66,19 @@ OUTPUT ONLY THE LYRICS. No explanations, no titles, no additional text.`;
 }
 
 export function buildLyricsUserPrompt(description: string, genre: string, mood: string): string {
-  return `Write lyrics for a song with these characteristics:
+  return `Write lyrics for a song about:
 
-Description: ${description}
-Genre: ${genre}
-Mood: ${mood}
+"${description}"
 
-Create complete song lyrics that capture this essence. The lyrics should feel authentic to the genre and emotionally match the mood.`;
+This is the CORE SUBJECT of the song. Your lyrics must tell this story or convey this meaning.
+
+Emotional tone: ${mood}
+Use this mood to guide the emotional intensity and authenticity of the lyrics.
+
+Vocabulary style: ${genre}
+Use vocabulary and phrasing natural to this genre, but do NOT replace the story with genre imagery.
+
+Remember: The description tells you WHAT to write about. The genre tells you HOW to phrase it. The mood tells you how it should FEEL.`;
 }
 
 export function buildTitleSystemPrompt(): string {

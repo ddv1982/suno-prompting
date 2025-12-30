@@ -29,6 +29,32 @@ describe("lyrics-builder", () => {
       expect(prompt).toContain("CRITICAL REQUIREMENT");
       expect(prompt).toContain("VERY FIRST LINE");
     });
+
+    it("should prioritize story/meaning in prompt", () => {
+      const prompt = buildLyricsSystemPrompt(false);
+      expect(prompt).toContain("CONTENT PRIORITY");
+      expect(prompt).toContain("STORY/MEANING");
+      expect(prompt).toContain("PRIMARY source");
+    });
+
+    it("should include critical distinction between genre and content", () => {
+      const prompt = buildLyricsSystemPrompt(false);
+      expect(prompt).toContain("CRITICAL DISTINCTION");
+      expect(prompt).toContain("Genre affects HOW the story is told");
+      expect(prompt).toContain("Genre does NOT affect WHAT the story is about");
+    });
+
+    it("should include narrative guidelines", () => {
+      const prompt = buildLyricsSystemPrompt(false);
+      expect(prompt).toContain("NARRATIVE GUIDELINES");
+      expect(prompt).toContain("coherent story");
+      expect(prompt).toContain("concrete, specific details");
+    });
+
+    it("should NOT contain old genre-matching instruction", () => {
+      const prompt = buildLyricsSystemPrompt(false);
+      expect(prompt).not.toContain("Match the genre's typical lyrical style and vocabulary");
+    });
   });
 
   describe("buildLyricsUserPrompt", () => {
@@ -37,6 +63,24 @@ describe("lyrics-builder", () => {
       expect(prompt).toContain("A song about the ocean");
       expect(prompt).toContain("ambient");
       expect(prompt).toContain("peaceful");
+    });
+
+    it("should present description as CORE SUBJECT", () => {
+      const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
+      expect(prompt).toContain("CORE SUBJECT");
+      expect(prompt).toContain('"A song about the ocean"');
+    });
+
+    it("should clarify role of each parameter", () => {
+      const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
+      expect(prompt).toContain("WHAT to write about");
+      expect(prompt).toContain("HOW to phrase it");
+      expect(prompt).toContain("how it should FEEL");
+    });
+
+    it("should warn against replacing story with genre imagery", () => {
+      const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
+      expect(prompt).toContain("do NOT replace the story with genre imagery");
     });
   });
 
