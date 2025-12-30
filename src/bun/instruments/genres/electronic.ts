@@ -10,8 +10,8 @@ export const ELECTRONIC_GENRE: GenreDefinition = {
       instruments: ['synth pad', 'analog synth', 'FM synth', 'arpeggiator', 'synth'],
     },
     movement: {
-      pick: { min: 2, max: 2 },
-      instruments: ['808', 'synth bass', 'kick drum', 'hi-hat', 'drums'],
+      pick: { min: 2, max: 3 },
+      instruments: ['808', 'TR-909', 'synth bass', 'TB-303', 'kick drum', 'hi-hat', 'drums'],
     },
     rare: {
       pick: { min: 0, max: 1 },
@@ -23,7 +23,9 @@ export const ELECTRONIC_GENRE: GenreDefinition = {
   maxTags: 4,
   exclusionRules: [
     ['808', 'drums'],
+    ['808', 'TR-909'],
     ['synth bass', 'bass'],
+    ['synth bass', 'TB-303'],
   ],
   bpm: { min: 120, max: 150, typical: 128 },
   moods: ['Euphoric', 'Energetic', 'Hypnotic', 'Driving', 'Pulsing', 'High Energy', 'Danceable', 'Intense'],

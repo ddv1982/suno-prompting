@@ -7,21 +7,21 @@ export const FOLK_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['acoustic guitar', 'felt piano'],
+      instruments: ['acoustic guitar', 'felt piano', 'autoharp', 'mountain dulcimer'],
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['violin', 'harp', 'flute', 'harmonica', 'accordion', 'clarinet'],
+      instruments: ['violin', 'harp', 'flute', 'harmonica', 'accordion', 'clarinet', 'concertina'],
     },
     movement: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.5,
-      instruments: ['cajón', 'percussion', 'frame drum'],
+      instruments: ['cajón', 'percussion', 'frame drum', 'washboard'],
     },
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['mandolin', 'banjo'],
+      instruments: ['mandolin', 'banjo', 'hurdy gurdy', 'jews harp', 'nyckelharpa'],
     },
   },
   poolOrder: ['harmonic', 'color', 'movement', 'rare'],

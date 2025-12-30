@@ -16,11 +16,11 @@ export const AFROBEAT_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['talking drum', 'balafon', 'kalimba', 'shekere', 'saxophone', 'trumpet'],
+      instruments: ['talking drum', 'balafon', 'kalimba', 'shekere', 'saxophone', 'baritone saxophone', 'trumpet', 'ogene'],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['djembe', 'percussion', 'drums', 'congas', 'shaker', '808'],
+      instruments: ['djembe', 'percussion', 'drums', 'congas', 'shaker', '808', 'agogo bells', 'udu drum'],
     },
   },
   poolOrder: ['harmonic', 'color', 'pad', 'movement'],

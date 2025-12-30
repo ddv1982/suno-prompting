@@ -10,7 +10,7 @@ export const BLUES_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['hollowbody guitar', 'guitar', 'grand piano', 'slide guitar'],
+      instruments: ['hollowbody guitar', 'guitar', 'grand piano', 'slide guitar', 'dobro', 'lap steel guitar'],
     },
     color: {
       pick: { min: 0, max: 1 },
@@ -21,14 +21,22 @@ export const BLUES_GENRE: GenreDefinition = {
       pick: { min: 1, max: 2 },
       instruments: ['bass', 'drums', 'upright bass', 'walking bass'],
     },
+    rare: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.15,
+      instruments: ['washboard'],
+    },
   },
-  poolOrder: ['harmonic', 'color', 'movement'],
+  poolOrder: ['harmonic', 'color', 'movement', 'rare'],
   maxTags: 4,
   exclusionRules: [
     ['bass', 'upright bass'],
     ['bass', 'walking bass'],
     ['upright bass', 'walking bass'],
     ['guitar', 'hollowbody guitar'],
+    ['dobro', 'lap steel guitar'],
+    ['slide guitar', 'dobro'],
+    ['slide guitar', 'lap steel guitar'],
   ],
   bpm: { min: 68, max: 132, typical: 88 },
   moods: ['Smoky', 'Soulful', 'Gritty', 'Emotional', 'Laid Back', 'Mournful', 'Raw', 'Hypnotic', 'Groovy'],

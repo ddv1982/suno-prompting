@@ -24,10 +24,29 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'hollowbody guitar', category: 'harmonic', aliases: ['semi-hollow guitar', 'archtop guitar', 'jazz guitar'] },
   { canonical: 'acoustic guitar', category: 'harmonic', aliases: ['folk guitar', 'steel string guitar'] },
   { canonical: 'nylon string guitar', category: 'harmonic', aliases: ['classical guitar', 'spanish guitar', 'nylon guitar'] },
-  { canonical: 'slide guitar', category: 'harmonic', aliases: ['bottleneck guitar', 'lap steel'] },
+  { canonical: 'slide guitar', category: 'harmonic', aliases: ['bottleneck guitar', 'bottleneck slide'] },
   { canonical: 'wah guitar', category: 'harmonic', aliases: ['wah-wah guitar', 'wah pedal guitar'] },
   { canonical: 'tremolo guitar', category: 'harmonic', aliases: ['tremolo picking', 'surf guitar'] },
   { canonical: 'fretless guitar', category: 'harmonic', aliases: [] },
+
+  // Extended-range guitars (metal/modern)
+  { canonical: 'seven-string guitar', category: 'harmonic', aliases: ['7-string', '7 string guitar', '7-string electric'] },
+  { canonical: 'eight-string guitar', category: 'harmonic', aliases: ['8-string', '8 string guitar', '8-string electric'] },
+  { canonical: 'baritone guitar', category: 'harmonic', aliases: ['bari guitar', 'baritone electric'] },
+
+  // Folk Traditional
+  { canonical: 'hurdy gurdy', category: 'rare', aliases: ['hurdy-gurdy', 'wheel fiddle', 'vielle'] },
+  { canonical: 'nyckelharpa', category: 'rare', aliases: ['keyed fiddle', 'swedish keyed fiddle'] },
+  { canonical: 'concertina', category: 'color', aliases: ['english concertina', 'anglo concertina'] },
+  { canonical: 'jews harp', category: 'rare', aliases: ['jaw harp', 'mouth harp', 'ozark harp'] },
+
+  // Country/Americana
+  { canonical: 'dobro', category: 'harmonic', aliases: ['resonator guitar', 'resophonic guitar', 'reso guitar'] },
+  { canonical: 'lap steel guitar', category: 'harmonic', aliases: ['lap steel', 'hawaiian guitar', 'console steel'] },
+  { canonical: 'autoharp', category: 'harmonic', aliases: ['auto harp', 'chord zither'] },
+  { canonical: 'hammered dulcimer', category: 'harmonic', aliases: ['hammer dulcimer', 'cimbalom'] },
+  { canonical: 'mountain dulcimer', category: 'harmonic', aliases: ['appalachian dulcimer', 'lap dulcimer'] },
+  { canonical: 'washboard', category: 'movement', aliases: ['frottoir', 'rubboard'] },
 
   // Pads and synths
   { canonical: 'synth pad', category: 'pad', aliases: ['pad', 'pads', 'synth pads'] },
@@ -71,7 +90,7 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'theremin', category: 'rare', aliases: [] },
   { canonical: 'waterphone', category: 'rare', aliases: ['ocean harp'] },
   { canonical: 'glass armonica', category: 'rare', aliases: ['glass harmonica', 'armonica'] },
-  { canonical: 'vocoder', category: 'rare', aliases: ['talk box', 'voice synth'] },
+  { canonical: 'vocoder', category: 'rare', aliases: ['voice synth', 'robot voice'] },
   { canonical: 'harmonica', category: 'color', aliases: ['blues harp', 'mouth organ', 'harp harmonica'] },
   { canonical: 'accordion', category: 'color', aliases: ['squeezebox', 'button accordion'] },
   { canonical: 'mandolin', category: 'rare', aliases: ['mando'] },
@@ -157,6 +176,8 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'tenor sax', category: 'color', aliases: ['tenor saxophone'] },
   { canonical: 'alto sax', category: 'color', aliases: ['alto saxophone'] },
   { canonical: 'soprano sax', category: 'color', aliases: ['soprano saxophone'] },
+  { canonical: 'baritone saxophone', category: 'color', aliases: ['bari sax', 'baritone sax'] },
+  { canonical: 'flugelhorn', category: 'color', aliases: ['flugel', 'fluegel horn'] },
   { canonical: 'french horn', category: 'color', aliases: ['horn', 'horns'] },
   { canonical: 'trombone', category: 'color', aliases: [] },
   { canonical: 'bass trombone', category: 'color', aliases: [] },
@@ -203,6 +224,31 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'hi-hat', category: 'movement', aliases: ['hi-hats', 'hihat', 'hihats'] },
   { canonical: 'trap hi hats', category: 'movement', aliases: ['rolling hi hats', 'trap hats', 'stuttering hi hats'] },
   { canonical: 'kick drum', category: 'movement', aliases: ['kick', 'bass drum', 'four on the floor'] },
+
+  // World/Ethnic Instruments
+  { canonical: 'tabla', category: 'movement', aliases: ['indian drums', 'tabla drums'] },
+  { canonical: 'dholak', category: 'movement', aliases: ['dholki', 'two-headed drum'] },
+  { canonical: 'santoor', category: 'color', aliases: ['santur', 'santour', 'persian dulcimer'] },
+  { canonical: 'sarod', category: 'color', aliases: ['sarod lute'] },
+  { canonical: 'didgeridoo', category: 'rare', aliases: ['didge', 'yidaki', 'drone pipe'] },
+  { canonical: 'udu drum', category: 'movement', aliases: ['udu', 'clay pot drum', 'water pot'] },
+  { canonical: 'ogene', category: 'movement', aliases: ['iron bell', 'igbo bell'] },
+
+  // Electronic/Production
+  { canonical: 'TR-909', category: 'movement', aliases: ['909', 'Roland 909', 'nine-oh-nine'] },
+  { canonical: 'TB-303', category: 'movement', aliases: ['303', 'acid bass', 'acid synth', 'Roland 303'] },
+  { canonical: 'talkbox', category: 'rare', aliases: ['talk box', 'voice box'] },
+  { canonical: 'Linn drum', category: 'movement', aliases: ['LinnDrum', 'LM-1'] },
+
+  // Latin Percussion
+  { canonical: 'guiro', category: 'movement', aliases: ['scraper', 'guira', 'güiro'] },
+  { canonical: 'cuica', category: 'movement', aliases: ['cuíca', 'friction drum', 'laughing drum'] },
+  { canonical: 'agogo bells', category: 'movement', aliases: ['agogo', 'agogô', 'double bells'] },
+  { canonical: 'cowbell', category: 'movement', aliases: ['cencerro', 'campana', 'cha-cha bell'] },
+  { canonical: 'cabasa', category: 'movement', aliases: ['afuche', 'afuché'] },
+  { canonical: 'pandeiro', category: 'movement', aliases: ['brazilian tambourine', 'pandero'] },
+  { canonical: 'maracas', category: 'movement', aliases: ['rumba shakers'] },
+  { canonical: 'repinique', category: 'movement', aliases: ['repique', 'repi'] },
 ] as const;
 
 // Build lookup maps at module load time

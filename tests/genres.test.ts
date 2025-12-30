@@ -267,7 +267,10 @@ describe('Genre Instrument Selection', () => {
       multiGenre: { enabled: false, count: { min: 1, max: 2 } },
       foundational: { enabled: false, count: { min: 0, max: 1 } },
     });
-    expect(result.includes('mandolin') || result.includes('banjo')).toBe(true);
+    // Folk rare pool: mandolin, banjo, hurdy gurdy, jews harp, nyckelharpa
+    const folkRareInstruments = ['mandolin', 'banjo', 'hurdy gurdy', 'jews harp', 'nyckelharpa'];
+    const hasRare = folkRareInstruments.some(i => result.includes(i));
+    expect(hasRare).toBe(true);
   });
 
   test('handles user instruments option', () => {

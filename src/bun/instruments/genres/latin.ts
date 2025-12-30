@@ -18,13 +18,16 @@ export const LATIN_GENRE: GenreDefinition = {
       instruments: ['trumpet', 'saxophone', 'flute', 'bandoneon'],
     },
     movement: {
-      pick: { min: 2, max: 3 },
-      instruments: ['upright bass', 'bass', 'congas', 'bongos', 'timbales', 'claves', 'shaker'],
+      pick: { min: 2, max: 4 },
+      instruments: [
+        'upright bass', 'bass', 'congas', 'bongos', 'timbales', 'claves', 'shaker',
+        'guiro', 'cowbell', 'maracas', 'agogo bells', 'cabasa',
+      ],
     },
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.25,
-      instruments: ['castanet', 'vibraphone'],
+      instruments: ['castanet', 'vibraphone', 'cuica', 'pandeiro', 'surdo', 'repinique'],
     },
   },
   poolOrder: ['harmonic', 'movement', 'color', 'rare'],

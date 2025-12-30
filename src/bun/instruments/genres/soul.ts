@@ -14,7 +14,7 @@ export const SOUL_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['strings', 'trumpet', 'saxophone', 'low brass'],
+      instruments: ['strings', 'trumpet', 'flugelhorn', 'saxophone', 'baritone saxophone', 'low brass'],
     },
     movement: {
       pick: { min: 1, max: 2 },
@@ -32,6 +32,8 @@ export const SOUL_GENRE: GenreDefinition = {
     ['Rhodes', 'Wurlitzer'],
     ['Rhodes', 'grand piano'],
     ['trumpet', 'low brass'],
+    ['trumpet', 'flugelhorn'],
+    ['saxophone', 'baritone saxophone'],
   ],
   bpm: { min: 80, max: 110, typical: 96 },
   moods: ['Soulful', 'Emotional', 'Heartfelt', 'Warm', 'Passionate', 'Uplifting', 'Powerful', 'Groovy', 'Joyful'],

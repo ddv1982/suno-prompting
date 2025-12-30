@@ -20,7 +20,7 @@ export const HOUSE_GENRE: GenreDefinition = {
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['kick drum', 'hi-hat', '808', 'handclaps', 'shaker', 'percussion'],
+      instruments: ['kick drum', 'hi-hat', '808', 'TR-909', 'handclaps', 'shaker', 'percussion', 'cowbell'],
     },
   },
   poolOrder: ['pad', 'harmonic', 'color', 'movement'],

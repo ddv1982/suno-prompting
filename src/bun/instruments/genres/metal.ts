@@ -10,7 +10,10 @@ export const METAL_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['distorted guitar', 'guitar'],
+      instruments: [
+        'distorted guitar', 'guitar', 'seven-string guitar',
+        'eight-string guitar', 'baritone guitar',
+      ],
     },
     pad: {
       pick: { min: 0, max: 1 },
@@ -31,6 +34,11 @@ export const METAL_GENRE: GenreDefinition = {
   maxTags: 4,
   exclusionRules: [
     ['distorted guitar', 'guitar'],
+    ['distorted guitar', 'seven-string guitar'],
+    ['distorted guitar', 'eight-string guitar'],
+    ['seven-string guitar', 'eight-string guitar'],
+    ['guitar', 'seven-string guitar'],
+    ['guitar', 'eight-string guitar'],
     ['choir', 'strings'],
   ],
   bpm: { min: 100, max: 180, typical: 140 },

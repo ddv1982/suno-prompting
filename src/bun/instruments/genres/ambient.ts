@@ -70,8 +70,8 @@ export const AMBIENT_GENRE: GenreDefinition = {
     // Rare texture - very unusual
     rare: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.15,
-      instruments: ['waterphone', 'glass armonica', 'theremin', 'prepared piano'],
+      chanceToInclude: 0.2,
+      instruments: ['waterphone', 'glass armonica', 'theremin', 'prepared piano', 'didgeridoo', 'santoor', 'tabla'],
     },
   },
   poolOrder: ['foundation', 'texture', 'evolving', 'piano', 'curiosity', 'world', 'movement', 'rare'],

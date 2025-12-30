@@ -11,15 +11,15 @@ export const FUNK_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['slap bass', 'wah guitar', 'low brass', 'trumpet', 'tenor sax', 'trombone'],
+      instruments: ['slap bass', 'wah guitar', 'low brass', 'trumpet', 'tenor sax', 'trombone', 'talkbox'],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['drums', 'hi-hat', 'handclaps', 'congas', 'bongos', 'tambourine'],
+      instruments: ['drums', 'hi-hat', 'handclaps', 'congas', 'bongos', 'tambourine', 'cowbell'],
     },
     rare: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.2,
+      chanceToInclude: 0.25,
       instruments: ['vocoder', 'synth bass'],
     },
   },
