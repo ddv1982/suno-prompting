@@ -1,6 +1,10 @@
-import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
-import { type EditorMode, type AdvancedSelection, type QuickVibesInput, EMPTY_ADVANCED_SELECTION } from '@shared/types';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
+import { type EditorMode, type AdvancedSelection, type QuickVibesInput, type PromptMode, EMPTY_ADVANCED_SELECTION } from '@shared/types';
 import { buildMusicPhrase } from '@shared/music-phrase';
+import { api } from '@/services/rpc';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('Editor');
 
 const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = {
   category: null,
@@ -15,6 +19,7 @@ const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelecti
 
 interface EditorContextType {
   editorMode: EditorMode;
+  promptMode: PromptMode;
   advancedSelection: AdvancedSelection;
   lockedPhrase: string;
   pendingInput: string;
@@ -23,6 +28,7 @@ interface EditorContextType {
   quickVibesInput: QuickVibesInput;
   withWordlessVocals: boolean;
   setEditorMode: (mode: EditorMode) => void;
+  setPromptMode: (mode: PromptMode) => void;
   setAdvancedSelection: (selection: AdvancedSelection) => void;
   updateAdvancedSelection: (updates: Partial<AdvancedSelection>) => void;
   clearAdvancedSelection: () => void;
@@ -46,12 +52,26 @@ export const useEditorContext = () => {
 
 export const EditorProvider = ({ children }: { children: ReactNode }) => {
   const [editorMode, setEditorMode] = useState<EditorMode>('simple');
+  const [promptMode, setPromptModeState] = useState<PromptMode>('full');
   const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
   const [lockedPhrase, setLockedPhrase] = useState("");
   const [pendingInput, setPendingInput] = useState("");
   const [lyricsTopic, setLyricsTopic] = useState("");
   const [quickVibesInput, setQuickVibesInput] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
   const [withWordlessVocals, setWithWordlessVocals] = useState(false);
+
+  // Load promptMode once on mount - no reload, no race conditions
+  useEffect(() => {
+    api.getPromptMode()
+      .then(mode => setPromptModeState(mode))
+      .catch(err => log.error("loadPromptMode:failed", err));
+  }, []);
+
+  // Fire-and-forget save to backend
+  const setPromptMode = useCallback((mode: PromptMode) => {
+    setPromptModeState(mode);
+    api.setPromptMode(mode).catch(err => log.error("setPromptMode:failed", err));
+  }, []);
 
   const computedMusicPhrase = useMemo(() => {
     return buildMusicPhrase(advancedSelection);
@@ -97,6 +117,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
   return (
     <EditorContext.Provider value={{
       editorMode,
+      promptMode,
       advancedSelection,
       lockedPhrase,
       pendingInput,
@@ -105,6 +126,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       quickVibesInput,
       withWordlessVocals,
       setEditorMode,
+      setPromptMode,
       setAdvancedSelection,
       updateAdvancedSelection,
       clearAdvancedSelection,
