@@ -288,9 +288,11 @@ export function PromptEditor({
               input={quickVibesInput}
               withWordlessVocals={withWordlessVocals}
               isGenerating={isGenerating}
+              hasCurrentPrompt={!!currentPrompt}
               onInputChange={onQuickVibesInputChange}
               onWordlessVocalsChange={onWordlessVocalsChange}
               onGenerate={() => onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals)}
+              onRefine={(feedback) => onGenerate(feedback)}
             />
           ) : (
             /* Full Prompt Input Panel */
