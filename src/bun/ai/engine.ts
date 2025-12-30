@@ -268,6 +268,7 @@ export class AIEngine {
     currentTitle?: string,
     currentLyrics?: string,
     lyricsTopic?: string,
+    // genreOverride unused in refinement - genre already embedded in currentPrompt
     _genreOverride?: string
   ): Promise<GenerationResult> {
     const promptForLLM = lockedPhrase

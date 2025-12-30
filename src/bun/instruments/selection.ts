@@ -162,9 +162,20 @@ export async function selectModes(
 ): Promise<ModeSelection> {
   // If user explicitly selected a genre from dropdown, use it
   if (genreOverride) {
-    const isValidGenre = genreOverride in GENRE_REGISTRY;
+    // Check if it's a valid single genre
+    let effectiveGenre: GenreType | null = null;
+    if (genreOverride in GENRE_REGISTRY) {
+      effectiveGenre = genreOverride as GenreType;
+    } else {
+      // For combinations (e.g., "jazz fusion"), extract base genre for Max Mode features
+      const baseGenre = genreOverride.split(' ')[0];
+      if (baseGenre in GENRE_REGISTRY) {
+        effectiveGenre = baseGenre as GenreType;
+      }
+    }
+
     return {
-      genre: isValidGenre ? (genreOverride as GenreType) : null,
+      genre: effectiveGenre,
       combination: detectCombination(description),
       singleMode: null,
       polyrhythmCombination: detectPolyrhythmCombination(description),
