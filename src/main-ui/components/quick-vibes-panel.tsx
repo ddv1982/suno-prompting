@@ -66,7 +66,7 @@ export function QuickVibesPanel({
       {/* Custom Description */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <FormLabel icon={<MessageSquare className="w-3 h-3" />}>
+          <FormLabel icon={<MessageSquare className="w-3 h-3" />} badge="optional">
             Describe the vibe
           </FormLabel>
           <Badge
