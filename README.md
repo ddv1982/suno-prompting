@@ -460,7 +460,22 @@ Recording character suggestions per genre:
 
 <!-- GENRE_TABLE_END -->
 
-### Instrument layers
+### Instrument Classification System
+
+The app uses a 3-tier classification system to ensure variety while maintaining genre authenticity:
+
+| Tier | Role | Count | Behavior |
+|------|------|-------|----------|
+| **Foundational** | Rhythm/harmony anchors | 14 | 0-1 injected to fill gaps |
+| **Multi-genre** | Versatile wildcards | 53 | 1-2 injected for variety |
+| **Orchestral Color** | Cinematic flavor | 22 | Gated to orchestral genres only |
+
+**How selection works:**
+1. Genre-specific pools are picked first (harmonic, pad, color, movement, rare)
+2. Quota-based injection fills missing tiers without exceeding `maxTags`
+3. Orchestral instruments only appear in cinematic/classical/videogame (or 15% chance in ambient)
+
+This prevents "genre drift" while ensuring prompts have enough variety to produce interesting results.
 
 <!-- INSTRUMENT_CLASSES_START -->
 
