@@ -395,7 +395,7 @@ function DebugDrawerBody({ debugInfo }: { debugInfo: DebugInfo }) {
   };
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="mt-4 space-y-3 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 is-scrolling">
       <div className="text-tiny text-muted-foreground flex items-center gap-3">
         <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleString()}</span>
         <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase text-[10px] tracking-wide">
@@ -596,8 +596,8 @@ function RequestInspector({
             const displayContent = isExpanded || !needsTruncation ? msg.content : preview + (preview.length < msg.content.length ? '...' : '');
 
             return (
-              <div key={idx} className="rounded-lg border bg-background/50 overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b">
+              <div key={idx} className="rounded-lg border border-border/50 bg-background/30 overflow-hidden hover:border-border/80 transition-colors">
+                <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-muted/40 to-muted/20 border-b border-border/30">
                   <Badge variant="outline" className={cn("text-micro font-bold uppercase h-4 px-1.5", roleColors[msg.role] || "")}>
                     {msg.role}
                   </Badge>
@@ -608,14 +608,22 @@ function RequestInspector({
                     </Button>
                   </div>
                 </div>
-                <div className="p-2">
-                  <pre className="text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
-                    {displayContent}
-                  </pre>
+                <div className="p-3">
+                  {isExpanded ? (
+                    <ScrollArea className="max-h-64">
+                      <pre className="text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed pr-3">
+                        {msg.content}
+                      </pre>
+                    </ScrollArea>
+                  ) : (
+                    <pre className="text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                      {displayContent}
+                    </pre>
+                  )}
                   {needsTruncation && (
                     <button
                       onClick={() => toggleMessage(idx)}
-                      className="mt-1 text-micro text-primary hover:underline"
+                      className="mt-2 text-micro text-primary hover:underline"
                     >
                       {isExpanded ? "Show less" : `Show more (${lines.length} lines)`}
                     </button>
