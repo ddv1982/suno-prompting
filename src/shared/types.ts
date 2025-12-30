@@ -86,8 +86,8 @@ export type GenerateInitialResponse = {
     debugInfo?: DebugInfo;
 };
 
-export type RefinePromptParams = { currentPrompt: string; feedback: string; lockedPhrase?: string };
-export type RefinePromptResponse = { prompt: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
+export type RefinePromptParams = { currentPrompt: string; feedback: string; lockedPhrase?: string; currentTitle?: string; currentLyrics?: string };
+export type RefinePromptResponse = { prompt: string; title?: string; lyrics?: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo };
 
 export type RemixInstrumentsParams = { currentPrompt: string; originalInput: string };
 export type RemixInstrumentsResponse = { prompt: string; versionId: string; validation: ValidationResult };

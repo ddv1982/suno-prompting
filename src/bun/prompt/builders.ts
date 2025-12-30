@@ -173,11 +173,55 @@ export function buildMaxModeContextualPrompt(
   return parts.join('\n');
 }
 
+// Refinement context for refining existing prompts
+export type RefinementContext = {
+  currentPrompt: string;
+  currentTitle: string;
+  currentLyrics?: string;
+  feedback: string;
+};
+
 // Combined system prompt for generating style prompt + title in one call
-export function buildCombinedSystemPrompt(maxChars: number, useSunoTags: boolean, maxMode: boolean): string {
+export function buildCombinedSystemPrompt(
+  maxChars: number, 
+  useSunoTags: boolean, 
+  maxMode: boolean,
+  refinement?: RefinementContext
+): string {
   const basePrompt = maxMode 
     ? buildMaxModeSystemPrompt(maxChars)
     : buildSystemPrompt(maxChars, useSunoTags);
+  
+  if (refinement) {
+    return `${basePrompt}
+
+REFINEMENT MODE:
+You are refining an existing music prompt and title based on user feedback.
+Apply the feedback to improve BOTH outputs while maintaining consistency between them.
+
+CURRENT STYLE PROMPT:
+${refinement.currentPrompt}
+
+CURRENT TITLE:
+${refinement.currentTitle}
+
+USER FEEDBACK:
+${refinement.feedback}
+
+OUTPUT FORMAT - Return valid JSON:
+{
+  "prompt": "<the refined music prompt>",
+  "title": "<the refined song title (1-5 words)>"
+}
+
+REFINEMENT RULES:
+- Apply user feedback to all relevant parts (prompt, title)
+- Maintain consistency between style prompt and title mood/theme
+- Keep what works well, improve what the feedback targets
+- If feedback only mentions one element, still return both (keep other mostly unchanged)
+
+IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
+  }
   
   return `${basePrompt}
 
@@ -194,7 +238,12 @@ IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.
 }
 
 // Combined system prompt for generating style prompt + title + lyrics in one call
-export function buildCombinedWithLyricsSystemPrompt(maxChars: number, useSunoTags: boolean, maxMode: boolean): string {
+export function buildCombinedWithLyricsSystemPrompt(
+  maxChars: number, 
+  useSunoTags: boolean, 
+  maxMode: boolean,
+  refinement?: RefinementContext
+): string {
   const basePrompt = maxMode 
     ? buildMaxModeSystemPrompt(maxChars)
     : buildSystemPrompt(maxChars, useSunoTags);
@@ -203,6 +252,43 @@ export function buildCombinedWithLyricsSystemPrompt(maxChars: number, useSunoTag
     ? `The lyrics MUST start with: ///*****///
 Then section tags on subsequent lines.`
     : '';
+
+  if (refinement) {
+    return `${basePrompt}
+
+REFINEMENT MODE:
+You are refining an existing music prompt, title, and lyrics based on user feedback.
+Apply the feedback to improve ALL THREE outputs while maintaining consistency between them.
+
+CURRENT STYLE PROMPT:
+${refinement.currentPrompt}
+
+CURRENT TITLE:
+${refinement.currentTitle}
+
+CURRENT LYRICS:
+${refinement.currentLyrics || ''}
+
+USER FEEDBACK:
+${refinement.feedback}
+
+${lyricsFormat}
+
+OUTPUT FORMAT - Return valid JSON:
+{
+  "prompt": "<the refined music prompt>",
+  "title": "<the refined song title (1-5 words)>",
+  "lyrics": "<the refined lyrics with section tags>"
+}
+
+REFINEMENT RULES:
+- Apply user feedback to all relevant parts (prompt, title, lyrics)
+- Maintain consistency between style prompt and lyrics mood/theme
+- Keep what works well, improve what the feedback targets
+- If feedback only mentions one element, still return all three (keep others mostly unchanged)
+
+IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
+  }
   
   return `${basePrompt}
 

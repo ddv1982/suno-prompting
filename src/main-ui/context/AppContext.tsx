@@ -265,6 +265,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (isGenerating) return;
         
         const currentPrompt = currentSession?.currentPrompt || "";
+        const currentTitle = currentSession?.currentTitle;
+        const currentLyrics = currentSession?.currentLyrics;
         const isInitial = !currentPrompt;
         const effectiveLockedPhrase = getEffectiveLockedPhrase();
 
@@ -276,7 +278,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
             const result = isInitial
                 ? await api.generateInitial(input, effectiveLockedPhrase)
-                : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase);
+                : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics);
 
             if (!result?.prompt) {
                 throw new Error("Invalid result received from generation");

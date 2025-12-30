@@ -55,7 +55,7 @@ describe("RPC Handlers", () => {
         const result = await handlers.refinePrompt({ currentPrompt: "Old prompt", feedback: "Make it louder" });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined);
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined);
     });
 
     test("getHistory should call storage", async () => {

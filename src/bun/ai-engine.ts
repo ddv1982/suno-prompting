@@ -14,7 +14,7 @@ import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo, AppConfig, AIProvider, APIKeys } from '@shared/types';
-import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt } from '@bun/prompt/builders';
+import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
@@ -450,19 +450,88 @@ export class AIEngine {
     }
   }
 
-  async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string): Promise<GenerationResult> {
-    const systemPrompt = this.systemPrompt;
+  async refinePrompt(
+    currentPrompt: string, 
+    feedback: string, 
+    lockedPhrase?: string,
+    currentTitle?: string,
+    currentLyrics?: string
+  ): Promise<GenerationResult> {
     // Remove locked phrase from prompt before sending to LLM (will re-inject after)
     const promptForLLM = lockedPhrase 
       ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
       : currentPrompt;
-    const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedback}`;
-    const messages = [
-      { role: 'assistant', content: promptForLLM },
+
+    // Build refinement context
+    const refinement: RefinementContext = {
+      currentPrompt: promptForLLM,
+      currentTitle: currentTitle || 'Untitled',
+      currentLyrics: currentLyrics,
+      feedback,
+    };
+
+    // Use SAME pattern as generateInitial - select based on lyricsMode
+    const systemPrompt = this.lyricsMode
+      ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, this.useSunoTags, this.maxMode, refinement)
+      : buildCombinedSystemPrompt(MAX_CHARS, this.useSunoTags, this.maxMode, refinement);
+
+    const { text: rawResponse } = await generateText({
+      model: this.getModel(),
+      system: systemPrompt,
+      prompt: 'Refine based on the feedback provided in the system prompt.',
+      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+    });
+
+    // Parse combined JSON response (same as generateInitial)
+    let parsed: { prompt: string; title: string; lyrics?: string };
+    try {
+      const cleaned = rawResponse.trim().replace(/```json\n?|\n?```/g, '');
+      parsed = JSON.parse(cleaned);
+      if (!parsed.prompt) {
+        throw new Error('Missing prompt in response');
+      }
+    } catch (e) {
+      log.warn('refinePrompt:json_parse_failed', { 
+        error: e instanceof Error ? e.message : 'Unknown error',
+        rawResponse: rawResponse.slice(0, 200) 
+      });
+      // Fallback to legacy refinement
+      return this.refinePromptFallback(promptForLLM, feedback, lockedPhrase);
+    }
+
+    // Post-process the prompt
+    let promptText = await this.postProcess(parsed.prompt);
+
+    // Re-inject locked phrase directly (bypass LLM)
+    if (lockedPhrase) {
+      promptText = injectLockedPhrase(promptText, lockedPhrase, this.maxMode);
+    }
+
+    return {
+      text: promptText,
+      title: parsed.title?.trim().replace(/^["']|["']$/g, '') || currentTitle || 'Untitled',
+      lyrics: this.lyricsMode ? (parsed.lyrics?.trim() || currentLyrics) : undefined,
+      debugInfo: this.debugMode
+        ? this.buildDebugInfo(systemPrompt, feedback, rawResponse)
+        : undefined,
+    };
+  }
+
+  // Legacy fallback for refinement when JSON parsing fails
+  private async refinePromptFallback(
+    currentPrompt: string, 
+    feedback: string, 
+    lockedPhrase?: string
+  ): Promise<GenerationResult> {
+    const systemPrompt = this.systemPrompt;
+    const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
+    const messages: Array<{ role: 'assistant' | 'user'; content: string }> = [
+      { role: 'assistant', content: currentPrompt },
       { role: 'user', content: feedback },
     ];
 
-    const result = await this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
+    const result = await this.runGeneration('refine prompt fallback', systemPrompt, userPrompt, async () =>
       generateText({
         model: this.getModel(),
         system: systemPrompt,
