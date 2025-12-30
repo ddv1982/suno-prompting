@@ -4,6 +4,8 @@ import {
   buildQuickVibesUserPrompt,
   postProcessQuickVibes,
   injectQuickVibesMaxTags,
+  applyQuickVibesMaxMode,
+  stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt
 } from "@bun/prompt/quick-vibes-builder";
@@ -204,5 +206,50 @@ describe("buildQuickVibesRefineUserPrompt", () => {
     expect(prompt).toContain("Current prompt:");
     expect(prompt).toContain("User feedback:");
     expect(prompt).toContain("Generate the refined prompt:");
+  });
+});
+
+describe("applyQuickVibesMaxMode", () => {
+  it("prepends MAX_MODE_HEADER when maxMode is true", () => {
+    const result = applyQuickVibesMaxMode("chill vibes", true, 120);
+    expect(result).toContain("[Is_MAX_MODE: MAX]");
+    expect(result).toContain("[QUALITY: MAX]");
+    expect(result).toContain("chill vibes");
+  });
+
+  it("returns prompt unchanged when maxMode is false", () => {
+    const result = applyQuickVibesMaxMode("chill vibes", false, 120);
+    expect(result).toBe("chill vibes");
+  });
+
+  it("injects lo-fi tags before prepending header", () => {
+    const result = applyQuickVibesMaxMode("dreamy beats", true, 120);
+    const knownTags = ["vinyl warmth", "tape hiss", "lo-fi dusty", "analog warmth", "tape saturation"];
+    const hasKnownTag = knownTags.some(tag => result.includes(tag));
+    expect(hasKnownTag).toBe(true);
+  });
+});
+
+describe("stripMaxModeHeader", () => {
+  it("strips header from prompt", () => {
+    const withHeader = `[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+chill vibes`;
+    expect(stripMaxModeHeader(withHeader)).toBe("chill vibes");
+  });
+
+  it("returns prompt unchanged if no header", () => {
+    expect(stripMaxModeHeader("chill vibes")).toBe("chill vibes");
+  });
+
+  it("handles prompt with header and multiple lines of content", () => {
+    const withHeader = `[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+dreamy lo-fi beats, vinyl warmth`;
+    expect(stripMaxModeHeader(withHeader)).toBe("dreamy lo-fi beats, vinyl warmth");
   });
 });
