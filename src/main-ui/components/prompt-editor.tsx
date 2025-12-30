@@ -396,8 +396,11 @@ function DebugDrawerBody({ debugInfo }: { debugInfo: DebugInfo }) {
 
   return (
     <div className="mt-4 space-y-3">
-      <div className="text-tiny text-muted-foreground">
+      <div className="text-tiny text-muted-foreground flex items-center gap-3">
         <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleString()}</span>
+        <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase text-[10px] tracking-wide">
+          {debugInfo.provider}
+        </span>
       </div>
       <RequestInspector requestBody={debugInfo.requestBody} onCopy={copyToClipboard} copiedSection={copiedSection} />
     </div>

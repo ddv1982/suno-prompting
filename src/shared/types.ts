@@ -60,6 +60,7 @@ export type DebugInfo = {
     systemPrompt: string;
     userPrompt: string;
     model: string;
+    provider: AIProvider;
     timestamp: string;
     requestBody: string;
     // Lyrics mode additional debug info

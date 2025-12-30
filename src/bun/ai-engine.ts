@@ -14,7 +14,7 @@ import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo, AppConfig, AIProvider, APIKeys } from '@shared/types';
-import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt } from '@bun/prompt/builders';
+import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt } from '@bun/prompt/builders';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
@@ -76,17 +76,6 @@ function injectStyleTags(prompt: string, genre: string): string {
   }
   
   return replaceStyleTagsLine(prompt, styleTags.join(', '));
-}
-
-function formatRequestBody(body: unknown): string {
-  if (typeof body === 'string') {
-    try {
-      return JSON.stringify(JSON.parse(body), null, 2);
-    } catch {
-      return body;
-    }
-  }
-  return JSON.stringify(body, null, 2);
 }
 
 // truncateToLimit now lives in @bun/prompt/postprocess
@@ -157,13 +146,24 @@ export class AIEngine {
     return buildSystemPrompt(MAX_CHARS, this.useSunoTags);
   }
 
-  private buildDebugInfo(systemPrompt: string, userPrompt: string, requestBody: unknown): DebugInfo {
+  private buildDebugInfo(
+    systemPrompt: string,
+    userPrompt: string,
+    messages?: Array<{ role: string; content: string }>
+  ): DebugInfo {
+    const requestBody = {
+      provider: this.provider,
+      model: this.model,
+      system: systemPrompt,
+      ...(messages ? { messages } : { prompt: userPrompt }),
+    };
     return {
       systemPrompt,
       userPrompt,
       model: this.model,
+      provider: this.provider,
       timestamp: new Date().toISOString(),
-      requestBody: formatRequestBody(requestBody),
+      requestBody: JSON.stringify(requestBody, null, 2),
     };
   }
 
@@ -259,7 +259,7 @@ export class AIEngine {
       return {
         text: result,
         debugInfo: this.debugMode
-          ? this.buildDebugInfo(systemPrompt, userPromptForDebug, genResult.request.body)
+          ? this.buildDebugInfo(systemPrompt, userPromptForDebug)
           : undefined,
       };
     } catch (error) {
@@ -331,7 +331,7 @@ export class AIEngine {
       title: parsed.title?.trim().replace(/^["']|["']$/g, '') || 'Untitled',
       lyrics: parsed.lyrics?.trim(),
       debugInfo: this.debugMode
-        ? this.buildDebugInfo(systemPrompt, userPrompt, { combined: true })
+        ? this.buildDebugInfo(systemPrompt, userPrompt)
         : undefined,
     };
 
