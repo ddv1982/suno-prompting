@@ -9,7 +9,7 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMod
   // Try quoted format first: instruments: "piano, guitar"
   const quotedMatch = prompt.match(/^(instruments:\s*")([^"]*)/mi);
   if (quotedMatch) {
-    const existingValue = quotedMatch[2].trim();
+    const existingValue = (quotedMatch[2] ?? '').trim();
     const separator = existingValue ? ', ' : '';
     return prompt.replace(
       /^(instruments:\s*")([^"]*)/mi,
@@ -21,9 +21,9 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMod
   // Use [^\S\n]* for horizontal whitespace only (not newlines), and * to handle empty content
   const unquotedMatch = prompt.match(/^(instruments:[^\S\n]*)([^"\n]*)$/mi);
   if (unquotedMatch) {
-    const existingValue = unquotedMatch[2].trim();
+    const existingValue = (unquotedMatch[2] ?? '').trim();
     // If no existing value, ensure space after colon; if existing, add comma separator
-    const prefix = existingValue ? '' : (unquotedMatch[1].endsWith(' ') ? '' : ' ');
+    const prefix = existingValue ? '' : ((unquotedMatch[1] ?? '').endsWith(' ') ? '' : ' ');
     const separator = existingValue ? ', ' : '';
     return prompt.replace(
       /^(instruments:[^\S\n]*)([^"\n]*)$/mi,

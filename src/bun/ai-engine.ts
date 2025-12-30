@@ -39,26 +39,8 @@ export type ParsedCombinedResponse = {
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
-export function _testStripLeakedMetaLines(text: string): string {
-  // Back-compat export for tests
-  return text
-    .split('\n')
-    .filter(line => {
-      const lower = line.toLowerCase();
-      return ![
-        'remove word repetition',
-        'remove repetition',
-        'these words repeat',
-        'output only',
-        'condense to under',
-        'strict constraints',
-        "here's the revised prompt",
-        'here is the revised prompt',
-      ].some(s => lower.includes(s));
-    })
-    .join('\n')
-    .trim();
-}
+// Re-export stripLeakedMetaLines from postprocess for backwards compatibility
+export { stripLeakedMetaLines as _testStripLeakedMetaLines } from '@bun/prompt/postprocess';
 
 function extractGenreFromMaxModePrompt(prompt: string): string {
   const match = prompt.match(/^genre:\s*"?([^"\n,]+)/mi);

@@ -52,6 +52,18 @@ export function createHandlers(
         }
     }
 
+    async function runSingleFieldRemix<T>(name: string, operation: () => Promise<T>): Promise<T> {
+        log.info(name);
+        try {
+            const result = await operation();
+            log.info(`${name}:complete`);
+            return result;
+        } catch (error) {
+            log.error(`${name}:failed`, error);
+            throw error;
+        }
+    }
+
     return {
         generateInitial: async ({ description, lockedPhrase }) => {
             return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description, lockedPhrase));
@@ -75,26 +87,16 @@ export function createHandlers(
             return runRemixAction('remixRecording', () => aiEngine.remixRecording(currentPrompt));
         },
         remixTitle: async ({ currentPrompt, originalInput }) => {
-            log.info('remixTitle');
-            try {
+            return runSingleFieldRemix('remixTitle', async () => {
                 const result = await aiEngine.remixTitle(currentPrompt, originalInput);
-                log.info('remixTitle:complete');
                 return { title: result.title };
-            } catch (error) {
-                log.error('remixTitle:failed', error);
-                throw error;
-            }
+            });
         },
         remixLyrics: async ({ currentPrompt, originalInput }) => {
-            log.info('remixLyrics');
-            try {
+            return runSingleFieldRemix('remixLyrics', async () => {
                 const result = await aiEngine.remixLyrics(currentPrompt, originalInput);
-                log.info('remixLyrics:complete');
                 return { lyrics: result.lyrics };
-            } catch (error) {
-                log.error('remixLyrics:failed', error);
-                throw error;
-            }
+            });
         },
         getHistory: async () => {
             log.info('getHistory');
