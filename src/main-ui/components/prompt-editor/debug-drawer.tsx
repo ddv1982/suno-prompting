@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { DebugInfo } from "@shared/types";
-import { RequestInspector } from "@/components/prompt-editor/RequestInspector";
+import { RequestInspector } from "@/components/prompt-editor/request-inspector";
 
 type DebugDrawerBodyProps = {
   debugInfo: DebugInfo;

@@ -14,15 +14,15 @@ import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 import { type DebugInfo, type EditorMode, type AdvancedSelection } from "@shared/types";
-import { type GeneratingAction } from "@/context/AppContext";
+import { type GeneratingAction } from "@/context/app-context";
 import { APP_CONSTANTS } from "@shared/constants";
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { RemixButtonGroup } from "@/components/remix-button-group";
 import { ChatHistorySection } from "@/components/chat-history-section";
 import { PromptOutput } from "@/components/prompt-output";
-import { ValidationMessages } from "@/components/prompt-editor/ValidationMessages";
-import { OutputSection } from "@/components/prompt-editor/OutputSection";
-import { DebugDrawerBody } from "@/components/prompt-editor/DebugDrawer";
+import { ValidationMessages } from "@/components/prompt-editor/validation-messages";
+import { OutputSection } from "@/components/prompt-editor/output-section";
+import { DebugDrawerBody } from "@/components/prompt-editor/debug-drawer";
 
 type PromptEditorProps = {
   currentPrompt: string;

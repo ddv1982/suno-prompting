@@ -3,8 +3,8 @@ import { api } from '@/services/rpc';
 import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
-import { useSessionContext } from '@/context/SessionContext';
-import { useEditorContext } from '@/context/EditorContext';
+import { useSessionContext } from '@/context/session-context';
+import { useEditorContext } from '@/context/editor-context';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('Generation');

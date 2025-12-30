@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Shuffle, RefreshCw, Check, Copy, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type GeneratingAction } from "@/context/AppContext";
+import { type GeneratingAction } from "@/context/app-context";
 
 type RemixButtonGroupProps = {
   isGenerating: boolean;

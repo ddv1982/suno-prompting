@@ -1,16 +1,16 @@
 // Compatibility layer - combines all split contexts into a single useAppContext hook
 // This allows existing components to continue working without changes
 
-import { useSessionContext } from '@/context/SessionContext';
-import { useSettingsContext } from '@/context/SettingsContext';
-import { useEditorContext } from '@/context/EditorContext';
-import { useGenerationContext } from '@/context/GenerationContext';
+import { useSessionContext } from '@/context/session-context';
+import { useSettingsContext } from '@/context/settings-context';
+import { useEditorContext } from '@/context/editor-context';
+import { useGenerationContext } from '@/context/generation-context';
 
 // Re-export types for backwards compatibility
-export type { GeneratingAction } from '@/context/GenerationContext';
+export type { GeneratingAction } from '@/context/generation-context';
 
 // Re-export the new AppProvider
-export { AppProvider } from '@/context/AppProvider';
+export { AppProvider } from '@/context/app-provider';
 
 // Backwards-compatible hook that combines all contexts
 export const useAppContext = () => {

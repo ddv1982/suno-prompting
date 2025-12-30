@@ -5,7 +5,7 @@ import { Header } from "@/components/app-header";
 import { HistorySidebar } from "@/components/history-sidebar";
 import { PromptEditor } from "@/components/prompt-editor";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { AppProvider, useAppContext } from "@/context/AppContext";
+import { AppProvider, useAppContext } from "@/context/app-context";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { APP_CONSTANTS } from "@shared/constants";
 
