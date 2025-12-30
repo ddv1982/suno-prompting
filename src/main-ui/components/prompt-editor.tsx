@@ -369,8 +369,8 @@ export function PromptEditor({
             </div>
           </div>
 
-          {/* Song Topic - only shown when lyrics mode is enabled and no prompt yet */}
-          {lyricsMode && !currentPrompt && (
+          {/* Song Topic - shown when lyrics mode is enabled */}
+          {lyricsMode && (
             <div className="space-y-1">
               <FormLabel
                 icon={<Music2 className="w-3 h-3" />}
@@ -379,7 +379,7 @@ export function PromptEditor({
                 maxChars={lyricsTopic ? APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS : undefined}
                 error={lyricsTopicOverLimit}
               >
-                Song Topic (for lyrics)
+                {currentPrompt ? 'Song Topic' : 'Song Topic (for lyrics)'}
               </FormLabel>
               <Textarea
                 value={lyricsTopic}

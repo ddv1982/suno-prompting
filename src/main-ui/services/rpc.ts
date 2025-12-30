@@ -31,8 +31,8 @@ export const api = {
         return await rpc.request.generateInitial({ description, lockedPhrase, lyricsTopic });
     },
 
-    async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string, currentTitle?: string, currentLyrics?: string): Promise<BunRequests['refinePrompt']['response']> {
-        return await rpc.request.refinePrompt({ currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics });
+    async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string, currentTitle?: string, currentLyrics?: string, lyricsTopic?: string): Promise<BunRequests['refinePrompt']['response']> {
+        return await rpc.request.refinePrompt({ currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic });
     },
 
     async remixInstruments(currentPrompt: string, originalInput: string): Promise<BunRequests['remixInstruments']['response']> {

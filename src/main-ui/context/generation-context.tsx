@@ -145,7 +145,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
       const result = isInitial
         ? await api.generateInitial(input, effectiveLockedPhrase, effectiveLyricsTopic)
-        : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics);
+        : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics, effectiveLyricsTopic);
 
       if (!result?.prompt) {
         throw new Error("Invalid result received from generation");
@@ -158,13 +158,10 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         isInitial,
         input,
         effectiveLockedPhrase,
-        isInitial ? effectiveLyricsTopic : undefined
+        effectiveLyricsTopic
       );
       
       setPendingInput("");
-      if (isInitial) {
-        setLyricsTopic("");
-      }
     } catch (error) {
       log.error("generate:failed", error);
       setChatMessages(prev => [

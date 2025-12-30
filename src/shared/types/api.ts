@@ -21,6 +21,7 @@ export type RefinePromptParams = {
   lockedPhrase?: string; 
   currentTitle?: string; 
   currentLyrics?: string;
+  lyricsTopic?: string;
 };
 export type RefinePromptResponse = { 
   prompt: string; 

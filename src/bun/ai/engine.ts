@@ -264,7 +264,8 @@ export class AIEngine {
     feedback: string,
     lockedPhrase?: string,
     currentTitle?: string,
-    currentLyrics?: string
+    currentLyrics?: string,
+    lyricsTopic?: string
   ): Promise<GenerationResult> {
     const promptForLLM = lockedPhrase
       ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
@@ -274,6 +275,7 @@ export class AIEngine {
       currentPrompt: promptForLLM,
       currentTitle: currentTitle || 'Untitled',
       currentLyrics: currentLyrics,
+      lyricsTopic: lyricsTopic,
     };
 
     const systemPrompt = this.config.isLyricsMode()

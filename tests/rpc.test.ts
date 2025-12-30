@@ -55,7 +55,7 @@ describe("RPC Handlers", () => {
         const result = await handlers.refinePrompt({ currentPrompt: "Old prompt", feedback: "Make it louder" });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined);
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined, undefined);
     });
 
     test("refinePrompt should pass currentTitle and currentLyrics to aiEngine", async () => {
@@ -95,7 +95,8 @@ describe("RPC Handlers", () => {
             "Make it louder", 
             undefined, 
             "Old Title", 
-            "[VERSE]\nOld lyrics"
+            "[VERSE]\nOld lyrics",
+            undefined
         );
     });
 

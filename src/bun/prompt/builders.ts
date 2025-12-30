@@ -191,6 +191,7 @@ export type RefinementContext = {
   currentPrompt: string;
   currentTitle: string;
   currentLyrics?: string;
+  lyricsTopic?: string;
 };
 
 // Combined system prompt for generating style prompt + title in one call
@@ -268,6 +269,10 @@ Then section tags on subsequent lines.`
       ? `CURRENT LYRICS:\n${refinement.currentLyrics}`
       : `CURRENT LYRICS: None - generate fresh lyrics based on the refined prompt and title`;
     
+    const lyricsTopicSection = refinement.lyricsTopic 
+      ? `\nLYRICS TOPIC (use this as the core subject for lyrics, NOT the musical style):\n${refinement.lyricsTopic}`
+      : '';
+    
     const freshLyricsRequirements = !hasExistingLyrics ? `
 LYRICS REQUIREMENTS FOR NEW LYRICS:
 - Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
@@ -290,7 +295,7 @@ ${refinement.currentPrompt}
 CURRENT TITLE:
 ${refinement.currentTitle}
 
-${lyricsSection}
+${lyricsSection}${lyricsTopicSection}
 
 ${additionalInstructions}
 
