@@ -108,13 +108,11 @@ export function replaceGenreTableSection(readme: string, tableMarkdown: string):
 
 export function buildInstrumentClassesMarkdown(): string {
   return [
-    `**Foundational instruments** (anchors): ${FOUNDATIONAL_INSTRUMENTS.join(', ')}`,
-    '',
-    `**Multi-genre instruments** (wildcards): ${MULTIGENRE_INSTRUMENTS.join(
-      ', ',
-    )}`,
-    '',
-    `**Orchestral color instruments** (gated): ${ORCHESTRAL_COLOR_INSTRUMENTS.join(', ')}`,
+    '| Tier | Count | Instruments |',
+    '|------|-------|-------------|',
+    `| **Foundational** | ${FOUNDATIONAL_INSTRUMENTS.length} | ${FOUNDATIONAL_INSTRUMENTS.join(', ')} |`,
+    `| **Multi-genre** | ${MULTIGENRE_INSTRUMENTS.length} | ${MULTIGENRE_INSTRUMENTS.join(', ')} |`,
+    `| **Orchestral** | ${ORCHESTRAL_COLOR_INSTRUMENTS.length} | ${ORCHESTRAL_COLOR_INSTRUMENTS.join(', ')} |`,
   ].join('\n');
 }
 

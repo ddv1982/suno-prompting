@@ -6,26 +6,15 @@ Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts w
 
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
-- [Architecture](#architecture-high-level)
-  - [AI Engine](#ai-engine)
-  - [Prompt Pipeline](#prompt-pipeline)
-  - [Instruments + Music Knowledge](#instruments--music-knowledge)
+- [Architecture](#architecture)
 - [AI Providers](#ai-providers)
-- [Output Format Contract](#output-format-contract)
+- [Output Format](#output-format)
 - [Features](#features)
 - [Genre & Mode Detection](#genre--mode-detection)
-  - [Tier 1: Keyword Matching](#tier-1-keyword-matching)
-  - [Tier 2: Spelling Correction](#tier-2-spelling-correction)
-  - [Tier 3: LLM Selection](#tier-3-llm-selection)
 - [Max Mode](#max-mode)
 - [Title & Lyrics](#title--lyrics)
 - [Prompt Enhancement System](#prompt-enhancement-system)
-  - [BPM Ranges](#bpm-ranges)
-  - [Mood Pools](#mood-pools)
-  - [Chord Progressions](#chord-progressions)
 - [Reference Tables](#reference-tables)
-  - [Genres](#genres-keywords--palette)
-  - [Instrument Layers](#instrument-layers)
 - [Tech Stack](#tech-stack)
 
 ## Quick Start
@@ -37,39 +26,23 @@ bun install
 bun start
 ```
 
-Run tests:
+Run tests: `bun test`
 
-```bash
-bun test
-```
+<details>
+<summary><strong>Build Commands</strong></summary>
 
-Build:
+| Command | Description |
+|---------|-------------|
+| `bun run build` | Development build (outputs to `build/`) |
+| `bun run build:macos` | macOS (Intel & Apple Silicon) |
+| `bun run build:linux` | Linux (x64) |
+| `bun run build:windows` | Windows (x64) |
+| `bun run build:all` | All platforms |
+| `bun run build:stable` | Production (current platform) |
+| `bun run build:stable:all` | Production (all platforms) |
+| `bun run build:canary` | Canary (current platform) |
 
-```bash
-bun run build
-```
-
-Platform builds:
-
-- macOS (Intel & Apple Silicon): `bun run build:macos`
-- Linux (x64): `bun run build:linux`
-- Windows (x64): `bun run build:windows`
-- All: `bun run build:all`
-
-Production builds (canary/stable):
-
-- Canary (current platform): `bun run build:canary`
-- Canary (all platforms): `bun run build:canary:all`
-- Stable (current platform): `bun run build:stable`
-- Stable (all platforms): `bun run build:stable:all`
-
-Platform-specific production builds:
-
-- macOS stable: `bun run build:stable:macos`
-- Linux stable: `bun run build:stable:linux`
-- Windows stable: `bun run build:stable:windows`
-
-Development builds output to `build/`. Production builds generate artifacts for distribution.
+</details>
 
 ## Configuration
 
@@ -83,40 +56,15 @@ Settings (including your AI provider API keys) are stored locally:
 
 API keys are encrypted at rest using AES-256-GCM.
 
-## Architecture (high level)
+## Architecture
 
-### AI engine
-
-- `src/bun/ai/engine.ts`: main AIEngine class orchestrating generation.
-- `src/bun/ai/config.ts`: AIConfig class for provider/model/settings management.
-- `src/bun/ai/content-generator.ts`: title and lyrics generation.
-- `src/bun/ai/llm-rewriter.ts`: condense/rewrite helpers for post-processing.
-- `src/bun/ai/remix.ts`: remix operations (genre, mood, instruments, etc.).
-
-### Prompt pipeline
-
-- `src/bun/prompt/builders.ts`: constructs the system/context prompts (normal + max mode).
-- `src/bun/prompt/postprocess.ts`: strips leaked meta, enforces the output contract, truncates to limits.
-- `src/bun/prompt/remix.ts`: field-line replacement helpers used by remix actions.
-- `src/bun/prompt/realism-tags.ts`: max mode header tags, realism descriptors, and genre-to-tag mapping.
-- `src/bun/prompt/articulations.ts`: instrument articulation system (10 categories, 100+ articulations).
-- `src/bun/prompt/vocal-descriptors.ts`: vocal ranges, deliveries, and techniques per genre.
-- `src/bun/prompt/production-elements.ts`: reverb types and recording textures per genre.
-- `src/bun/prompt/chord-progressions.ts`: 26 named chord progressions with genre mappings.
-
-### Instruments + music “knowledge”
-
-- `src/bun/instruments/registry.ts`: canonical instrument tags + aliases.
-- `src/bun/instruments/genres/*`: per-genre instrument pools.
-- `src/bun/instruments/datasets/*`: reusable datasets (harmonic/rhythm/time).
-- `src/bun/instruments/services/*`:
-  - `random.ts`: RNG utilities + deterministic seeded RNG for tests.
-  - `select.ts`: pool selection logic.
-  - `format.ts`: turns detected concepts into human-readable guidance.
+| Module | Purpose |
+|--------|---------|
+| `src/bun/ai/` | AI engine, config, content generation, remix operations |
+| `src/bun/prompt/` | Prompt builders, postprocessing, articulations, vocal descriptors, chord progressions |
+| `src/bun/instruments/` | Instrument registry, genre pools, selection logic |
 
 ## AI Providers
-
-The app supports multiple AI providers. Configure your preferred provider in Settings.
 
 | Provider | Models | Get API Key |
 |----------|--------|-------------|
@@ -126,33 +74,13 @@ The app supports multiple AI providers. Configure your preferred provider in Set
 
 Each provider's API key is stored separately and encrypted independently.
 
-## Output Format Contract
+## Output Format
 
-The generated prompt is constrained to a strict structure so Suno V5 responds consistently.
-
-### Line 1 (mandatory)
-
-```
-[Mood, Genre/Style, Key: key/mode]
-```
-
-### Required metadata lines
-
-- `Genre:`
-- `BPM:`
-- `Mood:`
-- `Instruments:` (comma-separated)
-
-### Song sections
-
-The body uses section tags like:
-
-- `[Intro]`
-- `[Verse]`
-- `[Pre-Chorus]`
-- `[Chorus]`
-- `[Bridge]`
-- `[Outro]`
+| Component | Format |
+|-----------|--------|
+| Line 1 | `[Mood, Genre/Style, Key: key/mode]` |
+| Required fields | `Genre:`, `BPM:`, `Mood:`, `Instruments:` |
+| Section tags | `[Intro]`, `[Verse]`, `[Pre-Chorus]`, `[Chorus]`, `[Bridge]`, `[Outro]` |
 
 ## Features
 
@@ -350,12 +278,12 @@ Each genre has a defined tempo range with a typical BPM (researched from industr
 
 ### Mood Pools
 
-Genre-specific mood vocabulary (8-9 moods per genre):
-
-- **Jazz**: Smooth, Warm, Sophisticated, Intimate, Late Night, Elegant, Groovy, Laid Back, Cool
-- **Rock**: Driving, Powerful, Energetic, Rebellious, Raw, Intense, Confident, Gritty, Anthemic
-- **Ambient**: Dreamy, Ethereal, Meditative, Calm, Floaty, Spacious, Otherworldly, Serene, Hypnotic
-- **Cinematic**: Epic, Dramatic, Triumphant, Tense, Majestic, Heroic, Suspenseful, Powerful, Emotional
+| Genre | Moods |
+|-------|-------|
+| Jazz | Smooth, Warm, Sophisticated, Intimate, Late Night, Elegant, Groovy, Laid Back, Cool |
+| Rock | Driving, Powerful, Energetic, Rebellious, Raw, Intense, Confident, Gritty, Anthemic |
+| Ambient | Dreamy, Ethereal, Meditative, Calm, Floaty, Spacious, Otherworldly, Serene, Hypnotic |
+| Cinematic | Epic, Dramatic, Triumphant, Tense, Majestic, Heroic, Suspenseful, Powerful, Emotional |
 
 ### Instrument Articulations
 
@@ -385,34 +313,20 @@ Recording character suggestions per genre:
 - **Reverb types**: Long Hall, Plate, Spring, Cathedral, Studio, Chamber
 - **Textures**: Polished Production, Analog Warmth, Lo-Fi Dusty, Vintage Warmth, Raw Performance
 
-### Chord Progressions
+<details>
+<summary><strong>Chord Progressions (26 named)</strong></summary>
 
-26 named progressions organized by category:
+| Category | Name | Pattern | Best For |
+|----------|------|---------|----------|
+| Pop | The Standard | I-V-vi-IV | Radio hits, anthems |
+| Pop | The Doo-Wop | I-vi-IV-V | Romantic, nostalgic |
+| Pop | The Sensitive | vi-IV-I-V | Emotional ballads |
+| Dark | The Andalusian | i-VII-VI-V | Dramatic, flamenco |
+| Dark | The Phrygian | i-bII-i | Dark, exotic |
+| Jazz | The 2-5-1 | ii-V-I | Jazz standards |
+| Jazz | The Bossa Nova | Imaj7-ii7-V7 | Latin jazz |
 
-**Pop Essentials**
-| Name | Pattern | Best For |
-|------|---------|----------|
-| The Standard | I-V-vi-IV | Radio hits, anthems |
-| The Doo-Wop | I-vi-IV-V | Romantic, nostalgic |
-| The Sensitive | vi-IV-I-V | Emotional ballads |
-| The Rock & Roll | I-IV-V | High energy, party |
-| The Jazz Pop | ii-V-I | Sophisticated, smooth |
-
-**Dark & Cinematic**
-| Name | Pattern | Best For |
-|------|---------|----------|
-| The Andalusian | i-VII-VI-V | Dramatic, flamenco |
-| The Phrygian | i-bII-i | Dark, exotic |
-| The Sad Loop | i-VI-i-VII | Trap, melancholic |
-| The Suspense | V-VI-V-VI | Tension building |
-
-**Jazz & Soul**
-| Name | Pattern | Best For |
-|------|---------|----------|
-| The 2-5-1 | ii-V-I | Jazz standards |
-| The Soul Vamp | i-IV | Groovy, hypnotic |
-| The Blues | I-IV-I-V | Blues, rock |
-| The Bossa Nova | Imaj7-ii7-V7 | Latin jazz |
+</details>
 
 ## Reference tables
 
@@ -479,11 +393,11 @@ This prevents "genre drift" while ensuring prompts have enough variety to produc
 
 <!-- INSTRUMENT_CLASSES_START -->
 
-**Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
-
-**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, analog synth pads, baritone saxophone, bells, bongos, braams, congas, cowbell, distorted guitar, drone, electric piano, finger snaps, frame drum, grand piano, guitar, handclaps, harmonica, impacts, kalimba, low brass, marimba, mellotron, muted trumpet, nylon string guitar, organ, pedal steel, pluck synth, saxophone, shaker, shimmer pad, slap bass, supersaw, synth bass, synth choir, synth strings, tambourine, tape loops, trap hi hats, trombone, upright bass, vibraphone, vinyl noise, vocoder, wah guitar, washboard
-
-**Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir, piccolo, english horn, bass clarinet, contrabassoon, tuba, bass trombone, solo soprano, suspended cymbal, crash cymbal, tam tam, mark tree, orchestral bass drum
+| Tier | Count | Instruments |
+|------|-------|-------------|
+| **Foundational** | 14 | drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion |
+| **Multi-genre** | 52 | 808, Clavinet, FX risers, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, analog synth pads, baritone saxophone, bells, bongos, braams, congas, cowbell, distorted guitar, drone, electric piano, finger snaps, frame drum, grand piano, guitar, handclaps, harmonica, impacts, kalimba, low brass, marimba, mellotron, muted trumpet, nylon string guitar, organ, pedal steel, pluck synth, saxophone, shaker, shimmer pad, slap bass, supersaw, synth bass, synth choir, synth strings, tambourine, tape loops, trap hi hats, trombone, upright bass, vibraphone, vinyl noise, vocoder, wah guitar, washboard |
+| **Orchestral** | 22 | celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir, piccolo, english horn, bass clarinet, contrabassoon, tuba, bass trombone, solo soprano, suspended cymbal, crash cymbal, tam tam, mark tree, orchestral bass drum |
 
 <!-- INSTRUMENT_CLASSES_END -->
 
