@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SectionLabel } from "@/components/ui/section-label";
+import { PromptOutput } from "@/components/prompt-output";
 import { RefreshCw, Copy, Check, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
@@ -47,9 +48,7 @@ export function QuickVibesOutput({
       </div>
       <Card className="relative group border shadow-sm glass-panel overflow-hidden">
         <CardContent className="p-6">
-          <p className="text-base leading-relaxed font-medium text-foreground">
-            {prompt}
-          </p>
+          <PromptOutput text={prompt} />
         </CardContent>
         
         {/* Action Buttons */}

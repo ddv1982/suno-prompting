@@ -36,7 +36,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
       <p className="text-micro text-muted-foreground ml-0.5">
         {promptMode === 'full' 
           ? 'Full-featured prompt generation with sections, instruments, and advanced options'
-          : 'Short, evocative prompts (≤120 chars) for ambient, lo-fi, and background music'
+          : 'Short, evocative prompts (≤400 chars) for ambient, lo-fi, and background music'
         }
       </p>
     </div>

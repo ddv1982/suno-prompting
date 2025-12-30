@@ -31,7 +31,7 @@ describe("AIEngine.generateQuickVibes", () => {
     expect(result.text.length).toBeGreaterThan(0);
   });
 
-  it("returns text under 120 characters", async () => {
+  it("returns text under max chars limit", async () => {
     const result = await engine.generateQuickVibes("lofi-study", "", false);
     
     expect(result.text.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
@@ -106,8 +106,8 @@ describe("AIEngine.generateQuickVibes", () => {
     expect(result.text).toBe("chill lo-fi beats");
   });
 
-  it("truncates response exceeding 120 characters", async () => {
-    const longText = "this is a very long prompt that definitely exceeds the maximum character limit of one hundred and twenty characters for quick vibes prompts";
+  it("truncates response exceeding max chars limit", async () => {
+    const longText = "a".repeat(QUICK_VIBES_MAX_CHARS + 100);
     mockGenerateText.mockImplementation(async () => ({
       text: longText,
     }));

@@ -3,7 +3,7 @@ export const APP_CONSTANTS = {
     MIN_PROMPT_CHARS: 20,
     MAX_LOCKED_PHRASE_CHARS: 300,
     MAX_LYRICS_TOPIC_CHARS: 500,
-    QUICK_VIBES_MAX_CHARS: 120,
+    QUICK_VIBES_MAX_CHARS: 400,
     STORAGE_DIR: '.suno-prompting-app',
     AI: {
         MAX_RETRIES: 10,

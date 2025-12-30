@@ -13,9 +13,9 @@ import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS } from "@bun/prompt/quick
 
 describe("Quick Vibes Builder", () => {
   describe("buildQuickVibesSystemPrompt", () => {
-    it("includes 120 char limit instruction", () => {
+    it("includes char limit instruction", () => {
       const prompt = buildQuickVibesSystemPrompt(false, false);
-      expect(prompt).toContain("120 characters");
+      expect(prompt).toContain(`${QUICK_VIBES_MAX_CHARS} characters`);
     });
 
     it("handles instrumental mode (no vocals)", () => {
@@ -131,35 +131,35 @@ describe("Quick Vibes Categories", () => {
     }
   });
 
-  it("example outputs are under 120 characters", () => {
+  it("example outputs are under max chars limit", () => {
     for (const [_id, category] of Object.entries(QUICK_VIBES_CATEGORIES)) {
       expect(category.exampleOutput.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
     }
   });
 
-  it("max chars constant is 120", () => {
-    expect(QUICK_VIBES_MAX_CHARS).toBe(120);
+  it("max chars constant is 400", () => {
+    expect(QUICK_VIBES_MAX_CHARS).toBe(400);
   });
 });
 
 describe("injectQuickVibesMaxTags", () => {
   it("adds a lo-fi tag when space permits", () => {
     const prompt = "dreamy lo-fi beats";
-    const result = injectQuickVibesMaxTags(prompt, 120);
+    const result = injectQuickVibesMaxTags(prompt, QUICK_VIBES_MAX_CHARS);
     expect(result.length).toBeGreaterThan(prompt.length);
     expect(result).toContain(prompt);
     expect(result).toContain(", ");
   });
 
   it("returns original prompt if tag would exceed limit", () => {
-    const prompt = "a".repeat(115);
-    const result = injectQuickVibesMaxTags(prompt, 120);
+    const prompt = "a".repeat(QUICK_VIBES_MAX_CHARS - 5);
+    const result = injectQuickVibesMaxTags(prompt, QUICK_VIBES_MAX_CHARS);
     expect(result).toBe(prompt);
   });
 
   it("adds one of the known lo-fi tags", () => {
     const prompt = "chill vibes";
-    const result = injectQuickVibesMaxTags(prompt, 120);
+    const result = injectQuickVibesMaxTags(prompt, QUICK_VIBES_MAX_CHARS);
     const knownTags = ["vinyl warmth", "tape hiss", "lo-fi dusty", "analog warmth", "tape saturation"];
     const hasKnownTag = knownTags.some(tag => result.includes(tag));
     expect(hasKnownTag).toBe(true);
@@ -169,7 +169,7 @@ describe("injectQuickVibesMaxTags", () => {
 describe("buildQuickVibesRefineSystemPrompt", () => {
   it("includes base Quick Vibes instructions", () => {
     const prompt = buildQuickVibesRefineSystemPrompt(false, false);
-    expect(prompt).toContain("120 characters");
+    expect(prompt).toContain(`${QUICK_VIBES_MAX_CHARS} characters`);
     expect(prompt).toContain("Quick Vibes");
   });
 
@@ -211,19 +211,19 @@ describe("buildQuickVibesRefineUserPrompt", () => {
 
 describe("applyQuickVibesMaxMode", () => {
   it("prepends MAX_MODE_HEADER when maxMode is true", () => {
-    const result = applyQuickVibesMaxMode("chill vibes", true, 120);
+    const result = applyQuickVibesMaxMode("chill vibes", true, QUICK_VIBES_MAX_CHARS);
     expect(result).toContain("[Is_MAX_MODE: MAX]");
     expect(result).toContain("[QUALITY: MAX]");
     expect(result).toContain("chill vibes");
   });
 
   it("returns prompt unchanged when maxMode is false", () => {
-    const result = applyQuickVibesMaxMode("chill vibes", false, 120);
+    const result = applyQuickVibesMaxMode("chill vibes", false, QUICK_VIBES_MAX_CHARS);
     expect(result).toBe("chill vibes");
   });
 
   it("injects lo-fi tags before prepending header", () => {
-    const result = applyQuickVibesMaxMode("dreamy beats", true, 120);
+    const result = applyQuickVibesMaxMode("dreamy beats", true, QUICK_VIBES_MAX_CHARS);
     const knownTags = ["vinyl warmth", "tape hiss", "lo-fi dusty", "analog warmth", "tape saturation"];
     const hasKnownTag = knownTags.some(tag => result.includes(tag));
     expect(hasKnownTag).toBe(true);
