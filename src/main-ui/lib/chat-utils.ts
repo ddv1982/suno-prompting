@@ -1,6 +1,12 @@
-import { type PromptSession } from "@shared/types";
+import { type PromptSession, type PromptVersion } from "@shared/types";
 
 export type ChatMessage = { role: "user" | "ai"; content: string };
+
+function formatVersionMessage(action: "Generated" | "Refined", version: PromptVersion): string {
+  const titlePart = version.title ? ` - "${version.title}"` : "";
+  const lyricsPart = version.lyrics ? " with lyrics" : "";
+  return `${action} prompt${titlePart}${lyricsPart}.`;
+}
 
 export function buildChatMessages(session: PromptSession): ChatMessage[] {
   const messages: ChatMessage[] = [];
@@ -11,9 +17,7 @@ export function buildChatMessages(session: PromptSession): ChatMessage[] {
       if (version.lockedPhrase) {
         messages.push({ role: "ai", content: `Locked: "${version.lockedPhrase}"` });
       }
-      const titlePart = version.title ? ` - "${version.title}"` : "";
-      const lyricsPart = version.lyrics ? " with lyrics" : "";
-      messages.push({ role: "ai", content: `Generated prompt${titlePart}${lyricsPart}.` });
+      messages.push({ role: "ai", content: formatVersionMessage("Generated", version) });
       return;
     }
     if (version.feedback) {
@@ -22,9 +26,7 @@ export function buildChatMessages(session: PromptSession): ChatMessage[] {
     if (version.lockedPhrase) {
       messages.push({ role: "ai", content: `Locked: "${version.lockedPhrase}"` });
     }
-    const titlePart = version.title ? ` - "${version.title}"` : "";
-    const lyricsPart = version.lyrics ? " with lyrics" : "";
-    messages.push({ role: "ai", content: `Refined prompt${titlePart}${lyricsPart}.` });
+    messages.push({ role: "ai", content: formatVersionMessage("Refined", version) });
   });
 
   return messages;
