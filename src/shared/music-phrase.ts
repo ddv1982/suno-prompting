@@ -10,6 +10,13 @@ import { getConciseLabel } from '@shared/labels';
 export function buildMusicPhrase(selection: AdvancedSelection): string {
     const parts: string[] = [];
 
+    // Genre: either single or combination (mutually exclusive) - comes first
+    if (selection.singleGenre) {
+        parts.push(getConciseLabel('genre', selection.singleGenre));
+    } else if (selection.genreCombination) {
+        parts.push(getConciseLabel('genreCombination', selection.genreCombination));
+    }
+
     // Harmonic: either single style or combination (mutually exclusive)
     if (selection.harmonicStyle) {
         parts.push(getConciseLabel('harmonic', selection.harmonicStyle));
@@ -37,6 +44,8 @@ export function buildMusicPhrase(selection: AdvancedSelection): string {
  */
 export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
     return !!(
+        selection.singleGenre ||
+        selection.genreCombination ||
         selection.harmonicStyle ||
         selection.harmonicCombination ||
         selection.polyrhythmCombination ||
@@ -50,6 +59,7 @@ export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
  */
 export function countSelections(selection: AdvancedSelection): number {
     let count = 0;
+    if (selection.singleGenre || selection.genreCombination) count++;
     if (selection.harmonicStyle || selection.harmonicCombination) count++;
     if (selection.polyrhythmCombination) count++;
     if (selection.timeSignature || selection.timeSignatureJourney) count++;

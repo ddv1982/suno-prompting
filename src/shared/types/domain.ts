@@ -30,6 +30,8 @@ export type AdvancedSelection = {
   polyrhythmCombination: string | null;
   timeSignature: string | null;
   timeSignatureJourney: string | null;
+  singleGenre: string | null;
+  genreCombination: string | null;
 };
 
 export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
@@ -38,6 +40,8 @@ export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
   polyrhythmCombination: null,
   timeSignature: null,
   timeSignatureJourney: null,
+  singleGenre: null,
+  genreCombination: null,
 };
 
 export type PromptVersion = {

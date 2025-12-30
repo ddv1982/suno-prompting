@@ -15,6 +15,7 @@ const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = {
 const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [
   ['harmonicStyle', 'harmonicCombination'],
   ['timeSignature', 'timeSignatureJourney'],
+  ['singleGenre', 'genreCombination'],
 ];
 
 interface EditorContextType {
