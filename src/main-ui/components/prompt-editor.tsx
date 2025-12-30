@@ -401,6 +401,9 @@ function DebugDrawerBody({ debugInfo }: { debugInfo: DebugInfo }) {
         <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase text-[10px] tracking-wide">
           {debugInfo.provider}
         </span>
+        <span className="font-mono text-foreground/70 text-[10px]">
+          {debugInfo.model.split('/').pop()}
+        </span>
       </div>
       <RequestInspector requestBody={debugInfo.requestBody} onCopy={copyToClipboard} copiedSection={copiedSection} />
     </div>

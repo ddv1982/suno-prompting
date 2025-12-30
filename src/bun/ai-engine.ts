@@ -245,7 +245,8 @@ export class AIEngine {
     actionLabel: string,
     systemPrompt: string,
     userPromptForDebug: string,
-    operation: () => Promise<Awaited<ReturnType<typeof generateText>>>
+    operation: () => Promise<Awaited<ReturnType<typeof generateText>>>,
+    messages?: Array<{ role: string; content: string }>
   ): Promise<GenerationResult> {
     try {
       const genResult = await operation();
@@ -259,7 +260,7 @@ export class AIEngine {
       return {
         text: result,
         debugInfo: this.debugMode
-          ? this.buildDebugInfo(systemPrompt, userPromptForDebug)
+          ? this.buildDebugInfo(systemPrompt, userPromptForDebug, messages)
           : undefined,
       };
     } catch (error) {
@@ -446,18 +447,20 @@ export class AIEngine {
       ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
       : currentPrompt;
     const userPrompt = `Previous prompt:\n${promptForLLM}\n\nFeedback:\n${feedback}`;
+    const messages = [
+      { role: 'assistant', content: promptForLLM },
+      { role: 'user', content: feedback },
+    ];
 
     const result = await this.runGeneration('refine prompt', systemPrompt, userPrompt, async () =>
       generateText({
         model: this.getModel(),
         system: systemPrompt,
-        messages: [
-          { role: 'assistant', content: promptForLLM },
-          { role: 'user', content: feedback },
-        ],
+        messages,
         maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
         abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      })
+      }),
+      messages
     );
 
     // Re-inject locked phrase directly (bypass LLM)
