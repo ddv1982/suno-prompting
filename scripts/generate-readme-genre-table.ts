@@ -1,5 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { GENRE_REGISTRY } from '@bun/instruments/genres';
+import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres';
 import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 import {
   FOUNDATIONAL_INSTRUMENTS,
@@ -12,6 +12,9 @@ export const GENRE_TABLE_END = '<!-- GENRE_TABLE_END -->';
 
 export const INSTRUMENT_CLASSES_START = '<!-- INSTRUMENT_CLASSES_START -->';
 export const INSTRUMENT_CLASSES_END = '<!-- INSTRUMENT_CLASSES_END -->';
+
+export const COMBINATIONS_START = '<!-- COMBINATIONS_START -->';
+export const COMBINATIONS_END = '<!-- COMBINATIONS_END -->';
 
 type Options = {
   readonly includeOptionalPools: boolean;
@@ -131,14 +134,36 @@ export function replaceInstrumentClassesSection(readme: string, markdown: string
   return `${before}\n\n${markdown}\n\n${after}`;
 }
 
+export function buildCombinationsMarkdown(): string {
+  return MULTI_GENRE_COMBINATIONS.join(', ');
+}
+
+export function replaceCombinationsSection(readme: string, markdown: string): string {
+  const start = readme.indexOf(COMBINATIONS_START);
+  const end = readme.indexOf(COMBINATIONS_END);
+
+  if (start === -1 || end === -1 || end < start) {
+    // Combinations section is optional - skip if not present
+    return readme;
+  }
+
+  const before = readme.slice(0, start + COMBINATIONS_START.length);
+  const after = readme.slice(end);
+
+  return `${before}\n\n${markdown}\n\n${after}`;
+}
+
 async function main() {
   const readmePath = new URL('../README.md', import.meta.url);
   const readme = await readFile(readmePath, 'utf8');
 
   const table = buildGenreTableMarkdown();
   const classes = buildInstrumentClassesMarkdown();
+  const combinations = buildCombinationsMarkdown();
 
-  const updated = replaceInstrumentClassesSection(replaceGenreTableSection(readme, table), classes);
+  let updated = replaceGenreTableSection(readme, table);
+  updated = replaceInstrumentClassesSection(updated, classes);
+  updated = replaceCombinationsSection(updated, combinations);
 
   if (updated === readme) {
     console.log('README genre table is already up to date.');

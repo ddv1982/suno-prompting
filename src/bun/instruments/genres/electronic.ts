@@ -2,7 +2,7 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const ELECTRONIC_GENRE: GenreDefinition = {
   name: 'Electronic',
-  keywords: ['edm', 'electronic', 'house', 'techno', 'trance', 'dubstep', 'drum and bass', 'dnb'],
+  keywords: ['edm', 'electronic', 'dubstep', 'drum and bass', 'dnb', 'electro', 'bass music'],
   description: 'High-energy dance music driven by synthesizers and electronic beats',
   pools: {
     pad: {

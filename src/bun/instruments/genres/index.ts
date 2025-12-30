@@ -19,6 +19,20 @@ import { METAL_GENRE } from '@bun/instruments/genres/metal';
 import { TRAP_GENRE } from '@bun/instruments/genres/trap';
 import { RETRO_GENRE } from '@bun/instruments/genres/retro';
 import { SYMPHONIC_GENRE } from '@bun/instruments/genres/symphonic';
+import { DISCO_GENRE } from '@bun/instruments/genres/disco';
+import { FUNK_GENRE } from '@bun/instruments/genres/funk';
+import { REGGAE_GENRE } from '@bun/instruments/genres/reggae';
+import { AFROBEAT_GENRE } from '@bun/instruments/genres/afrobeat';
+import { HOUSE_GENRE } from '@bun/instruments/genres/house';
+import { TRANCE_GENRE } from '@bun/instruments/genres/trance';
+import { DOWNTEMPO_GENRE } from '@bun/instruments/genres/downtempo';
+import { DREAMPOP_GENRE } from '@bun/instruments/genres/dreampop';
+import { CHILLWAVE_GENRE } from '@bun/instruments/genres/chillwave';
+import { NEWAGE_GENRE } from '@bun/instruments/genres/newage';
+import { HYPERPOP_GENRE } from '@bun/instruments/genres/hyperpop';
+import { DRILL_GENRE } from '@bun/instruments/genres/drill';
+import { MELODICTECHNO_GENRE } from '@bun/instruments/genres/melodictechno';
+import { INDIE_GENRE } from '@bun/instruments/genres/indie';
 
 export const GENRE_REGISTRY = {
   ambient: AMBIENT_GENRE,
@@ -42,6 +56,20 @@ export const GENRE_REGISTRY = {
   trap: TRAP_GENRE,
   retro: RETRO_GENRE,
   symphonic: SYMPHONIC_GENRE,
+  disco: DISCO_GENRE,
+  funk: FUNK_GENRE,
+  reggae: REGGAE_GENRE,
+  afrobeat: AFROBEAT_GENRE,
+  house: HOUSE_GENRE,
+  trance: TRANCE_GENRE,
+  downtempo: DOWNTEMPO_GENRE,
+  dreampop: DREAMPOP_GENRE,
+  chillwave: CHILLWAVE_GENRE,
+  newage: NEWAGE_GENRE,
+  hyperpop: HYPERPOP_GENRE,
+  drill: DRILL_GENRE,
+  melodictechno: MELODICTECHNO_GENRE,
+  indie: INDIE_GENRE,
 } as const;
 
 export type GenreType = keyof typeof GENRE_REGISTRY;
@@ -68,6 +96,20 @@ export {
   TRAP_GENRE,
   RETRO_GENRE,
   SYMPHONIC_GENRE,
+  DISCO_GENRE,
+  FUNK_GENRE,
+  REGGAE_GENRE,
+  AFROBEAT_GENRE,
+  HOUSE_GENRE,
+  TRANCE_GENRE,
+  DOWNTEMPO_GENRE,
+  DREAMPOP_GENRE,
+  CHILLWAVE_GENRE,
+  NEWAGE_GENRE,
+  HYPERPOP_GENRE,
+  DRILL_GENRE,
+  MELODICTECHNO_GENRE,
+  INDIE_GENRE,
 };
 export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 export { MULTI_GENRE_COMBINATIONS, isMultiGenre, type MultiGenreCombination } from '@bun/instruments/genres/combinations';

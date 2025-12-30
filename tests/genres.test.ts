@@ -15,8 +15,8 @@ import {
 } from '@bun/instruments';
 
 describe('Genre Registry', () => {
-  test('should have 21 genres registered', () => {
-    expect(Object.keys(GENRE_REGISTRY).length).toBe(21);
+  test('should have 35 genres registered', () => {
+    expect(Object.keys(GENRE_REGISTRY).length).toBe(35);
   });
 
   test('all genres have required properties', () => {
@@ -50,9 +50,17 @@ describe('Genre Detection', () => {
 
   test('detects electronic from keywords', () => {
     expect(detectGenre('edm club track')).toBe('electronic');
-    expect(detectGenre('house music')).toBe('electronic');
-    expect(detectGenre('techno beat')).toBe('electronic');
     expect(detectGenre('dubstep drop')).toBe('electronic');
+  });
+
+  test('detects house from keywords', () => {
+    expect(detectGenre('house music')).toBe('house');
+    expect(detectGenre('deep house vibes')).toBe('house');
+  });
+
+  test('detects trance from keywords', () => {
+    expect(detectGenre('uplifting trance')).toBe('trance');
+    expect(detectGenre('psytrance festival')).toBe('trance');
   });
 
   test('detects rock from keywords', () => {

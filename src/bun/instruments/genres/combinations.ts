@@ -17,6 +17,16 @@ export const MULTI_GENRE_COMBINATIONS = [
   'trip hop', 'lo-fi hip hop',
   // Ambient blends
   'dark ambient', 'space ambient', 'drone ambient',
+  // Disco/Funk blends
+  'disco funk', 'nu-disco', 'disco house',
+  // House/Techno blends
+  'deep house', 'tech house', 'afro house', 'melodic house',
+  // Reggae/Dub blends
+  'dub techno', 'reggae fusion', 'roots reggae',
+  // Dream/Chill blends
+  'dream pop shoegaze', 'chillhop', 'downtempo electronica', 'lo-fi chill',
+  // Drill/Hyperpop blends
+  'uk drill', 'hyperpop trap', 'drill rap',
 ] as const;
 
 export type MultiGenreCombination = typeof MULTI_GENRE_COMBINATIONS[number];

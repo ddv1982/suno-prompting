@@ -42,6 +42,9 @@ const GENRE_PRIORITY: GenreType[] = [
   'videogame', 'synthwave', 'lofi', 'cinematic',
   'jazz', 'classical', 'folk', 'rnb',
   'country', 'soul', 'blues', 'punk', 'latin', 'symphonic', 'metal', 'trap', 'retro',
+  'disco', 'funk', 'reggae', 'afrobeat', 'house', 'trance',
+  'downtempo', 'dreampop', 'chillwave', 'newage',
+  'hyperpop', 'drill', 'melodictechno', 'indie',
   'electronic', 'rock', 'pop',
   'ambient',
 ];

@@ -424,7 +424,7 @@ Recording character suggestions per genre:
 |-------|----------|-----------------|
 | Ambient | ambient, atmospheric, soundscape, meditative, ethereal | Rhodes, Wurlitzer, electric piano, mellotron, harmonium, celesta, strings, nylon string guitar, fretless guitar, synth pad, ambient pad, crystalline synth pads, analog synth pads, synth strings, wordless choir, singing bowls, crystal bowls, kalimba, glass bells, bansuri, shakuhachi, duduk, tongue drum, handpan, koto, bowed vibraphone, mark tree, tam tam, english horn, oboe, solo soprano, granular synth, wavetable synth, tape loops, drone, shimmer pad, FM synth, Moog synth, sitar, erhu, oud, marimba, steel pan, vibraphone, cello, harp, rain stick, ocean drum, shaker, frame drum, jazz brushes, suspended cymbal, finger snaps, felt piano, prepared piano, waterphone, glass armonica, theremin |
 | Jazz | jazz, bebop, swing, cool jazz, fusion, big band, smooth jazz | Rhodes, grand piano, hollowbody guitar, Hammond organ, Wurlitzer, saxophone, tenor sax, trumpet, muted trumpet, trombone, vibraphone, clarinet, flute, upright bass, walking bass, jazz brushes, drums, ride cymbal, congas, bongos |
-| Electronic | edm, electronic, house, techno, trance, dubstep, drum and bass, dnb | synth pad, analog synth, FM synth, arpeggiator, synth, 808, synth bass, kick drum, hi-hat, drums, vocoder |
+| Electronic | edm, electronic, dubstep, drum and bass, dnb, electro, bass music | synth pad, analog synth, FM synth, arpeggiator, synth, 808, synth bass, kick drum, hi-hat, drums, vocoder |
 | Rock | rock, alternative, indie rock, hard rock, grunge, classic rock, heartland rock | distorted guitar, Fender Stratocaster, guitar, acoustic guitar, Telecaster, bass, drums, kick drum, toms, electric piano, organ, Clavinet, grand piano, Hammond organ, tambourine |
 | Pop | pop, mainstream, top 40, dance pop, synth pop, electropop, future bass | felt piano, Fender Stratocaster, guitar, acoustic guitar, grand piano, synth pad, synth, analog synth, digital synth, arpeggiator, synth piano, supersaw, pluck synth, bass, drums, 808, handclaps, kick drum, FX risers, strings |
 | Classical | classical, orchestral, symphony, chamber, baroque, romantic, opera | strings, felt piano, violin, cello, viola, flute, piccolo, oboe, english horn, clarinet, bass clarinet, bassoon, contrabassoon, french horn, tuba, trombone, bass trombone, harp, celesta, timpani, orchestral bass drum, suspended cymbal, crash cymbal, tam tam |
@@ -443,6 +443,20 @@ Recording character suggestions per genre:
 | Trap | trap, dark trap, emo rap, cloud rap, cinematic trap, trap soul, melodic trap, drill, phonk | felt piano, guitar, pluck synth, strings, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vinyl noise, pizzicato strings, braams, FX risers |
 | Retro | retro, 50s, 60s, rock and roll, doo-wop, rockabilly, garage rock, surf rock, british invasion, oldies | guitar, tremolo guitar, grand piano, honky tonk piano, upright bass, slap bass, drums, tambourine, handclaps, organ, saxophone, harmonica, finger snaps, bells |
 | Symphonic | symphonic, symphonic metal, symphonic rock, orchestral metal, orchestral rock, epic metal | distorted guitar, guitar, grand piano, strings, choir, french horn, low brass, tuba, trombone, violin, cello, orchestra, bass, drums, timpani, kick drum, orchestral bass drum, harp, celesta, braams, wordless choir, solo soprano, tam tam, crash cymbal |
+| Disco | disco, nu-disco, nu disco, boogie, funky house, disco house, studio 54 | Rhodes, Wurlitzer, strings, Clavinet, slap bass, wah guitar, low brass, trumpet, saxophone, flute, kick drum, hi-hat, drums, tambourine, handclaps, congas, synth strings, analog synth pads, synth pad |
+| Funk | funk, funky, p-funk, parliament, funkadelic, groove | Clavinet, Rhodes, Wurlitzer, Hammond organ, slap bass, wah guitar, low brass, trumpet, tenor sax, trombone, drums, hi-hat, handclaps, congas, bongos, tambourine, vocoder, synth bass |
+| Reggae | reggae, roots reggae, dancehall, ska, rocksteady, jamaican, dub music, dub reggae | organ, electric piano, Rhodes, melodica, guitar, bass, trumpet, trombone, saxophone, drums, nyabinghi drums, hi-hat, percussion, spring reverb, tape delay, dub siren |
+| Afrobeat | afrobeat, afrobeats, amapiano, afropop, afro house, african, nigerian, south african | Rhodes, electric piano, synth, guitar, kora, talking drum, balafon, kalimba, shekere, saxophone, trumpet, djembe, percussion, drums, congas, shaker, 808, synth pad, analog synth pads, log drums |
+| House | house, deep house, tech house, progressive house, chicago house, garage, uk garage | synth pad, analog synth pads, sidechain pad, synth strings, Rhodes, electric piano, grand piano, organ, kick drum, hi-hat, 808, handclaps, shaker, percussion, synth bass, bass, saxophone, choir |
+| Trance | trance, psytrance, progressive trance, uplifting trance, vocal trance, goa, eurodance | supersaw, arpeggiator, synth pad, analog synth, pluck synth, kick drum, hi-hat, 808, synth bass, grand piano, strings, synth strings, choir, wordless choir, solo soprano, FX risers, impacts |
+| Downtempo | downtempo, trip hop, trip-hop, triphop, chillout, chill out, slow electronic | synth pad, ambient pad, analog synth pads, shimmer pad, granular synth, Rhodes, electric piano, felt piano, vibraphone, drums, hi-hat, percussion, bass, synth bass, shaker, saxophone, trumpet, flute, wordless choir, strings, vinyl noise, tape loops |
+| Dream Pop | dream pop, dreampop, shoegaze, ethereal, dreamy, hazy | synth pad, shimmer pad, ambient pad, synth strings, guitar, tremolo guitar, synth, felt piano, drums, bass, hi-hat, shaker, tambourine, wordless choir, strings, glockenspiel, bells |
+| Chillwave | chillwave, glo-fi, hypnagogic, bedroom pop, chillsynth | analog synth pads, synth pad, arpeggiator, synth, drums, synth bass, hi-hat, 808, shaker, guitar, Rhodes, felt piano, Wurlitzer, vinyl noise, tape loops, saxophone, wordless choir, glockenspiel |
+| New Age | new age, newage, meditation, healing, spa, yoga, relaxation, wellness | synth pad, ambient pad, shimmer pad, drone, harp, grand piano, felt piano, nylon string guitar, kora, flute, shakuhachi, singing bowls, crystal bowls, kalimba, bansuri, bells, rain stick, ocean drum, shaker, frame drum, handpan |
+| Hyperpop | hyperpop, hyper pop, pc music, bubblegum bass, glitchpop, digicore | supersaw, arpeggiator, synth, bitcrushed synth, pluck synth, pitched vocals, synth bells, glockenspiel, bells, distorted 808, 808, kick drum, trap hi hats, hi-hat, glitched vocals, vocoder, FX risers |
+| Drill | drill, uk drill, chicago drill, ny drill, brooklyn drill | dark piano, strings, synth, guitar, sliding 808, drill hi hats, hi-hat, percussion, synth pad, ambient pad, synth strings, FX risers, impacts |
+| Melodic Techno | melodic techno, techno, progressive techno, afterhours, peak time | synth pad, analog synth, arpeggiator, pluck synth, wavetable synth, kick drum, hi-hat, synth bass, percussion, ride cymbal, grand piano, strings, synth strings, wordless choir, solo soprano, breathy EWI, FX risers, impacts, drone |
+| Indie | indie, indie rock, indie pop, alt rock, alternative pop, bedroom indie | guitar, acoustic guitar, felt piano, grand piano, synth, drums, bass, hi-hat, tambourine, shaker, strings, glockenspiel, bells, trumpet, saxophone, synth pad, synth strings, ambient pad |
 
 <!-- GENRE_TABLE_END -->
 
@@ -452,11 +466,18 @@ Recording character suggestions per genre:
 
 **Foundational instruments** (anchors): drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion
 
-**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, bells, braams, distorted guitar, electric piano, grand piano, guitar, handclaps, harmonica, low brass, organ, saxophone, shaker, tambourine, trombone, upright bass, vibraphone
+**Multi-genre instruments** (wildcards): 808, Clavinet, FX risers, Hammond organ, Rhodes, Wurlitzer, acoustic guitar, ambient pad, analog synth pads, bells, bongos, braams, congas, distorted guitar, drone, electric piano, frame drum, grand piano, guitar, handclaps, harmonica, impacts, kalimba, low brass, nylon string guitar, organ, pluck synth, saxophone, shaker, shimmer pad, slap bass, supersaw, synth bass, synth strings, tambourine, tape loops, trap hi hats, trombone, upright bass, vibraphone, vinyl noise, vocoder, wah guitar
 
 **Orchestral color instruments** (gated): celesta, glockenspiel, harp, violin, cello, french horn, timpani, taiko drums, choir, wordless choir, piccolo, english horn, bass clarinet, contrabassoon, tuba, bass trombone, solo soprano, suspended cymbal, crash cymbal, tam tam, mark tree, orchestral bass drum
 
 <!-- INSTRUMENT_CLASSES_END -->
+
+### Genre combinations
+<!-- COMBINATIONS_START -->
+
+jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, electronic rock, electro pop, synth pop, future bass, chillwave, vaporwave, folk rock, folk pop, indie folk, chamber folk, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, neo soul, psychedelic soul, funk soul, latin jazz, bossa nova, afrobeat, reggae fusion, progressive metal, symphonic metal, doom metal, trip hop, lo-fi hip hop, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, reggae fusion, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
+
+<!-- COMBINATIONS_END -->
 
 <details>
   <summary><strong>More references (modes, combinations, rhythms, time signatures, Lydian chords)</strong></summary>

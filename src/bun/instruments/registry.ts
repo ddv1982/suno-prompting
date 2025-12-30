@@ -87,6 +87,31 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'FX risers', category: 'rare', aliases: ['risers', 'build ups', 'tension risers'] },
   { canonical: 'vinyl noise', category: 'rare', aliases: ['vinyl crackle', 'lo-fi texture', 'record noise'] },
 
+  // Reggae/Dub instruments
+  { canonical: 'melodica', category: 'color', aliases: ['blow organ', 'keyboard harmonica'] },
+  { canonical: 'nyabinghi drums', category: 'movement', aliases: ['rasta drums', 'nyabinghi'] },
+  { canonical: 'spring reverb', category: 'rare', aliases: ['dub reverb', 'spring tank'] },
+  { canonical: 'tape delay', category: 'rare', aliases: ['dub delay', 'analog delay'] },
+  { canonical: 'dub siren', category: 'rare', aliases: ['siren', 'dub fx'] },
+
+  // African instruments
+  { canonical: 'talking drum', category: 'color', aliases: ['yoruba drum', 'dundun'] },
+  { canonical: 'shekere', category: 'movement', aliases: ['shaker gourd', 'gourd shaker'] },
+  { canonical: 'kora', category: 'color', aliases: ['african harp', 'kora harp'] },
+  { canonical: 'balafon', category: 'color', aliases: ['african xylophone', 'balaphon'] },
+  { canonical: 'log drums', category: 'movement', aliases: ['log drum', 'amapiano drums'] },
+
+  // Hyperpop instruments
+  { canonical: 'pitched vocals', category: 'color', aliases: ['pitched voice', 'chipmunk vocals', 'vocal pitch'] },
+  { canonical: 'bitcrushed synth', category: 'pad', aliases: ['crushed synth', 'lo-fi synth', '8-bit synth'] },
+  { canonical: 'glitched vocals', category: 'rare', aliases: ['vocal glitch', 'chopped vocals'] },
+  { canonical: 'distorted 808', category: 'movement', aliases: ['clipped 808', 'saturated 808'] },
+
+  // Drill instruments
+  { canonical: 'sliding 808', category: 'movement', aliases: ['gliding 808', 'portamento bass'] },
+  { canonical: 'drill hi hats', category: 'movement', aliases: ['triplet hi hats', 'rapid hi hats'] },
+  { canonical: 'dark piano', category: 'harmonic', aliases: ['minor piano', 'ominous piano'] },
+
   // Color instruments
   { canonical: 'electric piano', category: 'color', aliases: ['e-piano', 'epiano'] },
   { canonical: 'Rhodes', category: 'color', aliases: ['Fender Rhodes', 'Rhodes piano'] },
