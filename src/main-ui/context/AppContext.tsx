@@ -177,6 +177,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setValidation({ ...EMPTY_VALIDATION });
         setAdvancedSelection(EMPTY_ADVANCED_SELECTION);
         setLockedPhrase("");
+        setPendingInput("");
     }, []);
 
     const saveSession = useCallback(async (session: PromptSession) => {
