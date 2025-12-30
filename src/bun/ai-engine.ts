@@ -31,6 +31,12 @@ export type GenerationResult = {
   debugInfo?: DebugInfo;
 };
 
+type ParsedCombinedResponse = {
+  prompt: string;
+  title: string;
+  lyrics?: string;
+};
+
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
 export function _testStripLeakedMetaLines(text: string): string {
@@ -145,6 +151,10 @@ export class AIEngine {
 
   private cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
     return title?.trim().replace(/^["']|["']$/g, '') || fallback;
+  }
+
+  private cleanLyrics(lyrics: string | undefined): string | undefined {
+    return lyrics?.trim() || undefined;
   }
 
   private get systemPrompt(): string {
@@ -310,7 +320,7 @@ export class AIEngine {
     });
 
     // Parse combined JSON response
-    let parsed: { prompt: string; title: string; lyrics?: string };
+    let parsed: ParsedCombinedResponse;
     try {
       const cleaned = this.cleanJsonResponse(rawResponse);
       parsed = JSON.parse(cleaned);
@@ -348,7 +358,7 @@ export class AIEngine {
     const result: GenerationResult = {
       text: promptText,
       title: this.cleanTitle(parsed.title),
-      lyrics: parsed.lyrics?.trim(),
+      lyrics: this.cleanLyrics(parsed.lyrics),
       debugInfo: this.debugMode
         ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
         : undefined,
@@ -492,7 +502,7 @@ export class AIEngine {
     });
 
     // Parse combined JSON response (same as generateInitial)
-    let parsed: { prompt: string; title: string; lyrics?: string };
+    let parsed: ParsedCombinedResponse;
     try {
       const cleaned = this.cleanJsonResponse(rawResponse);
       parsed = JSON.parse(cleaned);
@@ -524,7 +534,7 @@ export class AIEngine {
     return {
       text: promptText,
       title: this.cleanTitle(parsed.title, currentTitle),
-      lyrics: this.lyricsMode ? (parsed.lyrics?.trim() || currentLyrics) : undefined,
+      lyrics: this.lyricsMode ? (this.cleanLyrics(parsed.lyrics) || currentLyrics) : undefined,
       debugInfo: this.debugMode
         ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
         : undefined,
