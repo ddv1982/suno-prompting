@@ -31,7 +31,7 @@ export type GenerationResult = {
   debugInfo?: DebugInfo;
 };
 
-type ParsedCombinedResponse = {
+export type ParsedCombinedResponse = {
   prompt: string;
   title: string;
   lyrics?: string;
@@ -661,5 +661,31 @@ export class AIEngine {
     const mood = extractMoodFromPrompt(currentPrompt);
     const result = await this.generateLyrics(originalInput, genre, mood);
     return { lyrics: result.lyrics };
+  }
+}
+
+// Test helper exports
+export function _testCleanJsonResponse(text: string): string {
+  return text.trim().replace(/```json\n?|\n?```/g, '');
+}
+
+export function _testCleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
+  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
+}
+
+export function _testCleanLyrics(lyrics: string | undefined): string | undefined {
+  return lyrics?.trim() || undefined;
+}
+
+export function _testParseJsonResponse(rawResponse: string): ParsedCombinedResponse | null {
+  try {
+    const cleaned = _testCleanJsonResponse(rawResponse);
+    const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
+    if (!parsed.prompt) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
   }
 }

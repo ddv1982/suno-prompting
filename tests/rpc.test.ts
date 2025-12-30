@@ -58,6 +58,76 @@ describe("RPC Handlers", () => {
         expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined);
     });
 
+    test("refinePrompt should pass currentTitle and currentLyrics to aiEngine", async () => {
+        const mockAiEngine: MockAIEngine = {
+            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            refinePrompt: mock(async () => ({ 
+                text: "Refined Prompt", 
+                title: "Refined Title",
+                lyrics: "[VERSE]\nRefined lyrics",
+                debugInfo: undefined 
+            })),
+            setApiKey: mock(),
+        };
+
+        const mockStorage: MockStorageManager = {
+            getHistory: mock(async () => []),
+            saveSession: mock(async () => {}),
+            deleteSession: mock(async () => {}),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: true })),
+            saveConfig: mock(async () => {}),
+            initialize: mock(async () => {})
+        };
+
+        const handlers = createHandlers(mockAiEngine as AIEngine, mockStorage as StorageManager);
+        const result = await handlers.refinePrompt({ 
+            currentPrompt: "Old prompt", 
+            feedback: "Make it louder",
+            currentTitle: "Old Title",
+            currentLyrics: "[VERSE]\nOld lyrics"
+        });
+
+        expect(result.prompt).toBe("Refined Prompt");
+        expect(result.title).toBe("Refined Title");
+        expect(result.lyrics).toBe("[VERSE]\nRefined lyrics");
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
+            "Old prompt", 
+            "Make it louder", 
+            undefined, 
+            "Old Title", 
+            "[VERSE]\nOld lyrics"
+        );
+    });
+
+    test("refinePrompt should return title from aiEngine response", async () => {
+        const mockAiEngine: MockAIEngine = {
+            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            refinePrompt: mock(async () => ({ 
+                text: "Refined Prompt", 
+                title: "New Title",
+                debugInfo: undefined 
+            })),
+            setApiKey: mock(),
+        };
+
+        const mockStorage: MockStorageManager = {
+            getHistory: mock(async () => []),
+            saveSession: mock(async () => {}),
+            deleteSession: mock(async () => {}),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false })),
+            saveConfig: mock(async () => {}),
+            initialize: mock(async () => {})
+        };
+
+        const handlers = createHandlers(mockAiEngine as AIEngine, mockStorage as StorageManager);
+        const result = await handlers.refinePrompt({ 
+            currentPrompt: "Old prompt", 
+            feedback: "Change the mood"
+        });
+
+        expect(result.title).toBe("New Title");
+    });
+
     test("getHistory should call storage", async () => {
         const mockSessions: PromptSession[] = [{
             id: '1',
