@@ -30,7 +30,20 @@ Platform builds:
 - Windows (x64): `bun run build:windows`
 - All: `bun run build:all`
 
-Artifacts land in `build/`.
+Production builds (canary/stable):
+
+- Canary (current platform): `bun run build:canary`
+- Canary (all platforms): `bun run build:canary:all`
+- Stable (current platform): `bun run build:stable`
+- Stable (all platforms): `bun run build:stable:all`
+
+Platform-specific production builds:
+
+- macOS stable: `bun run build:stable:macos`
+- Linux stable: `bun run build:stable:linux`
+- Windows stable: `bun run build:stable:windows`
+
+Development builds output to `build/`. Production builds generate artifacts for distribution.
 
 ## Configuration
 
