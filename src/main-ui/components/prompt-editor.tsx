@@ -333,6 +333,7 @@ export function PromptEditor({
                   <Switch 
                     checked={lyricsMode} 
                     onCheckedChange={onLyricsModeChange}
+                    disabled={isGenerating}
                     size="sm"
                   />
                 </label>
@@ -342,6 +343,7 @@ export function PromptEditor({
                   <Switch 
                     checked={maxMode} 
                     onCheckedChange={onMaxModeChange}
+                    disabled={isGenerating}
                     size="sm"
                   />
                 </label>
