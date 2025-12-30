@@ -1,4 +1,4 @@
-# groq-suno-prompter
+# suno-prompting-app
 
 Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with enforced formatting, genre/mood/instrument guidance, and guardrails.
 
