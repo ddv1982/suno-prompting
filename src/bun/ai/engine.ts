@@ -163,11 +163,11 @@ export class AIEngine {
     }
   }
 
-  async generateInitial(description: string, lockedPhrase?: string): Promise<GenerationResult> {
+  async generateInitial(description: string, lockedPhrase?: string, lyricsTopic?: string): Promise<GenerationResult> {
     const selection = await selectModes(description, this.getModel());
     const userPrompt = this.config.isMaxMode()
-      ? buildMaxModeContextualPrompt(description, selection)
-      : buildContextualPrompt(description, selection);
+      ? buildMaxModeContextualPrompt(description, selection, lyricsTopic)
+      : buildContextualPrompt(description, selection, lyricsTopic);
 
     const systemPrompt = this.config.isLyricsMode()
       ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, this.config.getUseSunoTags(), this.config.isMaxMode())
@@ -183,7 +183,7 @@ export class AIEngine {
 
     const parsed = this.parseJsonResponse(rawResponse, 'generateInitial');
     if (!parsed) {
-      return this.generateInitialFallback(description, lockedPhrase, userPrompt);
+      return this.generateInitialFallback(description, lockedPhrase, userPrompt, lyricsTopic);
     }
 
     let promptText = await this.postProcess(parsed.prompt);
@@ -212,7 +212,8 @@ export class AIEngine {
   private async generateInitialFallback(
     description: string,
     lockedPhrase: string | undefined,
-    userPrompt: string
+    userPrompt: string,
+    lyricsTopic?: string
   ): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
 
@@ -246,7 +247,8 @@ export class AIEngine {
     }
 
     if (this.config.isLyricsMode()) {
-      const lyricsResult = await generateLyrics(description, genre, mood, this.config.isMaxMode(), this.getModel);
+      const topicForLyrics = lyricsTopic?.trim() || description;
+      const lyricsResult = await generateLyrics(topicForLyrics, genre, mood, this.config.isMaxMode(), this.getModel);
       result.lyrics = lyricsResult.lyrics;
 
       if (result.debugInfo) {

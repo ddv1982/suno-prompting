@@ -34,6 +34,7 @@ export type PromptVersion = {
 export type PromptSession = {
   id: string;
   originalInput: string;
+  lyricsTopic?: string;
   currentPrompt: string;
   currentTitle?: string;
   currentLyrics?: string;

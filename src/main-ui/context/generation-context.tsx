@@ -52,7 +52,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic } = useEditorContext();
 
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -139,8 +139,9 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         setChatMessages(prev => [...prev, { role: "user", content: input }]);
       }
 
+      const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
       const result = isInitial
-        ? await api.generateInitial(input, effectiveLockedPhrase)
+        ? await api.generateInitial(input, effectiveLockedPhrase, effectiveLyricsTopic)
         : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics);
 
       if (!result?.prompt) {
@@ -157,6 +158,9 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       );
       
       setPendingInput("");
+      if (isInitial) {
+        setLyricsTopic("");
+      }
     } catch (error) {
       log.error("generate:failed", error);
       setChatMessages(prev => [

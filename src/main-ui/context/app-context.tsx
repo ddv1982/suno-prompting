@@ -40,6 +40,7 @@ export const useAppContext = () => {
     advancedSelection: editor.advancedSelection,
     lockedPhrase: editor.lockedPhrase,
     pendingInput: editor.pendingInput,
+    lyricsTopic: editor.lyricsTopic,
     computedMusicPhrase: editor.computedMusicPhrase,
     setEditorMode: editor.setEditorMode,
     setAdvancedSelection: editor.setAdvancedSelection,
@@ -47,6 +48,7 @@ export const useAppContext = () => {
     clearAdvancedSelection: editor.clearAdvancedSelection,
     setLockedPhrase: editor.setLockedPhrase,
     setPendingInput: editor.setPendingInput,
+    setLyricsTopic: editor.setLyricsTopic,
     
     // Generation
     isGenerating: generation.isGenerating,

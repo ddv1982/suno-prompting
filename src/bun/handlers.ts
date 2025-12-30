@@ -65,8 +65,8 @@ export function createHandlers(
     }
 
     return {
-        generateInitial: async ({ description, lockedPhrase }) => {
-            return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description, lockedPhrase));
+        generateInitial: async ({ description, lockedPhrase, lyricsTopic }) => {
+            return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description, lockedPhrase, lyricsTopic));
         },
         refinePrompt: async ({ currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics }) => {
             return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics));

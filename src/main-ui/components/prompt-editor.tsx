@@ -37,8 +37,10 @@ type PromptEditorProps = {
   advancedSelection: AdvancedSelection;
   computedMusicPhrase: string;
   pendingInput: string;
+  lyricsTopic: string;
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
+  onLyricsTopicChange: (topic: string) => void;
   onEditorModeChange: (mode: EditorMode) => void;
   onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
   onAdvancedSelectionClear: () => void;
@@ -73,8 +75,10 @@ export function PromptEditor({
   advancedSelection,
   computedMusicPhrase,
   pendingInput,
+  lyricsTopic,
   onPendingInputChange,
   onLockedPhraseChange,
+  onLyricsTopicChange,
   onEditorModeChange,
   onAdvancedSelectionUpdate,
   onAdvancedSelectionClear,
@@ -315,7 +319,7 @@ export function PromptEditor({
           </div>
           <div className="space-y-1">
             <FormLabel icon={<MessageSquare className="w-3 h-3" />}>
-              {currentPrompt ? 'Refine Prompt' : 'Describe Your Song'}
+              {currentPrompt ? 'Refine Prompt' : (lyricsMode ? 'Musical Style' : 'Describe Your Song')}
             </FormLabel>
             <div className="flex gap-3 items-end">
               <Textarea
@@ -327,9 +331,11 @@ export function PromptEditor({
                   "min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20",
                   isGenerating && "opacity-70"
                 )}
-                placeholder={lyricsMode 
-                  ? "Describe your song's theme, story, and emotions for title + lyrics generation"
-                  : "Describe your song, style, mood, or refine the existing prompt"
+                placeholder={currentPrompt 
+                  ? "Describe how you want to refine the prompt"
+                  : (lyricsMode 
+                    ? "Describe the musical style, genre, mood, and instrumentation"
+                    : "Describe your song, style, mood, or refine the existing prompt")
                 }
               />
               <Button
@@ -359,6 +365,31 @@ export function PromptEditor({
               </Button>
             </div>
           </div>
+
+          {/* Song Topic - only shown when lyrics mode is enabled and no prompt yet */}
+          {lyricsMode && !currentPrompt && (
+            <div className="space-y-1">
+              <FormLabel
+                icon={<Music2 className="w-3 h-3" />}
+                badge="optional"
+              >
+                Song Topic (for lyrics)
+              </FormLabel>
+              <Textarea
+                value={lyricsTopic}
+                onChange={(e) => onLyricsTopicChange(e.target.value)}
+                disabled={isGenerating}
+                className={cn(
+                  "min-h-16 max-h-32 resize-none shadow-sm text-sm p-3 rounded-lg glass-control focus-visible:ring-primary/20",
+                  isGenerating && "opacity-70"
+                )}
+                placeholder="What is the song about? (e.g., 'the meaning of life', 'lost love', 'summer road trip')"
+              />
+              <p className="text-micro text-muted-foreground">
+                If provided, lyrics will focus on this topic instead of the musical style description above.
+              </p>
+            </div>
+          )}
 
           {inputOverLimit && (
             <p className="text-caption text-destructive flex items-center gap-2">

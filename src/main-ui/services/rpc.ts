@@ -27,8 +27,8 @@ export const api = {
         await rpc.request.deleteSession({ id });
     },
 
-    async generateInitial(description: string, lockedPhrase?: string): Promise<BunRequests['generateInitial']['response']> {
-        return await rpc.request.generateInitial({ description, lockedPhrase });
+    async generateInitial(description: string, lockedPhrase?: string, lyricsTopic?: string): Promise<BunRequests['generateInitial']['response']> {
+        return await rpc.request.generateInitial({ description, lockedPhrase, lyricsTopic });
     },
 
     async refinePrompt(currentPrompt: string, feedback: string, lockedPhrase?: string, currentTitle?: string, currentLyrics?: string): Promise<BunRequests['refinePrompt']['response']> {

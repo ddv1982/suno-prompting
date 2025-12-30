@@ -12,6 +12,7 @@ interface EditorContextType {
   advancedSelection: AdvancedSelection;
   lockedPhrase: string;
   pendingInput: string;
+  lyricsTopic: string;
   computedMusicPhrase: string;
   setEditorMode: (mode: EditorMode) => void;
   setAdvancedSelection: (selection: AdvancedSelection) => void;
@@ -19,6 +20,7 @@ interface EditorContextType {
   clearAdvancedSelection: () => void;
   setLockedPhrase: (phrase: string) => void;
   setPendingInput: (input: string) => void;
+  setLyricsTopic: (topic: string) => void;
   getEffectiveLockedPhrase: () => string | undefined;
   resetEditor: () => void;
 }
@@ -36,6 +38,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
   const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
   const [lockedPhrase, setLockedPhrase] = useState("");
   const [pendingInput, setPendingInput] = useState("");
+  const [lyricsTopic, setLyricsTopic] = useState("");
 
   const computedMusicPhrase = useMemo(() => {
     return buildMusicPhrase(advancedSelection);
@@ -69,6 +72,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     setAdvancedSelection(EMPTY_ADVANCED_SELECTION);
     setLockedPhrase("");
     setPendingInput("");
+    setLyricsTopic("");
   }, []);
 
   return (
@@ -77,6 +81,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       advancedSelection,
       lockedPhrase,
       pendingInput,
+      lyricsTopic,
       computedMusicPhrase,
       setEditorMode,
       setAdvancedSelection,
@@ -84,6 +89,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       clearAdvancedSelection,
       setLockedPhrase,
       setPendingInput,
+      setLyricsTopic,
       getEffectiveLockedPhrase,
       resetEditor,
     }}>

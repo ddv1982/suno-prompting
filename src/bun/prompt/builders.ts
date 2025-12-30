@@ -51,7 +51,8 @@ STRICT CONSTRAINTS:
 
 export function buildContextualPrompt(
   description: string,
-  selection: ModeSelection
+  selection: ModeSelection,
+  lyricsTopic?: string
 ): string {
   const rhythmic = detectRhythmic(description);
   const { found: userInstruments } = extractInstruments(description);
@@ -60,6 +61,10 @@ export function buildContextualPrompt(
     `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
     description,
   ];
+
+  if (lyricsTopic) {
+    parts.push('', `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`, lyricsTopic);
+  }
 
   const hasGuidance =
     selection.genre ||
@@ -118,7 +123,8 @@ STRICT CONSTRAINTS:
 // Max Mode contextual prompt builder
 export function buildMaxModeContextualPrompt(
   description: string,
-  selection: ModeSelection
+  selection: ModeSelection,
+  lyricsTopic?: string
 ): string {
   const { found: userInstruments } = extractInstruments(description);
   const detectedGenre = selection.genre || 'acoustic';
@@ -126,10 +132,17 @@ export function buildMaxModeContextualPrompt(
   const parts = [
     `USER'S SONG CONCEPT:`,
     description,
+  ];
+
+  if (lyricsTopic) {
+    parts.push('', `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`, lyricsTopic);
+  }
+
+  parts.push(
     '',
     'DETECTED CONTEXT:',
     `Genre: ${detectedGenre}`,
-  ];
+  );
 
   // Add enhanced guidance if genre is detected
   if (selection.genre) {

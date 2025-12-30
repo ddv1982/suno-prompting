@@ -32,7 +32,7 @@ describe("RPC Handlers", () => {
         expect(result.versionId).toBeDefined();
         expect(result.validation).toBeDefined();
         expect(result.validation.isValid).toBe(true);
-        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith("Test description", undefined);
+        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith("Test description", undefined, undefined);
     });
 
     test("refinePrompt should call aiEngine with feedback", async () => {

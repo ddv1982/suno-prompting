@@ -30,9 +30,11 @@ function App() {
     advancedSelection,
     computedMusicPhrase,
     pendingInput,
+    lyricsTopic,
     setPendingInput,
     setSettingsOpen,
     setLockedPhrase,
+    setLyricsTopic,
     setEditorMode,
     updateAdvancedSelection,
     clearAdvancedSelection,
@@ -84,8 +86,10 @@ function App() {
               advancedSelection={advancedSelection}
               computedMusicPhrase={computedMusicPhrase}
               pendingInput={pendingInput}
+              lyricsTopic={lyricsTopic}
               onPendingInputChange={setPendingInput}
               onLockedPhraseChange={setLockedPhrase}
+              onLyricsTopicChange={setLyricsTopic}
               onEditorModeChange={setEditorMode}
               onAdvancedSelectionUpdate={updateAdvancedSelection}
               onAdvancedSelectionClear={clearAdvancedSelection}
