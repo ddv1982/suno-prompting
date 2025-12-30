@@ -499,5 +499,5 @@ Recording character suggestions per genre:
 
 - Runtime: [Electrobun](https://electrobun.dev/)
 - UI: React 19 + shadcn/ui + Tailwind CSS v4
-- AI: AI SDK v5 (Groq, OpenAI, Anthropic)
+- AI: AI SDK v6 (Groq, OpenAI, Anthropic)
 - Package manager/runtime: Bun
