@@ -184,6 +184,25 @@ describe("buildQuickVibesRefineUserPrompt", () => {
     expect(prompt).toContain("User feedback:");
     expect(prompt).toContain("Generate the refined prompt:");
   });
+
+  it("includes category context when provided", () => {
+    const prompt = buildQuickVibesRefineUserPrompt("chill vibes", "make it warmer", "lofi-study");
+    expect(prompt).toContain("Refine toward this category style");
+    expect(prompt).toContain("Lo-fi / Study");
+    expect(prompt).toContain("Keywords:");
+  });
+
+  it("works with category only (no feedback)", () => {
+    const prompt = buildQuickVibesRefineUserPrompt("chill vibes", "", "cafe-coffeeshop");
+    expect(prompt).toContain("Refine toward this category style");
+    expect(prompt).toContain("Cafe / Coffee shop");
+    expect(prompt).not.toContain("User feedback:");
+  });
+
+  it("excludes category section when not provided", () => {
+    const prompt = buildQuickVibesRefineUserPrompt("chill vibes", "more dreamy");
+    expect(prompt).not.toContain("Refine toward this category style");
+  });
 });
 
 describe("applyQuickVibesMaxMode", () => {
