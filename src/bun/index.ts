@@ -66,7 +66,7 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
         rpc,
         frame: {
             width: 1280,
-            height: 800,
+            height: 950,
             x: 200,
             y: 200,
         }
