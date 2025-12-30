@@ -165,8 +165,8 @@ export class AIEngine {
     }
   }
 
-  async generateInitial(description: string, lockedPhrase?: string, lyricsTopic?: string): Promise<GenerationResult> {
-    const selection = await selectModes(description, this.getModel());
+  async generateInitial(description: string, lockedPhrase?: string, lyricsTopic?: string, genreOverride?: string): Promise<GenerationResult> {
+    const selection = await selectModes(description, this.getModel(), genreOverride);
     const userPrompt = this.config.isMaxMode()
       ? buildMaxModeContextualPrompt(description, selection, lyricsTopic)
       : buildContextualPrompt(description, selection, lyricsTopic);
@@ -267,7 +267,8 @@ export class AIEngine {
     lockedPhrase?: string,
     currentTitle?: string,
     currentLyrics?: string,
-    lyricsTopic?: string
+    lyricsTopic?: string,
+    _genreOverride?: string
   ): Promise<GenerationResult> {
     const promptForLLM = lockedPhrase
       ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')

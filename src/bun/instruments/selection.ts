@@ -157,8 +157,23 @@ async function correctGenreSpelling(
 
 export async function selectModes(
   description: string,
-  model: LanguageModel
+  model: LanguageModel,
+  genreOverride?: string
 ): Promise<ModeSelection> {
+  // If user explicitly selected a genre from dropdown, use it
+  if (genreOverride) {
+    const isValidGenre = genreOverride in GENRE_REGISTRY;
+    return {
+      genre: isValidGenre ? (genreOverride as GenreType) : null,
+      combination: detectCombination(description),
+      singleMode: null,
+      polyrhythmCombination: detectPolyrhythmCombination(description),
+      timeSignature: detectTimeSignature(description),
+      timeSignatureJourney: detectTimeSignatureJourney(description),
+      reasoning: `User selected: ${genreOverride}`,
+    };
+  }
+
   // Tier 1: Direct match on name + keywords
   let genre = detectGenre(description);
   let reasoning = genre ? `Direct match: ${genre}` : '';

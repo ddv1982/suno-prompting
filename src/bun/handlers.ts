@@ -65,11 +65,11 @@ export function createHandlers(
     }
 
     return {
-        generateInitial: async ({ description, lockedPhrase, lyricsTopic }) => {
-            return runAndValidate('generateInitial', { description }, () => aiEngine.generateInitial(description, lockedPhrase, lyricsTopic));
+        generateInitial: async ({ description, lockedPhrase, lyricsTopic, genreOverride }) => {
+            return runAndValidate('generateInitial', { description, genreOverride }, () => aiEngine.generateInitial(description, lockedPhrase, lyricsTopic, genreOverride));
         },
-        refinePrompt: async ({ currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic }) => {
-            return runAndValidate('refinePrompt', { feedback }, () => aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic));
+        refinePrompt: async ({ currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride }) => {
+            return runAndValidate('refinePrompt', { feedback, genreOverride }, () => aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride));
         },
         remixInstruments: async ({ currentPrompt, originalInput }) => {
             return runRemixAction('remixInstruments', () => aiEngine.remixInstruments(currentPrompt, originalInput));

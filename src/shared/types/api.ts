@@ -5,7 +5,12 @@ import type { AIProvider, APIKeys } from '@shared/types/config';
 import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory } from '@shared/types/domain';
 
 // Generation endpoints
-export type GenerateInitialParams = { description: string; lockedPhrase?: string; lyricsTopic?: string };
+export type GenerateInitialParams = { 
+  description: string; 
+  lockedPhrase?: string; 
+  lyricsTopic?: string;
+  genreOverride?: string;
+};
 export type GenerateInitialResponse = { 
   prompt: string;
   title?: string;
@@ -22,6 +27,7 @@ export type RefinePromptParams = {
   currentTitle?: string; 
   currentLyrics?: string;
   lyricsTopic?: string;
+  genreOverride?: string;
 };
 export type RefinePromptResponse = { 
   prompt: string; 

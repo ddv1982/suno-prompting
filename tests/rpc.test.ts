@@ -32,7 +32,7 @@ describe("RPC Handlers", () => {
         expect(result.versionId).toBeDefined();
         expect(result.validation).toBeDefined();
         expect(result.validation.isValid).toBe(true);
-        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith("Test description", undefined, undefined);
+        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith("Test description", undefined, undefined, undefined);
     });
 
     test("refinePrompt should call aiEngine with feedback", async () => {
@@ -55,7 +55,7 @@ describe("RPC Handlers", () => {
         const result = await handlers.refinePrompt({ currentPrompt: "Old prompt", feedback: "Make it louder" });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined, undefined);
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined, undefined, undefined);
     });
 
     test("refinePrompt should pass currentTitle and currentLyrics to aiEngine", async () => {
@@ -96,6 +96,7 @@ describe("RPC Handlers", () => {
             undefined, 
             "Old Title", 
             "[VERSE]\nOld lyrics",
+            undefined,
             undefined
         );
     });
@@ -146,7 +147,8 @@ describe("RPC Handlers", () => {
             undefined, 
             "Old Title", 
             "[VERSE]\nOld lyrics",
-            "A story about lost love"
+            "A story about lost love",
+            undefined
         );
     });
 

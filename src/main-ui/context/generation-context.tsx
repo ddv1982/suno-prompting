@@ -55,7 +55,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection } = useEditorContext();
 
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -191,9 +191,10 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
+      const genreOverride = advancedSelection.singleGenre || advancedSelection.genreCombination || undefined;
       const result = isInitial
-        ? await api.generateInitial(input, effectiveLockedPhrase, effectiveLyricsTopic)
-        : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics, effectiveLyricsTopic);
+        ? await api.generateInitial(input, effectiveLockedPhrase, effectiveLyricsTopic, genreOverride)
+        : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics, effectiveLyricsTopic, genreOverride);
 
       if (!result?.prompt) {
         throw new Error("Invalid result received from generation");
@@ -220,7 +221,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession, advancedSelection]);
 
   const handleCopy = useCallback(() => {
     const prompt = currentSession?.currentPrompt || "";
