@@ -478,7 +478,7 @@ export class AIEngine {
     const { text: rawResponse } = await generateText({
       model: this.getModel(),
       system: systemPrompt,
-      prompt: 'Refine based on the feedback provided in the system prompt.',
+      prompt: `Apply this feedback and return the refined JSON:\n\n${feedback}`,
       maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });

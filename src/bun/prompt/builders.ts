@@ -205,9 +205,6 @@ ${refinement.currentPrompt}
 CURRENT TITLE:
 ${refinement.currentTitle}
 
-USER FEEDBACK:
-${refinement.feedback}
-
 OUTPUT FORMAT - Return valid JSON:
 {
   "prompt": "<the refined music prompt>",
@@ -254,6 +251,11 @@ Then section tags on subsequent lines.`
     : '';
 
   if (refinement) {
+    const hasExistingLyrics = refinement.currentLyrics && refinement.currentLyrics.trim().length > 0;
+    const lyricsSection = hasExistingLyrics
+      ? `CURRENT LYRICS:\n${refinement.currentLyrics}`
+      : `CURRENT LYRICS: None - generate fresh lyrics based on the refined prompt and title`;
+
     return `${basePrompt}
 
 REFINEMENT MODE:
@@ -266,11 +268,7 @@ ${refinement.currentPrompt}
 CURRENT TITLE:
 ${refinement.currentTitle}
 
-CURRENT LYRICS:
-${refinement.currentLyrics || ''}
-
-USER FEEDBACK:
-${refinement.feedback}
+${lyricsSection}
 
 ${lyricsFormat}
 
@@ -278,7 +276,7 @@ OUTPUT FORMAT - Return valid JSON:
 {
   "prompt": "<the refined music prompt>",
   "title": "<the refined song title (1-5 words)>",
-  "lyrics": "<the refined lyrics with section tags>"
+  "lyrics": "<the refined or newly generated lyrics with section tags>"
 }
 
 REFINEMENT RULES:
@@ -286,6 +284,7 @@ REFINEMENT RULES:
 - Maintain consistency between style prompt and lyrics mood/theme
 - Keep what works well, improve what the feedback targets
 - If feedback only mentions one element, still return all three (keep others mostly unchanged)
+- If no existing lyrics, generate fresh lyrics that match the refined prompt and title
 
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
   }
