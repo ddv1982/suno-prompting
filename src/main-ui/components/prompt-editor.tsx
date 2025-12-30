@@ -405,7 +405,7 @@ function DebugDrawerBody({ debugInfo }: { debugInfo: DebugInfo }) {
           {debugInfo.model.split('/').pop()}
         </span>
       </div>
-      <RequestInspector requestBody={debugInfo.requestBody} provider={debugInfo.provider} onCopy={copyToClipboard} copiedSection={copiedSection} />
+      <RequestInspector requestBody={debugInfo.requestBody} responseBody={debugInfo.responseBody} provider={debugInfo.provider} onCopy={copyToClipboard} copiedSection={copiedSection} />
     </div>
   );
 }
@@ -505,11 +505,13 @@ type ParsedRequest = { model?: string; messages?: RequestMessage[]; [key: string
 
 function RequestInspector({ 
   requestBody,
+  responseBody,
   provider,
   onCopy, 
   copiedSection 
 }: { 
   requestBody: string;
+  responseBody: string;
   provider: string;
   onCopy: (text: string, section: string) => void;
   copiedSection: string | null;
@@ -632,6 +634,31 @@ function RequestInspector({
               </div>
             );
           })}
+
+          {/* Response Body */}
+          <div className="pt-2">
+            <SectionLabel>Response Body</SectionLabel>
+          </div>
+          <div className="rounded-lg border border-border/50 bg-background/30 overflow-hidden hover:border-border/80 transition-colors">
+            <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-muted/40 to-muted/20 border-b border-border/30">
+              <Badge variant="outline" className="text-micro font-bold uppercase h-4 px-1.5 bg-green-500/20 text-green-400 border-green-500/30">
+                assistant
+              </Badge>
+              <div className="flex items-center gap-1">
+                <span className="text-micro text-muted-foreground">{responseBody.length} chars</span>
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => onCopy(responseBody, 'response')}>
+                  {copiedSection === 'response' ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
+                </Button>
+              </div>
+            </div>
+            <div className="p-3">
+              <ScrollArea className="h-64 rounded-lg border bg-background/50 is-scrolling">
+                <pre className="p-3 text-tiny font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                  {responseBody}
+                </pre>
+              </ScrollArea>
+            </div>
+          </div>
         </div>
       )}
     </div>

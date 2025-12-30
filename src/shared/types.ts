@@ -63,6 +63,7 @@ export type DebugInfo = {
     provider: AIProvider;
     timestamp: string;
     requestBody: string;
+    responseBody: string;
     // Lyrics mode additional debug info
     titleGeneration?: {
         systemPrompt: string;

@@ -149,6 +149,7 @@ export class AIEngine {
   private buildDebugInfo(
     systemPrompt: string,
     userPrompt: string,
+    rawResponse: string,
     messages?: Array<{ role: string; content: string }>
   ): DebugInfo {
     // Build messages array in universal OpenAI-compatible format
@@ -172,6 +173,7 @@ export class AIEngine {
       provider: this.provider,
       timestamp: new Date().toISOString(),
       requestBody: JSON.stringify(requestBody, null, 2),
+      responseBody: rawResponse,
     };
   }
 
@@ -268,7 +270,7 @@ export class AIEngine {
       return {
         text: result,
         debugInfo: this.debugMode
-          ? this.buildDebugInfo(systemPrompt, userPromptForDebug, messages)
+          ? this.buildDebugInfo(systemPrompt, userPromptForDebug, genResult.text, messages)
           : undefined,
       };
     } catch (error) {
@@ -340,7 +342,7 @@ export class AIEngine {
       title: parsed.title?.trim().replace(/^["']|["']$/g, '') || 'Untitled',
       lyrics: parsed.lyrics?.trim(),
       debugInfo: this.debugMode
-        ? this.buildDebugInfo(systemPrompt, userPrompt)
+        ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
         : undefined,
     };
 
