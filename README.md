@@ -317,6 +317,14 @@ Recording character suggestions per genre:
 
 ## Architecture (high level)
 
+### AI engine
+
+- `src/bun/ai/engine.ts`: main AIEngine class orchestrating generation.
+- `src/bun/ai/config.ts`: AIConfig class for provider/model/settings management.
+- `src/bun/ai/content-generator.ts`: title and lyrics generation.
+- `src/bun/ai/llm-rewriter.ts`: condense/rewrite helpers for post-processing.
+- `src/bun/ai/remix.ts`: remix operations (genre, mood, instruments, etc.).
+
 ### Prompt pipeline
 
 - `src/bun/prompt/builders.ts`: constructs the system/context prompts (normal + max mode).
