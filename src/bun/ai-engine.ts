@@ -467,7 +467,6 @@ export class AIEngine {
       currentPrompt: promptForLLM,
       currentTitle: currentTitle || 'Untitled',
       currentLyrics: currentLyrics,
-      feedback,
     };
 
     // Use SAME pattern as generateInitial - select based on lyricsMode
@@ -475,10 +474,11 @@ export class AIEngine {
       ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, this.useSunoTags, this.maxMode, refinement)
       : buildCombinedSystemPrompt(MAX_CHARS, this.useSunoTags, this.maxMode, refinement);
 
+    const userPrompt = `Apply this feedback and return the refined JSON:\n\n${feedback}`;
     const { text: rawResponse } = await generateText({
       model: this.getModel(),
       system: systemPrompt,
-      prompt: `Apply this feedback and return the refined JSON:\n\n${feedback}`,
+      prompt: userPrompt,
       maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });
@@ -518,7 +518,7 @@ export class AIEngine {
       title: parsed.title?.trim().replace(/^["']|["']$/g, '') || currentTitle || 'Untitled',
       lyrics: this.lyricsMode ? (parsed.lyrics?.trim() || currentLyrics) : undefined,
       debugInfo: this.debugMode
-        ? this.buildDebugInfo(systemPrompt, feedback, rawResponse)
+        ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
         : undefined,
     };
   }

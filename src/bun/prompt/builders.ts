@@ -178,7 +178,6 @@ export type RefinementContext = {
   currentPrompt: string;
   currentTitle: string;
   currentLyrics?: string;
-  feedback: string;
 };
 
 // Combined system prompt for generating style prompt + title in one call
@@ -255,6 +254,14 @@ Then section tags on subsequent lines.`
     const lyricsSection = hasExistingLyrics
       ? `CURRENT LYRICS:\n${refinement.currentLyrics}`
       : `CURRENT LYRICS: None - generate fresh lyrics based on the refined prompt and title`;
+    
+    const freshLyricsRequirements = !hasExistingLyrics ? `
+LYRICS REQUIREMENTS FOR NEW LYRICS:
+- Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+- Each section should have 2-4 lines
+- Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
+- Lyrics should be evocative, poetic, and emotionally resonant
+- Match the genre's typical lyrical style` : '';
 
     return `${basePrompt}
 
@@ -271,6 +278,7 @@ ${refinement.currentTitle}
 ${lyricsSection}
 
 ${lyricsFormat}
+${freshLyricsRequirements}
 
 OUTPUT FORMAT - Return valid JSON:
 {
