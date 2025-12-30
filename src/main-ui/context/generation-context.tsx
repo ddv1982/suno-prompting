@@ -55,7 +55,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, withWordlessVocals } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput } = useEditorContext();
 
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -426,7 +426,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
             createdAt: now,
             updatedAt: now,
             promptMode: 'quickVibes',
-            quickVibesInput: { category, customDescription },
+            quickVibesInput: { category, customDescription, withWordlessVocals },
           }
         : {
             ...currentSession,
@@ -434,7 +434,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
             versionHistory: [...currentSession.versionHistory, newVersion],
             updatedAt: now,
             promptMode: 'quickVibes',
-            quickVibesInput: { category, customDescription },
+            quickVibesInput: { category, customDescription, withWordlessVocals },
           };
 
       if (isNewSession) {
@@ -461,9 +461,9 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     if (isGenerating) return;
     if (!currentSession?.quickVibesInput) return;
 
-    const { category, customDescription } = currentSession.quickVibesInput;
-    await handleGenerateQuickVibes(category, customDescription, withWordlessVocals);
-  }, [isGenerating, currentSession, handleGenerateQuickVibes, withWordlessVocals]);
+    const { category, customDescription, withWordlessVocals: storedWithWordlessVocals } = currentSession.quickVibesInput;
+    await handleGenerateQuickVibes(category, customDescription, storedWithWordlessVocals ?? false);
+  }, [isGenerating, currentSession, handleGenerateQuickVibes]);
 
   return (
     <GenerationContext.Provider value={{

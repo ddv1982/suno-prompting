@@ -18,6 +18,7 @@ export type QuickVibesCategory =
 export type QuickVibesInput = {
   category: QuickVibesCategory | null;
   customDescription: string;
+  withWordlessVocals: boolean;
 };
 
 // Editor mode types

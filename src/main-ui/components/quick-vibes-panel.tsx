@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
 import { Switch } from "@/components/ui/switch";
@@ -7,20 +7,12 @@ import { Sparkles, Loader2, MessageSquare, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
+import { QUICK_VIBES_CATEGORIES } from "@shared/quick-vibes-categories";
+import { CategorySelector } from "@/components/category-selector";
 
-// Category definitions (client-side)
-const QUICK_VIBES_CATEGORIES: Array<{
-  id: QuickVibesCategory;
-  label: string;
-  description: string;
-}> = [
-  { id: 'lofi-study', label: 'Lo-fi / Study', description: 'Chill beats for studying and focus' },
-  { id: 'cafe-coffeeshop', label: 'Cafe / Coffee shop', description: 'Cozy acoustic and jazz vibes' },
-  { id: 'ambient-focus', label: 'Ambient / Focus', description: 'Atmospheric soundscapes for deep work' },
-  { id: 'latenight-chill', label: 'Late night / Chill', description: 'Mellow late-night listening' },
-  { id: 'cozy-rainy', label: 'Cozy / Rainy day', description: 'Warm sounds for rainy days' },
-  { id: 'lofi-chill', label: 'Lo-fi chill', description: 'Classic lo-fi chill beats' },
-];
+const getCategoryLabel = (categoryId: QuickVibesCategory): string => {
+  return QUICK_VIBES_CATEGORIES[categoryId]?.label ?? categoryId;
+};
 
 type QuickVibesPanelProps = {
   input: QuickVibesInput;
@@ -64,30 +56,11 @@ export function QuickVibesPanel({
         <FormLabel icon={<Sparkles className="w-3 h-3" />} badge="optional">
           Category
         </FormLabel>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={input.category === null ? 'default' : 'outline'}
-            size="xs"
-            onClick={() => handleCategorySelect(null)}
-            disabled={isGenerating}
-            className="font-medium"
-          >
-            None
-          </Button>
-          {QUICK_VIBES_CATEGORIES.map((cat) => (
-            <Button
-              key={cat.id}
-              variant={input.category === cat.id ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => handleCategorySelect(cat.id)}
-              disabled={isGenerating}
-              className="font-medium"
-              title={cat.description}
-            >
-              {cat.label}
-            </Button>
-          ))}
-        </div>
+        <CategorySelector
+          selectedCategory={input.category}
+          onSelect={handleCategorySelect}
+          disabled={isGenerating}
+        />
       </div>
 
       {/* Custom Description */}
@@ -116,7 +89,7 @@ export function QuickVibesPanel({
         />
         <p className="text-micro text-muted-foreground">
           {input.category 
-            ? `Category "${QUICK_VIBES_CATEGORIES.find(c => c.id === input.category)?.label}" selected. Add custom details or leave blank.`
+            ? `Category "${getCategoryLabel(input.category)}" selected. Add custom details or leave blank.`
             : "Describe the mood, setting, or activity for your music."
           }
         </p>

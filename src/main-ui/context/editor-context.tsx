@@ -5,6 +5,7 @@ import { buildMusicPhrase } from '@shared/music-phrase';
 const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = {
   category: null,
   customDescription: '',
+  withWordlessVocals: false,
 };
 
 const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [

@@ -21,8 +21,7 @@ RULES:
 3. Use vivid, emotional language (dreamy, cozy, warm, chill, mellow)
 4. Include activity or setting context when relevant (to study to, for a rainy day)
 5. ${vocalInstruction}
-6. Do NOT list instruments or technical specs
-7. Do NOT use section tags like [VERSE] or [CHORUS]${maxModeInstructions}
+6. Do NOT list instruments or technical specs, do NOT use section tags like [VERSE] or [CHORUS]${maxModeInstructions}
 
 OUTPUT: Return ONLY the prompt text, nothing else.`;
 }
