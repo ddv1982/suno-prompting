@@ -2,7 +2,7 @@
 
 import type { ValidationResult } from '@shared/validation';
 import type { AIProvider, APIKeys } from '@shared/types/config';
-import type { PromptSession, DebugInfo } from '@shared/types/domain';
+import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory } from '@shared/types/domain';
 
 // Generation endpoints
 export type GenerateInitialParams = { description: string; lockedPhrase?: string; lyricsTopic?: string };
@@ -88,3 +88,20 @@ export type SetModelParams = { model: string };
 export type SetSunoTagsParams = { useSunoTags: boolean };
 export type SetMaxModeParams = { maxMode: boolean };
 export type SetLyricsModeParams = { lyricsMode: boolean };
+
+// Quick Vibes endpoints
+export type GetPromptModeResponse = { promptMode: PromptMode };
+export type SetPromptModeParams = { promptMode: PromptMode };
+export type SetPromptModeResponse = { success: boolean };
+
+export type GenerateQuickVibesParams = {
+  category: QuickVibesCategory | null;
+  customDescription: string;
+  withWordlessVocals: boolean;
+};
+
+export type GenerateQuickVibesResponse = {
+  prompt: string;
+  versionId: string;
+  debugInfo?: DebugInfo;
+};

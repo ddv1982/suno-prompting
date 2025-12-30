@@ -4,6 +4,8 @@ import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
+import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes } from '@bun/prompt/quick-vibes-builder';
+import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
 import { createLogger } from '@bun/logger';
@@ -373,6 +375,44 @@ export class AIEngine {
 
   async remixLyrics(currentPrompt: string, originalInput: string, lyricsTopic?: string): Promise<{ lyrics: string }> {
     return remixLyricsImpl(currentPrompt, originalInput, lyricsTopic, this.config.isMaxMode(), this.getModel);
+  }
+
+  async generateQuickVibes(
+    category: QuickVibesCategory | null,
+    customDescription: string,
+    withWordlessVocals: boolean
+  ): Promise<GenerationResult> {
+    const systemPrompt = buildQuickVibesSystemPrompt(this.config.isMaxMode(), withWordlessVocals);
+    const userPrompt = buildQuickVibesUserPrompt(category, customDescription);
+
+    try {
+      const { text: rawResponse } = await generateText({
+        model: this.getModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+
+      if (!rawResponse?.trim()) {
+        throw new AIGenerationError('Empty response from AI model (Quick Vibes)');
+      }
+
+      const result = postProcessQuickVibes(rawResponse);
+
+      return {
+        text: result,
+        debugInfo: this.config.isDebugMode()
+          ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
+          : undefined,
+      };
+    } catch (error) {
+      if (error instanceof AIGenerationError) throw error;
+      throw new AIGenerationError(
+        `Failed to generate Quick Vibes: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 }
 

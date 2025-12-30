@@ -6,6 +6,9 @@ export { DEFAULT_API_KEYS } from '@shared/types/config';
 
 // Domain types
 export type { 
+  PromptMode,
+  QuickVibesCategory,
+  QuickVibesInput,
   EditorMode, 
   AdvancedSelection, 
   PromptVersion, 
@@ -45,6 +48,11 @@ export type {
   SetSunoTagsParams,
   SetMaxModeParams,
   SetLyricsModeParams,
+  GetPromptModeResponse,
+  SetPromptModeParams,
+  SetPromptModeResponse,
+  GenerateQuickVibesParams,
+  GenerateQuickVibesResponse,
 } from '@shared/types/api';
 
 // RPC types

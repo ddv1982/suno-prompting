@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type DebugInfo } from '@shared/types';
+import { type PromptSession, type PromptVersion, type DebugInfo, type QuickVibesCategory } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { useSessionContext } from '@/context/session-context';
@@ -19,7 +19,8 @@ export type GeneratingAction =
   | 'remixStyleTags' 
   | 'remixRecording' 
   | 'remixTitle' 
-  | 'remixLyrics';
+  | 'remixLyrics'
+  | 'quickVibes';
 
 interface GenerationContextType {
   isGenerating: boolean;
@@ -40,6 +41,8 @@ interface GenerationContextType {
   handleRemixRecording: () => Promise<void>;
   handleRemixTitle: () => Promise<void>;
   handleRemixLyrics: () => Promise<void>;
+  handleGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => Promise<void>;
+  handleRemixQuickVibes: () => Promise<void>;
 }
 
 const GenerationContext = createContext<GenerationContextType | null>(null);
@@ -52,7 +55,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, withWordlessVocals } = useEditorContext();
 
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -385,6 +388,83 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isGenerating, currentSession, generateId, saveSession]);
 
+  const handleGenerateQuickVibes = useCallback(async (
+    category: QuickVibesCategory | null,
+    customDescription: string,
+    withWordlessVocals: boolean
+  ) => {
+    if (isGenerating) return;
+
+    try {
+      setGeneratingAction('quickVibes');
+      const result = await api.generateQuickVibes(category, customDescription, withWordlessVocals);
+
+      if (!result?.prompt) {
+        throw new Error("Invalid result received from Quick Vibes generation");
+      }
+
+      setDebugInfo(result.debugInfo);
+      const now = new Date().toISOString();
+      const originalInput = [
+        category ? `[${category}]` : null,
+        customDescription || null,
+      ].filter(Boolean).join(' ') || 'Quick Vibes';
+
+      const newVersion: PromptVersion = {
+        id: result.versionId,
+        content: result.prompt,
+        timestamp: now,
+      };
+
+      const isNewSession = !currentSession;
+      const updatedSession: PromptSession = isNewSession
+        ? {
+            id: generateId(),
+            originalInput,
+            currentPrompt: result.prompt,
+            versionHistory: [newVersion],
+            createdAt: now,
+            updatedAt: now,
+            promptMode: 'quickVibes',
+            quickVibesInput: { category, customDescription },
+          }
+        : {
+            ...currentSession,
+            currentPrompt: result.prompt,
+            versionHistory: [...currentSession.versionHistory, newVersion],
+            updatedAt: now,
+            promptMode: 'quickVibes',
+            quickVibesInput: { category, customDescription },
+          };
+
+      if (isNewSession) {
+        setChatMessages(buildChatMessages(updatedSession));
+      } else {
+        setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt generated." }]);
+      }
+
+      setValidation({ ...EMPTY_VALIDATION });
+      await saveSession(updatedSession);
+      resetQuickVibesInput();
+    } catch (error) {
+      log.error("generateQuickVibes:failed", error);
+      setChatMessages(prev => [
+        ...prev,
+        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate Quick Vibes"}.` },
+      ]);
+    } finally {
+      setGeneratingAction('none');
+    }
+  }, [isGenerating, currentSession, generateId, saveSession, resetQuickVibesInput]);
+
+  const handleRemixQuickVibes = useCallback(async () => {
+    if (isGenerating) return;
+    if (!currentSession?.quickVibesInput) return;
+
+    const { category, customDescription } = currentSession.quickVibesInput;
+    await handleGenerateQuickVibes(category, customDescription, withWordlessVocals);
+  }, [isGenerating, currentSession, handleGenerateQuickVibes, withWordlessVocals]);
+
   return (
     <GenerationContext.Provider value={{
       isGenerating,
@@ -405,6 +485,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       handleRemixRecording,
       handleRemixTitle,
       handleRemixLyrics,
+      handleGenerateQuickVibes,
+      handleRemixQuickVibes,
     }}>
       {children}
     </GenerationContext.Provider>

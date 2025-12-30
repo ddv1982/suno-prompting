@@ -14,6 +14,8 @@ export const DEFAULT_API_KEYS: APIKeys = {
   anthropic: null,
 };
 
+import type { PromptMode } from '@shared/types/domain';
+
 export type AppConfig = {
   provider: AIProvider;
   apiKeys: APIKeys;
@@ -22,4 +24,5 @@ export type AppConfig = {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  promptMode: PromptMode;
 };

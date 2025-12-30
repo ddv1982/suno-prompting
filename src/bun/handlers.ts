@@ -211,6 +211,28 @@ export function createHandlers(
             await storage.saveConfig({ lyricsMode });
             aiEngine.setLyricsMode(lyricsMode);
             return { success: true };
+        },
+        getPromptMode: async () => {
+            log.info('getPromptMode');
+            const config = await storage.getConfig();
+            return { promptMode: config.promptMode ?? 'full' };
+        },
+        setPromptMode: async ({ promptMode }) => {
+            log.info('setPromptMode', { promptMode });
+            await storage.saveConfig({ promptMode });
+            return { success: true };
+        },
+        generateQuickVibes: async ({ category, customDescription, withWordlessVocals }) => {
+            log.info('generateQuickVibes', { category, customDescription, withWordlessVocals });
+            try {
+                const result = await aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals);
+                const versionId = Bun.randomUUIDv7();
+                log.info('generateQuickVibes:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, debugInfo: result.debugInfo };
+            } catch (error) {
+                log.error('generateQuickVibes:failed', error);
+                throw error;
+            }
         }
     };
 }

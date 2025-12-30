@@ -31,19 +31,27 @@ function App() {
     computedMusicPhrase,
     pendingInput,
     lyricsTopic,
+    promptMode,
+    quickVibesInput,
+    withWordlessVocals,
     setPendingInput,
     setSettingsOpen,
     setLockedPhrase,
     setLyricsTopic,
     setEditorMode,
+    setPromptMode,
+    setQuickVibesInput,
+    setWithWordlessVocals,
     updateAdvancedSelection,
     clearAdvancedSelection,
     selectSession,
     newProject,
     deleteSession,
     handleGenerate,
+    handleGenerateQuickVibes,
     handleCopy,
     handleRemix,
+    handleRemixQuickVibes,
     handleRemixInstruments,
     handleRemixGenre,
     handleRemixMood,
@@ -87,15 +95,23 @@ function App() {
               computedMusicPhrase={computedMusicPhrase}
               pendingInput={pendingInput}
               lyricsTopic={lyricsTopic}
+              promptMode={promptMode}
+              quickVibesInput={quickVibesInput}
+              withWordlessVocals={withWordlessVocals}
               onPendingInputChange={setPendingInput}
               onLockedPhraseChange={setLockedPhrase}
               onLyricsTopicChange={setLyricsTopic}
               onEditorModeChange={setEditorMode}
               onAdvancedSelectionUpdate={updateAdvancedSelection}
               onAdvancedSelectionClear={clearAdvancedSelection}
+              onPromptModeChange={setPromptMode}
+              onQuickVibesInputChange={setQuickVibesInput}
+              onWordlessVocalsChange={setWithWordlessVocals}
               onGenerate={handleGenerate}
+              onGenerateQuickVibes={handleGenerateQuickVibes}
               onCopy={handleCopy}
               onRemix={handleRemix}
+              onRemixQuickVibes={handleRemixQuickVibes}
               onRemixInstruments={handleRemixInstruments}
               onRemixGenre={handleRemixGenre}
               onRemixMood={handleRemixMood}

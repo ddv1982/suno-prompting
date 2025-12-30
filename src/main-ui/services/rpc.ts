@@ -1,5 +1,5 @@
 import { Electroview } from 'electrobun/view';
-import { type SunoRPCSchema, type PromptSession } from '@shared/types';
+import { type SunoRPCSchema, type PromptSession, type PromptMode, type QuickVibesCategory } from '@shared/types';
 
 const rpc = Electroview.defineRPC<SunoRPCSchema>({
     maxRequestTime: 90000,
@@ -123,5 +123,22 @@ export const api = {
 
     async setLyricsMode(lyricsMode: boolean): Promise<void> {
         await rpc.request.setLyricsMode({ lyricsMode });
+    },
+
+    async getPromptMode(): Promise<PromptMode> {
+        const { promptMode } = await rpc.request.getPromptMode({});
+        return promptMode;
+    },
+
+    async setPromptMode(promptMode: PromptMode): Promise<void> {
+        await rpc.request.setPromptMode({ promptMode });
+    },
+
+    async generateQuickVibes(
+        category: QuickVibesCategory | null,
+        customDescription: string,
+        withWordlessVocals: boolean
+    ): Promise<BunRequests['generateQuickVibes']['response']> {
+        return await rpc.request.generateQuickVibes({ category, customDescription, withWordlessVocals });
     }
 };

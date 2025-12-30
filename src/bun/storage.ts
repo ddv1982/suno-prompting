@@ -17,6 +17,7 @@ const DEFAULT_CONFIG: AppConfig = {
     debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
     maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
     lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
+    promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
 };
 
 export class StorageManager {
@@ -103,6 +104,7 @@ export class StorageManager {
                 debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
                 maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
                 lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
+                promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
             };
         } catch (error) {
             log.error('getConfig:failed', { error: error instanceof Error ? error.message : String(error) });

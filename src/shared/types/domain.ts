@@ -2,6 +2,24 @@
 
 import type { AIProvider } from '@shared/types/config';
 
+// Prompt generation mode
+export type PromptMode = 'full' | 'quickVibes';
+
+// Quick Vibes category presets
+export type QuickVibesCategory = 
+  | 'lofi-study'
+  | 'cafe-coffeeshop'
+  | 'ambient-focus'
+  | 'latenight-chill'
+  | 'cozy-rainy'
+  | 'lofi-chill';
+
+// Quick Vibes input state
+export type QuickVibesInput = {
+  category: QuickVibesCategory | null;
+  customDescription: string;
+};
+
 // Editor mode types
 export type EditorMode = 'simple' | 'advanced';
 
@@ -41,6 +59,9 @@ export type PromptSession = {
   versionHistory: PromptVersion[];
   createdAt: string;
   updatedAt: string;
+  // Quick Vibes fields
+  promptMode?: PromptMode;
+  quickVibesInput?: QuickVibesInput;
 };
 
 export type DebugInfo = {

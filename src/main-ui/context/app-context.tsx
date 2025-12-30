@@ -31,9 +31,11 @@ export const useAppContext = () => {
     currentModel: settings.currentModel,
     maxMode: settings.maxMode,
     lyricsMode: settings.lyricsMode,
+    promptMode: settings.promptMode,
     settingsOpen: settings.settingsOpen,
     setSettingsOpen: settings.setSettingsOpen,
     setLyricsMode: settings.setLyricsMode,
+    setPromptMode: settings.setPromptMode,
     
     // Editor
     editorMode: editor.editorMode,
@@ -49,6 +51,10 @@ export const useAppContext = () => {
     setLockedPhrase: editor.setLockedPhrase,
     setPendingInput: editor.setPendingInput,
     setLyricsTopic: editor.setLyricsTopic,
+    quickVibesInput: editor.quickVibesInput,
+    withWordlessVocals: editor.withWordlessVocals,
+    setQuickVibesInput: editor.setQuickVibesInput,
+    setWithWordlessVocals: editor.setWithWordlessVocals,
     
     // Generation
     isGenerating: generation.isGenerating,
@@ -69,5 +75,7 @@ export const useAppContext = () => {
     handleRemixRecording: generation.handleRemixRecording,
     handleRemixTitle: generation.handleRemixTitle,
     handleRemixLyrics: generation.handleRemixLyrics,
+    handleGenerateQuickVibes: generation.handleGenerateQuickVibes,
+    handleRemixQuickVibes: generation.handleRemixQuickVibes,
   };
 };

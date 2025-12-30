@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
 import { createLogger } from '@/lib/logger';
+import type { PromptMode } from '@shared/types';
 
 const log = createLogger('Settings');
 
@@ -8,9 +9,11 @@ interface SettingsContextType {
   currentModel: string;
   maxMode: boolean;
   lyricsMode: boolean;
+  promptMode: PromptMode;
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
   setLyricsMode: (mode: boolean) => void;
+  setPromptMode: (mode: PromptMode) => void;
   reloadSettings: () => Promise<void>;
 }
 
@@ -26,6 +29,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [currentModel, setCurrentModel] = useState("");
   const [maxMode, setMaxMode] = useState(false);
   const [lyricsMode, setLyricsMode] = useState(false);
+  const [promptMode, setPromptModeState] = useState<PromptMode>('full');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const loadModel = useCallback(async () => {
@@ -55,6 +59,15 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const loadPromptMode = useCallback(async () => {
+    try {
+      const mode = await api.getPromptMode();
+      setPromptModeState(mode);
+    } catch (error) {
+      log.error("loadPromptMode:failed", error);
+    }
+  }, []);
+
   const handleSetLyricsMode = useCallback(async (mode: boolean) => {
     const previousMode = lyricsMode;
     setLyricsMode(mode);
@@ -66,9 +79,20 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [lyricsMode]);
 
+  const handleSetPromptMode = useCallback(async (mode: PromptMode) => {
+    const previousMode = promptMode;
+    setPromptModeState(mode);
+    try {
+      await api.setPromptMode(mode);
+    } catch (error) {
+      log.error("setPromptMode:failed", error);
+      setPromptModeState(previousMode);
+    }
+  }, [promptMode]);
+
   const reloadSettings = useCallback(async () => {
-    await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode()]);
-  }, [loadModel, loadMaxMode, loadLyricsMode]);
+    await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode(), loadPromptMode()]);
+  }, [loadModel, loadMaxMode, loadLyricsMode, loadPromptMode]);
 
   useEffect(() => {
     reloadSettings();
@@ -85,9 +109,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       currentModel,
       maxMode,
       lyricsMode,
+      promptMode,
       settingsOpen,
       setSettingsOpen,
       setLyricsMode: handleSetLyricsMode,
+      setPromptMode: handleSetPromptMode,
       reloadSettings,
     }}>
       {children}

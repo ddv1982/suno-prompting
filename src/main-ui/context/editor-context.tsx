@@ -1,6 +1,11 @@
 import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
-import { type EditorMode, type AdvancedSelection, EMPTY_ADVANCED_SELECTION } from '@shared/types';
+import { type EditorMode, type AdvancedSelection, type QuickVibesInput, EMPTY_ADVANCED_SELECTION } from '@shared/types';
 import { buildMusicPhrase } from '@shared/music-phrase';
+
+const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = {
+  category: null,
+  customDescription: '',
+};
 
 const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [
   ['harmonicStyle', 'harmonicCombination'],
@@ -14,6 +19,8 @@ interface EditorContextType {
   pendingInput: string;
   lyricsTopic: string;
   computedMusicPhrase: string;
+  quickVibesInput: QuickVibesInput;
+  withWordlessVocals: boolean;
   setEditorMode: (mode: EditorMode) => void;
   setAdvancedSelection: (selection: AdvancedSelection) => void;
   updateAdvancedSelection: (updates: Partial<AdvancedSelection>) => void;
@@ -21,8 +28,11 @@ interface EditorContextType {
   setLockedPhrase: (phrase: string) => void;
   setPendingInput: (input: string) => void;
   setLyricsTopic: (topic: string) => void;
+  setQuickVibesInput: (input: QuickVibesInput) => void;
+  setWithWordlessVocals: (value: boolean) => void;
   getEffectiveLockedPhrase: () => string | undefined;
   resetEditor: () => void;
+  resetQuickVibesInput: () => void;
 }
 
 const EditorContext = createContext<EditorContextType | null>(null);
@@ -39,6 +49,8 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
   const [lockedPhrase, setLockedPhrase] = useState("");
   const [pendingInput, setPendingInput] = useState("");
   const [lyricsTopic, setLyricsTopic] = useState("");
+  const [quickVibesInput, setQuickVibesInput] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
+  const [withWordlessVocals, setWithWordlessVocals] = useState(false);
 
   const computedMusicPhrase = useMemo(() => {
     return buildMusicPhrase(advancedSelection);
@@ -73,6 +85,12 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     setLockedPhrase("");
     setPendingInput("");
     setLyricsTopic("");
+    setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT);
+    setWithWordlessVocals(false);
+  }, []);
+
+  const resetQuickVibesInput = useCallback(() => {
+    setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT);
   }, []);
 
   return (
@@ -83,6 +101,8 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       pendingInput,
       lyricsTopic,
       computedMusicPhrase,
+      quickVibesInput,
+      withWordlessVocals,
       setEditorMode,
       setAdvancedSelection,
       updateAdvancedSelection,
@@ -90,8 +110,11 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       setLockedPhrase,
       setPendingInput,
       setLyricsTopic,
+      setQuickVibesInput,
+      setWithWordlessVocals,
       getEffectiveLockedPhrase,
       resetEditor,
+      resetQuickVibesInput,
     }}>
       {children}
     </EditorContext.Provider>

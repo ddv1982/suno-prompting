@@ -31,7 +31,11 @@ import type {
   SetSunoTagsParams,
   SetMaxModeParams,
   SetLyricsModeParams,
+  SetPromptModeParams,
+  GenerateQuickVibesParams,
+  GenerateQuickVibesResponse,
 } from '@shared/types/api';
+import type { PromptMode } from '@shared/types/domain';
 
 // Handler function types for backend implementation
 export type RPCHandlers = {
@@ -61,6 +65,9 @@ export type RPCHandlers = {
   setLyricsMode: (params: SetLyricsModeParams) => Promise<{ success: boolean }>;
   getAllSettings: (params: Record<string, never>) => Promise<GetAllSettingsResponse>;
   saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
+  getPromptMode: (params: Record<string, never>) => Promise<{ promptMode: PromptMode }>;
+  setPromptMode: (params: SetPromptModeParams) => Promise<{ success: boolean }>;
+  generateQuickVibes: (params: GenerateQuickVibesParams) => Promise<GenerateQuickVibesResponse>;
 };
 
 export type SunoRPCSchema = {
@@ -169,6 +176,18 @@ export type SunoRPCSchema = {
       saveAllSettings: {
         params: SaveAllSettingsParams;
         response: { success: boolean };
+      };
+      getPromptMode: {
+        params: Record<string, never>;
+        response: { promptMode: PromptMode };
+      };
+      setPromptMode: {
+        params: SetPromptModeParams;
+        response: { success: boolean };
+      };
+      generateQuickVibes: {
+        params: GenerateQuickVibesParams;
+        response: GenerateQuickVibesResponse;
       };
     };
     messages: Record<string, never>;

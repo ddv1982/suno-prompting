@@ -3,6 +3,7 @@ export const APP_CONSTANTS = {
     MIN_PROMPT_CHARS: 20,
     MAX_LOCKED_PHRASE_CHARS: 300,
     MAX_LYRICS_TOPIC_CHARS: 500,
+    QUICK_VIBES_MAX_CHARS: 120,
     STORAGE_DIR: '.suno-prompting-app',
     AI: {
         MAX_RETRIES: 10,
@@ -14,6 +15,7 @@ export const APP_CONSTANTS = {
         DEFAULT_DEBUG_MODE: false,
         DEFAULT_MAX_MODE: false,
         DEFAULT_LYRICS_MODE: false,
+        DEFAULT_PROMPT_MODE: 'full' as const,
         PROVIDER_IDS: ['groq', 'openai', 'anthropic'] as const,
         PROVIDERS: [
             { id: 'groq' as const, name: 'Groq', keyPlaceholder: 'gsk_...', keyUrl: 'https://console.groq.com/keys' },
