@@ -296,9 +296,11 @@ export function PromptEditor({
             <Textarea
               value={lockedPhrase}
               onChange={(e) => onLockedPhraseChange(e.target.value)}
+              disabled={isGenerating}
               className={cn(
                 "min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg glass-control focus-visible:ring-primary/20",
-                !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20"
+                !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20",
+                isGenerating && "opacity-70"
               )}
               placeholder={editorMode === 'advanced' 
                 ? "Additional text to lock (combined with music phrase above)"
