@@ -34,6 +34,8 @@ import type {
   SetPromptModeParams,
   GenerateQuickVibesParams,
   GenerateQuickVibesResponse,
+  RefineQuickVibesParams,
+  RefineQuickVibesResponse,
 } from '@shared/types/api';
 import type { PromptMode } from '@shared/types/domain';
 
@@ -68,6 +70,7 @@ export type RPCHandlers = {
   getPromptMode: (params: Record<string, never>) => Promise<{ promptMode: PromptMode }>;
   setPromptMode: (params: SetPromptModeParams) => Promise<{ success: boolean }>;
   generateQuickVibes: (params: GenerateQuickVibesParams) => Promise<GenerateQuickVibesResponse>;
+  refineQuickVibes: (params: RefineQuickVibesParams) => Promise<RefineQuickVibesResponse>;
 };
 
 export type SunoRPCSchema = {
@@ -188,6 +191,10 @@ export type SunoRPCSchema = {
       generateQuickVibes: {
         params: GenerateQuickVibesParams;
         response: GenerateQuickVibesResponse;
+      };
+      refineQuickVibes: {
+        params: RefineQuickVibesParams;
+        response: RefineQuickVibesResponse;
       };
     };
     messages: Record<string, never>;

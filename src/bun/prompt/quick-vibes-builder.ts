@@ -1,6 +1,15 @@
 import type { QuickVibesCategory } from '@shared/types';
 import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS } from './quick-vibes-categories';
 
+// Lo-fi appropriate realism tags for Max Mode
+const LOFI_MAX_TAGS = [
+  'vinyl warmth',
+  'tape hiss',
+  'lo-fi dusty',
+  'analog warmth',
+  'tape saturation',
+] as const;
+
 /**
  * Builds the system prompt for Quick Vibes generation
  */
@@ -94,4 +103,41 @@ export function postProcessQuickVibes(text: string): string {
   }
   
   return result;
+}
+
+/**
+ * Injects lo-fi realism tags for Max Mode if space permits
+ */
+export function injectQuickVibesMaxTags(prompt: string, maxChars: number): string {
+  const shuffled = [...LOFI_MAX_TAGS].sort(() => Math.random() - 0.5);
+  const tag = shuffled[0];
+  const withTag = `${prompt}, ${tag}`;
+  
+  if (withTag.length <= maxChars) {
+    return withTag;
+  }
+  return prompt;
+}
+
+/**
+ * Builds the system prompt for Quick Vibes refinement
+ */
+export function buildQuickVibesRefineSystemPrompt(maxMode: boolean, withWordlessVocals: boolean): string {
+  const basePrompt = buildQuickVibesSystemPrompt(maxMode, withWordlessVocals);
+  
+  return `${basePrompt}
+
+You are REFINING an existing Quick Vibes prompt based on user feedback.
+Keep the same general vibe but apply the requested changes.`;
+}
+
+/**
+ * Builds the user prompt for Quick Vibes refinement
+ */
+export function buildQuickVibesRefineUserPrompt(currentPrompt: string, feedback: string): string {
+  return `Current prompt: "${currentPrompt}"
+
+User feedback: ${feedback}
+
+Generate the refined prompt:`;
 }

@@ -140,5 +140,13 @@ export const api = {
         withWordlessVocals: boolean
     ): Promise<BunRequests['generateQuickVibes']['response']> {
         return await rpc.request.generateQuickVibes({ category, customDescription, withWordlessVocals });
+    },
+
+    async refineQuickVibes(
+        currentPrompt: string,
+        feedback: string,
+        withWordlessVocals: boolean
+    ): Promise<BunRequests['refineQuickVibes']['response']> {
+        return await rpc.request.refineQuickVibes({ currentPrompt, feedback, withWordlessVocals });
     }
 };

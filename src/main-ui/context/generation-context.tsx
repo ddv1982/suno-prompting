@@ -55,7 +55,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals } = useEditorContext();
 
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -139,6 +139,50 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     const isInitial = !currentPrompt;
     const effectiveLockedPhrase = getEffectiveLockedPhrase();
 
+    // Quick Vibes refinement: when in Quick Vibes mode with existing prompt
+    if (promptMode === 'quickVibes' && currentPrompt) {
+      try {
+        setGeneratingAction('quickVibes');
+        setChatMessages(prev => [...prev, { role: "user", content: input }]);
+
+        const result = await api.refineQuickVibes(currentPrompt, input, withWordlessVocals);
+
+        if (!result?.prompt) {
+          throw new Error("Invalid result received from Quick Vibes refinement");
+        }
+
+        setDebugInfo(result.debugInfo);
+        const now = new Date().toISOString();
+        const newVersion: PromptVersion = {
+          id: result.versionId,
+          content: result.prompt,
+          timestamp: now,
+        };
+
+        const updatedSession: PromptSession = {
+          ...currentSession,
+          currentPrompt: result.prompt,
+          versionHistory: [...currentSession.versionHistory, newVersion],
+          updatedAt: now,
+        };
+
+        setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt refined." }]);
+        setValidation({ ...EMPTY_VALIDATION });
+        await saveSession(updatedSession);
+        setPendingInput("");
+      } catch (error) {
+        log.error("refineQuickVibes:failed", error);
+        setChatMessages(prev => [
+          ...prev,
+          { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to refine Quick Vibes"}.` },
+        ]);
+      } finally {
+        setGeneratingAction('none');
+      }
+      return;
+    }
+
+    // Full prompt generation/refinement
     try {
       setGeneratingAction('generate');
       if (!isInitial) {
@@ -175,7 +219,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession]);
 
   const handleCopy = useCallback(() => {
     const prompt = currentSession?.currentPrompt || "";

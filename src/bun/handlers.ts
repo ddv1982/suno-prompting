@@ -233,6 +233,18 @@ export function createHandlers(
                 log.error('generateQuickVibes:failed', error);
                 throw error;
             }
+        },
+        refineQuickVibes: async ({ currentPrompt, feedback, withWordlessVocals }) => {
+            log.info('refineQuickVibes', { currentPrompt, feedback, withWordlessVocals });
+            try {
+                const result = await aiEngine.refineQuickVibes(currentPrompt, feedback, withWordlessVocals);
+                const versionId = Bun.randomUUIDv7();
+                log.info('refineQuickVibes:complete', { versionId, promptLength: result.text.length });
+                return { prompt: result.text, versionId, debugInfo: result.debugInfo };
+            } catch (error) {
+                log.error('refineQuickVibes:failed', error);
+                throw error;
+            }
         }
     };
 }

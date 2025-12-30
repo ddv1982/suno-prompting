@@ -4,7 +4,8 @@ import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
-import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes } from '@bun/prompt/quick-vibes-builder';
+import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes, injectQuickVibesMaxTags, buildQuickVibesRefineSystemPrompt, buildQuickVibesRefineUserPrompt } from '@bun/prompt/quick-vibes-builder';
+import { QUICK_VIBES_MAX_CHARS } from '@bun/prompt/quick-vibes-categories';
 import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -398,7 +399,12 @@ export class AIEngine {
         throw new AIGenerationError('Empty response from AI model (Quick Vibes)');
       }
 
-      const result = postProcessQuickVibes(rawResponse);
+      let result = postProcessQuickVibes(rawResponse);
+      
+      // Inject Max Mode realism tags if enabled and space permits
+      if (this.config.isMaxMode()) {
+        result = injectQuickVibesMaxTags(result, QUICK_VIBES_MAX_CHARS);
+      }
 
       return {
         text: result,
@@ -410,6 +416,48 @@ export class AIEngine {
       if (error instanceof AIGenerationError) throw error;
       throw new AIGenerationError(
         `Failed to generate Quick Vibes: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  async refineQuickVibes(
+    currentPrompt: string,
+    feedback: string,
+    withWordlessVocals: boolean
+  ): Promise<GenerationResult> {
+    const systemPrompt = buildQuickVibesRefineSystemPrompt(this.config.isMaxMode(), withWordlessVocals);
+    const userPrompt = buildQuickVibesRefineUserPrompt(currentPrompt, feedback);
+
+    try {
+      const { text: rawResponse } = await generateText({
+        model: this.getModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+
+      if (!rawResponse?.trim()) {
+        throw new AIGenerationError('Empty response from AI model (Quick Vibes refine)');
+      }
+
+      let result = postProcessQuickVibes(rawResponse);
+      
+      if (this.config.isMaxMode()) {
+        result = injectQuickVibesMaxTags(result, QUICK_VIBES_MAX_CHARS);
+      }
+
+      return {
+        text: result,
+        debugInfo: this.config.isDebugMode()
+          ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
+          : undefined,
+      };
+    } catch (error) {
+      if (error instanceof AIGenerationError) throw error;
+      throw new AIGenerationError(
+        `Failed to refine Quick Vibes: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error : undefined
       );
     }

@@ -105,3 +105,15 @@ export type GenerateQuickVibesResponse = {
   versionId: string;
   debugInfo?: DebugInfo;
 };
+
+export type RefineQuickVibesParams = {
+  currentPrompt: string;
+  feedback: string;
+  withWordlessVocals: boolean;
+};
+
+export type RefineQuickVibesResponse = {
+  prompt: string;
+  versionId: string;
+  debugInfo?: DebugInfo;
+};

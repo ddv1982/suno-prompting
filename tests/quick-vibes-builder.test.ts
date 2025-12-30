@@ -2,7 +2,10 @@ import { describe, it, expect } from "bun:test";
 import {
   buildQuickVibesSystemPrompt,
   buildQuickVibesUserPrompt,
-  postProcessQuickVibes
+  postProcessQuickVibes,
+  injectQuickVibesMaxTags,
+  buildQuickVibesRefineSystemPrompt,
+  buildQuickVibesRefineUserPrompt
 } from "@bun/prompt/quick-vibes-builder";
 import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS } from "@bun/prompt/quick-vibes-categories";
 
@@ -134,5 +137,72 @@ describe("Quick Vibes Categories", () => {
 
   it("max chars constant is 120", () => {
     expect(QUICK_VIBES_MAX_CHARS).toBe(120);
+  });
+});
+
+describe("injectQuickVibesMaxTags", () => {
+  it("adds a lo-fi tag when space permits", () => {
+    const prompt = "dreamy lo-fi beats";
+    const result = injectQuickVibesMaxTags(prompt, 120);
+    expect(result.length).toBeGreaterThan(prompt.length);
+    expect(result).toContain(prompt);
+    expect(result).toContain(", ");
+  });
+
+  it("returns original prompt if tag would exceed limit", () => {
+    const prompt = "a".repeat(115);
+    const result = injectQuickVibesMaxTags(prompt, 120);
+    expect(result).toBe(prompt);
+  });
+
+  it("adds one of the known lo-fi tags", () => {
+    const prompt = "chill vibes";
+    const result = injectQuickVibesMaxTags(prompt, 120);
+    const knownTags = ["vinyl warmth", "tape hiss", "lo-fi dusty", "analog warmth", "tape saturation"];
+    const hasKnownTag = knownTags.some(tag => result.includes(tag));
+    expect(hasKnownTag).toBe(true);
+  });
+});
+
+describe("buildQuickVibesRefineSystemPrompt", () => {
+  it("includes base Quick Vibes instructions", () => {
+    const prompt = buildQuickVibesRefineSystemPrompt(false, false);
+    expect(prompt).toContain("120 characters");
+    expect(prompt).toContain("Quick Vibes");
+  });
+
+  it("includes refinement instructions", () => {
+    const prompt = buildQuickVibesRefineSystemPrompt(false, false);
+    expect(prompt).toContain("REFINING");
+    expect(prompt).toContain("user feedback");
+  });
+
+  it("includes Max Mode instructions when enabled", () => {
+    const prompt = buildQuickVibesRefineSystemPrompt(true, false);
+    expect(prompt).toContain("realism tags");
+  });
+
+  it("includes wordless vocals instructions when enabled", () => {
+    const prompt = buildQuickVibesRefineSystemPrompt(false, true);
+    expect(prompt).toContain("WORDLESS vocals");
+  });
+});
+
+describe("buildQuickVibesRefineUserPrompt", () => {
+  it("includes current prompt", () => {
+    const prompt = buildQuickVibesRefineUserPrompt("dreamy lo-fi beats", "make it warmer");
+    expect(prompt).toContain("dreamy lo-fi beats");
+  });
+
+  it("includes user feedback", () => {
+    const prompt = buildQuickVibesRefineUserPrompt("dreamy lo-fi beats", "make it warmer");
+    expect(prompt).toContain("make it warmer");
+  });
+
+  it("formats prompt correctly", () => {
+    const prompt = buildQuickVibesRefineUserPrompt("chill vibes", "add rain sounds");
+    expect(prompt).toContain("Current prompt:");
+    expect(prompt).toContain("User feedback:");
+    expect(prompt).toContain("Generate the refined prompt:");
   });
 });
