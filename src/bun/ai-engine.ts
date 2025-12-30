@@ -157,6 +157,23 @@ export class AIEngine {
     return lyrics?.trim() || undefined;
   }
 
+  private parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {
+    try {
+      const cleaned = this.cleanJsonResponse(rawResponse);
+      const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
+      if (!parsed.prompt) {
+        throw new Error('Missing prompt in response');
+      }
+      return parsed;
+    } catch (e) {
+      log.warn(`${actionName}:json_parse_failed`, { 
+        error: e instanceof Error ? e.message : 'Unknown error',
+        rawResponse: rawResponse.slice(0, 200) 
+      });
+      return null;
+    }
+  }
+
   private get systemPrompt(): string {
     if (this.maxMode) {
       return buildMaxModeSystemPrompt(MAX_CHARS);
@@ -320,19 +337,8 @@ export class AIEngine {
     });
 
     // Parse combined JSON response
-    let parsed: ParsedCombinedResponse;
-    try {
-      const cleaned = this.cleanJsonResponse(rawResponse);
-      parsed = JSON.parse(cleaned);
-      if (!parsed.prompt) {
-        throw new Error('Missing prompt in response');
-      }
-    } catch (e) {
-      log.warn('generateInitial:json_parse_failed', { 
-        error: e instanceof Error ? e.message : 'Unknown error',
-        rawResponse: rawResponse.slice(0, 200) 
-      });
-      // Fallback to legacy separate calls
+    const parsed = this.parseJsonResponse(rawResponse, 'generateInitial');
+    if (!parsed) {
       return this.generateInitialFallback(description, lockedPhrase, userPrompt);
     }
 
@@ -502,19 +508,8 @@ export class AIEngine {
     });
 
     // Parse combined JSON response (same as generateInitial)
-    let parsed: ParsedCombinedResponse;
-    try {
-      const cleaned = this.cleanJsonResponse(rawResponse);
-      parsed = JSON.parse(cleaned);
-      if (!parsed.prompt) {
-        throw new Error('Missing prompt in response');
-      }
-    } catch (e) {
-      log.warn('refinePrompt:json_parse_failed', { 
-        error: e instanceof Error ? e.message : 'Unknown error',
-        rawResponse: rawResponse.slice(0, 200) 
-      });
-      // Fallback to legacy refinement - preserve original title/lyrics
+    const parsed = this.parseJsonResponse(rawResponse, 'refinePrompt');
+    if (!parsed) {
       const fallbackResult = await this.refinePromptFallback(promptForLLM, feedback, lockedPhrase);
       return {
         ...fallbackResult,
