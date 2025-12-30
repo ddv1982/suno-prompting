@@ -263,6 +263,8 @@ LYRICS REQUIREMENTS FOR NEW LYRICS:
 - Lyrics should be evocative, poetic, and emotionally resonant
 - Match the genre's typical lyrical style` : '';
 
+    const additionalInstructions = [lyricsFormat, freshLyricsRequirements].filter(Boolean).join('\n');
+
     return `${basePrompt}
 
 REFINEMENT MODE:
@@ -277,8 +279,7 @@ ${refinement.currentTitle}
 
 ${lyricsSection}
 
-${lyricsFormat}
-${freshLyricsRequirements}
+${additionalInstructions}
 
 OUTPUT FORMAT - Return valid JSON:
 {

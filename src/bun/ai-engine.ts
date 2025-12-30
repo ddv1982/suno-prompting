@@ -139,6 +139,14 @@ export class AIEngine {
     }
   }
 
+  private cleanJsonResponse(text: string): string {
+    return text.trim().replace(/```json\n?|\n?```/g, '');
+  }
+
+  private cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
+    return title?.trim().replace(/^["']|["']$/g, '') || fallback;
+  }
+
   private get systemPrompt(): string {
     if (this.maxMode) {
       return buildMaxModeSystemPrompt(MAX_CHARS);
@@ -304,7 +312,7 @@ export class AIEngine {
     // Parse combined JSON response
     let parsed: { prompt: string; title: string; lyrics?: string };
     try {
-      const cleaned = rawResponse.trim().replace(/```json\n?|\n?```/g, '');
+      const cleaned = this.cleanJsonResponse(rawResponse);
       parsed = JSON.parse(cleaned);
       if (!parsed.prompt) {
         throw new Error('Missing prompt in response');
@@ -339,7 +347,7 @@ export class AIEngine {
 
     const result: GenerationResult = {
       text: promptText,
-      title: parsed.title?.trim().replace(/^["']|["']$/g, '') || 'Untitled',
+      title: this.cleanTitle(parsed.title),
       lyrics: parsed.lyrics?.trim(),
       debugInfo: this.debugMode
         ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
@@ -486,7 +494,7 @@ export class AIEngine {
     // Parse combined JSON response (same as generateInitial)
     let parsed: { prompt: string; title: string; lyrics?: string };
     try {
-      const cleaned = rawResponse.trim().replace(/```json\n?|\n?```/g, '');
+      const cleaned = this.cleanJsonResponse(rawResponse);
       parsed = JSON.parse(cleaned);
       if (!parsed.prompt) {
         throw new Error('Missing prompt in response');
@@ -515,7 +523,7 @@ export class AIEngine {
 
     return {
       text: promptText,
-      title: parsed.title?.trim().replace(/^["']|["']$/g, '') || currentTitle || 'Untitled',
+      title: this.cleanTitle(parsed.title, currentTitle),
       lyrics: this.lyricsMode ? (parsed.lyrics?.trim() || currentLyrics) : undefined,
       debugInfo: this.debugMode
         ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
