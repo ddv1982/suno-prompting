@@ -70,10 +70,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode()]);
   }, [loadModel, loadMaxMode, loadLyricsMode]);
 
-  useEffect(() => {
-    reloadSettings();
-  }, [reloadSettings]);
-
+  // Load settings on mount and reload when settings modal closes
   useEffect(() => {
     if (!settingsOpen) {
       reloadSettings();

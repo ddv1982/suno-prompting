@@ -67,7 +67,8 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       .catch(err => log.error("loadPromptMode:failed", err));
   }, []);
 
-  // Fire-and-forget save to backend
+  // Fire-and-forget save - no rollback needed for UI preference
+  // This pattern avoids race conditions that occur with optimistic update + reload
   const setPromptMode = useCallback((mode: PromptMode) => {
     setPromptModeState(mode);
     api.setPromptMode(mode).catch(err => log.error("setPromptMode:failed", err));
