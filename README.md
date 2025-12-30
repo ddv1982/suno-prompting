@@ -57,6 +57,37 @@ Settings (including your AI provider API keys) are stored locally:
 
 API keys are encrypted at rest using AES-256-GCM.
 
+## Architecture (high level)
+
+### AI engine
+
+- `src/bun/ai/engine.ts`: main AIEngine class orchestrating generation.
+- `src/bun/ai/config.ts`: AIConfig class for provider/model/settings management.
+- `src/bun/ai/content-generator.ts`: title and lyrics generation.
+- `src/bun/ai/llm-rewriter.ts`: condense/rewrite helpers for post-processing.
+- `src/bun/ai/remix.ts`: remix operations (genre, mood, instruments, etc.).
+
+### Prompt pipeline
+
+- `src/bun/prompt/builders.ts`: constructs the system/context prompts (normal + max mode).
+- `src/bun/prompt/postprocess.ts`: strips leaked meta, enforces the output contract, truncates to limits.
+- `src/bun/prompt/remix.ts`: field-line replacement helpers used by remix actions.
+- `src/bun/prompt/realism-tags.ts`: max mode header tags, realism descriptors, and genre-to-tag mapping.
+- `src/bun/prompt/articulations.ts`: instrument articulation system (10 categories, 100+ articulations).
+- `src/bun/prompt/vocal-descriptors.ts`: vocal ranges, deliveries, and techniques per genre.
+- `src/bun/prompt/production-elements.ts`: reverb types and recording textures per genre.
+- `src/bun/prompt/chord-progressions.ts`: 26 named chord progressions with genre mappings.
+
+### Instruments + music “knowledge”
+
+- `src/bun/instruments/registry.ts`: canonical instrument tags + aliases.
+- `src/bun/instruments/genres/*`: per-genre instrument pools.
+- `src/bun/instruments/datasets/*`: reusable datasets (harmonic/rhythm/time).
+- `src/bun/instruments/services/*`:
+  - `random.ts`: RNG utilities + deterministic seeded RNG for tests.
+  - `select.ts`: pool selection logic.
+  - `format.ts`: turns detected concepts into human-readable guidance.
+
 ## AI Providers
 
 The app supports multiple AI providers. Configure your preferred provider in Settings.
@@ -314,37 +345,6 @@ Recording character suggestions per genre:
 | The Soul Vamp | i-IV | Groovy, hypnotic |
 | The Blues | I-IV-I-V | Blues, rock |
 | The Bossa Nova | Imaj7-ii7-V7 | Latin jazz |
-
-## Architecture (high level)
-
-### AI engine
-
-- `src/bun/ai/engine.ts`: main AIEngine class orchestrating generation.
-- `src/bun/ai/config.ts`: AIConfig class for provider/model/settings management.
-- `src/bun/ai/content-generator.ts`: title and lyrics generation.
-- `src/bun/ai/llm-rewriter.ts`: condense/rewrite helpers for post-processing.
-- `src/bun/ai/remix.ts`: remix operations (genre, mood, instruments, etc.).
-
-### Prompt pipeline
-
-- `src/bun/prompt/builders.ts`: constructs the system/context prompts (normal + max mode).
-- `src/bun/prompt/postprocess.ts`: strips leaked meta, enforces the output contract, truncates to limits.
-- `src/bun/prompt/remix.ts`: field-line replacement helpers used by remix actions.
-- `src/bun/prompt/realism-tags.ts`: max mode header tags, realism descriptors, and genre-to-tag mapping.
-- `src/bun/prompt/articulations.ts`: instrument articulation system (10 categories, 100+ articulations).
-- `src/bun/prompt/vocal-descriptors.ts`: vocal ranges, deliveries, and techniques per genre.
-- `src/bun/prompt/production-elements.ts`: reverb types and recording textures per genre.
-- `src/bun/prompt/chord-progressions.ts`: 26 named chord progressions with genre mappings.
-
-### Instruments + music “knowledge”
-
-- `src/bun/instruments/registry.ts`: canonical instrument tags + aliases.
-- `src/bun/instruments/genres/*`: per-genre instrument pools.
-- `src/bun/instruments/datasets/*`: reusable datasets (harmonic/rhythm/time).
-- `src/bun/instruments/services/*`:
-  - `random.ts`: RNG utilities + deterministic seeded RNG for tests.
-  - `select.ts`: pool selection logic.
-  - `format.ts`: turns detected concepts into human-readable guidance.
 
 ## Reference tables
 
