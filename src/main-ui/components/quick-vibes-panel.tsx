@@ -124,20 +124,18 @@ export function QuickVibesPanel({
         </p>
       </div>
 
-      {/* Wordless Vocals Toggle - only shown for initial generation */}
-      {!isRefineMode && (
-        <label className="flex items-center gap-3 py-2 cursor-pointer">
-          <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-sm">Wordless vocals</span>
-          <span className="text-micro text-muted-foreground">(humming, oohs)</span>
-          <Switch
-            checked={withWordlessVocals}
-            onCheckedChange={onWordlessVocalsChange}
-            disabled={isGenerating}
-            size="sm"
-          />
-        </label>
-      )}
+      {/* Wordless Vocals Toggle */}
+      <label className="flex items-center gap-3 py-2 cursor-pointer">
+        <Mic className="w-3.5 h-3.5 text-muted-foreground" />
+        <span className="text-sm">Wordless vocals</span>
+        <span className="text-micro text-muted-foreground">(humming, oohs)</span>
+        <Switch
+          checked={withWordlessVocals}
+          onCheckedChange={onWordlessVocalsChange}
+          disabled={isGenerating}
+          size="sm"
+        />
+      </label>
 
       {/* Generate / Refine Button */}
       <Button
