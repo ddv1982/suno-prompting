@@ -10,6 +10,8 @@ Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts w
 - [AI Providers](#ai-providers)
 - [Output Format](#output-format)
 - [Features](#features)
+- [Quick Vibes](#quick-vibes)
+- [Advanced Mode](#advanced-mode)
 - [Genre & Mode Detection](#genre--mode-detection)
 - [Max Mode](#max-mode)
 - [Title & Lyrics](#title--lyrics)
@@ -90,6 +92,83 @@ Each provider's API key is stored separately and encrypted independently.
 - Quick remix buttons for **mood / genre / instruments**.
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
+- **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
+- **Advanced Mode**: Precise genre selection with 35 single genres and 53 genre combinations.
+
+## Quick Vibes
+
+Quick Vibes is a simplified mode for generating short, atmospheric prompts perfect for background music, study sessions, and ambient listening.
+
+### How to Use
+
+1. Switch to Quick Vibes mode using the mode toggle
+2. Select a category preset OR enter a custom description
+3. Optionally enable "Wordless Vocals" for instrumental-only output
+4. Click Generate
+
+### Category Presets
+
+| Category | Description | Example Output |
+|----------|-------------|----------------|
+| Lo-fi / Study | Chill beats for studying and focus | "warm lo-fi beats to study to" |
+| Cafe / Coffee shop | Cozy acoustic and jazz vibes | "relaxing cafe jazz on a sunday morning" |
+| Ambient / Focus | Atmospheric soundscapes for deep work | "dreamy ambient soundscape for deep focus" |
+| Late night / Chill | Mellow late-night listening | "late night chill hop vibes" |
+| Cozy / Rainy day | Warm sounds for rainy days | "cozy acoustic music for a rainy afternoon" |
+| Lo-fi chill | Classic lo-fi chill beats | "chill lo-fi beats with soft piano" |
+
+### Quick Vibes Features
+
+- **60 character limit**: Prompts are kept short and focused
+- **Wordless Vocals**: Toggle to request instrumental-only output
+- **Max Mode support**: When enabled, adds realism tags to output
+- **Refinement**: Chat-style refinement to adjust the generated prompt
+
+### Best For
+
+- Background music for work/study
+- Atmospheric playlists
+- Quick inspiration without detailed configuration
+
+## Advanced Mode
+
+Advanced Mode provides precise control over genre selection with searchable dropdowns exposing all 35 genres and 53 genre combinations.
+
+### Genre Selection
+
+Two searchable dropdown selectors allow you to specify exact genres:
+
+| Selector | Options | Behavior |
+|----------|---------|----------|
+| **Single Genre** | 35 genres | Direct genre selection (e.g., "Jazz", "Synthwave") |
+| **Genre Combination** | 53 combinations | Fusion/hybrid genres (e.g., "Jazz Fusion", "Folk Rock") |
+
+**Note**: Single Genre and Genre Combination are mutually exclusive - selecting one clears the other.
+
+### How it Works
+
+1. Enable Advanced Mode in the editor
+2. Select a genre from either dropdown (searchable/filterable)
+3. The selected genre appears at the start of the "Generated Music Phrase"
+4. When you generate, your selection **overrides** auto-detected genre
+
+### Single Genres (35)
+
+Ambient, Jazz, Electronic, Rock, Pop, Classical, Lo-Fi, Synthwave, Cinematic, Folk, R&B, Videogame, Country, Soul, Blues, Punk, Latin, Metal, Trap, Retro, Symphonic, Disco, Funk, Reggae, Afrobeat, House, Trance, Downtempo, Dream Pop, Chillwave, New Age, Hyperpop, Drill, Melodic Techno, Indie
+
+### Genre Combinations (53)
+
+Jazz Fusion, Jazz Funk, Jazz Hip-Hop, Nu Jazz, Acid Jazz, Electronic Rock, Electro Pop, Synth Pop, Future Bass, Chillwave, Vaporwave, Folk Rock, Folk Pop, Indie Folk, Chamber Folk, Blues Rock, Southern Rock, Progressive Rock, Psychedelic Rock, Art Rock, Indie Rock, Alternative Rock, Neo Soul, Psychedelic Soul, Funk Soul, Latin Jazz, Bossa Nova, Afrobeat, Reggae Fusion, Progressive Metal, Symphonic Metal, Doom Metal, Trip Hop, Lo-fi Hip Hop, Dark Ambient, Space Ambient, Drone Ambient, Disco Funk, Nu-Disco, Disco House, Deep House, Tech House, Afro House, Melodic House, Dub Techno, Roots Reggae, Dream Pop Shoegaze, Chillhop, Downtempo Electronica, Lo-fi Chill, UK Drill, Hyperpop Trap, Drill Rap
+
+### Other Advanced Options
+
+In addition to genre, Advanced Mode includes:
+
+- **Harmonic Style**: Single modes (Dorian, Lydian, Phrygian, etc.)
+- **Harmonic Combination**: Modal journeys (Major-Minor, Lydian-Minor, etc.)
+- **Polyrhythm**: Rhythmic complexity patterns
+- **Time Signature**: Standard and odd meters (7/8, 5/4, etc.)
+- **Time Signature Journey**: Multi-meter progressions
 
 ## Genre & Mode Detection
 
