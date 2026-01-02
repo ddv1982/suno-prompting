@@ -22,7 +22,7 @@ type SettingsModalProps = {
 
 const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
 const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
-const selectClassName = "flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+const selectClassName = "flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-[length:var(--text-footnote)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
@@ -192,7 +192,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <SectionLabel>Song Structure Tags</SectionLabel>
             <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={useSunoTags} onCheckedChange={setUseSunoTags} disabled={maxMode} />
-              <span className={`text-sm ${maxMode ? 'text-muted-foreground' : ''}`}>Include [VERSE], [CHORUS], etc.</span>
+              <span className={`text-[length:var(--text-footnote)] ${maxMode ? 'text-muted-foreground' : ''}`}>Include [VERSE], [CHORUS], etc.</span>
             </label>
             <p className="text-tiny text-muted-foreground">
               When enabled, prompts include Suno V5 section and performance tags
@@ -207,7 +207,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </SectionLabel>
             <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={maxMode} onCheckedChange={setMaxMode} />
-              <span className="text-sm">Enable Suno Max Mode tags</span>
+              <span className="text-[length:var(--text-footnote)]">Enable Suno Max Mode tags</span>
             </label>
             <p className="text-tiny text-muted-foreground">
               Uses community-discovered prompt format for higher quality output.
@@ -223,7 +223,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </SectionLabel>
             <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={lyricsMode} onCheckedChange={setLyricsMode} />
-              <span className="text-sm">Generate lyrics with prompts</span>
+              <span className="text-[length:var(--text-footnote)]">Generate lyrics with prompts</span>
             </label>
             <p className="text-tiny text-muted-foreground">
               When enabled, generates a song title, style prompt, and lyrics in three sections.
@@ -238,7 +238,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </SectionLabel>
             <label className="flex items-center gap-3 cursor-pointer py-1">
               <Switch checked={debugMode} onCheckedChange={setDebugMode} />
-              <span className="text-sm">Show AI prompts sent to provider</span>
+              <span className="text-[length:var(--text-footnote)]">Show AI prompts sent to provider</span>
             </label>
             <p className="text-tiny text-muted-foreground">
               When enabled, displays the system and user prompts sent to the AI model

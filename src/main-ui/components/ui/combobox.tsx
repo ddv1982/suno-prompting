@@ -53,7 +53,7 @@ export function Combobox({
           aria-label={ariaLabel}
           disabled={disabled}
           className={cn(
-            "h-8 w-full justify-between text-sm font-normal",
+            "h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal",
             !value && "text-muted-foreground",
             className
           )}

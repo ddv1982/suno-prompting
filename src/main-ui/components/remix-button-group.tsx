@@ -43,7 +43,7 @@ export function RemixButtonGroup({
           variant="outline"
           size="sm"
           onClick={onDebugOpen}
-          className="font-bold glass-control"
+          className="font-bold"
         >
           <Bug className="w-3.5 h-3.5" />
           DEBUG
@@ -54,7 +54,7 @@ export function RemixButtonGroup({
         size="sm"
         onClick={onRemixGenre}
         disabled={isGenerating}
-        className="font-bold glass-control"
+        className="font-bold"
       >
         <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixGenre' && "animate-spin")} />
         GENRE
@@ -65,7 +65,7 @@ export function RemixButtonGroup({
           size="sm"
           onClick={onRemixMood}
           disabled={isGenerating}
-          className="font-bold glass-control"
+          className="font-bold"
         >
           <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixMood' && "animate-spin")} />
           MOOD
@@ -76,7 +76,7 @@ export function RemixButtonGroup({
         size="sm"
         onClick={onRemixInstruments}
         disabled={isGenerating}
-        className="font-bold glass-control"
+        className="font-bold"
       >
         <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixInstruments' && "animate-spin")} />
         INSTRUMENTS
@@ -87,7 +87,7 @@ export function RemixButtonGroup({
           size="sm"
           onClick={onRemixStyleTags}
           disabled={isGenerating}
-          className="font-bold glass-control"
+          className="font-bold"
         >
           <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixStyleTags' && "animate-spin")} />
           STYLE
@@ -99,7 +99,7 @@ export function RemixButtonGroup({
           size="sm"
           onClick={onRemixRecording}
           disabled={isGenerating}
-          className="font-bold glass-control"
+          className="font-bold"
         >
           <Shuffle className={cn("w-3.5 h-3.5", generatingAction === 'remixRecording' && "animate-spin")} />
           RECORDING
@@ -110,7 +110,7 @@ export function RemixButtonGroup({
         size="sm"
         onClick={onRemix}
         disabled={isGenerating}
-        className="font-bold glass-control"
+        className="font-bold"
       >
         <RefreshCw className={cn("w-3.5 h-3.5", generatingAction === 'remix' && "animate-spin")} />
         {generatingAction === 'remix' ? "REMIXING" : "REMIX"}
@@ -121,7 +121,7 @@ export function RemixButtonGroup({
         onClick={onCopy}
         disabled={promptOverLimit}
         className={cn(
-          "font-bold glass-control transition-all duration-300",
+          "font-bold transition-all duration-300",
           copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
         )}
       >

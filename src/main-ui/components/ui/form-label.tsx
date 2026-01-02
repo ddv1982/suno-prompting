@@ -24,14 +24,14 @@ export function FormLabel({
   
   return (
     <div className={cn("flex items-center justify-between", className)}>
-      <label className="text-tiny text-muted-foreground font-medium flex items-center gap-1.5">
+      <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium flex items-center gap-[var(--space-1)]">
         {icon && <span className="text-muted-foreground/70">{icon}</span>}
         {children}
         {badge && <Badge variant="outline" size="sm" className="ml-1 font-normal">{badge}</Badge>}
       </label>
       {showCharCount && (
         <span className={cn(
-          "text-micro font-mono tabular-nums",
+          "text-[length:var(--text-caption)] font-mono tabular-nums",
           error ? "text-destructive" : "text-muted-foreground"
         )}>
           {charCount} / {maxChars}

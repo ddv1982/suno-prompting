@@ -32,19 +32,21 @@ export function Switch({ checked, onCheckedChange, disabled = false, size = "def
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       className={cn(
-        "relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+        "relative inline-flex shrink-0 cursor-pointer rounded-full transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
         styles.button,
-        checked ? "bg-primary" : "bg-input",
+        checked 
+          ? "bg-primary border border-primary" 
+          : "bg-foreground/10 border border-foreground/20",
         className
       )}
     >
       <span
         className={cn(
-          "pointer-events-none block rounded-full bg-background shadow-lg ring-0 transition-transform",
+          "pointer-events-none block rounded-full bg-white transition-transform duration-200",
           styles.thumb,
-          checked ? styles.translate : "translate-x-0"
+          checked ? `${styles.translate} shadow-sm` : "translate-x-0.5 shadow-md"
         )}
       />
     </button>

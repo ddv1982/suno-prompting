@@ -25,7 +25,7 @@ export function StatusIndicator({ status, label, showLabel = true, className }: 
   const displayLabel = label ?? statusLabels[status];
   
   return (
-    <div className={cn("flex items-center gap-2 text-tiny font-bold uppercase tracking-tight text-muted-foreground", className)}>
+    <div className={cn("flex items-center gap-[var(--space-2)] text-[length:var(--text-caption)] font-bold uppercase tracking-tight text-muted-foreground", className)}>
       <span
         className={cn(
           "w-2 h-2 rounded-full shadow-[0_0_8px]",

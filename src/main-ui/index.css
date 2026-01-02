@@ -5,25 +5,59 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Roboto Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* Typography - Font families (Apple style) */
+  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, 
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, 
+               Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* Typography scale */
-  --text-micro: 0.5625rem;   /* 9px - timestamps, role labels */
-  --text-tiny: 0.625rem;     /* 10px - badges, button labels, status */
-  --text-caption: 0.6875rem; /* 11px - help text, descriptions */
+  /* Typography - Type scale (Apple standard) */
+  --text-micro: 0.5625rem;        /* 9px - timestamps, badges, helper text */
+  --text-caption: 0.6875rem;      /* 11px - captions, metadata */
+  --text-footnote: 0.8125rem;     /* 13px - secondary text, labels */
+  --text-body: 0.9375rem;         /* 15px - body text, default */
+  --text-headline: 1.0625rem;     /* 17px - headlines, emphasis */
+  --text-title: 1.25rem;          /* 20px - section titles */
+  --text-large-title: 1.375rem;   /* 22px - page titles */
 
-  /* Component heights - consistent control sizing */
-  --height-control-xs: 1.75rem;  /* 28px - tiny buttons, small badges */
-  --height-control-sm: 2rem;     /* 32px - secondary controls */
-  --height-control-md: 2.25rem;  /* 36px - default controls */
-  --height-control-lg: 2.5rem;   /* 40px - primary actions */
+  /* Typography - Font weights */
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
 
-  /* Spacing scale */
-  --space-panel: 1rem;           /* panel padding */
-  --space-section: 1.5rem;       /* between sections */
-  --space-group: 0.75rem;        /* between related items */
-  --space-inline: 0.5rem;        /* inline elements */
+  /* Spacing scale (4px base, linear progression) */
+  --space-1: 0.25rem;    /* 4px */
+  --space-2: 0.5rem;     /* 8px */
+  --space-3: 0.75rem;    /* 12px */
+  --space-4: 1rem;       /* 16px */
+  --space-5: 1.25rem;    /* 20px */
+  --space-6: 1.5rem;     /* 24px */
+  --space-7: 1.75rem;    /* 28px */
+  --space-8: 2rem;       /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+
+  /* Semantic spacing aliases */
+  --space-inline: var(--space-2);    /* 8px - inline elements */
+  --space-group: var(--space-3);     /* 12px - related items */
+  --space-panel: var(--space-4);     /* 16px - panel padding */
+  --space-section: var(--space-6);   /* 24px - between sections */
+
+  /* Component heights (4px grid aligned) */
+  --height-control-xs: 1.75rem;  /* 28px = 7×4px */
+  --height-control-sm: 2rem;     /* 32px = 8×4px */
+  --height-control-md: 2.25rem;  /* 36px = 9×4px */
+  --height-control-lg: 2.5rem;   /* 40px = 10×4px */
+
+  /* Grid system */
+  --grid-columns: 12;
+  --grid-gutter: 1rem;             /* 16px */
+  --grid-margin-sm: 1rem;          /* 16px */
+  --grid-margin-md: 1.5rem;        /* 24px */
+  --grid-margin-lg: 2rem;          /* 32px */
+  --grid-margin-xl: 3rem;          /* 48px */
+  --grid-margin-2xl: 4rem;         /* 64px */
 
   --color-border: var(--border);
   --color-input: var(--input);
@@ -61,6 +95,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* Background hierarchy colors */
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-overlay: var(--bg-overlay);
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -80,21 +120,23 @@
 
 @utility container {
   margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
-    max-width: none;
+  padding-inline: var(--grid-margin-sm);
+  width: 100%;
+  
+  @media (width >= 640px) {
+    padding-inline: var(--grid-margin-sm);
   }
-  @media (width >= --theme(--breakpoint-md)) {
-    max-width: none;
+  @media (width >= 768px) {
+    padding-inline: var(--grid-margin-md);
   }
-  @media (width >= --theme(--breakpoint-lg)) {
-    max-width: none;
+  @media (width >= 1024px) {
+    padding-inline: var(--grid-margin-lg);
   }
-  @media (width >= --theme(--breakpoint-xl)) {
-    max-width: none;
+  @media (width >= 1280px) {
+    padding-inline: var(--grid-margin-xl);
   }
-  @media (width >= --theme(--breakpoint-2xl)) {
-    max-width: 1400px;
+  @media (width >= 1536px) {
+    padding-inline: var(--grid-margin-2xl);
   }
 }
 
@@ -118,12 +160,18 @@
 
 @layer base {
   :root {
-    /* Studio console dark theme */
-    --background: oklch(0.095 0.01 260);
+    /* Background hierarchy (4 levels - progressively lighter) */
+    --bg-base: oklch(0.095 0.01 260);      /* App background */
+    --bg-surface: oklch(0.12 0.012 260);   /* Cards, panels */
+    --bg-elevated: oklch(0.145 0.012 260); /* Dropdowns, popovers */
+    --bg-overlay: oklch(0.17 0.012 260);   /* Modals, dialogs */
+
+    /* Semantic backgrounds (mapped to hierarchy) */
+    --background: var(--bg-base);
     --foreground: oklch(0.95 0.01 260);
-    --card: oklch(0.135 0.012 260);
+    --card: var(--bg-surface);
     --card-foreground: oklch(0.95 0.01 260);
-    --popover: oklch(0.135 0.012 260);
+    --popover: var(--bg-elevated);
     --popover-foreground: oklch(0.95 0.01 260);
     /* Cyan/teal accent with subtle glow */
     --primary: oklch(0.76 0.16 185);
@@ -136,8 +184,8 @@
     --accent-foreground: oklch(0.95 0.01 260);
     --destructive: oklch(0.55 0.2 25);
     --destructive-foreground: oklch(0.95 0 0);
-    --border: oklch(0.22 0.012 260);
-    --input: oklch(0.16 0.012 260);
+    --border: oklch(0.28 0.012 260);
+    --input: oklch(0.25 0.012 260);
     --ring: oklch(0.76 0.16 185);
     --chart-1: oklch(0.72 0.14 180);
     --chart-2: oklch(0.696 0.17 162.48);
@@ -154,10 +202,9 @@
     --sidebar-border: oklch(0.16 0.012 260);
     --sidebar-ring: oklch(0.76 0.16 185);
 
-    /* Extra UI tokens */
-    --panel: oklch(0.12 0.012 260);
-    --panel-2: oklch(0.14 0.012 260);
-    --shadow-color: oklch(0.76 0.16 185 / 0.25);
+    /* Extra UI tokens (mapped to hierarchy) */
+    --panel: var(--bg-surface);
+    --panel-2: var(--bg-elevated);
   }
 
   .light {
@@ -230,34 +277,53 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(900px circle at 15% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 55%),
-      radial-gradient(800px circle at 85% 10%, color-mix(in oklab, var(--chart-4) 12%, transparent), transparent 60%);
   }
 }
 
-/* Typography utilities */
+/* Typography utilities (Apple type scale) */
 @utility text-micro {
   font-size: var(--text-micro);
   line-height: 1.4;
 }
-
-@utility text-tiny {
-  font-size: var(--text-tiny);
+@utility text-caption {
+  font-size: var(--text-caption);
   line-height: 1.4;
 }
 
-@utility text-caption {
-  font-size: var(--text-caption);
+@utility text-footnote {
+  font-size: var(--text-footnote);
+  line-height: 1.4;
+}
+
+@utility text-body {
+  font-size: var(--text-body);
   line-height: 1.5;
+}
+
+@utility text-headline {
+  font-size: var(--text-headline);
+  line-height: 1.3;
+  font-weight: var(--font-semibold);
+}
+
+@utility text-title {
+  font-size: var(--text-title);
+  line-height: 1.25;
+  font-weight: var(--font-semibold);
+}
+
+@utility text-large-title {
+  font-size: var(--text-large-title);
+  line-height: 1.2;
+  font-weight: var(--font-bold);
 }
 
 /* Label pattern utility */
 @utility label-section {
-  font-size: var(--text-tiny);
-  font-weight: 700;
+  font-size: var(--text-caption);
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--muted-foreground);
 }
 
@@ -284,34 +350,32 @@
   animation: fade-in 0.2s ease-out;
 }
 
+/* Surface utilities (background hierarchy) */
+@utility bg-base {
+  background-color: var(--bg-base);
+}
+
+@utility bg-surface {
+  background-color: var(--bg-surface);
+}
+
+@utility bg-elevated {
+  background-color: var(--bg-elevated);
+}
+
+@utility bg-overlay {
+  background-color: var(--bg-overlay);
+}
+
+/* Panel utilities (solid backgrounds) */
 @utility panel {
-  background: var(--panel);
-  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-@utility panel-2 {
-  background: var(--panel-2);
-  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+@utility panel-elevated {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-}
-
-/* Glass panel variants - unified glass-morphism effect */
-@utility glass-panel {
-  background: color-mix(in oklab, var(--card) 50%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
-  border-radius: var(--radius);
-}
-
-@utility glass-panel-subtle {
-  background: color-mix(in oklab, var(--muted) 30%, transparent);
-  backdrop-filter: blur(4px);
-  border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
-  border-radius: var(--radius);
-}
-
-@utility glass-control {
-  background: color-mix(in oklab, var(--background) 40%, transparent);
-  backdrop-filter: blur(4px);
 }

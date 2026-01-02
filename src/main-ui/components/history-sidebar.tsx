@@ -48,7 +48,7 @@ export function HistorySidebar({
             variant="outline"
             size="xs"
             onClick={onNewProject}
-            className="font-bold interactive glass-control"
+            className="font-bold interactive"
           >
             <Plus className="w-3 h-3" />
             NEW
@@ -62,7 +62,7 @@ export function HistorySidebar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search projects…"
-            className="pl-9 glass-control"
+            className="pl-9"
           />
         </div>
       </SidebarHeader>

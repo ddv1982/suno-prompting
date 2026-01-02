@@ -172,10 +172,10 @@ export function PromptEditor({
   };
 
   return (
-    <section className="flex-1 flex flex-col bg-background">
-      <div className="flex-1 flex flex-col p-6 gap-6 max-w-6xl mx-auto w-full overflow-auto">
+    <section className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col p-6 pb-[var(--space-8)] gap-6 max-w-6xl mx-auto w-full overflow-auto">
         {currentPrompt && (
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-5)]">
             {promptMode === 'quickVibes' ? (
               /* Quick Vibes Output */
               <QuickVibesOutput
@@ -211,7 +211,7 @@ export function PromptEditor({
                       {charCount} / {maxChars}
                     </Badge>
                   </div>
-                  <Card className="relative group border shadow-sm glass-panel overflow-hidden">
+                  <Card className="relative group border bg-surface overflow-hidden">
                     <CardContent className="p-6">
                       <PromptOutput text={currentPrompt} />
                     </CardContent>
@@ -278,7 +278,7 @@ export function PromptEditor({
       </div>
 
       <div className="border-t bg-muted/10 p-6 shrink-0">
-        <div className="max-w-6xl mx-auto w-full space-y-4">
+        <div className="max-w-6xl mx-auto w-full space-y-[var(--space-5)]">
           {/* Prompt Mode Selector - Full Prompt vs Quick Vibes */}
           <ModeSelector
             promptMode={promptMode}
@@ -331,7 +331,7 @@ export function PromptEditor({
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer shrink-0">
                   <Music2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-tiny text-muted-foreground">Lyrics</span>
+                  <span className="text-[length:var(--text-footnote)] text-muted-foreground">Lyrics</span>
                   <Switch 
                     checked={lyricsMode} 
                     onCheckedChange={onLyricsModeChange}
@@ -341,7 +341,7 @@ export function PromptEditor({
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer shrink-0">
                   <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-tiny text-muted-foreground">Max</span>
+                  <span className="text-[length:var(--text-footnote)] text-muted-foreground">Max</span>
                   <Switch 
                     checked={maxMode} 
                     onCheckedChange={onMaxModeChange}
@@ -377,7 +377,7 @@ export function PromptEditor({
                   onChange={(e) => onLockedPhraseChange(e.target.value)}
                   disabled={isGenerating}
                   className={cn(
-                    "min-h-12 max-h-24 resize-none shadow-sm text-sm p-3 rounded-lg glass-control focus-visible:ring-primary/20",
+                    "min-h-12 max-h-24 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface focus-visible:ring-primary/20",
                     !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20",
                     isGenerating && "opacity-70"
                   )}
@@ -402,7 +402,7 @@ export function PromptEditor({
                     onKeyDown={handleKeyDown}
                     disabled={isGenerating}
                     className={cn(
-                      "min-h-20 flex-1 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20",
+                      "min-h-20 flex-1 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface focus-visible:ring-primary/20",
                       isGenerating && "opacity-70"
                     )}
                     placeholder={currentPrompt 
@@ -460,7 +460,7 @@ export function PromptEditor({
                     onChange={(e) => onLyricsTopicChange(e.target.value)}
                     disabled={isGenerating}
                     className={cn(
-                      "min-h-16 max-h-32 resize-none shadow-sm text-sm p-3 rounded-lg glass-control focus-visible:ring-primary/20",
+                      "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface focus-visible:ring-primary/20",
                       lyricsTopicOverLimit && "border-destructive focus-visible:ring-destructive/20",
                       isGenerating && "opacity-70"
                     )}
@@ -486,14 +486,14 @@ export function PromptEditor({
             </>
           )}
 
-          <div className="flex justify-between items-center px-1">
-            <span className="text-tiny text-muted-foreground flex items-center gap-4 font-mono">
+          <div className="flex justify-between items-center px-1 pb-[var(--space-2)]">
+            <span className="text-[length:var(--text-caption)] text-muted-foreground flex items-center gap-4 font-mono">
               <span>⏎ send</span>
               <span>⇧⏎ new line</span>
             </span>
             <div className="flex items-center gap-4">
               {currentModel && (
-                <span className="text-tiny font-bold uppercase tracking-tight text-primary/70">
+                <span className="text-[length:var(--text-caption)] font-bold uppercase tracking-tight text-primary/70">
                   {currentModel.split('/').pop()}
                 </span>
               )}

@@ -50,7 +50,7 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
     );
 
     return (
-        <div className="space-y-4 p-[var(--space-panel)] glass-panel-subtle">
+        <div className="space-y-[var(--space-5)] p-[var(--space-panel)] panel">
             <div className="flex items-center justify-between">
                 <SectionLabel>Advanced Mode</SectionLabel>
                 {hasAnySelection && (
@@ -66,10 +66,10 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)]">
                 {/* Genre (single) */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)]">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Genre
                         {selection.genreCombination && (
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
@@ -88,8 +88,8 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 </div>
 
                 {/* Genre Combination */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)]">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Genre Combination
                         {selection.singleGenre && (
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
@@ -108,8 +108,8 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 </div>
 
                 {/* Harmonic Style (single mode) */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)]">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Harmonic Style
                         {selection.harmonicCombination && (
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
@@ -121,14 +121,14 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                         disabled={!!selection.harmonicCombination}
                     >
                         <SelectTrigger className={cn(
-                            "h-8 text-sm",
+                            "h-8 text-[length:var(--text-footnote)]",
                             selection.harmonicCombination && "opacity-50"
                         )}>
                             <SelectValue placeholder="Select mode..." />
                         </SelectTrigger>
                         <SelectContent>
                             {HARMONIC_STYLES.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-sm">
+                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
                                     {name}
                                 </SelectItem>
                             ))}
@@ -137,8 +137,8 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 </div>
 
                 {/* Harmonic Combination */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)]">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Harmonic Combination
                         {selection.harmonicStyle && (
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
@@ -150,14 +150,14 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                         disabled={!!selection.harmonicStyle}
                     >
                         <SelectTrigger className={cn(
-                            "h-8 text-sm",
+                            "h-8 text-[length:var(--text-footnote)]",
                             selection.harmonicStyle && "opacity-50"
                         )}>
                             <SelectValue placeholder="Select combination..." />
                         </SelectTrigger>
                         <SelectContent>
                             {COMBINATIONS.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-sm">
+                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
                                     {name}
                                 </SelectItem>
                             ))}
@@ -166,20 +166,20 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 </div>
 
                 {/* Polyrhythm Combination */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)]">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Polyrhythm
                     </label>
                     <Select
                         value={selection.polyrhythmCombination || ""}
                         onValueChange={(val) => onUpdate({ polyrhythmCombination: val || null })}
                     >
-                        <SelectTrigger className="h-8 text-sm">
+                        <SelectTrigger className="h-8 text-[length:var(--text-footnote)]">
                             <SelectValue placeholder="Select polyrhythm..." />
                         </SelectTrigger>
                         <SelectContent>
                             {POLYRHYTHMS.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-sm">
+                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
                                     {name}
                                 </SelectItem>
                             ))}
@@ -188,8 +188,8 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 </div>
 
                 {/* Time Signature */}
-                <div className="space-y-1.5">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)]">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Time Signature
                         {selection.timeSignatureJourney && (
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
@@ -201,14 +201,14 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                         disabled={!!selection.timeSignatureJourney}
                     >
                         <SelectTrigger className={cn(
-                            "h-8 text-sm",
+                            "h-8 text-[length:var(--text-footnote)]",
                             selection.timeSignatureJourney && "opacity-50"
                         )}>
                             <SelectValue placeholder="Select time signature..." />
                         </SelectTrigger>
                         <SelectContent>
                             {TIME_SIGNATURES.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-sm">
+                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
                                     {name}
                                 </SelectItem>
                             ))}
@@ -217,8 +217,8 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                 </div>
 
                 {/* Time Signature Journey */}
-                <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-tiny text-muted-foreground font-medium">
+                <div className="space-y-[var(--space-2)] md:col-span-2">
+                    <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Time Signature Journey
                         {selection.timeSignature && (
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
@@ -230,14 +230,14 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                         disabled={!!selection.timeSignature}
                     >
                         <SelectTrigger className={cn(
-                            "h-8 text-sm",
+                            "h-8 text-[length:var(--text-footnote)]",
                             selection.timeSignature && "opacity-50"
                         )}>
                             <SelectValue placeholder="Select journey..." />
                         </SelectTrigger>
                         <SelectContent>
                             {TIME_JOURNEYS.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-sm">
+                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
                                     {name}
                                 </SelectItem>
                             ))}
@@ -253,7 +253,7 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                         <SectionLabel>Generated Music Phrase</SectionLabel>
                         <Badge variant="outline" className="text-micro">locked</Badge>
                     </div>
-                    <p className="text-sm font-mono bg-background/50 rounded px-3 py-2 border">
+                    <p className="text-[length:var(--text-footnote)] font-mono bg-background/50 rounded px-3 py-2 border">
                         {computedPhrase}
                     </p>
                     <p className="text-micro text-muted-foreground mt-1">

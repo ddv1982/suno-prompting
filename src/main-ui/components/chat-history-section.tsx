@@ -75,7 +75,7 @@ function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: st
           "max-w-[85%] rounded-xl px-4 py-2.5 text-sm shadow-sm",
           role === "user"
             ? "bg-primary text-primary-foreground rounded-tr-sm shadow-lg"
-            : "bg-background/40 backdrop-blur text-foreground rounded-tl-sm border"
+            : "bg-surface text-foreground rounded-tl-sm border"
         )}
       >
         <div className="font-bold opacity-70 mb-1 text-micro uppercase tracking-wider">

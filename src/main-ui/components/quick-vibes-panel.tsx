@@ -73,7 +73,7 @@ export function QuickVibesPanel({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-5)]">
       {/* Category Selection */}
       <div className="space-y-2">
         <FormLabel icon={<Sparkles className="w-3 h-3" />} badge="optional">
@@ -108,7 +108,7 @@ export function QuickVibesPanel({
           onKeyDown={handleKeyDown}
           disabled={isGenerating}
           className={cn(
-            "min-h-20 resize-none shadow-sm text-sm p-4 rounded-xl glass-control focus-visible:ring-primary/20",
+            "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface focus-visible:ring-primary/20",
             isGenerating && "opacity-70"
           )}
           placeholder={isRefineMode 
@@ -131,7 +131,7 @@ export function QuickVibesPanel({
       {/* Wordless Vocals Toggle */}
       <label className="flex items-center gap-3 py-2 cursor-pointer">
         <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-sm">Wordless vocals</span>
+        <span className="text-[length:var(--text-footnote)]">Wordless vocals</span>
         <span className="text-micro text-muted-foreground">(humming, oohs)</span>
         <Switch
           checked={withWordlessVocals}
@@ -145,7 +145,7 @@ export function QuickVibesPanel({
       <div className="space-y-1">
         <label className="flex items-center gap-3 py-2 cursor-pointer">
           <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-sm">Max Mode</span>
+          <span className="text-[length:var(--text-footnote)]">Max Mode</span>
           <Switch
             checked={maxMode}
             onCheckedChange={onMaxModeChange}
@@ -165,7 +165,7 @@ export function QuickVibesPanel({
       <Button
         onClick={handleSubmit}
         disabled={!canSubmit || isGenerating}
-        className="w-full h-11 font-bold text-sm shadow-lg shadow-primary/10 gap-2"
+        className="w-full h-11 font-bold text-[length:var(--text-footnote)] shadow-lg shadow-primary/10 gap-2"
       >
         {isGenerating ? (
           <>

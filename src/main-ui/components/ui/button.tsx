@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-[var(--space-2)] whitespace-nowrap rounded-md text-[length:var(--text-footnote)] font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -13,18 +13,18 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border bg-surface hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        xs: "h-[var(--height-control-xs)] px-2.5 text-tiny gap-1 rounded-md",
-        sm: "h-[var(--height-control-sm)] px-3 text-tiny gap-1.5 rounded-md",
-        default: "h-[var(--height-control-md)] px-4 py-2 gap-2 has-[>svg]:px-3",
-        lg: "h-[var(--height-control-lg)] px-5 gap-2 rounded-md has-[>svg]:px-4",
+        xs: "h-[var(--height-control-xs)] px-[var(--space-2)] text-[length:var(--text-caption)] gap-[var(--space-1)] rounded-md",
+        sm: "h-[var(--height-control-sm)] px-[var(--space-3)] text-[length:var(--text-caption)] gap-[var(--space-1)] rounded-md",
+        default: "h-[var(--height-control-md)] px-[var(--space-4)] py-[var(--space-2)] gap-[var(--space-2)] has-[>svg]:px-[var(--space-3)]",
+        lg: "h-[var(--height-control-lg)] px-[var(--space-5)] gap-[var(--space-2)] rounded-md has-[>svg]:px-[var(--space-4)]",
         icon: "size-9",
         "icon-xs": "size-7",
         "icon-sm": "size-8",

@@ -48,7 +48,7 @@ export function QuickVibesOutput({
           {charCount} / {APP_CONSTANTS.QUICK_VIBES_MAX_CHARS}
         </Badge>
       </div>
-      <Card className="relative group border shadow-sm glass-panel overflow-hidden">
+      <Card className="relative group border bg-surface overflow-hidden">
         <CardContent className="p-6">
           <PromptOutput text={prompt} />
         </CardContent>
@@ -60,7 +60,7 @@ export function QuickVibesOutput({
               variant="outline"
               size="sm"
               onClick={onDebugOpen}
-              className="font-bold glass-control"
+              className="font-bold"
             >
               <Bug className="w-3.5 h-3.5" />
               DEBUG
@@ -71,7 +71,7 @@ export function QuickVibesOutput({
             size="sm"
             onClick={onRemix}
             disabled={isGenerating}
-            className="font-bold glass-control"
+            className="font-bold"
           >
             <RefreshCw className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
             {isGenerating ? "REMIXING" : "REMIX"}
@@ -81,7 +81,7 @@ export function QuickVibesOutput({
             size="sm"
             onClick={handleCopy}
             className={cn(
-              "font-bold glass-control transition-all duration-300",
+              "font-bold transition-all duration-300",
               copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
             )}
           >
