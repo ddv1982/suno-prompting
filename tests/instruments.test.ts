@@ -208,7 +208,7 @@ describe('getAmbientInstruments', () => {
     const guidance = getAmbientInstruments();
     expect(guidance).toContain('SUGGESTED INSTRUMENTS (Suno tags)');
     expect(guidance).toContain('Ambient:');
-    expect(guidance.toLowerCase()).toContain('soothing, curiosity-sparking soundscapes');
+    expect(guidance.toLowerCase()).toContain('immersive electronic soundscapes');
   });
 
   test('picks 2-5 Suno canonical tags', () => {
@@ -268,19 +268,19 @@ describe('getAmbientInstruments', () => {
     }
   });
 
-  test('always includes a foundation and a texture tag', () => {
+  test('always includes a pads and a texture tag', () => {
     const pools = GENRE_REGISTRY.ambient.pools;
-    const foundationInstruments = pools.foundation!.instruments;
+    const padsInstruments = pools.pads!.instruments;
     const textureInstruments = pools.texture!.instruments;
 
-    // Check if tag contains any of the instruments (handles articulations like "Arpeggiated Rhodes")
+    // Check if tag contains any of the instruments (handles articulations like "Arpeggiated synth pad")
     const containsInstrument = (tag: string, instruments: readonly string[]) =>
       instruments.some(inst => tag.includes(inst));
 
     for (let i = 0; i < 30; i++) {
       const guidance = getAmbientInstruments();
       const tags = parseBullets(guidance);
-      expect(tags.some(t => containsInstrument(t, foundationInstruments))).toBe(true);
+      expect(tags.some(t => containsInstrument(t, padsInstruments))).toBe(true);
       expect(tags.some(t => containsInstrument(t, textureInstruments))).toBe(true);
     }
   });

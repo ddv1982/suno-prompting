@@ -28,6 +28,8 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'wah guitar', category: 'harmonic', aliases: ['wah-wah guitar', 'wah pedal guitar'] },
   { canonical: 'tremolo guitar', category: 'harmonic', aliases: ['tremolo picking', 'surf guitar'] },
   { canonical: 'fretless guitar', category: 'harmonic', aliases: [] },
+  { canonical: 'processed guitar', category: 'harmonic', aliases: ['ambient guitar', 'effected guitar'] },
+  { canonical: 'e-bow guitar', category: 'harmonic', aliases: ['ebow guitar', 'e-bow', 'sustained guitar'] },
 
   // Extended-range guitars (metal/modern)
   { canonical: 'seven-string guitar', category: 'harmonic', aliases: ['7-string', '7 string guitar', '7-string electric'] },
@@ -74,9 +76,11 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   // Evolving textures (professional ambient)
   { canonical: 'granular synth', category: 'pad', aliases: ['granular pad', 'grain synth'] },
   { canonical: 'wavetable synth', category: 'pad', aliases: ['wavetable pad', 'morphing synth'] },
+  { canonical: 'modular synth', category: 'pad', aliases: ['modular synthesizer', 'eurorack'] },
   { canonical: 'tape loops', category: 'pad', aliases: ['tape loop', 'tape texture'] },
   { canonical: 'drone', category: 'pad', aliases: ['sustained drone', 'drone texture'] },
   { canonical: 'shimmer pad', category: 'pad', aliases: ['shimmer synth', 'shimmer reverb pad'] },
+  { canonical: 'field recordings', category: 'pad', aliases: ['field recording', 'environmental sounds', 'nature sounds'] },
   
   { canonical: 'synth bass', category: 'movement', aliases: ['bass synth', 'synthetic bass'] },
   { canonical: '808', category: 'movement', aliases: ['808 drums', 'TR-808', '808 kick', '808 sub bass', 'deep 808'] },

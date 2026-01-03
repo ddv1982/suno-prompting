@@ -2,88 +2,77 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const AMBIENT_GENRE: GenreDefinition = {
   name: 'Ambient',
-  keywords: ['ambient', 'atmospheric', 'soundscape', 'meditative', 'ethereal'],
-  description: 'Soothing, curiosity-sparking soundscapes with unusual textures and gentle movement',
+  keywords: ['ambient', 'atmospheric', 'soundscape', 'drone', 'ethereal', 'textural'],
+  description: 'Immersive electronic soundscapes with evolving textures, drones, and atmospheric depth',
   pools: {
-    // Foundation - keyboards and strings (NO piano by default)
-    foundation: {
+    // Core synth pads - the heart of ambient
+    pads: {
       pick: { min: 1, max: 2 },
       instruments: [
-        // Professional keyboard alternatives
-        'Rhodes', 'Wurlitzer', 'electric piano', 'mellotron', 'harmonium', 'celesta',
-        // Strings as foundation
-        'strings', 'nylon string guitar', 'fretless guitar',
+        'synth pad', 'ambient pad', 'analog synth pads', 'shimmer pad',
+        'crystalline synth pads', 'Moog synth',
       ],
     },
-    // Texture - pads and atmosphere
+    // Evolving textures and synthesis
     texture: {
       pick: { min: 1, max: 2 },
       instruments: [
-        'synth pad', 'ambient pad', 'crystalline synth pads',
-        'analog synth pads', 'synth strings', 'wordless choir',
+        'granular synth', 'wavetable synth', 'FM synth', 'modular synth',
+        'drone', 'tape loops', 'field recordings',
       ],
     },
-    // Evolving - professional synth textures
-    evolving: {
+    // Melodic color (optional, subtle)
+    melodic: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.6,
+      chanceToInclude: 0.5,
       instruments: [
-        'granular synth', 'wavetable synth', 'tape loops', 'drone',
-        'shimmer pad', 'FM synth', 'Moog synth',
+        'guitar', 'processed guitar', 'e-bow guitar',
+        'glass bells', 'vibraphone', 'bowed vibraphone',
       ],
     },
-    // Piano - now optional (only 25% chance)
+    // Piano (rare, textural)
     piano: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.25,
       instruments: ['felt piano', 'prepared piano'],
     },
-    // Curiosity - unusual/exotic instruments (high priority)
-    curiosity: {
-      pick: { min: 1, max: 2 },
-      chanceToInclude: 0.8,
-      instruments: [
-        'singing bowls', 'crystal bowls', 'kalimba', 'glass bells',
-        'bansuri', 'shakuhachi', 'duduk', 'tongue drum', 'handpan',
-        'koto', 'bowed vibraphone', 'mark tree', 'tam tam',
-        'english horn', 'oboe', 'solo soprano',
-      ],
-    },
-    // World color - ethnic instruments
-    world: {
+    // Organic accents (minimal, authentic to ambient)
+    organic: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.5,
+      chanceToInclude: 0.4,
       instruments: [
-        'sitar', 'erhu', 'oud', 'marimba', 'steel pan',
-        'vibraphone', 'cello', 'harp',
+        'singing bowls', 'crystal bowls', 'kalimba', 'handpan',
+        'tongue drum', 'bansuri', 'shakuhachi',
       ],
     },
-    // Gentle movement - subtle rhythm
+    // Movement (very subtle)
     movement: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.3,
+      chanceToInclude: 0.2,
       instruments: [
-        'rain stick', 'ocean drum', 'shaker', 'frame drum',
-        'jazz brushes', 'suspended cymbal', 'finger snaps',
+        'rain stick', 'suspended cymbal', 'mark tree', 'shaker',
       ],
     },
-    // Rare texture - very unusual
+    // Rare experimental
     rare: {
       pick: { min: 0, max: 1 },
-      chanceToInclude: 0.2,
-      instruments: ['waterphone', 'glass armonica', 'theremin', 'prepared piano', 'didgeridoo', 'santoor', 'tabla'],
+      chanceToInclude: 0.15,
+      instruments: [
+        'theremin', 'waterphone', 'glass armonica', 'didgeridoo',
+      ],
     },
   },
-  poolOrder: ['foundation', 'texture', 'evolving', 'piano', 'curiosity', 'world', 'movement', 'rare'],
+  poolOrder: ['pads', 'texture', 'melodic', 'piano', 'organic', 'movement', 'rare'],
   maxTags: 5,
   exclusionRules: [
     ['singing bowls', 'crystal bowls'],
     ['bansuri', 'shakuhachi'],
     ['kalimba', 'tongue drum'],
-    ['harp', 'koto'],
     ['prepared piano', 'felt piano'],
-    ['Rhodes', 'Wurlitzer'],
-    ['Rhodes', 'electric piano'],
+    ['guitar', 'processed guitar'],
+    ['guitar', 'e-bow guitar'],
+    ['processed guitar', 'e-bow guitar'],
+    ['granular synth', 'wavetable synth'],
   ],
   bpm: { min: 50, max: 80, typical: 65 },
   moods: ['Dreamy', 'Ethereal', 'Meditative', 'Calm', 'Floaty', 'Spacious', 'Otherworldly', 'Serene', 'Hypnotic'],
