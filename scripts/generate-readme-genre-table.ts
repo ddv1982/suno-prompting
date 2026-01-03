@@ -16,6 +16,15 @@ export const INSTRUMENT_CLASSES_END = '<!-- INSTRUMENT_CLASSES_END -->';
 export const COMBINATIONS_START = '<!-- COMBINATIONS_START -->';
 export const COMBINATIONS_END = '<!-- COMBINATIONS_END -->';
 
+// Dynamic count markers for inline README synchronization
+export const COUNT_MARKERS = {
+  SINGLE_GENRE_COUNT: 'SINGLE_GENRE_COUNT',
+  MULTI_GENRE_COUNT: 'MULTI_GENRE_COUNT',
+  FOUNDATIONAL_COUNT: 'FOUNDATIONAL_COUNT',
+  MULTIGENRE_TIER_COUNT: 'MULTIGENRE_TIER_COUNT',
+  ORCHESTRAL_COUNT: 'ORCHESTRAL_COUNT',
+} as const;
+
 type Options = {
   readonly includeOptionalPools: boolean;
 };
@@ -34,6 +43,69 @@ function uniqueInOrder(items: readonly string[]): string[] {
     out.push(item);
   }
   return out;
+}
+
+/**
+ * Escapes special regex characters for safe use in RegExp patterns.
+ */
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Replaces the numeric value between paired HTML comment markers.
+ * Pattern: `<!-- MARKER -->N<!-- /MARKER -->` where N is replaced with value.
+ * @throws Error if marker not found in README
+ */
+export function replaceCountMarker(readme: string, marker: string, value: number): string {
+  const startTag = `<!-- ${marker} -->`;
+  const endTag = `<!-- /${marker} -->`;
+  const pattern = new RegExp(
+    `${escapeRegExp(startTag)}\\d+${escapeRegExp(endTag)}`,
+    'g',
+  );
+
+  const replacement = `${startTag}${value}${endTag}`;
+  const result = readme.replace(pattern, replacement);
+
+  // Validate marker was found
+  if (result === readme && !readme.includes(replacement)) {
+    throw new Error(`Marker ${marker} not found in README. Expected pattern: ${startTag}N${endTag}`);
+  }
+
+  return result;
+}
+
+/**
+ * Validates that all required markers exist in the README.
+ * @throws Error if any marker is missing
+ */
+export function validateAllMarkers(readme: string): void {
+  const tableMarkers = [
+    'GENRE_TABLE_START',
+    'GENRE_TABLE_END',
+    'INSTRUMENT_CLASSES_START',
+    'INSTRUMENT_CLASSES_END',
+    'COMBINATIONS_START',
+    'COMBINATIONS_END',
+  ];
+
+  const countMarkers = Object.values(COUNT_MARKERS);
+
+  const allMarkers = [...tableMarkers, ...countMarkers];
+
+  for (const marker of allMarkers) {
+    if (!readme.includes(`<!-- ${marker} -->`)) {
+      throw new Error(`Missing required marker: <!-- ${marker} -->`);
+    }
+  }
+
+  // Also validate closing tags for count markers
+  for (const marker of countMarkers) {
+    if (!readme.includes(`<!-- /${marker} -->`)) {
+      throw new Error(`Missing closing tag for marker: <!-- /${marker} -->`);
+    }
+  }
 }
 
 function isRequiredPool(pool: InstrumentPool): boolean {
@@ -151,25 +223,59 @@ export function replaceCombinationsSection(readme: string, markdown: string): st
   return `${before}\n\n${markdown}\n\n${after}`;
 }
 
+// Parse CLI arguments
+const args = process.argv.slice(2);
+const checkMode = args.includes('--check');
+
 async function main() {
   const readmePath = new URL('../README.md', import.meta.url);
   const readme = await readFile(readmePath, 'utf8');
 
+  // Validate all markers are present early (fail-fast)
+  validateAllMarkers(readme);
+
+  // Build dynamic content for table sections
   const table = buildGenreTableMarkdown();
   const classes = buildInstrumentClassesMarkdown();
   const combinations = buildCombinationsMarkdown();
 
+  // Apply table section replacements
   let updated = replaceGenreTableSection(readme, table);
   updated = replaceInstrumentClassesSection(updated, classes);
   updated = replaceCombinationsSection(updated, combinations);
 
+  // Compute dynamic counts from source data
+  const singleGenreCount = Object.keys(GENRE_REGISTRY).length;
+  const multiGenreCount = MULTI_GENRE_COMBINATIONS.length;
+  const foundationalCount = FOUNDATIONAL_INSTRUMENTS.length;
+  const multigenreTierCount = MULTIGENRE_INSTRUMENTS.length;
+  const orchestralCount = ORCHESTRAL_COLOR_INSTRUMENTS.length;
+
+  // Apply count marker replacements
+  updated = replaceCountMarker(updated, COUNT_MARKERS.SINGLE_GENRE_COUNT, singleGenreCount);
+  updated = replaceCountMarker(updated, COUNT_MARKERS.MULTI_GENRE_COUNT, multiGenreCount);
+  updated = replaceCountMarker(updated, COUNT_MARKERS.FOUNDATIONAL_COUNT, foundationalCount);
+  updated = replaceCountMarker(updated, COUNT_MARKERS.MULTIGENRE_TIER_COUNT, multigenreTierCount);
+  updated = replaceCountMarker(updated, COUNT_MARKERS.ORCHESTRAL_COUNT, orchestralCount);
+
+  // Check mode: validate README is in sync without writing
+  if (checkMode) {
+    if (updated !== readme) {
+      console.error('README is out of sync. Run `bun run readme:sync` to update.');
+      process.exit(1);
+    }
+    console.log('README is up to date.');
+    return;
+  }
+
+  // Normal mode: write changes if any
   if (updated === readme) {
-    console.log('README genre table is already up to date.');
+    console.log('README is already up to date.');
     return;
   }
 
   await writeFile(readmePath, updated, 'utf8');
-  console.log('Updated README genre table.');
+  console.log('Updated README.');
 }
 
 if (import.meta.main) {

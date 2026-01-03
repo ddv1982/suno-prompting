@@ -93,7 +93,7 @@ Each provider's API key is stored separately and encrypted independently.
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
 - **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
-- **Advanced Mode**: Precise genre selection with 35 single genres and 53 genre combinations.
+- **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ## Quick Vibes
 
@@ -132,7 +132,7 @@ Quick Vibes is a simplified mode for generating short, atmospheric prompts perfe
 
 ## Advanced Mode
 
-Advanced Mode provides precise control over genre selection with searchable dropdowns exposing all 35 genres and 53 genre combinations.
+Advanced Mode provides precise control over genre selection with searchable dropdowns exposing all <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres and <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ### Genre Selection
 
@@ -140,10 +140,12 @@ Two searchable dropdown selectors allow you to specify exact genres:
 
 | Selector | Options | Behavior |
 |----------|---------|----------|
-| **Single Genre** | 35 genres | Direct genre selection (e.g., "Jazz", "Synthwave") |
-| **Genre Combination** | 53 combinations | Fusion/hybrid genres (e.g., "Jazz Fusion", "Folk Rock") |
+| **Single Genre** | <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres | Direct genre selection (e.g., "Jazz", "Synthwave") |
+| **Genre Combination** | <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> combinations | Fusion/hybrid genres (e.g., "Jazz Fusion", "Folk Rock") |
 
 **Note**: Single Genre and Genre Combination are mutually exclusive - selecting one clears the other.
+
+See [Reference Tables](#reference-tables) for complete genre and combination lists.
 
 ### How it Works
 
@@ -151,14 +153,6 @@ Two searchable dropdown selectors allow you to specify exact genres:
 2. Select a genre from either dropdown (searchable/filterable)
 3. The selected genre appears at the start of the "Generated Music Phrase"
 4. When you generate, your selection **overrides** auto-detected genre
-
-### Single Genres (35)
-
-Ambient, Jazz, Electronic, Rock, Pop, Classical, Lo-Fi, Synthwave, Cinematic, Folk, R&B, Videogame, Country, Soul, Blues, Punk, Latin, Metal, Trap, Retro, Symphonic, Disco, Funk, Reggae, Afrobeat, House, Trance, Downtempo, Dream Pop, Chillwave, New Age, Hyperpop, Drill, Melodic Techno, Indie
-
-### Genre Combinations (53)
-
-Jazz Fusion, Jazz Funk, Jazz Hip-Hop, Nu Jazz, Acid Jazz, Electronic Rock, Electro Pop, Synth Pop, Future Bass, Chillwave, Vaporwave, Folk Rock, Folk Pop, Indie Folk, Chamber Folk, Blues Rock, Southern Rock, Progressive Rock, Psychedelic Rock, Art Rock, Indie Rock, Alternative Rock, Neo Soul, Psychedelic Soul, Funk Soul, Latin Jazz, Bossa Nova, Afrobeat, Reggae Fusion, Progressive Metal, Symphonic Metal, Doom Metal, Trip Hop, Lo-fi Hip Hop, Dark Ambient, Space Ambient, Drone Ambient, Disco Funk, Nu-Disco, Disco House, Deep House, Tech House, Afro House, Melodic House, Dub Techno, Roots Reggae, Dream Pop Shoegaze, Chillhop, Downtempo Electronica, Lo-fi Chill, UK Drill, Hyperpop Trap, Drill Rap
 
 ### Other Advanced Options
 
@@ -459,9 +453,9 @@ The app uses a 3-tier classification system to ensure variety while maintaining 
 
 | Tier | Role | Count | Behavior |
 |------|------|-------|----------|
-| **Foundational** | Rhythm/harmony anchors | 14 | 0-1 injected to fill gaps |
-| **Multi-genre** | Versatile wildcards | 53 | 1-2 injected for variety |
-| **Orchestral Color** | Cinematic flavor | 22 | Gated to orchestral genres only |
+| **Foundational** | Rhythm/harmony anchors | <!-- FOUNDATIONAL_COUNT -->14<!-- /FOUNDATIONAL_COUNT --> | 0-1 injected to fill gaps |
+| **Multi-genre** | Versatile wildcards | <!-- MULTIGENRE_TIER_COUNT -->49<!-- /MULTIGENRE_TIER_COUNT --> | 1-2 injected for variety |
+| **Orchestral Color** | Cinematic flavor | <!-- ORCHESTRAL_COUNT -->41<!-- /ORCHESTRAL_COUNT --> | Gated to orchestral genres only |
 
 **How selection works:**
 1. Genre-specific pools are picked first (harmonic, pad, color, movement, rare)
