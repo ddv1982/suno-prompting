@@ -1,6 +1,8 @@
 // Instrument articulation descriptors based on professional prompt patterns
 // These add character and specificity to instrument tags
 
+import { APP_CONSTANTS } from '@shared/constants';
+
 export type InstrumentCategory = 
   | 'guitar' 
   | 'piano' 
@@ -165,7 +167,7 @@ export function getArticulationForInstrument(
 export function articulateInstrument(
   instrument: string,
   rng: () => number = Math.random,
-  chanceToArticulate: number = 0.4
+  chanceToArticulate: number = APP_CONSTANTS.ARTICULATION_CHANCE
 ): string {
   if (rng() > chanceToArticulate) return instrument;
   

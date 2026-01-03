@@ -1,26 +1,17 @@
-import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type DebugInfo, type QuickVibesCategory } from '@shared/types';
+import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { useSessionContext } from '@/context/session-context';
 import { useEditorContext } from '@/context/editor-context';
 import { createLogger } from '@/lib/logger';
+import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
+import { useRemixActions } from '@/hooks/use-remix-actions';
 
 const log = createLogger('Generation');
 
-export type GeneratingAction = 
-  | 'none' 
-  | 'generate' 
-  | 'remix' 
-  | 'remixInstruments' 
-  | 'remixGenre' 
-  | 'remixMood' 
-  | 'remixStyleTags' 
-  | 'remixRecording' 
-  | 'remixTitle' 
-  | 'remixLyrics'
-  | 'quickVibes';
+export type { GeneratingAction } from '@/hooks/use-generation-state';
 
 interface GenerationContextType {
   isGenerating: boolean;
@@ -57,12 +48,28 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection } = useEditorContext();
 
-  const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
+  const {
+    generatingAction,
+    isGenerating,
+    chatMessages,
+    validation,
+    debugInfo,
+    setGeneratingAction,
+    setChatMessages,
+    setValidation,
+    setDebugInfo,
+  } = useGenerationState();
 
-  const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
+  const remixActions = useRemixActions({
+    isGenerating,
+    currentSession,
+    generateId,
+    saveSession,
+    setGeneratingAction,
+    setDebugInfo,
+    setChatMessages,
+    setValidation,
+  });
 
   const selectSession = useCallback((session: PromptSession) => {
     setCurrentSession(session);
@@ -263,180 +270,6 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, advancedSelection]);
 
-  const executeRemixAction = useCallback(async (
-    action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
-    apiCall: () => Promise<{ prompt: string; versionId: string; validation: ValidationResult }>,
-    feedbackLabel: string,
-    successMessage: string
-  ) => {
-    if (isGenerating || !currentSession?.currentPrompt) return;
-
-    try {
-      setGeneratingAction(action);
-      setDebugInfo(undefined);
-      const result = await apiCall();
-
-      if (!result?.prompt) {
-        throw new Error(`Invalid result received from ${feedbackLabel}`);
-      }
-
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: generateId(),
-        content: result.prompt,
-        title: currentSession.currentTitle,
-        lyrics: currentSession.currentLyrics,
-        feedback: `[${feedbackLabel}]`,
-        timestamp: now,
-      };
-
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        currentPrompt: result.prompt,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
-      };
-
-      setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
-      setValidation(result.validation);
-      await saveSession(updatedSession);
-    } catch (error) {
-      log.error(`${feedbackLabel}:failed`, error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : `Failed to ${feedbackLabel}`}.` },
-      ]);
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, currentSession, generateId, saveSession]);
-
-  const handleRemixInstruments = useCallback(async () => {
-    if (!currentSession?.originalInput) return;
-    await executeRemixAction(
-      'remixInstruments',
-      () => api.remixInstruments(currentSession.currentPrompt, currentSession.originalInput),
-      'instruments remix',
-      'Instruments remixed.'
-    );
-  }, [currentSession, executeRemixAction]);
-
-  const handleRemixGenre = useCallback(async () => {
-    if (!currentSession?.currentPrompt) return;
-    await executeRemixAction(
-      'remixGenre',
-      () => api.remixGenre(currentSession.currentPrompt),
-      'genre remix',
-      'Genre remixed.'
-    );
-  }, [currentSession, executeRemixAction]);
-
-  const handleRemixMood = useCallback(async () => {
-    if (!currentSession?.currentPrompt) return;
-    await executeRemixAction(
-      'remixMood',
-      () => api.remixMood(currentSession.currentPrompt),
-      'mood remix',
-      'Mood remixed.'
-    );
-  }, [currentSession, executeRemixAction]);
-
-  const handleRemixStyleTags = useCallback(async () => {
-    if (!currentSession?.currentPrompt) return;
-    await executeRemixAction(
-      'remixStyleTags',
-      () => api.remixStyleTags(currentSession.currentPrompt),
-      'style tags remix',
-      'Style tags remixed.'
-    );
-  }, [currentSession, executeRemixAction]);
-
-  const handleRemixRecording = useCallback(async () => {
-    if (!currentSession?.currentPrompt) return;
-    await executeRemixAction(
-      'remixRecording',
-      () => api.remixRecording(currentSession.currentPrompt),
-      'recording remix',
-      'Recording remixed.'
-    );
-  }, [currentSession, executeRemixAction]);
-
-  const handleRemixTitle = useCallback(async () => {
-    if (!currentSession?.currentPrompt || !currentSession?.originalInput) return;
-    if (isGenerating) return;
-
-    try {
-      setGeneratingAction('remixTitle');
-      const result = await api.remixTitle(currentSession.currentPrompt, currentSession.originalInput);
-
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: generateId(),
-        content: currentSession.currentPrompt,
-        title: result.title,
-        lyrics: currentSession.currentLyrics,
-        feedback: '[title remix]',
-        timestamp: now,
-      };
-
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        currentTitle: result.title,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
-      };
-
-      setChatMessages((prev) => [...prev, { role: "ai", content: "Title remixed." }]);
-      await saveSession(updatedSession);
-    } catch (error) {
-      log.error("remixTitle:failed", error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix title"}.` },
-      ]);
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, currentSession, generateId, saveSession]);
-
-  const handleRemixLyrics = useCallback(async () => {
-    if (!currentSession?.currentPrompt || !currentSession?.originalInput) return;
-    if (isGenerating) return;
-
-    try {
-      setGeneratingAction('remixLyrics');
-      const result = await api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput, currentSession.lyricsTopic);
-
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: generateId(),
-        content: currentSession.currentPrompt,
-        title: currentSession.currentTitle,
-        lyrics: result.lyrics,
-        feedback: '[lyrics remix]',
-        timestamp: now,
-      };
-
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        currentLyrics: result.lyrics,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
-      };
-
-      setChatMessages((prev) => [...prev, { role: "ai", content: "Lyrics remixed." }]);
-      await saveSession(updatedSession);
-    } catch (error) {
-      log.error("remixLyrics:failed", error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix lyrics"}.` },
-      ]);
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, currentSession, generateId, saveSession]);
-
   const handleGenerateQuickVibes = useCallback(async (
     category: QuickVibesCategory | null,
     customDescription: string,
@@ -527,13 +360,13 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       handleGenerate,
       handleCopy,
       handleRemix,
-      handleRemixInstruments,
-      handleRemixGenre,
-      handleRemixMood,
-      handleRemixStyleTags,
-      handleRemixRecording,
-      handleRemixTitle,
-      handleRemixLyrics,
+      handleRemixInstruments: remixActions.handleRemixInstruments,
+      handleRemixGenre: remixActions.handleRemixGenre,
+      handleRemixMood: remixActions.handleRemixMood,
+      handleRemixStyleTags: remixActions.handleRemixStyleTags,
+      handleRemixRecording: remixActions.handleRemixRecording,
+      handleRemixTitle: remixActions.handleRemixTitle,
+      handleRemixLyrics: remixActions.handleRemixLyrics,
       handleGenerateQuickVibes,
       handleRemixQuickVibes,
     }}>

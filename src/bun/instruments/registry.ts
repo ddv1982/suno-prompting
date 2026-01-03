@@ -1,5 +1,19 @@
+/**
+ * Categories for grouping instruments by their musical role.
+ * - harmonic: Foundation instruments that define harmony (piano, guitar, strings)
+ * - pad: Sustained atmospheric textures (synth pads, ambient textures)
+ * - color: Melodic and timbral variety (flute, saxophone, bells)
+ * - movement: Rhythm and groove elements (drums, bass, percussion)
+ * - rare: Uncommon/specialty instruments (theremin, waterphone)
+ */
 export type InstrumentCategory = 'harmonic' | 'pad' | 'color' | 'movement' | 'rare';
 
+/**
+ * Registry entry for an instrument.
+ * @property canonical - The standardized name used in prompts
+ * @property category - The functional category of the instrument
+ * @property aliases - Alternative names that map to this canonical name
+ */
 export type InstrumentEntry = {
   readonly canonical: string;
   readonly category: InstrumentCategory;
@@ -300,22 +314,47 @@ function buildLookupMaps() {
 
 const { canonicalSet, aliasToCanonical } = buildLookupMaps();
 
+/** Set of all canonical instrument names (lowercase) */
 export const CANONICAL_SET: ReadonlySet<string> = canonicalSet;
+
+/** Map from any instrument name/alias (lowercase) to its canonical form */
 export const ALIAS_TO_CANONICAL: ReadonlyMap<string, string> = aliasToCanonical;
 
+/**
+ * Check if a string is a valid instrument name or alias.
+ * @param name - The instrument name to validate (case-insensitive)
+ * @returns true if the name is a registered instrument or alias
+ */
 export function isValidInstrument(name: string): boolean {
   return aliasToCanonical.has(name.toLowerCase());
 }
 
+/**
+ * Convert any instrument name or alias to its canonical form.
+ * @param name - The instrument name to normalize (case-insensitive)
+ * @returns The canonical name, or null if not found
+ * @example toCanonical('rhodes') // 'Rhodes'
+ * @example toCanonical('fender rhodes') // 'Rhodes'
+ */
 export function toCanonical(name: string): string | null {
   return aliasToCanonical.get(name.toLowerCase()) ?? null;
 }
 
+/**
+ * Get the category of a canonical instrument.
+ * @param canonical - The canonical instrument name
+ * @returns The instrument category, or null if not found
+ */
 export function getCategory(canonical: string): InstrumentCategory | null {
   const entry = INSTRUMENT_REGISTRY.find(e => e.canonical === canonical);
   return entry?.category ?? null;
 }
 
+/**
+ * Get all canonical instrument names in a category.
+ * @param category - The category to filter by
+ * @returns Array of canonical instrument names
+ */
 export function getInstrumentsByCategory(category: InstrumentCategory): readonly string[] {
   return INSTRUMENT_REGISTRY
     .filter(e => e.category === category)

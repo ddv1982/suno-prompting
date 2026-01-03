@@ -12,6 +12,7 @@ import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
+import { APP_CONSTANTS } from '@shared/constants';
 
 export function buildSystemPrompt(maxChars: number, useSunoTags: boolean): string {
   const songStructure = useSunoTags ? `
@@ -170,7 +171,7 @@ export function buildMaxModeContextualPrompt(
     
     // Suggested instruments with articulations
     const instruments = selectInstrumentsForGenre(selection.genre, { userInstruments });
-    const articulatedInstruments = instruments.map(i => articulateInstrument(i, Math.random, 0.4));
+    const articulatedInstruments = instruments.map(i => articulateInstrument(i, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE));
     if (articulatedInstruments.length > 0) {
       parts.push('');
       parts.push('Suggested instruments:');

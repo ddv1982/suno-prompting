@@ -8,6 +8,28 @@ import type { GenerationResult } from '@bun/ai';
 
 const log = createLogger('RPC');
 
+type ActionMeta = Record<string, unknown>;
+
+/**
+ * Generic error handling wrapper for async operations.
+ * Logs the action start, handles errors, and logs completion.
+ */
+async function withErrorHandling<T>(
+    actionName: string,
+    operation: () => Promise<T>,
+    meta?: ActionMeta
+): Promise<T> {
+    log.info(actionName, meta);
+    try {
+        const result = await operation();
+        log.info(`${actionName}:complete`);
+        return result;
+    } catch (error) {
+        log.error(`${actionName}:failed`, error);
+        throw error;
+    }
+}
+
 export function createHandlers(
     aiEngine: AIEngine, 
     storage: StorageManager
@@ -15,15 +37,14 @@ export function createHandlers(
 
     async function runAndValidate(
         action: 'generateInitial' | 'refinePrompt',
-        meta: Record<string, unknown>,
+        meta: ActionMeta,
         operation: () => Promise<GenerationResult>
     ) {
-        log.info(action, meta);
-        try {
+        return withErrorHandling(action, async () => {
             const result = await operation();
             const versionId = Bun.randomUUIDv7();
             const validation = validatePrompt(result.text);
-            log.info(`${action}:complete`, { versionId, isValid: validation.isValid, promptLength: result.text.length });
+            log.info(`${action}:result`, { versionId, isValid: validation.isValid, promptLength: result.text.length });
             return { 
                 prompt: result.text, 
                 title: result.title,
@@ -32,36 +53,21 @@ export function createHandlers(
                 validation, 
                 debugInfo: result.debugInfo 
             };
-        } catch (error) {
-            log.error(`${action}:failed`, error);
-            throw error;
-        }
+        }, meta);
     }
 
     async function runRemixAction(name: string, operation: () => Promise<GenerationResult>) {
-        log.info(name);
-        try {
+        return withErrorHandling(name, async () => {
             const result = await operation();
             const versionId = Bun.randomUUIDv7();
             const validation = validatePrompt(result.text);
-            log.info(`${name}:complete`, { versionId, promptLength: result.text.length });
+            log.info(`${name}:result`, { versionId, promptLength: result.text.length });
             return { prompt: result.text, versionId, validation };
-        } catch (error) {
-            log.error(`${name}:failed`, error);
-            throw error;
-        }
+        });
     }
 
     async function runSingleFieldRemix<T>(name: string, operation: () => Promise<T>): Promise<T> {
-        log.info(name);
-        try {
-            const result = await operation();
-            log.info(`${name}:complete`);
-            return result;
-        } catch (error) {
-            log.error(`${name}:failed`, error);
-            throw error;
-        }
+        return withErrorHandling(name, operation);
     }
 
     return {

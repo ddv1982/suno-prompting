@@ -13,6 +13,7 @@ import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
+import { APP_CONSTANTS } from '@shared/constants';
 
 export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random): string {
   const s = HARMONIC_STYLES[style];
@@ -235,10 +236,10 @@ export function getGenreInstruments(
     lines.push(...userSelected.map(t => `- ${t}`));
   }
 
-  // Apply articulations to suggested instruments (40% chance per instrument)
+  // Apply articulations to suggested instruments
   const suggested = selected
     .filter(t => !userSelected.includes(t))
-    .map(t => articulateInstrument(t, rng, 0.4));
+    .map(t => articulateInstrument(t, rng, APP_CONSTANTS.ARTICULATION_CHANCE));
     
   if (suggested.length > 0) {
     if (userSelected.length > 0) {
