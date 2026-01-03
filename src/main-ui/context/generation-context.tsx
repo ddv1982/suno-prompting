@@ -472,6 +472,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       const result = await api.generateCreativeBoost({
         creativityLevel: creativeBoostInput.creativityLevel,
         seedGenres: creativeBoostInput.seedGenres,
+        sunoStyles: creativeBoostInput.sunoStyles,
         description: creativeBoostInput.description,
         lyricsTopic: creativeBoostInput.lyricsTopic,
         withWordlessVocals: creativeBoostInput.withWordlessVocals,
@@ -556,6 +557,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         lyricsTopic: creativeBoostInput.lyricsTopic,
         description: creativeBoostInput.description,
         seedGenres: creativeBoostInput.seedGenres,
+        sunoStyles: creativeBoostInput.sunoStyles,
         withWordlessVocals: creativeBoostInput.withWordlessVocals,
         maxMode,
         withLyrics: lyricsMode,

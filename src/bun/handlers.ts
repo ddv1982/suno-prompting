@@ -273,7 +273,7 @@ export function createHandlers(
         generateCreativeBoost: async ({ 
             creativityLevel, 
             seedGenres, 
-            sunoStyles,
+            sunoStyles = [],
             description, 
             lyricsTopic, 
             withWordlessVocals, 
@@ -327,7 +327,7 @@ export function createHandlers(
             lyricsTopic,
             description,
             seedGenres,
-            sunoStyles,
+            sunoStyles = [],
             withWordlessVocals,
             maxMode,
             withLyrics
