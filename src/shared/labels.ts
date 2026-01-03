@@ -119,62 +119,42 @@ export const GENRE_LABELS: Record<string, string> = {
 // Alias for UI dropdowns (same as GENRE_LABELS)
 export const GENRE_DISPLAY_NAMES = GENRE_LABELS;
 
-// Genre combination display names (as-is, already readable)
-export const GENRE_COMBINATION_DISPLAY_NAMES: Record<string, string> = {
-  'jazz fusion': 'Jazz Fusion',
-  'jazz funk': 'Jazz Funk',
-  'jazz hip-hop': 'Jazz Hip-Hop',
-  'nu jazz': 'Nu Jazz',
-  'acid jazz': 'Acid Jazz',
-  'electronic rock': 'Electronic Rock',
-  'electro pop': 'Electro Pop',
-  'synth pop': 'Synth Pop',
-  'future bass': 'Future Bass',
-  'chillwave': 'Chillwave',
-  'vaporwave': 'Vaporwave',
-  'folk rock': 'Folk Rock',
-  'folk pop': 'Folk Pop',
-  'indie folk': 'Indie Folk',
-  'chamber folk': 'Chamber Folk',
-  'blues rock': 'Blues Rock',
-  'southern rock': 'Southern Rock',
-  'progressive rock': 'Progressive Rock',
-  'psychedelic rock': 'Psychedelic Rock',
-  'art rock': 'Art Rock',
-  'indie rock': 'Indie Rock',
-  'alternative rock': 'Alternative Rock',
-  'neo soul': 'Neo Soul',
-  'psychedelic soul': 'Psychedelic Soul',
-  'funk soul': 'Funk Soul',
-  'latin jazz': 'Latin Jazz',
-  'bossa nova': 'Bossa Nova',
-  'afrobeat': 'Afrobeat',
-  'reggae fusion': 'Reggae Fusion',
-  'progressive metal': 'Progressive Metal',
-  'symphonic metal': 'Symphonic Metal',
-  'doom metal': 'Doom Metal',
-  'trip hop': 'Trip Hop',
-  'lo-fi hip hop': 'Lo-Fi Hip Hop',
-  'dark ambient': 'Dark Ambient',
-  'space ambient': 'Space Ambient',
-  'drone ambient': 'Drone Ambient',
-  'disco funk': 'Disco Funk',
-  'nu-disco': 'Nu-Disco',
-  'disco house': 'Disco House',
-  'deep house': 'Deep House',
-  'tech house': 'Tech House',
-  'afro house': 'Afro House',
-  'melodic house': 'Melodic House',
-  'dub techno': 'Dub Techno',
-  'roots reggae': 'Roots Reggae',
-  'dream pop shoegaze': 'Dream Pop Shoegaze',
-  'chillhop': 'Chillhop',
-  'downtempo electronica': 'Downtempo Electronica',
-  'lo-fi chill': 'Lo-Fi Chill',
-  'uk drill': 'UK Drill',
-  'hyperpop trap': 'Hyperpop Trap',
-  'drill rap': 'Drill Rap',
-};
+// Genre combination display names - generated from MULTI_GENRE_COMBINATIONS
+// Uses title case with special handling for common abbreviations
+import { MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres/combinations';
+
+function toTitleCase(str: string): string {
+  // Special cases for abbreviations and formatting
+  const specialCases: Record<string, string> = {
+    'r&b': 'R&B',
+    'lo-fi': 'Lo-Fi',
+    'nu-disco': 'Nu-Disco',
+    'uk': 'UK',
+    'dnb': 'DnB',
+    'g-funk': 'G-Funk',
+  };
+  
+  return str
+    .split(' ')
+    .map(word => {
+      const lower = word.toLowerCase();
+      if (specialCases[lower]) return specialCases[lower];
+      // Handle hyphenated words
+      if (word.includes('-')) {
+        return word.split('-').map(part => {
+          const lowerPart = part.toLowerCase();
+          if (specialCases[lowerPart]) return specialCases[lowerPart];
+          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }).join('-');
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
+export const GENRE_COMBINATION_DISPLAY_NAMES: Record<string, string> = Object.fromEntries(
+  MULTI_GENRE_COMBINATIONS.map(combo => [combo, toTitleCase(combo)])
+);
 
 export type LabelCategory = 'harmonic' | 'combination' | 'polyrhythm' | 'time' | 'journey' | 'genre' | 'genreCombination';
 
