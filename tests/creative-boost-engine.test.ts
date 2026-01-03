@@ -178,6 +178,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "make it warmer",
       "", // lyricsTopic
       "", // description
+      [], // seedGenres
       false, // withWordlessVocals
       true, // maxMode = true
       false // withLyrics
@@ -194,6 +195,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "make it warmer",
       "", // lyricsTopic
       "", // description
+      [], // seedGenres
       false, // withWordlessVocals
       false, // maxMode = false
       false // withLyrics
@@ -208,7 +210,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "original prompt",
       "Original Title",
       "add more bass",
-      "", "", false, true, false
+      "", "", [], false, true, false
     );
 
     expect(result.text).toContain(MAX_MODE_SIGNATURE);
@@ -221,7 +223,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "original prompt",
       "Original Title",
       "add more bass",
-      "", "", false, false, false
+      "", "", [], false, false, false
     );
 
     // Should have non-max structured format with section tags

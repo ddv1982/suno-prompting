@@ -283,8 +283,8 @@ export function createHandlers(
                 if (!VALID_CREATIVITY_LEVELS.includes(creativityLevel as typeof VALID_CREATIVITY_LEVELS[number])) {
                     throw new Error('Invalid creativity level. Must be 0, 25, 50, 75, or 100');
                 }
-                if (seedGenres.length > 2) {
-                    throw new Error('Maximum 2 seed genres allowed');
+                if (seedGenres.length > 4) {
+                    throw new Error('Maximum 4 seed genres allowed');
                 }
                 const result = await aiEngine.generateCreativeBoost(
                     creativityLevel,
@@ -317,6 +317,7 @@ export function createHandlers(
             feedback,
             lyricsTopic,
             description,
+            seedGenres,
             withWordlessVocals,
             maxMode,
             withLyrics
@@ -337,6 +338,7 @@ export function createHandlers(
                     feedback,
                     lyricsTopic,
                     description,
+                    seedGenres,
                     withWordlessVocals,
                     maxMode,
                     withLyrics

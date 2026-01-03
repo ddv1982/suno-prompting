@@ -174,6 +174,7 @@ export const api = {
         feedback: string;
         lyricsTopic: string;
         description: string;
+        seedGenres: string[];
         withWordlessVocals: boolean;
         maxMode: boolean;
         withLyrics: boolean;

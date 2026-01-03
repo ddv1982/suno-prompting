@@ -104,16 +104,18 @@ export class AIEngine {
    * - Max Mode ON: Uses convertToMaxFormat for metadata-style format
    * - Max Mode OFF: Uses convertToNonMaxFormat for section-based format
    * Both ensure proper structure with identifiable instruments for remixing.
+   * If seedGenres are provided, they are used directly in the genre field.
    */
   private async applyMaxModeConversion(
     style: string,
-    maxMode: boolean
+    maxMode: boolean,
+    seedGenres?: string[]
   ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
     if (maxMode) {
-      const result = await convertToMaxFormat(style, this.getModel);
+      const result = await convertToMaxFormat(style, this.getModel, seedGenres);
       return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
     } else {
-      const result = await convertToNonMaxFormat(style, this.getModel);
+      const result = await convertToNonMaxFormat(style, this.getModel, seedGenres);
       return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
     }
   }
@@ -535,8 +537,9 @@ export class AIEngine {
       const parsed = parseCreativeBoostResponse(rawResponse);
       
       // Apply Max Mode format using the same conversion as Full Mode
+      // Pass seedGenres to inject user's genre selection directly into output
       const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
-        parsed.style, maxMode
+        parsed.style, maxMode, seedGenres
       );
 
       // Generate lyrics separately using existing generateLyrics function
@@ -577,6 +580,7 @@ export class AIEngine {
     feedback: string,
     lyricsTopic: string,
     description: string,
+    seedGenres: string[],
     withWordlessVocals: boolean,
     maxMode: boolean,
     withLyrics: boolean
@@ -601,8 +605,9 @@ export class AIEngine {
       const parsed = parseCreativeBoostResponse(rawResponse);
       
       // Apply Max Mode format using the same conversion as Full Mode
+      // Pass seedGenres to preserve user's genre selection during refine
       const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
-        parsed.style, maxMode
+        parsed.style, maxMode, seedGenres
       );
 
       // Regenerate lyrics using existing generateLyrics function

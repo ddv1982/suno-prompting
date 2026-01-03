@@ -104,7 +104,7 @@ export function CreativeBoostPanel({
       <GenreMultiSelect
         selected={input.seedGenres}
         onChange={handleGenresChange}
-        maxSelections={2}
+        maxSelections={4}
         disabled={isGenerating}
       />
 

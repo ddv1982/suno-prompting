@@ -6,6 +6,7 @@ import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
 import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { APP_CONSTANTS } from '@shared/constants';
+import { GENRE_LABELS, GENRE_COMBINATION_DISPLAY_NAMES } from '@shared/labels';
 import type { LanguageModel } from 'ai';
 import type { DebugInfo } from '@shared/types';
 
@@ -85,6 +86,34 @@ const INSTRUMENT_KEYWORDS: string[] = [
 ];
 
 // ============================================================================
+// Genre Formatting
+// ============================================================================
+
+/**
+ * Format a genre key to its display label
+ * Handles both single genres and genre combinations
+ */
+function formatGenreLabel(genreKey: string): string {
+  // Check single genre labels first
+  if (genreKey in GENRE_LABELS) {
+    return GENRE_LABELS[genreKey];
+  }
+  // Check genre combination labels
+  if (genreKey in GENRE_COMBINATION_DISPLAY_NAMES) {
+    return GENRE_COMBINATION_DISPLAY_NAMES[genreKey];
+  }
+  // Fallback: capitalize first letter of each word
+  return genreKey.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+/**
+ * Format multiple genre keys to a comma-separated display string
+ */
+function formatGenreLabels(genres: string[]): string {
+  return genres.map(formatGenreLabel).join(', ');
+}
+
+// ============================================================================
 // Parsing Functions
 // ============================================================================
 
@@ -128,16 +157,24 @@ export function parseStyleDescription(text: string): ParsedStyleDescription {
 }
 
 /**
+ * Extract the first genre from a potentially comma-separated genre string
+ */
+function extractFirstGenre(genre: string): string {
+  return genre.split(/[\s,]+/)[0]?.toLowerCase().trim() || '';
+}
+
+/**
  * Infer BPM from detected genre using GENRE_REGISTRY
+ * Handles comma-separated multi-genre strings by using the first genre
  */
 export function inferBpm(genre: string | null): number {
   if (!genre) return DEFAULT_BPM;
 
-  const normalizedGenre = genre.toLowerCase().trim();
+  const firstGenre = extractFirstGenre(genre);
   
   // Direct registry lookup
-  if (normalizedGenre in GENRE_REGISTRY) {
-    const genreDef = GENRE_REGISTRY[normalizedGenre as GenreType];
+  if (firstGenre in GENRE_REGISTRY) {
+    const genreDef = GENRE_REGISTRY[firstGenre as GenreType];
     if (genreDef?.bpm) {
       return genreDef.bpm.typical;
     }
@@ -256,15 +293,16 @@ async function generateSectionContent(
 /**
  * Enhance instruments list with articulations.
  * If no instruments detected, selects genre-appropriate defaults.
+ * Handles comma-separated multi-genre strings by using the first genre.
  */
 function enhanceInstruments(instruments: string[], genre: string | null): string {
   let instrumentList = instruments;
   
   // If no instruments provided, select genre-appropriate defaults
   if (instrumentList.length === 0) {
-    const normalizedGenre = genre?.toLowerCase().trim() || null;
-    if (normalizedGenre && normalizedGenre in GENRE_REGISTRY) {
-      instrumentList = selectInstrumentsForGenre(normalizedGenre as GenreType, { maxTags: 3 });
+    const firstGenre = genre ? extractFirstGenre(genre) : null;
+    if (firstGenre && firstGenre in GENRE_REGISTRY) {
+      instrumentList = selectInstrumentsForGenre(firstGenre as GenreType, { maxTags: 3 });
     } else {
       return 'ambient textures, subtle pads';
     }
@@ -279,6 +317,7 @@ function enhanceInstruments(instruments: string[], genre: string | null): string
 
 /**
  * Build the mood line from detected moods or generate default
+ * Handles comma-separated multi-genre strings by using the first genre.
  */
 function buildMoodLine(moods: string[], genre: string | null): string {
   if (moods.length > 0) {
@@ -298,7 +337,8 @@ function buildMoodLine(moods: string[], genre: string | null): string {
     blues: 'soulful, raw, emotional',
   };
   
-  return genreMoods[genre || ''] || 'evocative, atmospheric, dynamic';
+  const firstGenre = genre ? extractFirstGenre(genre) : '';
+  return genreMoods[firstGenre] || 'evocative, atmospheric, dynamic';
 }
 
 /**
@@ -336,32 +376,39 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
 
 /**
  * Convert a Creative Boost style description to non-max Suno format
+ * If seedGenres is provided, uses them directly instead of detecting from text
  */
 export async function convertToNonMaxFormat(
   styleDescription: string,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  seedGenres?: string[]
 ): Promise<NonMaxConversionResult> {
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
 
-  // Determine effective genre
-  const effectiveGenre = parsed.detectedGenre || DEFAULT_GENRE;
+  // Determine effective genre - prefer user's seed genres if provided
+  // Keep raw keys for BPM/instrument lookups, format for output display
+  const genreKeys = seedGenres?.length ? seedGenres : [parsed.detectedGenre || DEFAULT_GENRE];
+  const effectiveGenreForLookup = genreKeys[0] || DEFAULT_GENRE;
+  const effectiveGenreForOutput = seedGenres?.length 
+    ? formatGenreLabels(seedGenres)
+    : (parsed.detectedGenre || DEFAULT_GENRE);
 
-  // Infer BPM from genre
-  const bpm = inferBpm(effectiveGenre);
+  // Infer BPM from first genre
+  const bpm = inferBpm(effectiveGenreForLookup);
 
   // Generate section content using AI
   const { sections, debugInfo } = await generateSectionContent(parsed, getModel);
 
   // Build instruments string with articulations
-  const instruments = enhanceInstruments(parsed.detectedInstruments, effectiveGenre);
+  const instruments = enhanceInstruments(parsed.detectedInstruments, effectiveGenreForLookup);
 
   // Build mood line
-  const mood = buildMoodLine(parsed.detectedMoods, effectiveGenre);
+  const mood = buildMoodLine(parsed.detectedMoods, effectiveGenreForLookup);
 
-  // Assemble final prompt
+  // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildNonMaxFormatPrompt({
-    genre: effectiveGenre,
+    genre: effectiveGenreForOutput,
     bpm,
     mood,
     instruments,

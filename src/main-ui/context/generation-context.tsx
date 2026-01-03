@@ -553,6 +553,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         feedback,
         lyricsTopic: creativeBoostInput.lyricsTopic,
         description: creativeBoostInput.description,
+        seedGenres: creativeBoostInput.seedGenres,
         withWordlessVocals: creativeBoostInput.withWordlessVocals,
         maxMode,
         withLyrics: lyricsMode,
