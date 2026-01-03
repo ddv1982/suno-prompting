@@ -13,6 +13,7 @@ import {
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
 import { convertToMaxFormat } from '@bun/prompt/max-conversion';
+import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -99,18 +100,22 @@ export class AIEngine {
   }
 
   /**
-   * Applies Max Mode format conversion to a style prompt.
-   * Uses the same convertToMaxFormat logic as Full Mode for consistency.
+   * Applies format conversion to a style prompt based on maxMode.
+   * - Max Mode ON: Uses convertToMaxFormat for metadata-style format
+   * - Max Mode OFF: Uses convertToNonMaxFormat for section-based format
+   * Both ensure proper structure with identifiable instruments for remixing.
    */
   private async applyMaxModeConversion(
     style: string,
     maxMode: boolean
   ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
-    if (!maxMode) {
-      return { styleResult: style };
+    if (maxMode) {
+      const result = await convertToMaxFormat(style, this.getModel);
+      return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
+    } else {
+      const result = await convertToNonMaxFormat(style, this.getModel);
+      return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
     }
-    const result = await convertToMaxFormat(style, this.getModel);
-    return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   }
 
   private parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {

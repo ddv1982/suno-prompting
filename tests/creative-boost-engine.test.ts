@@ -2,12 +2,12 @@ import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { AIEngine } from "@bun/ai/engine";
 import { MAX_MODE_SIGNATURE } from "@shared/max-format";
 
-// Track generateText calls to detect if max conversion AI call was made
+// Track generateText calls to detect conversion AI calls
 let generateTextCalls: number = 0;
 
 // Mock the AI SDK generateText
 // First call: Creative Boost JSON response
-// Second call (if maxMode): Max conversion style tags response
+// Second call: Conversion AI enhancement response (max or non-max)
 const mockGenerateText = mock(async () => {
   generateTextCalls++;
   if (generateTextCalls === 1) {
@@ -16,9 +16,16 @@ const mockGenerateText = mock(async () => {
       text: '{"title": "Mystic Journey", "style": "ethereal ambient with shimmering pads"}',
     };
   } else {
-    // Max conversion AI enhancement response
+    // Conversion AI enhancement response (works for both max and non-max)
     return {
-      text: '{"styleTags": "atmospheric, dreamy", "recording": "studio session with reverb"}',
+      text: JSON.stringify({
+        styleTags: "atmospheric, dreamy",
+        recording: "studio session with reverb",
+        intro: "Warm pads float in gently",
+        verse: "Instruments weave together",
+        chorus: "Full arrangement peaks",
+        outro: "Peaceful fade out",
+      }),
     };
   }
 });
@@ -36,7 +43,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     generateTextCalls = 0;
   });
 
-  it("makes additional AI call for max conversion when maxMode is true", async () => {
+  it("makes AI call for max conversion when maxMode is true", async () => {
     await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
@@ -51,7 +58,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     expect(generateTextCalls).toBe(2);
   });
 
-  it("makes only one AI call when maxMode is false", async () => {
+  it("makes AI call for non-max conversion when maxMode is false", async () => {
     await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
@@ -62,8 +69,8 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
       false // withLyrics
     );
 
-    // Should make only 1 call for Creative Boost
-    expect(generateTextCalls).toBe(1);
+    // Should make 2 calls: 1 for Creative Boost, 1 for non-max conversion
+    expect(generateTextCalls).toBe(2);
   });
 
   it("returns Max Format structure when maxMode is true", async () => {
@@ -85,7 +92,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     expect(result.text).toContain('recording:');
   });
 
-  it("returns plain style when maxMode is false", async () => {
+  it("returns Non-Max Format structure when maxMode is false", async () => {
     const result = await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
@@ -96,9 +103,17 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
       false // withLyrics
     );
 
-    expect(result.text).toBe("ethereal ambient with shimmering pads");
+    // Should have non-max structured format with section tags
+    expect(result.text).toContain('Genre:');
+    expect(result.text).toContain('BPM:');
+    expect(result.text).toContain('Mood:');
+    expect(result.text).toContain('Instruments:');
+    expect(result.text).toContain('[INTRO]');
+    expect(result.text).toContain('[VERSE]');
+    expect(result.text).toContain('[CHORUS]');
+    expect(result.text).toContain('[OUTRO]');
+    // Should NOT have max mode header
     expect(result.text).not.toContain(MAX_MODE_SIGNATURE);
-    expect(result.text).not.toContain('genre:');
   });
 
   it("returns title from parsed response", async () => {
@@ -120,7 +135,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     expect(result.debugInfo?.maxConversion).toBeDefined();
   });
 
-  it("does NOT include maxConversion debug info when maxMode false", async () => {
+  it("includes maxConversion debug info when maxMode false (non-max conversion)", async () => {
     engine.setDebugMode(true);
 
     const result = await engine.generateCreativeBoost(
@@ -128,7 +143,8 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     );
 
     expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.maxConversion).toBeUndefined();
+    // Non-max conversion also includes debug info for the conversion step
+    expect(result.debugInfo?.maxConversion).toBeDefined();
   });
 });
 
@@ -155,7 +171,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     });
   });
 
-  it("makes additional AI call for max conversion when maxMode is true", async () => {
+  it("makes AI call for max conversion when maxMode is true", async () => {
     await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
@@ -171,7 +187,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     expect(generateTextCalls).toBe(2);
   });
 
-  it("makes only one AI call when maxMode is false", async () => {
+  it("makes AI call for non-max conversion when maxMode is false", async () => {
     await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
@@ -183,8 +199,8 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       false // withLyrics
     );
 
-    // Should make only 1 call for refine
-    expect(generateTextCalls).toBe(1);
+    // Should make 2 calls: 1 for refine, 1 for non-max conversion
+    expect(generateTextCalls).toBe(2);
   });
 
   it("returns Max Format structure when maxMode is true", async () => {
@@ -200,7 +216,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     expect(result.text).toContain('instruments:');
   });
 
-  it("returns plain style when maxMode is false", async () => {
+  it("returns Non-Max Format structure when maxMode is false", async () => {
     const result = await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
@@ -208,7 +224,13 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "", "", false, false, false
     );
 
-    expect(result.text).toBe("refined ambient with warm tones");
+    // Should have non-max structured format with section tags
+    expect(result.text).toContain('Genre:');
+    expect(result.text).toContain('BPM:');
+    expect(result.text).toContain('[INTRO]');
+    expect(result.text).toContain('[VERSE]');
+    expect(result.text).toContain('[CHORUS]');
+    // Should NOT have max mode header
     expect(result.text).not.toContain(MAX_MODE_SIGNATURE);
   });
 });
