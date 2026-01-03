@@ -1,3 +1,5 @@
+import { isMaxFormat } from '@shared/max-format';
+
 /**
  * Strips MAX_MODE_HEADER from prompt if present
  * Used for accurate character counting (header is metadata, not content)
@@ -11,4 +13,32 @@ export function stripMaxModeHeader(prompt: string): string {
     }
   }
   return prompt;
+}
+
+/**
+ * Detects if text is a structured prompt (vs a simple description).
+ * Used to determine if auto-conversion should be applied.
+ * 
+ * Detects:
+ * - Max format prompts (with header)
+ * - Non-max structured prompts (Genre:, BPM:, section tags)
+ * - Max format body without header (genre: "...", bpm: "...")
+ */
+export function isStructuredPrompt(text: string): boolean {
+  // 1. Check for max format header
+  if (isMaxFormat(text)) return true;
+  
+  // 2. Check for non-max format field markers (Capitalized: value)
+  //    e.g., "Genre: rock", "BPM: 120", "Mood: energetic"
+  const hasNonMaxFields = /^(Genre|BPM|Mood|Instruments):\s*\S/mi.test(text);
+  
+  // 3. Check for section tags
+  //    e.g., [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+  const hasSectionTags = /\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO|HOOK|PRE-CHORUS)\]/i.test(text);
+  
+  // 4. Check for max format style fields WITHOUT header (lowercase: "quoted")
+  //    e.g., genre: "jazz", bpm: "110", instruments: "..."
+  const hasMaxStyleFields = /^(genre|bpm|instruments|style tags|recording):\s*"/mi.test(text);
+  
+  return hasNonMaxFields || hasSectionTags || hasMaxStyleFields;
 }

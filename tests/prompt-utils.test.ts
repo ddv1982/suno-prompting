@@ -1,0 +1,160 @@
+import { describe, it, expect } from 'bun:test';
+import { stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
+import { MAX_MODE_HEADER } from '../src/shared/max-format';
+
+// ============================================================================
+// stripMaxModeHeader Tests
+// ============================================================================
+
+describe('stripMaxModeHeader', () => {
+  it('removes max mode header from prompt', () => {
+    const prompt = `${MAX_MODE_HEADER}
+genre: "jazz"
+bpm: "110"`;
+    const result = stripMaxModeHeader(prompt);
+    expect(result).toBe('genre: "jazz"\nbpm: "110"');
+  });
+
+  it('returns unchanged if no header present', () => {
+    const prompt = 'genre: "jazz"\nbpm: "110"';
+    const result = stripMaxModeHeader(prompt);
+    expect(result).toBe(prompt);
+  });
+});
+
+// ============================================================================
+// isStructuredPrompt Tests
+// ============================================================================
+
+describe('isStructuredPrompt', () => {
+  describe('simple descriptions (should NOT match)', () => {
+    it('returns false for simple description', () => {
+      expect(isStructuredPrompt('a sad song about rain')).toBe(false);
+    });
+
+    it('returns false for longer description', () => {
+      expect(isStructuredPrompt('I want a melancholic ballad about lost love in the style of 80s pop')).toBe(false);
+    });
+
+    it('returns false for description with genre word but not as field', () => {
+      expect(isStructuredPrompt('Genre fusion of jazz and rock sounds great')).toBe(false);
+    });
+
+    it('returns false for description mentioning BPM', () => {
+      expect(isStructuredPrompt('My BPM is too slow for dancing')).toBe(false);
+    });
+
+    it('returns false for description with mood word', () => {
+      expect(isStructuredPrompt('I want something with a warm mood')).toBe(false);
+    });
+
+    it('returns false for empty string', () => {
+      expect(isStructuredPrompt('')).toBe(false);
+    });
+  });
+
+  describe('non-max structured prompts (should match)', () => {
+    it('returns true for prompt with Genre field', () => {
+      expect(isStructuredPrompt('Genre: rock\nBPM: 120')).toBe(true);
+    });
+
+    it('returns true for prompt with BPM field', () => {
+      expect(isStructuredPrompt('BPM: 90\nMood: calm')).toBe(true);
+    });
+
+    it('returns true for prompt with Mood field', () => {
+      expect(isStructuredPrompt('Mood: energetic, powerful')).toBe(true);
+    });
+
+    it('returns true for prompt with Instruments field', () => {
+      expect(isStructuredPrompt('Instruments: guitar, drums, bass')).toBe(true);
+    });
+
+    it('returns true for prompt with section tags', () => {
+      expect(isStructuredPrompt('[INTRO] Soft piano opening\n[VERSE] Building tension')).toBe(true);
+    });
+
+    it('returns true for prompt with CHORUS tag', () => {
+      expect(isStructuredPrompt('Some text\n[CHORUS] Full power')).toBe(true);
+    });
+
+    it('returns true for prompt with BRIDGE tag', () => {
+      expect(isStructuredPrompt('[BRIDGE] Unexpected turn')).toBe(true);
+    });
+
+    it('returns true for prompt with OUTRO tag', () => {
+      expect(isStructuredPrompt('[OUTRO] Fading out')).toBe(true);
+    });
+
+    it('returns true for full non-max structured prompt', () => {
+      const prompt = `[Energetic, Rock]
+
+Genre: rock
+BPM: 140
+Mood: energetic, powerful
+Instruments: electric guitar, drums
+
+[INTRO] Driving guitar riff
+[VERSE] Building energy
+[CHORUS] Full power explosion`;
+      expect(isStructuredPrompt(prompt)).toBe(true);
+    });
+  });
+
+  describe('max format prompts (should match)', () => {
+    it('returns true for full max format prompt', () => {
+      const prompt = `[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+genre: "jazz"
+bpm: "110"`;
+      expect(isStructuredPrompt(prompt)).toBe(true);
+    });
+
+    it('returns true for max format body without header', () => {
+      const prompt = `genre: "jazz"
+bpm: "110"
+instruments: "piano, bass"`;
+      expect(isStructuredPrompt(prompt)).toBe(true);
+    });
+
+    it('returns true for prompt with style tags field', () => {
+      expect(isStructuredPrompt('style tags: "warm, intimate"')).toBe(true);
+    });
+
+    it('returns true for prompt with recording field', () => {
+      expect(isStructuredPrompt('recording: "studio session"')).toBe(true);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles lowercase genre field (max style)', () => {
+      expect(isStructuredPrompt('genre: "rock"')).toBe(true);
+    });
+
+    it('handles mixed case section tags', () => {
+      expect(isStructuredPrompt('[Verse] Some lyrics')).toBe(true);
+    });
+
+    it('handles PRE-CHORUS tag', () => {
+      expect(isStructuredPrompt('[PRE-CHORUS] Building up')).toBe(true);
+    });
+
+    it('handles HOOK tag', () => {
+      expect(isStructuredPrompt('[HOOK] Catchy melody')).toBe(true);
+    });
+
+    it('does not match colon without space', () => {
+      // "Genre:rock" without space should still match due to \s* in regex
+      expect(isStructuredPrompt('Genre:rock')).toBe(true);
+    });
+
+    it('handles multiline with field in middle', () => {
+      const prompt = `Some intro text
+Genre: electronic
+More content`;
+      expect(isStructuredPrompt(prompt)).toBe(true);
+    });
+  });
+});

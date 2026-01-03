@@ -9,7 +9,7 @@ import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
 import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
 import { useRemixActions } from '@/hooks/use-remix-actions';
-import { isMaxFormat } from '@/lib/max-format';
+import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import { useToast } from '@/components/ui/toast';
 
 const log = createLogger('Generation');
@@ -273,9 +273,10 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         setChatMessages(prev => [...prev, { role: "user", content: input }]);
       }
 
-      // Max Mode conversion: if initial generation with Max Mode enabled and input is not already max format
-      if (isInitial && maxMode && !isMaxFormat(input)) {
-        log.info('Converting to Max Mode format');
+      // Max Mode conversion: only if input looks like a structured prompt (not a simple description)
+      // This prevents converting "a sad song about rain" but will convert pasted prompts like "Genre: rock\nBPM: 120..."
+      if (isInitial && maxMode && isStructuredPrompt(input) && !isMaxFormat(input)) {
+        log.info('Converting structured prompt to Max Mode format');
         try {
           const conversionResult = await api.convertToMaxFormat(input);
           
