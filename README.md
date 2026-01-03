@@ -483,7 +483,7 @@ This prevents "genre drift" while ensuring prompts have enough variety to produc
 ### Genre combinations
 <!-- COMBINATIONS_START -->
 
-jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, electronic rock, electro pop, synth pop, future bass, chillwave, vaporwave, folk rock, folk pop, indie folk, chamber folk, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, neo soul, psychedelic soul, funk soul, latin jazz, bossa nova, afrobeat, reggae fusion, progressive metal, symphonic metal, doom metal, trip hop, lo-fi hip hop, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
+jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, electronic rock, electro pop, synth pop, future bass, chillwave, vaporwave, folk rock, folk pop, indie folk, chamber folk, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, neo soul, psychedelic soul, funk soul, latin jazz, bossa nova, afrobeat, reggae fusion, progressive metal, symphonic metal, symphonic rock, doom metal, trip hop, lo-fi hip hop, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
 
 <!-- COMBINATIONS_END -->
 

@@ -12,7 +12,7 @@ export const MULTI_GENRE_COMBINATIONS = [
   // World/Latin blends
   'latin jazz', 'bossa nova', 'afrobeat', 'reggae fusion',
   // Metal blends
-  'progressive metal', 'symphonic metal', 'doom metal',
+  'progressive metal', 'symphonic metal', 'symphonic rock', 'doom metal',
   // Hip-hop blends
   'trip hop', 'lo-fi hip hop',
   // Ambient blends
