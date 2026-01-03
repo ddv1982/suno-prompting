@@ -163,10 +163,10 @@
 @layer base {
   :root {
     /* Background hierarchy (4 levels - progressively lighter) */
-    --bg-base: oklch(0.095 0.01 260);      /* App background */
-    --bg-surface: oklch(0.12 0.012 260);   /* Cards, panels */
-    --bg-elevated: oklch(0.145 0.012 260); /* Dropdowns, popovers */
-    --bg-overlay: oklch(0.17 0.012 260);   /* Modals, dialogs */
+    --bg-base: oklch(0.085 0.01 260);      /* App background */
+    --bg-surface: oklch(0.115 0.012 260);  /* Cards, panels */
+    --bg-elevated: oklch(0.15 0.012 260);  /* Dropdowns, popovers */
+    --bg-overlay: oklch(0.18 0.012 260);   /* Modals, dialogs */
 
     /* Semantic backgrounds (mapped to hierarchy) */
     --background: var(--bg-base);
@@ -180,14 +180,14 @@
     --primary-foreground: oklch(0.12 0.02 180);
     --secondary: oklch(0.2 0.012 260);
     --secondary-foreground: oklch(0.95 0.01 260);
-    --muted: oklch(0.18 0.012 260);
-    --muted-foreground: oklch(0.70 0.02 260);
+    --muted: oklch(0.19 0.012 260);
+    --muted-foreground: oklch(0.68 0.02 260);
     --accent: oklch(0.2 0.015 260);
     --accent-foreground: oklch(0.95 0.01 260);
     --destructive: oklch(0.55 0.2 25);
     --destructive-foreground: oklch(0.95 0 0);
-    --border: oklch(0.28 0.012 260);
-    --input: oklch(0.25 0.012 260);
+    --border: oklch(0.26 0.012 260);
+    --input: oklch(0.24 0.012 260);
     --ring: oklch(0.76 0.16 185);
     --chart-1: oklch(0.72 0.14 180);
     --chart-2: oklch(0.696 0.17 162.48);
@@ -195,13 +195,13 @@
     --chart-4: oklch(0.627 0.265 303.899);
     --chart-5: oklch(0.645 0.246 16.439);
     --radius: 0.75rem;
-    --sidebar-background: oklch(0.075 0.01 260);
+    --sidebar-background: oklch(0.07 0.01 260);
     --sidebar-foreground: oklch(0.85 0.01 260);
     --sidebar-primary: oklch(0.76 0.16 185);
     --sidebar-primary-foreground: oklch(0.12 0.02 180);
     --sidebar-accent: oklch(0.14 0.012 260);
     --sidebar-accent-foreground: oklch(0.95 0.01 260);
-    --sidebar-border: oklch(0.16 0.012 260);
+    --sidebar-border: oklch(0.155 0.012 260);
     --sidebar-ring: oklch(0.76 0.16 185);
 
     /* Extra UI tokens (mapped to hierarchy) */
@@ -363,15 +363,35 @@
 
 /* Micro-interactions */
 .interactive {
-  transition: all 0.15s ease;
+  transition:
+    transform 150ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 150ms cubic-bezier(0.2, 0, 0, 1),
+    border-color 150ms cubic-bezier(0.2, 0, 0, 1),
+    color 150ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 150ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-.interactive:hover {
+.interactive:not(:disabled):not([aria-disabled="true"]):hover {
   transform: translateY(-1px);
 }
 
-.interactive:active {
+.interactive:not(:disabled):not([aria-disabled="true"]):active {
   transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive {
+    transition: none;
+  }
+
+  .interactive:hover,
+  .interactive:active {
+    transform: none;
+  }
+
+  .animate-fade-in {
+    animation: none;
+  }
 }
 
 /* Smooth fade-in animation */
@@ -386,11 +406,11 @@
 
 /* Elevation utilities */
 @utility shadow-soft {
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.24), 0 8px 18px rgb(0 0 0 / 0.18);
 }
 
 @utility shadow-panel {
-  box-shadow: 0 12px 28px rgb(0 0 0 / 0.28);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 0.35);
 }
 
 /* Surface utilities (background hierarchy) */

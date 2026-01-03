@@ -107,7 +107,7 @@ export function RequestInspector({
 
             return (
               <div key={idx} className="rounded-lg border border-border/50 bg-background/30 overflow-hidden hover:border-border/80 transition-colors">
-                <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-muted/40 to-muted/20 border-b border-border/30">
+                <div className="flex items-center justify-between px-3 py-2 bg-muted/20 border-b border-border/30">
                   <Badge variant="outline" className={cn("ui-label h-4 px-1.5", roleColors[msg.role] || "")}>
                     {msg.role}
                   </Badge>
@@ -148,7 +148,7 @@ export function RequestInspector({
             <SectionLabel>Response Body</SectionLabel>
           </div>
           <div className="rounded-lg border border-border/50 bg-background/30 overflow-hidden hover:border-border/80 transition-colors">
-            <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-muted/40 to-muted/20 border-b border-border/30">
+            <div className="flex items-center justify-between px-3 py-2 bg-muted/20 border-b border-border/30">
               <Badge variant="outline" className="ui-label h-4 px-1.5 bg-green-500/20 text-green-400 border-green-500/30">
                 assistant
               </Badge>

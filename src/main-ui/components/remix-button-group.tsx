@@ -121,7 +121,7 @@ export function RemixButtonGroup({
         onClick={onCopy}
         disabled={promptOverLimit}
         className={cn(
-          "font-bold transition-all duration-300",
+          "font-bold",
           copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
         )}
       >

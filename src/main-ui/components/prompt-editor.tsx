@@ -277,7 +277,7 @@ export function PromptEditor({
         />
       </div>
 
-      <div className="border-t bg-muted/10 p-6 shrink-0">
+      <div className="border-t bg-surface p-6 shrink-0">
         <div className="max-w-6xl mx-auto w-full space-y-[var(--space-5)]">
           {/* Prompt Mode Selector - Full Prompt vs Quick Vibes */}
           <ModeSelector
@@ -310,7 +310,7 @@ export function PromptEditor({
                     variant={editorMode === 'simple' ? 'default' : 'outline'}
                     size="xs"
                     onClick={() => onEditorModeChange('simple')}
-                    className="font-bold"
+                    className="font-semibold"
                   >
                     Simple
                   </Button>
@@ -318,7 +318,7 @@ export function PromptEditor({
                     variant={editorMode === 'advanced' ? 'default' : 'outline'}
                     size="xs"
                     onClick={() => onEditorModeChange('advanced')}
-                    className="font-bold"
+                    className="font-semibold"
                   >
                     <Settings2 className="w-3 h-3" />
                     Advanced
@@ -331,7 +331,7 @@ export function PromptEditor({
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer shrink-0">
                   <Music2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-[length:var(--text-footnote)] text-muted-foreground">Lyrics</span>
+                  <span className="text-footnote text-muted-foreground">Lyrics</span>
                   <Switch 
                     checked={lyricsMode} 
                     onCheckedChange={onLyricsModeChange}
@@ -341,7 +341,7 @@ export function PromptEditor({
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer shrink-0">
                   <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-[length:var(--text-footnote)] text-muted-foreground">Max</span>
+                  <span className="text-footnote text-muted-foreground">Max</span>
                   <Switch 
                     checked={maxMode} 
                     onCheckedChange={onMaxModeChange}
@@ -377,7 +377,7 @@ export function PromptEditor({
                   onChange={(e) => onLockedPhraseChange(e.target.value)}
                   disabled={isGenerating}
                   className={cn(
-                    "min-h-12 max-h-24 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface focus-visible:ring-primary/20",
+                    "min-h-12 max-h-24 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
                     !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20",
                     isGenerating && "opacity-70"
                   )}
@@ -402,7 +402,7 @@ export function PromptEditor({
                     onKeyDown={handleKeyDown}
                     disabled={isGenerating}
                     className={cn(
-                      "min-h-20 flex-1 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface focus-visible:ring-primary/20",
+                      "min-h-20 flex-1 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
                       isGenerating && "opacity-70"
                     )}
                     placeholder={currentPrompt 
@@ -425,7 +425,7 @@ export function PromptEditor({
                     }
                     size="sm"
                     className={cn(
-                      "h-9 px-4 rounded-lg gap-2 shadow-panel shrink-0 interactive transition-all duration-300",
+                      "h-9 px-4 rounded-lg gap-2 shadow-panel shrink-0 interactive",
                       isGenerating && "w-9 px-0"
                     )}
                   >
@@ -460,7 +460,7 @@ export function PromptEditor({
                     onChange={(e) => onLyricsTopicChange(e.target.value)}
                     disabled={isGenerating}
                     className={cn(
-                      "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface focus-visible:ring-primary/20",
+                      "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
                       lyricsTopicOverLimit && "border-destructive focus-visible:ring-destructive/20",
                       isGenerating && "opacity-70"
                     )}

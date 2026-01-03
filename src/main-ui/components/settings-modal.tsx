@@ -22,7 +22,7 @@ type SettingsModalProps = {
 
 const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
 const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
-const selectClassName = "flex h-[var(--height-control-md)] w-full rounded-lg border border-input bg-input px-3 py-2 text-[length:var(--text-footnote)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+const selectClassName = "border-border data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-[var(--height-control-md)] w-full min-w-0 rounded-md border bg-input/30 px-[var(--space-3)] py-[var(--space-1)] text-[length:var(--text-footnote)] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
@@ -108,7 +108,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-106.25 bg-card border shadow-2xl">
+      <DialogContent className="sm:max-w-106.25 bg-card border shadow-panel">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />

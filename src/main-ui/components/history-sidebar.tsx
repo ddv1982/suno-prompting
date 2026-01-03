@@ -48,7 +48,7 @@ export function HistorySidebar({
             variant="outline"
             size="xs"
             onClick={onNewProject}
-            className="font-bold interactive"
+            className="font-semibold interactive"
           >
             <Plus className="w-3 h-3" />
             NEW
@@ -71,7 +71,7 @@ export function HistorySidebar({
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {filtered.length === 0 ? (
-                <div className="text-xs text-muted-foreground italic p-8 text-center leading-relaxed">
+                <div className="ui-helper italic p-8 text-center leading-relaxed opacity-70">
                   {sessions.length === 0 ? "No projects yet." : "No matches."}
                 </div>
               ) : (
@@ -131,22 +131,22 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
             }
           }}
           className={cn(
-            "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer border border-transparent transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+            "flex-1 min-w-0 py-2.5 px-3 rounded-lg cursor-pointer border border-transparent transition-colors duration-150 outline-none focus-visible:ring-[3px] focus-visible:ring-sidebar-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
             isActive
-              ? "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border shadow-sm"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border shadow-soft"
               : "hover:bg-sidebar-accent/60 hover:border-sidebar-border hover:text-sidebar-foreground"
           )}
         >
           <div className="flex flex-col gap-0.5">
             <span
               className={cn(
-                "text-sm font-medium leading-tight tracking-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
+                "text-footnote font-medium leading-tight tracking-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
                 isActive && "font-semibold"
               )}
             >
               {session.currentTitle || session.originalInput || "Untitled Project"}
             </span>
-            <span className="text-micro text-sidebar-foreground/40">
+            <span className="text-tiny text-sidebar-foreground/40">
               {date.toLocaleDateString()}
             </span>
           </div>

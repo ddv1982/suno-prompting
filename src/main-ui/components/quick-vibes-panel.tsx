@@ -108,7 +108,7 @@ export function QuickVibesPanel({
           onKeyDown={handleKeyDown}
           disabled={isGenerating}
           className={cn(
-            "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface focus-visible:ring-primary/20",
+            "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
             isGenerating && "opacity-70"
           )}
           placeholder={isRefineMode 
