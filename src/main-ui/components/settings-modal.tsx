@@ -12,8 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { SectionLabel } from "@/components/ui/section-label";
 import { api } from "@/services/rpc";
+import { createLogger } from "@/lib/logger";
 import { APP_CONSTANTS } from "@shared/constants";
 import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
+
+const log = createLogger('SettingsModal');
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -59,7 +62,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           setLyricsMode(settings.lyricsMode);
         })
         .catch((err) => {
-          console.error("Failed to fetch settings", err);
+          log.error("fetchSettings:failed", err);
           setError("Unable to load settings.");
         })
         .finally(() => setLoading(false));
@@ -99,7 +102,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       });
       onClose();
     } catch (e) {
-      console.error("Failed to save settings", e);
+      log.error("saveSettings:failed", e);
       setError("Failed to save settings. Please try again.");
     } finally {
       setSaving(false);

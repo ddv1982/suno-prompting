@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { createLogger } from "@/lib/logger";
 import { type PromptSession } from "@shared/types";
+
+const log = createLogger('HistorySidebar');
 
 type HistorySidebarProps = {
   sessions: PromptSession[];
@@ -111,7 +114,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
     try {
       await onDelete();
     } catch (error) {
-      console.error("Delete failed", error);
+      log.error("delete:failed", error);
     } finally {
       setDeleting(false);
     }

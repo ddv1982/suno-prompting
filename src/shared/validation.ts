@@ -63,9 +63,9 @@ export function validatePrompt(prompt: string): ValidationResult {
         charCount: prompt.length
     };
 
-    if (result.charCount > 1000) {
+    if (result.charCount > APP_CONSTANTS.MAX_PROMPT_CHARS) {
         result.isValid = false;
-        result.errors.push(`Prompt exceeds 1000 characters (${result.charCount}).`);
+        result.errors.push(`Prompt exceeds ${APP_CONSTANTS.MAX_PROMPT_CHARS} characters (${result.charCount}).`);
     }
 
     const lowerPrompt = prompt.toLowerCase();

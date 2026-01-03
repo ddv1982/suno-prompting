@@ -1,5 +1,8 @@
 import { hostname, userInfo } from 'os';
 import { StorageError } from '@shared/errors';
+import { createLogger } from '@bun/logger';
+
+const log = createLogger('Crypto');
 
 async function getSecret(): Promise<string> {
     const user = userInfo();
@@ -62,7 +65,7 @@ export async function decrypt(encryptedBase64: string): Promise<string> {
         
         return new TextDecoder().decode(decrypted);
     } catch (error) {
-        console.error('Decryption error:', error);
+        log.error('decrypt:failed', error);
         throw new StorageError('Failed to decrypt sensitive data. The key might have been encrypted on a different machine.', 'decrypt');
     }
 }
