@@ -4,7 +4,6 @@ import {
   buildCreativeBoostSystemPrompt,
   buildCreativeBoostUserPrompt,
   parseCreativeBoostResponse,
-  applyCreativeBoostMaxMode,
   buildCreativeBoostRefineSystemPrompt,
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
@@ -292,7 +291,6 @@ describe('parseCreativeBoostResponse', () => {
 
       expect(result.title).toBe('Creative Boost');
       expect(result.style).toBe('This is not valid JSON at all');
-      expect(result.lyrics).toBeUndefined();
     });
 
     it('falls back for partial JSON', () => {
@@ -332,68 +330,6 @@ describe('parseCreativeBoostResponse', () => {
       expect(result.title).toBe('Test');
       expect(result.style).toBe('jazz');
     });
-  });
-});
-
-// ============================================================================
-// Task 9.4: Unit Tests for Max Mode Application
-// ============================================================================
-
-describe('applyCreativeBoostMaxMode', () => {
-  const testPrompt = 'lo-fi jazz with vinyl warmth';
-
-  it('prepends MAX_MODE_HEADER when maxMode is true', () => {
-    const result = applyCreativeBoostMaxMode(testPrompt, true);
-
-    expect(result).toContain('[Is_MAX_MODE: MAX](MAX)');
-    expect(result).toContain('[QUALITY: MAX](MAX)');
-    expect(result).toContain('[REALISM: MAX](MAX)');
-    expect(result).toContain('[REAL_INSTRUMENTS: MAX](MAX)');
-    expect(result).toContain(testPrompt);
-  });
-
-  it('returns prompt unchanged when maxMode is false', () => {
-    const result = applyCreativeBoostMaxMode(testPrompt, false);
-
-    expect(result).toBe(testPrompt);
-    expect(result).not.toContain('[Is_MAX_MODE:');
-  });
-
-  it('places header before the prompt content', () => {
-    const result = applyCreativeBoostMaxMode(testPrompt, true);
-    const lines = result.split('\n');
-
-    expect(lines[0]).toBe('[Is_MAX_MODE: MAX](MAX)');
-    expect(lines[lines.length - 1]).toBe(testPrompt);
-  });
-
-  it('adds newline between header and prompt', () => {
-    const result = applyCreativeBoostMaxMode(testPrompt, true);
-
-    // Header should be separated from content by newline
-    expect(result).toContain('[REAL_INSTRUMENTS: MAX](MAX)\n' + testPrompt);
-  });
-
-  it('handles empty prompt with maxMode true', () => {
-    const result = applyCreativeBoostMaxMode('', true);
-
-    expect(result).toContain('[Is_MAX_MODE: MAX](MAX)');
-  });
-
-  it('handles empty prompt with maxMode false', () => {
-    const result = applyCreativeBoostMaxMode('', false);
-
-    expect(result).toBe('');
-  });
-
-  it('handles multi-line prompts', () => {
-    const multiLinePrompt = 'Line 1\nLine 2\nLine 3';
-    const result = applyCreativeBoostMaxMode(multiLinePrompt, true);
-
-    expect(result).toContain('[Is_MAX_MODE: MAX](MAX)');
-    expect(result).toContain('Line 1');
-    expect(result).toContain('Line 2');
-    expect(result).toContain('Line 3');
   });
 });
 

@@ -110,4 +110,9 @@ export type DebugInfo = {
     systemPrompt: string;
     userPrompt: string;
   };
+  maxConversion?: {
+    systemPrompt?: string;
+    userPrompt?: string;
+    timestamp?: string;
+  };
 };

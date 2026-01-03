@@ -1,4 +1,3 @@
-import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
 
 export { getCreativityLevel };
@@ -194,11 +193,4 @@ User feedback: ${feedback}
 Generate the refined prompt:`;
 }
 
-/**
- * Applies Max Mode formatting to a Creative Boost prompt.
- * Prepends the MAX_MODE_HEADER when maxMode is true.
- */
-export function applyCreativeBoostMaxMode(prompt: string, maxMode: boolean): string {
-  if (!maxMode) return prompt;
-  return `${MAX_MODE_HEADER}\n${prompt}`;
-}
+

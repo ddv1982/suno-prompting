@@ -11,8 +11,8 @@ import {
   parseCreativeBoostResponse,
   buildCreativeBoostRefineSystemPrompt,
   buildCreativeBoostRefineUserPrompt,
-  applyCreativeBoostMaxMode,
 } from '@bun/prompt/creative-boost-builder';
+import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -96,6 +96,21 @@ export class AIEngine {
       lyrics: result.lyrics,
       debugInfo: result.debugInfo,
     };
+  }
+
+  /**
+   * Applies Max Mode format conversion to a style prompt.
+   * Uses the same convertToMaxFormat logic as Full Mode for consistency.
+   */
+  private async applyMaxModeConversion(
+    style: string,
+    maxMode: boolean
+  ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
+    if (!maxMode) {
+      return { styleResult: style };
+    }
+    const result = await convertToMaxFormat(style, this.getModel);
+    return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   }
 
   private parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {
@@ -513,7 +528,11 @@ export class AIEngine {
       }
 
       const parsed = parseCreativeBoostResponse(rawResponse);
-      const styleResult = applyCreativeBoostMaxMode(parsed.style, maxMode);
+      
+      // Apply Max Mode format using the same conversion as Full Mode
+      const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
+        parsed.style, maxMode
+      );
 
       // Generate lyrics separately using existing generateLyrics function
       const lyricsResult = await this.generateLyricsForCreativeBoost(
@@ -524,6 +543,9 @@ export class AIEngine {
       let debugInfo: DebugInfo | undefined;
       if (this.config.isDebugMode()) {
         debugInfo = this.buildDebugInfo(systemPrompt, userPrompt, rawResponse);
+        if (maxConversionDebugInfo) {
+          debugInfo.maxConversion = maxConversionDebugInfo;
+        }
         if (lyricsResult.debugInfo) {
           debugInfo.lyricsGeneration = lyricsResult.debugInfo;
         }
@@ -572,7 +594,11 @@ export class AIEngine {
       }
 
       const parsed = parseCreativeBoostResponse(rawResponse);
-      const styleResult = applyCreativeBoostMaxMode(parsed.style, maxMode);
+      
+      // Apply Max Mode format using the same conversion as Full Mode
+      const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
+        parsed.style, maxMode
+      );
 
       // Regenerate lyrics using existing generateLyrics function
       const lyricsResult = await this.generateLyricsForCreativeBoost(
@@ -583,6 +609,9 @@ export class AIEngine {
       let debugInfo: DebugInfo | undefined;
       if (this.config.isDebugMode()) {
         debugInfo = this.buildDebugInfo(systemPrompt, userPrompt, rawResponse);
+        if (maxConversionDebugInfo) {
+          debugInfo.maxConversion = maxConversionDebugInfo;
+        }
         if (lyricsResult.debugInfo) {
           debugInfo.lyricsGeneration = lyricsResult.debugInfo;
         }
