@@ -249,3 +249,24 @@ export const TIME_JOURNEY_DISPLAY_NAMES: Record<string, string> = {
   metal_complexity: 'Metal Complexity (4/4→7/4→13/8)',
   gentle_odd: 'Gentle Odd (3/4→5/4→6/8)',
 };
+
+/**
+ * Format a genre key to its display label.
+ * Handles single genres, genre combinations, and falls back to title case.
+ */
+export function formatGenreLabel(genreKey: string): string {
+  if (genreKey in GENRE_LABELS) {
+    return GENRE_LABELS[genreKey];
+  }
+  if (genreKey in GENRE_COMBINATION_DISPLAY_NAMES) {
+    return GENRE_COMBINATION_DISPLAY_NAMES[genreKey];
+  }
+  return genreKey.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+/**
+ * Format multiple genre keys to a comma-separated display string.
+ */
+export function formatGenreLabels(genres: string[]): string {
+  return genres.map(formatGenreLabel).join(', ');
+}

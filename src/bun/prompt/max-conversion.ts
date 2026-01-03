@@ -7,7 +7,7 @@ import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
-import { GENRE_LABELS, GENRE_COMBINATION_DISPLAY_NAMES } from '@shared/labels';
+import { formatGenreLabels } from '@shared/labels';
 import type { LanguageModel } from 'ai';
 import type { DebugInfo } from '@shared/types';
 
@@ -98,30 +98,6 @@ const GENRE_ALIASES: Record<string, string> = {
   'bebop': 'jazz',
   'fusion': 'jazz',
 };
-
-/**
- * Format a genre key to its display label
- * Handles both single genres and genre combinations
- */
-function formatGenreLabel(genreKey: string): string {
-  // Check single genre labels first
-  if (genreKey in GENRE_LABELS) {
-    return GENRE_LABELS[genreKey];
-  }
-  // Check genre combination labels
-  if (genreKey in GENRE_COMBINATION_DISPLAY_NAMES) {
-    return GENRE_COMBINATION_DISPLAY_NAMES[genreKey];
-  }
-  // Fallback: capitalize first letter of each word
-  return genreKey.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-}
-
-/**
- * Format multiple genre keys to a comma-separated display string
- */
-function formatGenreLabels(genres: string[]): string {
-  return genres.map(formatGenreLabel).join(', ');
-}
 
 // ============================================================================
 // Task 1.2: Non-Max Prompt Parser
@@ -417,12 +393,17 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
 /**
  * Convert a non-max format prompt to Max Mode format
  * Returns unchanged if already in max format
- * If seedGenres is provided, uses them directly instead of detecting from text
+ * 
+ * Genre priority:
+ * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
+ * 2. seedGenres (if provided) - format using display names
+ * 3. Detected from text (fallback)
  */
 export async function convertToMaxFormat(
   text: string,
   getModel: () => LanguageModel,
-  seedGenres?: string[]
+  seedGenres?: string[],
+  sunoStyles?: string[]
 ): Promise<MaxConversionResult> {
   // Check if already in max format
   if (isMaxFormat(text)) {
@@ -432,13 +413,26 @@ export async function convertToMaxFormat(
   // Parse the input
   const parsed = parseNonMaxPrompt(text);
 
-  // Determine effective genre - prefer user's seed genres if provided
-  // Keep raw keys for BPM/instrument lookups, format for output display
-  const genreKeys = seedGenres?.length ? seedGenres : [parsed.genre || DEFAULT_GENRE];
-  const effectiveGenreForLookup = genreKeys[0] || DEFAULT_GENRE;
-  const effectiveGenreForOutput = seedGenres?.length 
-    ? formatGenreLabels(seedGenres)
-    : (parsed.genre || DEFAULT_GENRE);
+  // Determine effective genre - priority: sunoStyles > seedGenres > detected
+  // sunoStyles are injected as-is (lowercase, no transformation)
+  // seedGenres use display name formatting
+  let effectiveGenreForOutput: string;
+  let effectiveGenreForLookup: string;
+
+  if (sunoStyles?.length) {
+    // Suno V5 styles: inject EXACTLY as-is (comma-separated if multiple)
+    effectiveGenreForOutput = sunoStyles.join(', ');
+    // For BPM lookup, extract first "word" from first style as best-effort genre
+    effectiveGenreForLookup = sunoStyles[0]?.split(' ')[0] || DEFAULT_GENRE;
+  } else if (seedGenres?.length) {
+    // Seed genres: format using display names (existing behavior)
+    effectiveGenreForOutput = formatGenreLabels(seedGenres);
+    effectiveGenreForLookup = seedGenres[0] || DEFAULT_GENRE;
+  } else {
+    // Detected from text (existing fallback)
+    effectiveGenreForOutput = parsed.genre || DEFAULT_GENRE;
+    effectiveGenreForLookup = parsed.genre || DEFAULT_GENRE;
+  }
 
   // Infer BPM from first genre
   const bpm = inferBpm(effectiveGenreForLookup);

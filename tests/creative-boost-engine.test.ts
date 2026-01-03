@@ -47,6 +47,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
+      [], // sunoStyles
       "ambient soundscape", // description
       "", // lyricsTopic
       false, // withWordlessVocals
@@ -62,6 +63,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
+      [], // sunoStyles
       "ambient soundscape", // description
       "", // lyricsTopic
       false, // withWordlessVocals
@@ -77,6 +79,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     const result = await engine.generateCreativeBoost(
       50, // creativityLevel
       ["jazz"], // seedGenres
+      [], // sunoStyles
       "smooth vibes", // description
       "", // lyricsTopic
       false, // withWordlessVocals
@@ -96,6 +99,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     const result = await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
+      [], // sunoStyles
       "chill vibes", // description
       "", // lyricsTopic
       false, // withWordlessVocals
@@ -118,7 +122,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
 
   it("returns title from parsed response", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], "", "", false, false, false
+      50, [], [], "", "", false, false, false
     );
 
     expect(result.title).toBe("Mystic Journey");
@@ -128,7 +132,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     engine.setDebugMode(true);
 
     const result = await engine.generateCreativeBoost(
-      50, [], "", "", false, true, false
+      50, [], [], "", "", false, true, false
     );
 
     expect(result.debugInfo).toBeDefined();
@@ -139,7 +143,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     engine.setDebugMode(true);
 
     const result = await engine.generateCreativeBoost(
-      50, [], "", "", false, false, false
+      50, [], [], "", "", false, false, false
     );
 
     expect(result.debugInfo).toBeDefined();
@@ -179,6 +183,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "", // lyricsTopic
       "", // description
       [], // seedGenres
+      [], // sunoStyles
       false, // withWordlessVocals
       true, // maxMode = true
       false // withLyrics
@@ -196,6 +201,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "", // lyricsTopic
       "", // description
       [], // seedGenres
+      [], // sunoStyles
       false, // withWordlessVocals
       false, // maxMode = false
       false // withLyrics
@@ -210,7 +216,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "original prompt",
       "Original Title",
       "add more bass",
-      "", "", [], false, true, false
+      "", "", [], [], false, true, false
     );
 
     expect(result.text).toContain(MAX_MODE_SIGNATURE);
@@ -223,7 +229,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
       "original prompt",
       "Original Title",
       "add more bass",
-      "", "", [], false, false, false
+      "", "", [], [], false, false, false
     );
 
     // Should have non-max structured format with section tags

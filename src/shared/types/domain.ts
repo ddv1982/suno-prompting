@@ -31,7 +31,9 @@ export type QuickVibesInput = {
 // Note: maxMode and lyricsMode are handled by global SettingsContext (same as Quick Vibes)
 export type CreativeBoostInput = {
   creativityLevel: CreativitySliderValue;  // 5 discrete positions: 0, 25, 50, 75, 100
-  seedGenres: string[];                    // 0-2 genre keys (from registry or combinations)
+  seedGenres: string[];                    // 0-4 genre keys (from registry or combinations)
+  /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
+  sunoStyles: string[];
   description: string;                     // Optional text description
   lyricsTopic: string;                     // Topic for lyrics (when lyrics enabled)
   withWordlessVocals: boolean;             // Humming, oohs
@@ -40,6 +42,7 @@ export type CreativeBoostInput = {
 export const EMPTY_CREATIVE_BOOST_INPUT: CreativeBoostInput = {
   creativityLevel: 50,
   seedGenres: [],
+  sunoStyles: [],
   description: '',
   lyricsTopic: '',
   withWordlessVocals: false,

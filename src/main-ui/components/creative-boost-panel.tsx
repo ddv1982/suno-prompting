@@ -10,6 +10,8 @@ import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
 import { CreativitySlider } from "@/components/creativity-slider";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
+import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
+import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 const MAX_DESCRIPTION_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS;
 const MAX_LYRICS_TOPIC_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS;
@@ -47,7 +49,23 @@ export function CreativeBoostPanel({
   }, [input, onInputChange]);
 
   const handleGenresChange = useCallback((genres: string[]) => {
-    onInputChange({ ...input, seedGenres: genres });
+    // Clear suno styles when seed genres are selected (mutual exclusivity)
+    if (genres.length > 0 && input.sunoStyles.length > 0) {
+      onInputChange({ ...input, seedGenres: genres, sunoStyles: [] });
+    } else {
+      onInputChange({ ...input, seedGenres: genres });
+    }
+  }, [input, onInputChange]);
+
+  const handleSunoStylesChange = useCallback((styles: string[]) => {
+    // Validate all styles are valid Suno V5 styles
+    const validStyles = styles.filter(isSunoV5Style);
+    // Clear seed genres when suno styles are selected (mutual exclusivity)
+    if (validStyles.length > 0 && input.seedGenres.length > 0) {
+      onInputChange({ ...input, sunoStyles: validStyles, seedGenres: [] });
+    } else {
+      onInputChange({ ...input, sunoStyles: validStyles });
+    }
   }, [input, onInputChange]);
 
   const handleDescriptionChange = useCallback((value: string) => {
@@ -105,7 +123,27 @@ export function CreativeBoostPanel({
         selected={input.seedGenres}
         onChange={handleGenresChange}
         maxSelections={4}
-        disabled={isGenerating}
+        disabled={isGenerating || input.sunoStyles.length > 0}
+        helperText={
+          input.sunoStyles.length > 0
+            ? "Disabled when Suno styles are selected"
+            : undefined
+        }
+        badgeText={input.sunoStyles.length > 0 ? "disabled" : "optional"}
+      />
+
+      {/* Suno V5 Styles Multi-Select */}
+      <SunoStylesMultiSelect
+        selected={input.sunoStyles}
+        onChange={handleSunoStylesChange}
+        maxSelections={4}
+        disabled={isGenerating || input.seedGenres.length > 0}
+        helperText={
+          input.seedGenres.length > 0
+            ? "Disabled when Seed Genres are selected"
+            : undefined
+        }
+        badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
       />
 
       {/* Description / Feedback Input */}

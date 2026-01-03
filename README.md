@@ -94,7 +94,7 @@ Each provider's API key is stored separately and encrypted independently.
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
 - **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
-- **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%) and up to 4 seed genres with direct injection.
+- **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%), up to 4 seed genres or 4 Suno V5 styles (~900+) with direct injection.
 - **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ## Quick Vibes
@@ -140,7 +140,7 @@ Creative Boost is an experimental generation mode that explores creative genre c
 
 1. Switch to Creative Boost mode using the mode toggle
 2. Adjust the **Creativity Slider** to control genre exploration intensity
-3. Optionally select up to **4 seed genres** to guide the direction
+3. Optionally select up to **4 seed genres** OR **4 Suno V5 styles** to guide the direction
 4. Add an optional description for additional context
 5. Click Generate
 
@@ -163,10 +163,25 @@ Select up to 4 genres (single or combinations) to guide the creative direction:
 - Mix single genres and combinations freely
 - Leave empty for fully AI-driven exploration
 
+### Suno V5 Styles
+
+Alternatively, select up to 4 official Suno V5 styles (~900+ available):
+
+- Styles are **directly injected exactly as-is** (lowercase, no transformation)
+- Choose from official Suno V5 style tags like "lo-fi afro-cuban jazz", "dark goa trance", "k-pop"
+- Searchable dropdown with alphabetical sorting
+- **Mutually exclusive** with Seed Genres - selecting one clears the other
+
+| Selector | Source | Format | Example Output |
+|----------|--------|--------|----------------|
+| Seed Genres | App registry (35 + 110 combos) | Title Case | "Jazz, Lo-Fi, Electronic" |
+| Suno V5 Styles | Official Suno V5 (~900+) | lowercase as-is | "lo-fi, k-pop, dream pop" |
+
 ### Creative Boost Features
 
 - **Creativity Slider**: 5-level control from conservative to experimental
-- **Direct Genre Injection**: Your selected genres appear exactly as chosen
+- **Direct Genre Injection**: Your selected genres/styles appear exactly as chosen
+- **Suno V5 Styles**: Access to 900+ official Suno V5 style tags
 - **Max Mode support**: Works with both Max and standard output formats
 - **Wordless Vocals**: Toggle for instrumental-only output
 - **Lyrics Mode**: Optional AI-generated lyrics
@@ -174,7 +189,7 @@ Select up to 4 genres (single or combinations) to guide the creative direction:
 
 ### Output Examples
 
-**With 4 genres selected (Jazz, Lo-Fi, Electronic, Ambient) + Max Mode:**
+**With 4 Seed Genres selected (Jazz, Lo-Fi, Electronic, Ambient) + Max Mode:**
 ```
 [Is_MAX_MODE: MAX](MAX)
 [QUALITY: MAX](MAX)
@@ -187,7 +202,20 @@ style tags: "tape saturation, intimate, analog warmth"
 recording: "late night studio session, vintage microphone"
 ```
 
-**With genres selected + Standard Mode:**
+**With 3 Suno V5 Styles selected (lo-fi afro-cuban jazz, dark goa trance, k-pop) + Max Mode:**
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+genre: "lo-fi afro-cuban jazz, dark goa trance, k-pop"
+bpm: "110"
+instruments: "Rhodes, congas, synth pad, 808"
+style tags: "vinyl warmth, wide stereo, hypnotic pulse"
+recording: "hybrid studio session, blending acoustic and electronic"
+```
+
+**With Seed Genres selected + Standard Mode:**
 ```
 [Dreamy, Jazz Lo-Fi Electronic Ambient]
 

@@ -273,6 +273,7 @@ export function createHandlers(
         generateCreativeBoost: async ({ 
             creativityLevel, 
             seedGenres, 
+            sunoStyles,
             description, 
             lyricsTopic, 
             withWordlessVocals, 
@@ -286,9 +287,17 @@ export function createHandlers(
                 if (seedGenres.length > 4) {
                     throw new Error('Maximum 4 seed genres allowed');
                 }
+                if (sunoStyles.length > 4) {
+                    throw new Error('Maximum 4 Suno V5 styles allowed');
+                }
+                // Mutual exclusivity: only one of seedGenres or sunoStyles should have values
+                if (seedGenres.length > 0 && sunoStyles.length > 0) {
+                    throw new Error('Cannot use both Seed Genres and Suno V5 Styles. Please select only one.');
+                }
                 const result = await aiEngine.generateCreativeBoost(
                     creativityLevel,
                     seedGenres,
+                    sunoStyles,
                     description,
                     lyricsTopic,
                     withWordlessVocals,
@@ -318,6 +327,7 @@ export function createHandlers(
             lyricsTopic,
             description,
             seedGenres,
+            sunoStyles,
             withWordlessVocals,
             maxMode,
             withLyrics
@@ -332,6 +342,13 @@ export function createHandlers(
                 if (!feedback?.trim()) {
                     throw new Error('Feedback is required for refinement');
                 }
+                // Validate sunoStyles limit and mutual exclusivity
+                if (sunoStyles.length > 4) {
+                    throw new Error('Maximum 4 Suno V5 styles allowed');
+                }
+                if (seedGenres.length > 0 && sunoStyles.length > 0) {
+                    throw new Error('Cannot use both Seed Genres and Suno V5 Styles. Please select only one.');
+                }
                 const result = await aiEngine.refineCreativeBoost(
                     currentPrompt,
                     currentTitle,
@@ -339,6 +356,7 @@ export function createHandlers(
                     lyricsTopic,
                     description,
                     seedGenres,
+                    sunoStyles,
                     withWordlessVocals,
                     maxMode,
                     withLyrics

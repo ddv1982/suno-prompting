@@ -104,18 +104,23 @@ export class AIEngine {
    * - Max Mode ON: Uses convertToMaxFormat for metadata-style format
    * - Max Mode OFF: Uses convertToNonMaxFormat for section-based format
    * Both ensure proper structure with identifiable instruments for remixing.
-   * If seedGenres are provided, they are used directly in the genre field.
+   * 
+   * Genre priority:
+   * 1. sunoStyles (if provided) - inject directly as-is (no transformation)
+   * 2. seedGenres (if provided) - format using display names
+   * 3. Detected from text (fallback)
    */
   private async applyMaxModeConversion(
     style: string,
     maxMode: boolean,
-    seedGenres?: string[]
+    seedGenres?: string[],
+    sunoStyles?: string[]
   ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
     if (maxMode) {
-      const result = await convertToMaxFormat(style, this.getModel, seedGenres);
+      const result = await convertToMaxFormat(style, this.getModel, seedGenres, sunoStyles);
       return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
     } else {
-      const result = await convertToNonMaxFormat(style, this.getModel, seedGenres);
+      const result = await convertToNonMaxFormat(style, this.getModel, seedGenres, sunoStyles);
       return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
     }
   }
@@ -528,6 +533,7 @@ export class AIEngine {
   async generateCreativeBoost(
     creativityLevel: number,
     seedGenres: string[],
+    sunoStyles: string[],
     description: string,
     lyricsTopic: string,
     withWordlessVocals: boolean,
@@ -553,9 +559,10 @@ export class AIEngine {
       const parsed = parseCreativeBoostResponse(rawResponse);
       
       // Apply Max Mode format using the same conversion as Full Mode
-      // Pass seedGenres to inject user's genre selection directly into output
+      // Pass seedGenres/sunoStyles to inject user's genre selection directly into output
+      // sunoStyles takes priority over seedGenres (injected as-is, no transformation)
       const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
-        parsed.style, maxMode, seedGenres
+        parsed.style, maxMode, seedGenres, sunoStyles
       );
 
       // Enforce max char limit (conversion output is already clean, just check length)
@@ -600,6 +607,7 @@ export class AIEngine {
     lyricsTopic: string,
     description: string,
     seedGenres: string[],
+    sunoStyles: string[],
     withWordlessVocals: boolean,
     maxMode: boolean,
     withLyrics: boolean
@@ -624,9 +632,10 @@ export class AIEngine {
       const parsed = parseCreativeBoostResponse(rawResponse);
       
       // Apply Max Mode format using the same conversion as Full Mode
-      // Pass seedGenres to preserve user's genre selection during refine
+      // Pass seedGenres/sunoStyles to preserve user's genre selection during refine
+      // sunoStyles takes priority over seedGenres (injected as-is, no transformation)
       const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
-        parsed.style, maxMode, seedGenres
+        parsed.style, maxMode, seedGenres, sunoStyles
       );
 
       // Enforce max char limit (conversion output is already clean, just check length)

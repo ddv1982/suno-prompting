@@ -138,6 +138,8 @@ export type ConvertToMaxFormatResponse = {
 export type GenerateCreativeBoostParams = {
   creativityLevel: number;
   seedGenres: string[];
+  /** Suno V5 styles (0-4 selections, mutually exclusive with seedGenres) */
+  sunoStyles: string[];
   description: string;
   lyricsTopic: string;
   withWordlessVocals: boolean;
@@ -160,6 +162,8 @@ export type RefineCreativeBoostParams = {
   lyricsTopic: string;
   description: string;
   seedGenres: string[];
+  /** Suno V5 styles (0-4 selections, mutually exclusive with seedGenres) */
+  sunoStyles: string[];
   withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;

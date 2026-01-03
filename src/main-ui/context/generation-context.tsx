@@ -18,6 +18,7 @@ const log = createLogger('Generation');
 const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostInput => ({
   creativityLevel: input.creativityLevel,
   seedGenres: input.seedGenres,
+  sunoStyles: input.sunoStyles,
   description: input.description,
   lyricsTopic: input.lyricsTopic,
   withWordlessVocals: input.withWordlessVocals,
@@ -28,6 +29,7 @@ const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {
   return [
     `[creativity: ${input.creativityLevel}%]`,
     input.seedGenres.length > 0 ? `[genres: ${input.seedGenres.join(', ')}]` : null,
+    input.sunoStyles.length > 0 ? `[suno-styles: ${input.sunoStyles.join(', ')}]` : null,
     input.description || null,
   ].filter(Boolean).join(' ') || 'Creative Boost';
 };

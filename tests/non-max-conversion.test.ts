@@ -265,3 +265,187 @@ describe('convertToNonMaxFormat', () => {
     expect(result.convertedPrompt).not.toContain('MAX](MAX)');
   });
 });
+
+// ============================================================================
+// Task 4.3: Suno V5 Styles Integration Tests
+// ============================================================================
+
+describe('convertToNonMaxFormat with sunoStyles', () => {
+  const mockGetModel = () => ({} as any);
+
+  beforeEach(() => {
+    mockGenerateText.mockClear();
+    mockGenerateText.mockImplementation(async () => ({
+      text: JSON.stringify({
+        intro: 'Warm pads float in',
+        verse: 'Instruments weave together',
+        chorus: 'Full arrangement peaks',
+        outro: 'Peaceful fade',
+      }),
+    }));
+  });
+
+  it('prioritizes sunoStyles over seedGenres', async () => {
+    const result = await convertToNonMaxFormat(
+      'A cool track',
+      mockGetModel,
+      ['jazz'],           // seedGenres - should be ignored
+      ['cumbia metal']    // sunoStyles - should take priority
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: cumbia metal');
+    expect(result.convertedPrompt).not.toContain('Genre: Jazz');
+  });
+
+  it('prioritizes sunoStyles over detected genre', async () => {
+    const result = await convertToNonMaxFormat(
+      'smooth jazz vibes with warm tones',  // Would detect "jazz"
+      mockGetModel,
+      [],
+      ['dark goa trance']
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: dark goa trance');
+    expect(result.convertedPrompt).not.toContain('Genre: jazz');
+  });
+
+  it('injects multiple sunoStyles comma-separated', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something cool',
+      mockGetModel,
+      [],
+      ['jazz', 'cumbia metal', 'dark goa trance']
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: jazz, cumbia metal, dark goa trance');
+  });
+
+  it('injects sunoStyles exactly as-is without transformation', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something',
+      mockGetModel,
+      [],
+      ['acoustic chicago blues algorave', 'k-pop', '16-bit celtic']
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // Must be exactly as-is (lowercase, no title-case transformation)
+    expect(result.convertedPrompt).toContain('Genre: acoustic chicago blues algorave, k-pop, 16-bit celtic');
+  });
+
+  it('falls back to seedGenres when sunoStyles is empty', async () => {
+    const result = await convertToNonMaxFormat(
+      'A track',
+      mockGetModel,
+      ['jazz', 'rock'],  // seedGenres - should be used
+      []                 // sunoStyles - empty
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // seedGenres get formatted with display names (title case)
+    expect(result.convertedPrompt).toContain('Genre: Jazz, Rock');
+  });
+
+  it('falls back to detected genre when both sunoStyles and seedGenres are empty', async () => {
+    const result = await convertToNonMaxFormat(
+      'electronic vibes with synth',  // Should detect "electronic"
+      mockGetModel,
+      [],  // empty seedGenres
+      []   // empty sunoStyles
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: electronic');
+  });
+
+  it('falls back to detected genre when sunoStyles is undefined', async () => {
+    const result = await convertToNonMaxFormat(
+      'ambient soundscape ethereal',  // Should detect "ambient"
+      mockGetModel,
+      undefined,  // undefined seedGenres
+      undefined   // undefined sunoStyles
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: ambient');
+  });
+
+  it('handles single sunoStyle correctly', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something',
+      mockGetModel,
+      [],
+      ['lo-fi afro-cuban jazz']
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: lo-fi afro-cuban jazz');
+  });
+
+  it('maintains backward compatibility when sunoStyles not provided', async () => {
+    // Call without sunoStyles parameter (backward compatibility)
+    const result = await convertToNonMaxFormat(
+      'Something neutral',
+      mockGetModel,
+      ['metal']  // seedGenres only
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // Should use seedGenres with display name formatting
+    expect(result.convertedPrompt).toContain('Genre: Metal');
+  });
+
+  it('uses first word of first sunoStyle for BPM lookup', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something',
+      mockGetModel,
+      [],
+      ['jazz fusion vibes']  // "jazz" should be used for BPM lookup
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // Jazz has typical BPM of 110
+    expect(result.convertedPrompt).toContain('BPM: 110');
+  });
+
+  it('uses default BPM when sunoStyle genre is not recognized', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something',
+      mockGetModel,
+      [],
+      ['urdu shoegaze']  // "urdu" is not a recognized genre for BPM
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // Should fall back to default BPM of 90
+    expect(result.convertedPrompt).toContain('BPM: 90');
+  });
+
+  it('handles sunoStyles with special characters', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something',
+      mockGetModel,
+      [],
+      ['afro trap r&b', 'hawaiian r&b']
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('Genre: afro trap r&b, hawaiian r&b');
+  });
+
+  it('sunoStyles appear in header line as well', async () => {
+    const result = await convertToNonMaxFormat(
+      'Something',
+      mockGetModel,
+      [],
+      ['cumbia metal']
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // Header line format: [mood, genre]
+    expect(result.convertedPrompt).toContain('cumbia metal]');
+  });
+});

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { X, Music } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { GENRE_DISPLAY_NAMES, GENRE_COMBINATION_DISPLAY_NAMES } from "@shared/labels";
+import { SUNO_V5_STYLES, SUNO_V5_STYLE_DISPLAY_NAMES } from "@shared/suno-v5-styles";
 
-type GenreMultiSelectProps = {
+type SunoStylesMultiSelectProps = {
   selected: string[];
-  onChange: (genres: string[]) => void;
+  onChange: (styles: string[]) => void;
   maxSelections?: number;
   disabled?: boolean;
   /** Helper text to display below the component */
@@ -30,75 +30,61 @@ type GenreMultiSelectProps = {
   badgeText?: "optional" | "disabled";
 };
 
-type GenreOption = {
+type StyleOption = {
   value: string;
   label: string;
-  type: "single" | "multi";
 };
 
-export function GenreMultiSelect({
+export function SunoStylesMultiSelect({
   selected,
   onChange,
-  maxSelections = 2,
+  maxSelections = 4,
   disabled = false,
   helperText,
   badgeText = "optional",
-}: GenreMultiSelectProps) {
+}: SunoStylesMultiSelectProps) {
   const [open, setOpen] = useState(false);
 
-  // Combine single genres and multi-genre combinations into one sorted list
-  const allGenres = useMemo<GenreOption[]>(() => {
-    const singleGenres: GenreOption[] = Object.entries(GENRE_DISPLAY_NAMES).map(
-      ([key, label]) => ({
-        value: key,
-        label,
-        type: "single" as const,
-      })
-    );
-
-    const multiGenres: GenreOption[] = Object.entries(GENRE_COMBINATION_DISPLAY_NAMES).map(
-      ([key, label]) => ({
-        value: key,
-        label,
-        type: "multi" as const,
-      })
-    );
-
-    return [...singleGenres, ...multiGenres].sort((a, b) =>
-      a.label.localeCompare(b.label)
-    );
+  // Build sorted options list from all Suno V5 styles
+  const allStyles = useMemo<StyleOption[]>(() => {
+    return SUNO_V5_STYLES.map((style) => ({
+      value: style,
+      label: SUNO_V5_STYLE_DISPLAY_NAMES[style] ?? style,
+    })).sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
-  // Get available options (not already selected)
+  // Filter out already-selected styles
   const availableOptions = useMemo(
-    () => allGenres.filter((g) => !selected.includes(g.value)),
-    [allGenres, selected]
+    () => allStyles.filter((s) => !selected.includes(s.value)),
+    [allStyles, selected]
   );
 
-  const handleSelect = (genreValue: string) => {
-    if (selected.includes(genreValue)) {
-      onChange(selected.filter((g) => g !== genreValue));
+  const handleSelect = (styleValue: string) => {
+    if (selected.includes(styleValue)) {
+      onChange(selected.filter((s) => s !== styleValue));
     } else if (selected.length < maxSelections) {
-      onChange([...selected, genreValue]);
+      onChange([...selected, styleValue]);
     }
     setOpen(false);
   };
 
-  const handleRemove = (genreValue: string) => {
-    onChange(selected.filter((g) => g !== genreValue));
+  const handleRemove = (styleValue: string) => {
+    onChange(selected.filter((s) => s !== styleValue));
   };
 
-  // Get display label for a genre value
   const getDisplayLabel = (value: string): string => {
-    return GENRE_DISPLAY_NAMES[value] ?? GENRE_COMBINATION_DISPLAY_NAMES[value] ?? value;
+    return SUNO_V5_STYLE_DISPLAY_NAMES[value] ?? value;
   };
 
   const isMaxed = selected.length >= maxSelections;
 
+  // Determine helper text to display
+  const displayHelperText = helperText ?? `${selected.length}/${maxSelections} selected (optional)`;
+
   return (
     <div className="space-y-2">
-      <FormLabel icon={<Music className="w-3 h-3" />} badge={badgeText}>
-        Seed Genres
+      <FormLabel icon={<Sparkles className="w-3 h-3" />} badge={badgeText}>
+        Suno V5 Styles
       </FormLabel>
 
       <Popover open={open} onOpenChange={setOpen}>
@@ -107,7 +93,7 @@ export function GenreMultiSelect({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            aria-label="Select seed genres"
+            aria-label="Select Suno V5 styles"
             disabled={disabled || isMaxed}
             className={cn(
               "h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal",
@@ -115,7 +101,7 @@ export function GenreMultiSelect({
             )}
           >
             <span className="truncate">
-              {isMaxed ? "Maximum genres selected" : "Search genres..."}
+              {isMaxed ? "Maximum styles selected" : "Search Suno styles..."}
             </span>
           </Button>
         </PopoverTrigger>
@@ -123,7 +109,7 @@ export function GenreMultiSelect({
           <Command>
             <CommandInput placeholder="Type to search..." />
             <CommandList>
-              <CommandEmpty>No genre found.</CommandEmpty>
+              <CommandEmpty>No style found.</CommandEmpty>
               <CommandGroup>
                 {availableOptions.map((option) => (
                   <CommandItem
@@ -133,13 +119,6 @@ export function GenreMultiSelect({
                     className="cursor-pointer"
                   >
                     <span>{option.label}</span>
-                    <Badge
-                      variant="outline"
-                      size="sm"
-                      className="ml-auto opacity-60"
-                    >
-                      {option.type === "single" ? "genre" : "combo"}
-                    </Badge>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -148,22 +127,22 @@ export function GenreMultiSelect({
         </PopoverContent>
       </Popover>
 
-      {/* Selected genres as badges */}
+      {/* Selected styles as badges */}
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selected.map((genreValue) => (
+          {selected.map((styleValue) => (
             <Badge
-              key={genreValue}
+              key={styleValue}
               variant="secondary"
               className="gap-1 pl-2.5 pr-1"
             >
-              {getDisplayLabel(genreValue)}
+              {getDisplayLabel(styleValue)}
               <button
                 type="button"
-                onClick={() => handleRemove(genreValue)}
+                onClick={() => handleRemove(styleValue)}
                 disabled={disabled}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 disabled:opacity-50"
-                aria-label={`Remove ${getDisplayLabel(genreValue)}`}
+                aria-label={`Remove ${getDisplayLabel(styleValue)}`}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -173,7 +152,7 @@ export function GenreMultiSelect({
       )}
 
       <p className="ui-helper">
-        {helperText ?? `${selected.length}/${maxSelections} selected (optional)`}
+        {displayHelperText}
       </p>
     </div>
   );
