@@ -5,9 +5,11 @@ import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { useSessionContext } from '@/context/session-context';
 import { useEditorContext } from '@/context/editor-context';
+import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
 import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
 import { useRemixActions } from '@/hooks/use-remix-actions';
+import { isMaxFormat } from '@/lib/max-format';
 
 const log = createLogger('Generation');
 
@@ -48,6 +50,7 @@ export const useGenerationContext = () => {
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection } = useEditorContext();
+  const { maxMode } = useSettingsContext();
 
   const {
     generatingAction,
@@ -200,6 +203,37 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         setChatMessages(prev => [...prev, { role: "user", content: input }]);
       }
 
+      // Max Mode conversion: if initial generation with Max Mode enabled and input is not already max format
+      if (isInitial && maxMode && !isMaxFormat(input)) {
+        log.info('Converting to Max Mode format');
+        const conversionResult = await api.convertToMaxFormat(input);
+        
+        if (conversionResult?.convertedPrompt && conversionResult.wasConverted) {
+          setDebugInfo(conversionResult.debugInfo);
+          const now = new Date().toISOString();
+          const newVersion: PromptVersion = {
+            id: conversionResult.versionId,
+            content: conversionResult.convertedPrompt,
+            timestamp: now,
+          };
+          const newSession: PromptSession = {
+            id: generateId(),
+            originalInput: input,
+            currentPrompt: conversionResult.convertedPrompt,
+            versionHistory: [newVersion],
+            createdAt: now,
+            updatedAt: now,
+          };
+          setChatMessages(buildChatMessages(newSession));
+          setValidation({ ...EMPTY_VALIDATION });
+          await saveSession(newSession);
+          setPendingInput("");
+          setLyricsTopic("");
+          return;
+        }
+        // If conversion didn't happen (already max format), fall through to normal generation
+      }
+
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
       const genreOverride = advancedSelection.singleGenre || advancedSelection.genreCombination || undefined;
       const result = isInitial
@@ -231,7 +265,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession, advancedSelection]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession, advancedSelection, maxMode, generateId, setDebugInfo]);
 
   const handleCopy = useCallback(() => {
     const prompt = currentSession?.currentPrompt || "";

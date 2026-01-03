@@ -212,6 +212,11 @@ export function PromptEditor({
         showToast('Converted to Max Mode format', 'success');
       }
     } catch (error) {
+      // Don't show error toast for user cancellations/aborts
+      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+        log.info('Conversion cancelled by user');
+        return;
+      }
       log.error('Conversion failed:', error);
       showToast('Failed to convert to Max Mode format', 'error');
     }
