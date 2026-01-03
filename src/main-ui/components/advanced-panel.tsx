@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Badge } from "@/components/ui/badge";
@@ -23,18 +22,32 @@ type AdvancedPanelProps = {
     computedPhrase: string;
 };
 
-const HARMONIC_STYLES = Object.entries(HARMONIC_DISPLAY_NAMES);
-const COMBINATIONS = Object.entries(COMBINATION_DISPLAY_NAMES);
-const POLYRHYTHMS = Object.entries(POLYRHYTHM_DISPLAY_NAMES);
-const TIME_SIGNATURES = Object.entries(TIME_SIGNATURE_DISPLAY_NAMES);
-const TIME_JOURNEYS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES);
-
-// Genre options for Combobox (sorted alphabetically by label)
+// All options for Combobox (sorted alphabetically by label)
 const GENRE_OPTIONS = Object.entries(GENRE_DISPLAY_NAMES)
     .map(([value, label]) => ({ value, label }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
 const GENRE_COMBINATION_OPTIONS = Object.entries(GENRE_COMBINATION_DISPLAY_NAMES)
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+const HARMONIC_OPTIONS = Object.entries(HARMONIC_DISPLAY_NAMES)
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+const HARMONIC_COMBINATION_OPTIONS = Object.entries(COMBINATION_DISPLAY_NAMES)
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+const POLYRHYTHM_OPTIONS = Object.entries(POLYRHYTHM_DISPLAY_NAMES)
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+const TIME_SIGNATURE_OPTIONS = Object.entries(TIME_SIGNATURE_DISPLAY_NAMES)
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+const TIME_JOURNEY_OPTIONS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES)
     .map(([value, label]) => ({ value, label }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -115,25 +128,16 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
                         )}
                     </label>
-                    <Select
-                        value={selection.harmonicStyle || ""}
-                        onValueChange={(val) => onUpdate({ harmonicStyle: val || null })}
+                    <Combobox
+                        options={HARMONIC_OPTIONS}
+                        value={selection.harmonicStyle}
+                        onValueChange={(val) => onUpdate({ harmonicStyle: val })}
                         disabled={!!selection.harmonicCombination}
-                    >
-                        <SelectTrigger className={cn(
-                            "h-8 text-[length:var(--text-footnote)]",
-                            selection.harmonicCombination && "opacity-50"
-                        )}>
-                            <SelectValue placeholder="Select mode..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {HARMONIC_STYLES.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
-                                    {name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        placeholder="Select mode..."
+                        searchPlaceholder="Search modes..."
+                        emptyText="No mode found."
+                        className={cn(selection.harmonicCombination && "opacity-50")}
+                    />
                 </div>
 
                 {/* Harmonic Combination */}
@@ -144,25 +148,16 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
                         )}
                     </label>
-                    <Select
-                        value={selection.harmonicCombination || ""}
-                        onValueChange={(val) => onUpdate({ harmonicCombination: val || null })}
+                    <Combobox
+                        options={HARMONIC_COMBINATION_OPTIONS}
+                        value={selection.harmonicCombination}
+                        onValueChange={(val) => onUpdate({ harmonicCombination: val })}
                         disabled={!!selection.harmonicStyle}
-                    >
-                        <SelectTrigger className={cn(
-                            "h-8 text-[length:var(--text-footnote)]",
-                            selection.harmonicStyle && "opacity-50"
-                        )}>
-                            <SelectValue placeholder="Select combination..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {COMBINATIONS.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
-                                    {name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        placeholder="Select combination..."
+                        searchPlaceholder="Search combinations..."
+                        emptyText="No combination found."
+                        className={cn(selection.harmonicStyle && "opacity-50")}
+                    />
                 </div>
 
                 {/* Polyrhythm Combination */}
@@ -170,21 +165,14 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                     <label className="text-[length:var(--text-footnote)] text-muted-foreground font-medium">
                         Polyrhythm
                     </label>
-                    <Select
-                        value={selection.polyrhythmCombination || ""}
-                        onValueChange={(val) => onUpdate({ polyrhythmCombination: val || null })}
-                    >
-                        <SelectTrigger className="h-8 text-[length:var(--text-footnote)]">
-                            <SelectValue placeholder="Select polyrhythm..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {POLYRHYTHMS.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
-                                    {name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <Combobox
+                        options={POLYRHYTHM_OPTIONS}
+                        value={selection.polyrhythmCombination}
+                        onValueChange={(val) => onUpdate({ polyrhythmCombination: val })}
+                        placeholder="Select polyrhythm..."
+                        searchPlaceholder="Search polyrhythms..."
+                        emptyText="No polyrhythm found."
+                    />
                 </div>
 
                 {/* Time Signature */}
@@ -195,25 +183,16 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
                         )}
                     </label>
-                    <Select
-                        value={selection.timeSignature || ""}
-                        onValueChange={(val) => onUpdate({ timeSignature: val || null })}
+                    <Combobox
+                        options={TIME_SIGNATURE_OPTIONS}
+                        value={selection.timeSignature}
+                        onValueChange={(val) => onUpdate({ timeSignature: val })}
                         disabled={!!selection.timeSignatureJourney}
-                    >
-                        <SelectTrigger className={cn(
-                            "h-8 text-[length:var(--text-footnote)]",
-                            selection.timeSignatureJourney && "opacity-50"
-                        )}>
-                            <SelectValue placeholder="Select time signature..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {TIME_SIGNATURES.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
-                                    {name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        placeholder="Select time signature..."
+                        searchPlaceholder="Search signatures..."
+                        emptyText="No signature found."
+                        className={cn(selection.timeSignatureJourney && "opacity-50")}
+                    />
                 </div>
 
                 {/* Time Signature Journey */}
@@ -224,25 +203,16 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                             <Badge variant="secondary" className="ml-2 text-micro">disabled</Badge>
                         )}
                     </label>
-                    <Select
-                        value={selection.timeSignatureJourney || ""}
-                        onValueChange={(val) => onUpdate({ timeSignatureJourney: val || null })}
+                    <Combobox
+                        options={TIME_JOURNEY_OPTIONS}
+                        value={selection.timeSignatureJourney}
+                        onValueChange={(val) => onUpdate({ timeSignatureJourney: val })}
                         disabled={!!selection.timeSignature}
-                    >
-                        <SelectTrigger className={cn(
-                            "h-8 text-[length:var(--text-footnote)]",
-                            selection.timeSignature && "opacity-50"
-                        )}>
-                            <SelectValue placeholder="Select journey..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {TIME_JOURNEYS.map(([key, name]) => (
-                                <SelectItem key={key} value={key} className="text-[length:var(--text-footnote)]">
-                                    {name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        placeholder="Select journey..."
+                        searchPlaceholder="Search journeys..."
+                        emptyText="No journey found."
+                        className={cn(selection.timeSignature && "opacity-50")}
+                    />
                 </div>
             </div>
 
