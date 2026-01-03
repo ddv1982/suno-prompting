@@ -11,6 +11,7 @@ Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts w
 - [Output Format](#output-format)
 - [Features](#features)
 - [Quick Vibes](#quick-vibes)
+- [Creative Boost](#creative-boost)
 - [Advanced Mode](#advanced-mode)
 - [Genre & Mode Detection](#genre--mode-detection)
 - [Max Mode](#max-mode)
@@ -93,6 +94,7 @@ Each provider's API key is stored separately and encrypted independently.
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
 - **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
+- **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%) and up to 4 seed genres with direct injection.
 - **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ## Quick Vibes
@@ -129,6 +131,81 @@ Quick Vibes is a simplified mode for generating short, atmospheric prompts perfe
 - Background music for work/study
 - Atmospheric playlists
 - Quick inspiration without detailed configuration
+
+## Creative Boost
+
+Creative Boost is an experimental generation mode that explores creative genre combinations with adjustable creativity levels.
+
+### How to Use
+
+1. Switch to Creative Boost mode using the mode toggle
+2. Adjust the **Creativity Slider** to control genre exploration intensity
+3. Optionally select up to **4 seed genres** to guide the direction
+4. Add an optional description for additional context
+5. Click Generate
+
+### Creativity Levels
+
+| Level | Name | Behavior |
+|-------|------|----------|
+| 0% | Low | Single genres only, pure and traditional |
+| 25% | Safe | Established combinations from the registry |
+| 50% | Normal | Balanced mix of pure and blended genres |
+| 75% | Adventurous | Unusual combinations, creative risks |
+| 100% | High | Experimental fusions, invented combinations |
+
+### Seed Genres
+
+Select up to 4 genres (single or combinations) to guide the creative direction:
+
+- Selected genres are **directly injected** into the output without LLM modification
+- Genres appear with proper formatting (e.g., "Jazz, Lo-Fi, Electronic, Ambient")
+- Mix single genres and combinations freely
+- Leave empty for fully AI-driven exploration
+
+### Creative Boost Features
+
+- **Creativity Slider**: 5-level control from conservative to experimental
+- **Direct Genre Injection**: Your selected genres appear exactly as chosen
+- **Max Mode support**: Works with both Max and standard output formats
+- **Wordless Vocals**: Toggle for instrumental-only output
+- **Lyrics Mode**: Optional AI-generated lyrics
+- **Refinement**: Chat-style refinement to adjust the generated prompt
+
+### Output Examples
+
+**With 4 genres selected (Jazz, Lo-Fi, Electronic, Ambient) + Max Mode:**
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+genre: "Jazz, Lo-Fi, Electronic, Ambient"
+bpm: "85"
+instruments: "Rhodes, warm synth pad, vinyl crackle, brushed drums"
+style tags: "tape saturation, intimate, analog warmth"
+recording: "late night studio session, vintage microphone"
+```
+
+**With genres selected + Standard Mode:**
+```
+[Dreamy, Jazz Lo-Fi Electronic Ambient]
+
+Genre: Jazz, Lo-Fi, Electronic, Ambient
+BPM: 85
+Mood: dreamy, warm, introspective
+Instruments: Rhodes, warm synth pad, vinyl crackle, brushed drums
+
+[INTRO] Warm pads fade in with vinyl texture...
+[VERSE] Gentle Rhodes chords over lo-fi beats...
+```
+
+### Best For
+
+- Experimental genre exploration
+- Discovering unexpected combinations
+- When you want creative AI suggestions with genre control
+- Fusion and hybrid genre creation
 
 ## Advanced Mode
 
