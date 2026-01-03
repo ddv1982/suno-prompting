@@ -154,5 +154,30 @@ export const api = {
 
     async convertToMaxFormat(text: string): Promise<BunRequests['convertToMaxFormat']['response']> {
         return await rpc.request.convertToMaxFormat({ text });
+    },
+
+    async generateCreativeBoost(params: {
+        creativityLevel: number;
+        seedGenres: string[];
+        description: string;
+        lyricsTopic: string;
+        withWordlessVocals: boolean;
+        maxMode: boolean;
+        withLyrics: boolean;
+    }): Promise<BunRequests['generateCreativeBoost']['response']> {
+        return await rpc.request.generateCreativeBoost(params);
+    },
+
+    async refineCreativeBoost(params: {
+        currentPrompt: string;
+        currentTitle: string;
+        feedback: string;
+        lyricsTopic: string;
+        description: string;
+        withWordlessVocals: boolean;
+        maxMode: boolean;
+        withLyrics: boolean;
+    }): Promise<BunRequests['refineCreativeBoost']['response']> {
+        return await rpc.request.refineCreativeBoost(params);
     }
 };

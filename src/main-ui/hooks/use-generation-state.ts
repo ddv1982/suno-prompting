@@ -14,7 +14,8 @@ export type GeneratingAction =
   | 'remixRecording' 
   | 'remixTitle' 
   | 'remixLyrics'
-  | 'quickVibes';
+  | 'quickVibes'
+  | 'creativeBoost';
 
 export function useGenerationState() {
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');

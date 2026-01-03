@@ -9,13 +9,16 @@ export type {
   PromptMode,
   QuickVibesCategory,
   QuickVibesInput,
+  CreativeBoostInput,
+  CreativityLevel,
+  CreativitySliderValue,
   EditorMode, 
   AdvancedSelection, 
   PromptVersion, 
   PromptSession, 
   DebugInfo 
 } from '@shared/types/domain';
-export { EMPTY_ADVANCED_SELECTION } from '@shared/types/domain';
+export { EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types/domain';
 
 // API types
 export type {
@@ -53,6 +56,14 @@ export type {
   SetPromptModeResponse,
   GenerateQuickVibesParams,
   GenerateQuickVibesResponse,
+  RefineQuickVibesParams,
+  RefineQuickVibesResponse,
+  ConvertToMaxFormatParams,
+  ConvertToMaxFormatResponse,
+  GenerateCreativeBoostParams,
+  GenerateCreativeBoostResponse,
+  RefineCreativeBoostParams,
+  RefineCreativeBoostResponse,
 } from '@shared/types/api';
 
 // RPC types

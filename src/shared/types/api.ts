@@ -133,3 +133,41 @@ export type ConvertToMaxFormatResponse = {
   versionId: string;
   debugInfo?: DebugInfo;
 };
+
+// Creative Boost endpoints
+export type GenerateCreativeBoostParams = {
+  creativityLevel: number;
+  seedGenres: string[];
+  description: string;
+  lyricsTopic: string;
+  withWordlessVocals: boolean;
+  maxMode: boolean;
+  withLyrics: boolean;
+};
+
+export type GenerateCreativeBoostResponse = {
+  prompt: string;              // Full style/genre description
+  title: string;               // Generated title
+  lyrics?: string;             // Generated lyrics (when withLyrics: true)
+  versionId: string;
+  debugInfo?: DebugInfo;
+};
+
+export type RefineCreativeBoostParams = {
+  currentPrompt: string;
+  currentTitle: string;
+  feedback: string;
+  lyricsTopic: string;
+  description: string;
+  withWordlessVocals: boolean;
+  maxMode: boolean;
+  withLyrics: boolean;
+};
+
+export type RefineCreativeBoostResponse = {
+  prompt: string;
+  title: string;
+  lyrics?: string;
+  versionId: string;
+  debugInfo?: DebugInfo;
+};

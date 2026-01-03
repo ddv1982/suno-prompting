@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { isMaxFormat } from "@/lib/max-format";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
-import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory } from "@shared/types";
+import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput } from "@shared/types";
 import { type GeneratingAction } from "@/context/app-context";
 import { APP_CONSTANTS } from "@shared/constants";
 import { api } from "@/services/rpc";
@@ -30,6 +30,7 @@ import { DebugDrawerBody } from "@/components/prompt-editor/debug-drawer";
 import { ModeSelector } from "@/components/mode-selector";
 import { QuickVibesPanel } from "@/components/quick-vibes-panel";
 import { QuickVibesOutput } from "@/components/quick-vibes-output";
+import { CreativeBoostPanel } from "@/components/creative-boost-panel";
 
 const log = createLogger('PromptEditor');
 
@@ -50,6 +51,7 @@ type PromptEditorProps = {
   promptMode: PromptMode;
   quickVibesInput: QuickVibesInput;
   withWordlessVocals: boolean;
+  creativeBoostInput: CreativeBoostInput;
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onLyricsTopicChange: (topic: string) => void;
@@ -59,8 +61,11 @@ type PromptEditorProps = {
   onPromptModeChange: (mode: PromptMode) => void;
   onQuickVibesInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void;
+  onCreativeBoostInputChange: (input: CreativeBoostInput) => void;
   onGenerate: (input: string) => void;
   onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => void;
+  onGenerateCreativeBoost: () => void;
+  onRefineCreativeBoost: (feedback: string) => void;
   onCopy: () => void;
   onRemix: () => void;
   onRemixQuickVibes: () => void;
@@ -98,6 +103,7 @@ export function PromptEditor({
   promptMode,
   quickVibesInput,
   withWordlessVocals,
+  creativeBoostInput,
   onPendingInputChange,
   onLockedPhraseChange,
   onLyricsTopicChange,
@@ -107,8 +113,11 @@ export function PromptEditor({
   onPromptModeChange,
   onQuickVibesInputChange,
   onWordlessVocalsChange,
+  onCreativeBoostInputChange,
   onGenerate,
   onGenerateQuickVibes,
+  onGenerateCreativeBoost,
+  onRefineCreativeBoost,
   onCopy,
   onRemix,
   onRemixQuickVibes,
@@ -350,6 +359,20 @@ export function PromptEditor({
               onMaxModeChange={onMaxModeChange}
               onGenerate={() => onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals)}
               onRefine={(feedback) => onGenerate(feedback)}
+            />
+          ) : promptMode === 'creativeBoost' ? (
+            /* Creative Boost Input Panel */
+            <CreativeBoostPanel
+              input={creativeBoostInput}
+              maxMode={maxMode}
+              lyricsMode={lyricsMode}
+              isGenerating={isGenerating}
+              hasCurrentPrompt={!!currentPrompt}
+              onInputChange={onCreativeBoostInputChange}
+              onMaxModeChange={onMaxModeChange}
+              onLyricsModeChange={onLyricsModeChange}
+              onGenerate={onGenerateCreativeBoost}
+              onRefine={onRefineCreativeBoost}
             />
           ) : (
             /* Full Prompt Input Panel */

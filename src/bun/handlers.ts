@@ -269,6 +269,89 @@ export function createHandlers(
                     debugInfo: result.debugInfo,
                 };
             }, { textLength: text.length });
+        },
+        generateCreativeBoost: async ({ 
+            creativityLevel, 
+            seedGenres, 
+            description, 
+            lyricsTopic, 
+            withWordlessVocals, 
+            maxMode, 
+            withLyrics 
+        }) => {
+            return withErrorHandling('generateCreativeBoost', async () => {
+                if (creativityLevel < 0 || creativityLevel > 100) {
+                    throw new Error('Creativity level must be between 0 and 100');
+                }
+                if (seedGenres.length > 2) {
+                    throw new Error('Maximum 2 seed genres allowed');
+                }
+                const result = await aiEngine.generateCreativeBoost(
+                    creativityLevel,
+                    seedGenres,
+                    description,
+                    lyricsTopic,
+                    withWordlessVocals,
+                    maxMode,
+                    withLyrics
+                );
+                const versionId = Bun.randomUUIDv7();
+                log.info('generateCreativeBoost:result', { 
+                    versionId, 
+                    promptLength: result.text.length,
+                    hasLyrics: !!result.lyrics,
+                    hasTitle: !!result.title
+                });
+                return { 
+                    prompt: result.text, 
+                    title: result.title ?? 'Creative Boost',
+                    lyrics: result.lyrics,
+                    versionId, 
+                    debugInfo: result.debugInfo 
+                };
+            }, { creativityLevel, seedGenresCount: seedGenres.length });
+        },
+        refineCreativeBoost: async ({
+            currentPrompt,
+            currentTitle,
+            feedback,
+            lyricsTopic,
+            description,
+            withWordlessVocals,
+            maxMode,
+            withLyrics
+        }) => {
+            return withErrorHandling('refineCreativeBoost', async () => {
+                if (!currentPrompt?.trim()) {
+                    throw new Error('Current prompt is required for refinement');
+                }
+                if (!currentTitle?.trim()) {
+                    throw new Error('Current title is required for refinement');
+                }
+                const result = await aiEngine.refineCreativeBoost(
+                    currentPrompt,
+                    currentTitle,
+                    feedback,
+                    lyricsTopic,
+                    description,
+                    withWordlessVocals,
+                    maxMode,
+                    withLyrics
+                );
+                const versionId = Bun.randomUUIDv7();
+                log.info('refineCreativeBoost:result', { 
+                    versionId, 
+                    promptLength: result.text.length,
+                    hasLyrics: !!result.lyrics
+                });
+                return {
+                    prompt: result.text,
+                    title: result.title ?? currentTitle,
+                    lyrics: result.lyrics,
+                    versionId,
+                    debugInfo: result.debugInfo
+                };
+            }, { feedback });
         }
     };
 }

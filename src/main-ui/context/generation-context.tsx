@@ -38,6 +38,8 @@ interface GenerationContextType {
   handleGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
   handleConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: DebugInfo) => Promise<void>;
+  handleGenerateCreativeBoost: () => Promise<void>;
+  handleRefineCreativeBoost: (feedback: string) => Promise<void>;
 }
 
 const GenerationContext = createContext<GenerationContextType | null>(null);
@@ -50,8 +52,8 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection } = useEditorContext();
-  const { maxMode } = useSettingsContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, resetCreativeBoostInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection, creativeBoostInput } = useEditorContext();
+  const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
 
   const {
@@ -441,6 +443,161 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     await createConversionSession(originalInput, convertedPrompt, versionId, conversionDebugInfo);
   }, [createConversionSession]);
 
+  const handleGenerateCreativeBoost = useCallback(async () => {
+    if (isGenerating) return;
+
+    try {
+      setGeneratingAction('creativeBoost');
+      const result = await api.generateCreativeBoost({
+        creativityLevel: creativeBoostInput.creativityLevel,
+        seedGenres: creativeBoostInput.seedGenres,
+        description: creativeBoostInput.description,
+        lyricsTopic: creativeBoostInput.lyricsTopic,
+        withWordlessVocals: creativeBoostInput.withWordlessVocals,
+        maxMode,
+        withLyrics: lyricsMode,
+      });
+
+      if (!result?.prompt) {
+        throw new Error("Invalid result received from Creative Boost generation");
+      }
+
+      setDebugInfo(result.debugInfo);
+      const now = new Date().toISOString();
+      const originalInput = [
+        `[creativity: ${creativeBoostInput.creativityLevel}%]`,
+        creativeBoostInput.seedGenres.length > 0 ? `[genres: ${creativeBoostInput.seedGenres.join(', ')}]` : null,
+        creativeBoostInput.description || null,
+      ].filter(Boolean).join(' ') || 'Creative Boost';
+
+      const newVersion: PromptVersion = {
+        id: result.versionId,
+        content: result.prompt,
+        title: result.title,
+        lyrics: result.lyrics,
+        timestamp: now,
+      };
+
+      const isNewSession = !currentSession;
+      const savedCreativeBoostInput = {
+        creativityLevel: creativeBoostInput.creativityLevel,
+        seedGenres: creativeBoostInput.seedGenres,
+        description: creativeBoostInput.description,
+        lyricsTopic: creativeBoostInput.lyricsTopic,
+        withWordlessVocals: creativeBoostInput.withWordlessVocals,
+      };
+      const updatedSession: PromptSession = isNewSession
+        ? {
+            id: generateId(),
+            originalInput,
+            currentPrompt: result.prompt,
+            currentTitle: result.title,
+            currentLyrics: result.lyrics,
+            versionHistory: [newVersion],
+            createdAt: now,
+            updatedAt: now,
+            promptMode: 'creativeBoost',
+            creativeBoostInput: savedCreativeBoostInput,
+          }
+        : {
+            ...currentSession,
+            currentPrompt: result.prompt,
+            currentTitle: result.title,
+            currentLyrics: result.lyrics,
+            versionHistory: [...currentSession.versionHistory, newVersion],
+            updatedAt: now,
+            promptMode: 'creativeBoost',
+            creativeBoostInput: savedCreativeBoostInput,
+          };
+
+      if (isNewSession) {
+        setChatMessages(buildChatMessages(updatedSession));
+      } else {
+        setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt generated." }]);
+      }
+
+      setValidation({ ...EMPTY_VALIDATION });
+      await saveSession(updatedSession);
+      showToast('Creative Boost generated!', 'success');
+    } catch (error) {
+      log.error("generateCreativeBoost:failed", error);
+      showToast(error instanceof Error ? error.message : "Failed to generate Creative Boost", 'error');
+      setChatMessages(prev => [
+        ...prev,
+        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate Creative Boost"}.` },
+      ]);
+    } finally {
+      setGeneratingAction('none');
+    }
+  }, [isGenerating, currentSession, generateId, saveSession, creativeBoostInput, maxMode, lyricsMode, showToast]);
+
+  const handleRefineCreativeBoost = useCallback(async (feedback: string) => {
+    if (isGenerating) return;
+    if (!currentSession?.currentPrompt || !currentSession?.currentTitle) return;
+
+    try {
+      setGeneratingAction('creativeBoost');
+      setChatMessages(prev => [...prev, { role: "user", content: feedback }]);
+
+      const result = await api.refineCreativeBoost({
+        currentPrompt: currentSession.currentPrompt,
+        currentTitle: currentSession.currentTitle,
+        feedback,
+        lyricsTopic: creativeBoostInput.lyricsTopic,
+        description: creativeBoostInput.description,
+        withWordlessVocals: creativeBoostInput.withWordlessVocals,
+        maxMode,
+        withLyrics: lyricsMode,
+      });
+
+      if (!result?.prompt) {
+        throw new Error("Invalid result received from Creative Boost refinement");
+      }
+
+      setDebugInfo(result.debugInfo);
+      const now = new Date().toISOString();
+      const newVersion: PromptVersion = {
+        id: result.versionId,
+        content: result.prompt,
+        title: result.title,
+        lyrics: result.lyrics,
+        feedback,
+        timestamp: now,
+      };
+
+      const updatedSession: PromptSession = {
+        ...currentSession,
+        currentPrompt: result.prompt,
+        currentTitle: result.title,
+        currentLyrics: result.lyrics,
+        versionHistory: [...currentSession.versionHistory, newVersion],
+        updatedAt: now,
+        creativeBoostInput: {
+          creativityLevel: creativeBoostInput.creativityLevel,
+          seedGenres: creativeBoostInput.seedGenres,
+          description: creativeBoostInput.description,
+          lyricsTopic: creativeBoostInput.lyricsTopic,
+          withWordlessVocals: creativeBoostInput.withWordlessVocals,
+        },
+      };
+
+      setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt refined." }]);
+      setValidation({ ...EMPTY_VALIDATION });
+      await saveSession(updatedSession);
+      setPendingInput("");
+      showToast('Creative Boost refined!', 'success');
+    } catch (error) {
+      log.error("refineCreativeBoost:failed", error);
+      showToast(error instanceof Error ? error.message : "Failed to refine Creative Boost", 'error');
+      setChatMessages(prev => [
+        ...prev,
+        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to refine Creative Boost"}.` },
+      ]);
+    } finally {
+      setGeneratingAction('none');
+    }
+  }, [isGenerating, currentSession, creativeBoostInput, maxMode, lyricsMode, saveSession, setPendingInput, showToast]);
+
   return (
     <GenerationContext.Provider value={{
       isGenerating,
@@ -464,6 +621,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       handleGenerateQuickVibes,
       handleRemixQuickVibes,
       handleConversionComplete,
+      handleGenerateCreativeBoost,
+      handleRefineCreativeBoost,
     }}>
       {children}
     </GenerationContext.Provider>

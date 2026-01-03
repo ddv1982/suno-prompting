@@ -5,6 +5,14 @@ import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
 import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes, applyQuickVibesMaxMode, stripMaxModeHeader, buildQuickVibesRefineSystemPrompt, buildQuickVibesRefineUserPrompt } from '@bun/prompt/quick-vibes-builder';
+import {
+  buildCreativeBoostSystemPrompt,
+  buildCreativeBoostUserPrompt,
+  parseCreativeBoostResponse,
+  buildCreativeBoostRefineSystemPrompt,
+  buildCreativeBoostRefineUserPrompt,
+  applyCreativeBoostMaxMode,
+} from '@bun/prompt/creative-boost-builder';
 import type { QuickVibesCategory } from '@shared/types';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
@@ -68,6 +76,26 @@ export class AIEngine {
 
   private cleanLyrics(lyrics: string | undefined): string | undefined {
     return lyrics?.trim() || undefined;
+  }
+
+  private async generateLyricsForCreativeBoost(
+    styleResult: string,
+    lyricsTopic: string,
+    description: string,
+    maxMode: boolean,
+    withLyrics: boolean
+  ): Promise<{ lyrics: string | undefined; debugInfo?: { systemPrompt: string; userPrompt: string } }> {
+    if (!withLyrics) return { lyrics: undefined };
+    
+    const genre = extractGenreFromPrompt(styleResult);
+    const mood = extractMoodFromPrompt(styleResult);
+    const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+    const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, this.getModel);
+    
+    return {
+      lyrics: result.lyrics,
+      debugInfo: result.debugInfo,
+    };
   }
 
   private parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {
@@ -454,6 +482,122 @@ export class AIEngine {
       if (error instanceof AIGenerationError) throw error;
       throw new AIGenerationError(
         `Failed to refine Quick Vibes: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  async generateCreativeBoost(
+    creativityLevel: number,
+    seedGenres: string[],
+    description: string,
+    lyricsTopic: string,
+    withWordlessVocals: boolean,
+    maxMode: boolean,
+    withLyrics: boolean
+  ): Promise<GenerationResult> {
+    const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
+    const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description);
+
+    try {
+      const { text: rawResponse } = await generateText({
+        model: this.getModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+
+      if (!rawResponse?.trim()) {
+        throw new AIGenerationError('Empty response from AI model (Creative Boost)');
+      }
+
+      const parsed = parseCreativeBoostResponse(rawResponse);
+      const styleResult = applyCreativeBoostMaxMode(parsed.style, maxMode);
+
+      // Generate lyrics separately using existing generateLyrics function
+      const lyricsResult = await this.generateLyricsForCreativeBoost(
+        styleResult, lyricsTopic, description, maxMode, withLyrics
+      );
+
+      // Build debug info including lyrics generation if applicable
+      let debugInfo: DebugInfo | undefined;
+      if (this.config.isDebugMode()) {
+        debugInfo = this.buildDebugInfo(systemPrompt, userPrompt, rawResponse);
+        if (lyricsResult.debugInfo) {
+          debugInfo.lyricsGeneration = lyricsResult.debugInfo;
+        }
+      }
+
+      return {
+        text: styleResult,
+        title: parsed.title,
+        lyrics: lyricsResult.lyrics,
+        debugInfo,
+      };
+    } catch (error) {
+      if (error instanceof AIGenerationError) throw error;
+      throw new AIGenerationError(
+        `Failed to generate Creative Boost: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  async refineCreativeBoost(
+    currentPrompt: string,
+    currentTitle: string,
+    feedback: string,
+    lyricsTopic: string,
+    description: string,
+    withWordlessVocals: boolean,
+    maxMode: boolean,
+    withLyrics: boolean
+  ): Promise<GenerationResult> {
+    const cleanPrompt = stripMaxModeHeader(currentPrompt);
+    const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
+    const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback);
+
+    try {
+      const { text: rawResponse } = await generateText({
+        model: this.getModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+
+      if (!rawResponse?.trim()) {
+        throw new AIGenerationError('Empty response from AI model (Creative Boost refine)');
+      }
+
+      const parsed = parseCreativeBoostResponse(rawResponse);
+      const styleResult = applyCreativeBoostMaxMode(parsed.style, maxMode);
+
+      // Regenerate lyrics using existing generateLyrics function
+      const lyricsResult = await this.generateLyricsForCreativeBoost(
+        styleResult, lyricsTopic, description, maxMode, withLyrics
+      );
+
+      // Build debug info including lyrics generation if applicable
+      let debugInfo: DebugInfo | undefined;
+      if (this.config.isDebugMode()) {
+        debugInfo = this.buildDebugInfo(systemPrompt, userPrompt, rawResponse);
+        if (lyricsResult.debugInfo) {
+          debugInfo.lyricsGeneration = lyricsResult.debugInfo;
+        }
+      }
+
+      return {
+        text: styleResult,
+        title: parsed.title,
+        lyrics: lyricsResult.lyrics,
+        debugInfo,
+      };
+    } catch (error) {
+      if (error instanceof AIGenerationError) throw error;
+      throw new AIGenerationError(
+        `Failed to refine Creative Boost: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error : undefined
       );
     }

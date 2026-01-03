@@ -56,6 +56,8 @@ export const useAppContext = () => {
     withWordlessVocals: editor.withWordlessVocals,
     setQuickVibesInput: editor.setQuickVibesInput,
     setWithWordlessVocals: editor.setWithWordlessVocals,
+    creativeBoostInput: editor.creativeBoostInput,
+    setCreativeBoostInput: editor.setCreativeBoostInput,
     
     // Generation
     isGenerating: generation.isGenerating,
@@ -79,5 +81,7 @@ export const useAppContext = () => {
     handleGenerateQuickVibes: generation.handleGenerateQuickVibes,
     handleRemixQuickVibes: generation.handleRemixQuickVibes,
     handleConversionComplete: generation.handleConversionComplete,
+    handleGenerateCreativeBoost: generation.handleGenerateCreativeBoost,
+    handleRefineCreativeBoost: generation.handleRefineCreativeBoost,
   };
 };

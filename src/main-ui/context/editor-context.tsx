@@ -1,5 +1,13 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
-import { type EditorMode, type AdvancedSelection, type QuickVibesInput, type PromptMode, EMPTY_ADVANCED_SELECTION } from '@shared/types';
+import { 
+  type EditorMode, 
+  type AdvancedSelection, 
+  type QuickVibesInput, 
+  type PromptMode, 
+  type CreativeBoostInput,
+  EMPTY_ADVANCED_SELECTION,
+  EMPTY_CREATIVE_BOOST_INPUT,
+} from '@shared/types';
 import { buildMusicPhrase } from '@shared/music-phrase';
 import { api } from '@/services/rpc';
 import { createLogger } from '@/lib/logger';
@@ -28,6 +36,7 @@ interface EditorContextType {
   computedMusicPhrase: string;
   quickVibesInput: QuickVibesInput;
   withWordlessVocals: boolean;
+  creativeBoostInput: CreativeBoostInput;
   setEditorMode: (mode: EditorMode) => void;
   setPromptMode: (mode: PromptMode) => void;
   setAdvancedSelection: (selection: AdvancedSelection) => void;
@@ -38,6 +47,9 @@ interface EditorContextType {
   setLyricsTopic: (topic: string) => void;
   setQuickVibesInput: (input: QuickVibesInput) => void;
   setWithWordlessVocals: (value: boolean) => void;
+  setCreativeBoostInput: (input: CreativeBoostInput) => void;
+  updateCreativeBoostInput: (updates: Partial<CreativeBoostInput>) => void;
+  resetCreativeBoostInput: () => void;
   getEffectiveLockedPhrase: () => string | undefined;
   resetEditor: () => void;
   resetQuickVibesInput: () => void;
@@ -60,6 +72,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
   const [lyricsTopic, setLyricsTopic] = useState("");
   const [quickVibesInput, setQuickVibesInput] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
   const [withWordlessVocals, setWithWordlessVocals] = useState(false);
+  const [creativeBoostInput, setCreativeBoostInput] = useState<CreativeBoostInput>(EMPTY_CREATIVE_BOOST_INPUT);
 
   // Load promptMode once on mount - no reload, no race conditions
   useEffect(() => {
@@ -97,6 +110,14 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     setAdvancedSelection(EMPTY_ADVANCED_SELECTION);
   }, []);
 
+  const updateCreativeBoostInput = useCallback((updates: Partial<CreativeBoostInput>) => {
+    setCreativeBoostInput(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const resetCreativeBoostInput = useCallback(() => {
+    setCreativeBoostInput(EMPTY_CREATIVE_BOOST_INPUT);
+  }, []);
+
   const getEffectiveLockedPhrase = useCallback(() => {
     return editorMode === 'advanced'
       ? [computedMusicPhrase, lockedPhrase.trim()].filter(Boolean).join(', ') || undefined
@@ -110,7 +131,8 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     setLyricsTopic("");
     setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT);
     setWithWordlessVocals(false);
-  }, []);
+    resetCreativeBoostInput();
+  }, [resetCreativeBoostInput]);
 
   const resetQuickVibesInput = useCallback(() => {
     setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT);
@@ -127,6 +149,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       computedMusicPhrase,
       quickVibesInput,
       withWordlessVocals,
+      creativeBoostInput,
       setEditorMode,
       setPromptMode,
       setAdvancedSelection,
@@ -137,6 +160,9 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       setLyricsTopic,
       setQuickVibesInput,
       setWithWordlessVocals,
+      setCreativeBoostInput,
+      updateCreativeBoostInput,
+      resetCreativeBoostInput,
       getEffectiveLockedPhrase,
       resetEditor,
       resetQuickVibesInput,

@@ -1,9 +1,27 @@
+export const CREATIVITY_LEVEL_HELPER_TEXT = {
+    low: 'Single genres only - predictable, genre-pure results',
+    safe: 'Safe multi-genre combinations from existing styles',
+    normal: 'Balanced creativity - sensible combinations',
+    adventurous: 'More adventurous combinations and surprises',
+    high: 'Experimental - may invent new genre fusions!',
+} as const;
+
+export const CREATIVITY_LEVEL_DISPLAY_NAMES = {
+    low: 'Low',
+    safe: 'Safe',
+    normal: 'Normal',
+    adventurous: 'Adventurous',
+    high: 'High',
+} as const;
+
 export const APP_CONSTANTS = {
     MAX_PROMPT_CHARS: 1000,
     MIN_PROMPT_CHARS: 20,
     MAX_LOCKED_PHRASE_CHARS: 300,
     MAX_LYRICS_TOPIC_CHARS: 500,
     QUICK_VIBES_MAX_CHARS: 400,
+    CREATIVE_BOOST_MAX_DESCRIPTION_CHARS: 300,
+    CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS: 300,
     QUICK_VIBES_GENERATION_LIMIT: 60,
     MAX_VERSION_HISTORY: 50,
     ARTICULATION_CHANCE: 0.4,

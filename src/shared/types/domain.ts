@@ -3,7 +3,13 @@
 import type { AIProvider } from '@shared/types/config';
 
 // Prompt generation mode
-export type PromptMode = 'full' | 'quickVibes';
+export type PromptMode = 'full' | 'quickVibes' | 'creativeBoost';
+
+// Creativity level for Creative Boost slider
+export type CreativityLevel = 'low' | 'safe' | 'normal' | 'adventurous' | 'high';
+
+// Valid slider positions for creativity (5 discrete values)
+export type CreativitySliderValue = 0 | 25 | 50 | 75 | 100;
 
 // Quick Vibes category presets
 export type QuickVibesCategory = 
@@ -19,6 +25,24 @@ export type QuickVibesInput = {
   category: QuickVibesCategory | null;
   customDescription: string;
   withWordlessVocals: boolean;
+};
+
+// Creative Boost input state
+// Note: maxMode and lyricsMode are handled by global SettingsContext (same as Quick Vibes)
+export type CreativeBoostInput = {
+  creativityLevel: CreativitySliderValue;  // 5 discrete positions: 0, 25, 50, 75, 100
+  seedGenres: string[];                    // 0-2 genre keys (from registry or combinations)
+  description: string;                     // Optional text description
+  lyricsTopic: string;                     // Topic for lyrics (when lyrics enabled)
+  withWordlessVocals: boolean;             // Humming, oohs
+};
+
+export const EMPTY_CREATIVE_BOOST_INPUT: CreativeBoostInput = {
+  creativityLevel: 50,
+  seedGenres: [],
+  description: '',
+  lyricsTopic: '',
+  withWordlessVocals: false,
 };
 
 // Editor mode types
@@ -64,9 +88,10 @@ export type PromptSession = {
   versionHistory: PromptVersion[];
   createdAt: string;
   updatedAt: string;
-  // Quick Vibes fields
+  // Mode-specific fields
   promptMode?: PromptMode;
   quickVibesInput?: QuickVibesInput;
+  creativeBoostInput?: CreativeBoostInput;
 };
 
 export type DebugInfo = {

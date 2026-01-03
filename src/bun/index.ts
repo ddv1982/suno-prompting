@@ -53,6 +53,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             generateQuickVibes: handlers.generateQuickVibes,
             refineQuickVibes: handlers.refineQuickVibes,
             convertToMaxFormat: handlers.convertToMaxFormat,
+            generateCreativeBoost: handlers.generateCreativeBoost,
+            refineCreativeBoost: handlers.refineCreativeBoost,
         }
     }
 });

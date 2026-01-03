@@ -35,6 +35,7 @@ function App() {
     promptMode,
     quickVibesInput,
     withWordlessVocals,
+    creativeBoostInput,
     setPendingInput,
     setSettingsOpen,
     setLockedPhrase,
@@ -43,6 +44,7 @@ function App() {
     setPromptMode,
     setQuickVibesInput,
     setWithWordlessVocals,
+    setCreativeBoostInput,
     updateAdvancedSelection,
     clearAdvancedSelection,
     selectSession,
@@ -61,6 +63,8 @@ function App() {
     handleRemixRecording,
     handleRemixTitle,
     handleRemixLyrics,
+    handleGenerateCreativeBoost,
+    handleRefineCreativeBoost,
     maxMode,
     setMaxMode,
     lyricsMode,
@@ -101,6 +105,7 @@ function App() {
               promptMode={promptMode}
               quickVibesInput={quickVibesInput}
               withWordlessVocals={withWordlessVocals}
+              creativeBoostInput={creativeBoostInput}
               onPendingInputChange={setPendingInput}
               onLockedPhraseChange={setLockedPhrase}
               onLyricsTopicChange={setLyricsTopic}
@@ -110,8 +115,11 @@ function App() {
               onPromptModeChange={setPromptMode}
               onQuickVibesInputChange={setQuickVibesInput}
               onWordlessVocalsChange={setWithWordlessVocals}
+              onCreativeBoostInputChange={setCreativeBoostInput}
               onGenerate={handleGenerate}
               onGenerateQuickVibes={handleGenerateQuickVibes}
+              onGenerateCreativeBoost={handleGenerateCreativeBoost}
+              onRefineCreativeBoost={handleRefineCreativeBoost}
               onCopy={handleCopy}
               onRemix={handleRemix}
               onRemixQuickVibes={handleRemixQuickVibes}
