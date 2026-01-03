@@ -46,7 +46,6 @@ export const ORCHESTRAL_COLOR_INSTRUMENTS = [
   'contrabassoon',
   'alto flute',
   'bass flute',
-  'recorder',
   // Brass
   'tuba',
   'bass trombone',
