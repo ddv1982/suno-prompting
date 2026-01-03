@@ -7,7 +7,7 @@ export const MELODICTECHNO_GENRE: GenreDefinition = {
   pools: {
     pad: {
       pick: { min: 1, max: 2 },
-      instruments: ['synth pad', 'analog synth', 'arpeggiator', 'pluck synth', 'wavetable synth'],
+      instruments: ['synth pad', 'analog synth', 'arpeggiator', 'pluck synth', 'wavetable synth', 'Moog synth'],
     },
     harmonic: {
       pick: { min: 0, max: 1 },
@@ -17,7 +17,7 @@ export const MELODICTECHNO_GENRE: GenreDefinition = {
     color: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['wordless choir', 'solo soprano', 'breathy EWI'],
+      instruments: ['wordless choir', 'solo soprano', 'breathy EWI', 'TB-303'],
     },
     movement: {
       pick: { min: 1, max: 2 },

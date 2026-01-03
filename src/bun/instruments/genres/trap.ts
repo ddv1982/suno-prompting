@@ -10,12 +10,17 @@ export const TRAP_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['felt piano', 'guitar', 'pluck synth', 'strings'],
+      instruments: ['felt piano', 'guitar', 'pluck synth', 'strings', 'bells'],
     },
     pad: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.5,
       instruments: ['synth pad', 'ambient pad', 'choir', 'vinyl noise'],
+    },
+    color: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.3,
+      instruments: ['flute'],
     },
     movement: {
       pick: { min: 2, max: 3 },
@@ -27,7 +32,7 @@ export const TRAP_GENRE: GenreDefinition = {
       instruments: ['pizzicato strings', 'braams', 'FX risers'],
     },
   },
-  poolOrder: ['harmonic', 'movement', 'pad', 'rare'],
+  poolOrder: ['harmonic', 'movement', 'pad', 'color', 'rare'],
   maxTags: 4,
   exclusionRules: [
     ['strings', 'pizzicato strings'],

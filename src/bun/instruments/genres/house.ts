@@ -16,14 +16,19 @@ export const HOUSE_GENRE: GenreDefinition = {
     color: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.5,
-      instruments: ['synth bass', 'bass', 'saxophone', 'choir'],
+      instruments: ['synth bass', 'bass', 'saxophone', 'choir', 'stabs'],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['kick drum', 'hi-hat', '808', 'TR-909', 'handclaps', 'shaker', 'percussion', 'cowbell'],
+      instruments: ['kick drum', 'hi-hat', '808', 'TR-909', 'handclaps', 'shaker', 'percussion', 'cowbell', 'congas', 'bongos'],
+    },
+    rare: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.2,
+      instruments: ['vocal chops'],
     },
   },
-  poolOrder: ['pad', 'harmonic', 'color', 'movement'],
+  poolOrder: ['pad', 'harmonic', 'color', 'movement', 'rare'],
   maxTags: 4,
   exclusionRules: [
     ['Rhodes', 'grand piano'],

@@ -22,8 +22,13 @@ export const DISCO_GENRE: GenreDefinition = {
       pick: { min: 1, max: 2 },
       instruments: ['kick drum', 'hi-hat', 'drums', 'tambourine', 'handclaps', 'congas'],
     },
+    rare: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.2,
+      instruments: ['orchestra hit'],
+    },
   },
-  poolOrder: ['harmonic', 'color', 'pad', 'movement'],
+  poolOrder: ['harmonic', 'color', 'pad', 'movement', 'rare'],
   maxTags: 4,
   exclusionRules: [
     ['Rhodes', 'Wurlitzer'],

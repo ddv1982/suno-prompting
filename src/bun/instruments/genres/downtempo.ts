@@ -16,11 +16,11 @@ export const DOWNTEMPO_GENRE: GenreDefinition = {
     color: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.5,
-      instruments: ['saxophone', 'trumpet', 'flute', 'wordless choir', 'strings'],
+      instruments: ['saxophone', 'trumpet', 'flute', 'wordless choir', 'strings', 'violin'],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['drums', 'hi-hat', 'percussion', 'bass', 'synth bass', 'shaker'],
+      instruments: ['drums', 'hi-hat', 'percussion', 'bass', 'synth bass', 'shaker', 'breakbeat'],
     },
     rare: {
       pick: { min: 0, max: 1 },
@@ -33,6 +33,7 @@ export const DOWNTEMPO_GENRE: GenreDefinition = {
   exclusionRules: [
     ['Rhodes', 'electric piano'],
     ['bass', 'synth bass'],
+    ['drums', 'breakbeat'],
   ],
   bpm: { min: 70, max: 100, typical: 85 },
   moods: ['Mellow', 'Introspective', 'Atmospheric', 'Laid Back', 'Contemplative', 'Smooth', 'Nocturnal', 'Groovy'],

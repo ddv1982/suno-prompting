@@ -73,6 +73,9 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'pluck synth', category: 'pad', aliases: ['pluck', 'synth pluck', 'plucky synth'] },
   { canonical: 'sidechain pad', category: 'pad', aliases: ['sidechained pad', 'pumping pad'] },
   
+  // Gated/processed pads
+  { canonical: 'gated pad', category: 'pad', aliases: ['gated synth', 'choppy pad', 'sidechain gate pad'] },
+
   // Evolving textures (professional ambient)
   { canonical: 'granular synth', category: 'pad', aliases: ['granular pad', 'grain synth'] },
   { canonical: 'wavetable synth', category: 'pad', aliases: ['wavetable pad', 'morphing synth'] },
@@ -109,6 +112,10 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'impacts', category: 'rare', aliases: ['impact hits', 'cinematic impacts', 'trailer impacts'] },
   { canonical: 'FX risers', category: 'rare', aliases: ['risers', 'build ups', 'tension risers'] },
   { canonical: 'vinyl noise', category: 'rare', aliases: ['vinyl crackle', 'lo-fi texture', 'record noise'] },
+  { canonical: 'orchestra hit', category: 'rare', aliases: ['orchestral hit', 'orch hit', 'stab hit'] },
+  { canonical: 'stabs', category: 'color', aliases: ['synth stabs', 'organ stabs', 'chord stabs', 'house stabs'] },
+  { canonical: 'brass stabs', category: 'color', aliases: ['brass hits', 'brass punches'] },
+  { canonical: 'vocal chops', category: 'rare', aliases: ['vocal cuts', 'sampled vocals', 'vocal samples'] },
 
   // Reggae/Dub instruments
   { canonical: 'melodica', category: 'color', aliases: ['blow organ', 'keyboard harmonica'] },
@@ -225,6 +232,7 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'mark tree', category: 'movement', aliases: ['bar chimes', 'wind chimes', 'chime tree'] },
   { canonical: 'orchestral bass drum', category: 'movement', aliases: ['concert bass drum', 'gran cassa'] },
   { canonical: 'drums', category: 'movement', aliases: ['drum kit', 'drumkit', 'drum set', 'live drums'] },
+  { canonical: 'breakbeat', category: 'movement', aliases: ['breakbeats', 'breaks', 'break beat', 'chopped breaks'] },
   { canonical: 'hi-hat', category: 'movement', aliases: ['hi-hats', 'hihat', 'hihats'] },
   { canonical: 'trap hi hats', category: 'movement', aliases: ['rolling hi hats', 'trap hats', 'stuttering hi hats'] },
   { canonical: 'kick drum', category: 'movement', aliases: ['kick', 'bass drum', 'four on the floor'] },

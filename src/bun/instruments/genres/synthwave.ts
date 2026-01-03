@@ -16,11 +16,12 @@ export const SYNTHWAVE_GENRE: GenreDefinition = {
         'arpeggiator',
         'synth pad',
         'synth',
+        'supersaw',
       ],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['synth bass', '808', 'kick drum', 'hi-hat', 'drums'],
+      instruments: ['synth bass', '808', 'kick drum', 'hi-hat', 'drums', 'Linn drum'],
     },
   },
   poolOrder: ['pad', 'movement'],
@@ -28,6 +29,7 @@ export const SYNTHWAVE_GENRE: GenreDefinition = {
   exclusionRules: [
     ['808', 'drums'],
     ['synth bass', 'bass'],
+    ['drums', 'Linn drum'],
   ],
   bpm: { min: 100, max: 130, typical: 115 },
   moods: ['Nostalgic', 'Neon', 'Driving', 'Futuristic', 'Dark', 'Cool', 'Retro', 'Cyberpunk', 'Dreamy'],

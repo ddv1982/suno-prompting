@@ -21,7 +21,7 @@ export const DRILL_GENRE: GenreDefinition = {
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['FX risers', 'impacts'],
+      instruments: ['FX risers', 'impacts', 'brass stabs'],
     },
   },
   poolOrder: ['harmonic', 'pad', 'movement', 'rare'],

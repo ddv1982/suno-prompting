@@ -7,7 +7,7 @@ export const TRANCE_GENRE: GenreDefinition = {
   pools: {
     pad: {
       pick: { min: 1, max: 2 },
-      instruments: ['supersaw', 'arpeggiator', 'synth pad', 'analog synth', 'pluck synth'],
+      instruments: ['supersaw', 'arpeggiator', 'synth pad', 'analog synth', 'pluck synth', 'gated pad'],
     },
     harmonic: {
       pick: { min: 0, max: 1 },
