@@ -3,10 +3,12 @@
 
 import { generateText } from 'ai';
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
+import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import type { LanguageModel } from 'ai';
+import type { DebugInfo } from '@shared/types';
 
 // Re-export isMaxFormat for consumers of this module
 export { isMaxFormat } from '@shared/max-format';
@@ -31,6 +33,7 @@ export interface ParsedPrompt {
 export interface AIEnhancementResult {
   styleTags: string;
   recording: string;
+  debugInfo?: Partial<DebugInfo>;
 }
 
 export interface MaxFormatFields {
@@ -44,6 +47,7 @@ export interface MaxFormatFields {
 export interface MaxConversionResult {
   convertedPrompt: string;
   wasConverted: boolean;
+  debugInfo?: Partial<DebugInfo>;
 }
 
 // ============================================================================
@@ -51,6 +55,8 @@ export interface MaxConversionResult {
 // ============================================================================
 
 const DEFAULT_BPM = 90;
+const DEFAULT_GENRE = 'ambient';
+const DEFAULT_INSTRUMENTS_FALLBACK = 'ambient pad, subtle textures';
 
 // Genre aliases for common variations
 const GENRE_ALIASES: Record<string, string> = {
@@ -324,7 +330,15 @@ export async function enhanceWithAI(
     abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
   });
 
-  return parseAIEnhancementResponse(text);
+  const result = parseAIEnhancementResponse(text);
+  return {
+    ...result,
+    debugInfo: {
+      systemPrompt,
+      userPrompt,
+      timestamp: new Date().toISOString(),
+    },
+  };
 }
 
 // ============================================================================
@@ -332,14 +346,23 @@ export async function enhanceWithAI(
 // ============================================================================
 
 /**
- * Enhance instruments list with articulations
+ * Enhance instruments list with articulations.
+ * If no instruments provided, selects genre-appropriate defaults.
  */
-function enhanceInstruments(instruments: string[]): string {
-  if (instruments.length === 0) {
-    return 'ambient pad, subtle textures';
+function enhanceInstruments(instruments: string[], genre: string | null): string {
+  let instrumentList = instruments;
+  
+  // If no instruments provided, select genre-appropriate defaults
+  if (instrumentList.length === 0) {
+    const normalizedGenre = genre ? normalizeGenre(genre) : null;
+    if (normalizedGenre && normalizedGenre in GENRE_REGISTRY) {
+      instrumentList = selectInstrumentsForGenre(normalizedGenre as GenreType, { maxTags: 3 });
+    } else {
+      return DEFAULT_INSTRUMENTS_FALLBACK;
+    }
   }
 
-  const enhanced = instruments.map((instrument) =>
+  const enhanced = instrumentList.map((instrument) =>
     articulateInstrument(instrument, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE)
   );
 
@@ -382,23 +405,30 @@ export async function convertToMaxFormat(
   // Parse the input
   const parsed = parseNonMaxPrompt(text);
 
+  // Determine effective genre
+  const effectiveGenre = parsed.genre || DEFAULT_GENRE;
+
   // Infer BPM from genre
-  const bpm = inferBpm(parsed.genre);
+  const bpm = inferBpm(effectiveGenre);
 
   // Enhance with AI (generate style tags and recording)
   const aiResult = await enhanceWithAI(parsed, getModel);
 
-  // Build instruments string with articulations
-  const instruments = enhanceInstruments(parsed.instruments);
+  // Build instruments string with articulations (genre-aware defaults)
+  const instruments = enhanceInstruments(parsed.instruments, effectiveGenre);
 
   // Assemble final prompt
   const convertedPrompt = buildMaxFormatPrompt({
-    genre: parsed.genre || 'ambient',
+    genre: effectiveGenre,
     bpm,
     instruments,
     styleTags: aiResult.styleTags,
     recording: aiResult.recording,
   });
 
-  return { convertedPrompt, wasConverted: true };
+  return { 
+    convertedPrompt, 
+    wasConverted: true,
+    debugInfo: aiResult.debugInfo,
+  };
 }

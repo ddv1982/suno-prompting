@@ -265,7 +265,8 @@ export function createHandlers(
                 return {
                     convertedPrompt: result.convertedPrompt,
                     wasConverted: result.wasConverted,
-                    versionId
+                    versionId,
+                    debugInfo: result.debugInfo,
                 };
             }, { textLength: text.length });
         }

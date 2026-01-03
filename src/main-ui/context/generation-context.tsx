@@ -10,6 +10,7 @@ import { createLogger } from '@/lib/logger';
 import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
 import { useRemixActions } from '@/hooks/use-remix-actions';
 import { isMaxFormat } from '@/lib/max-format';
+import { useToast } from '@/components/ui/toast';
 
 const log = createLogger('Generation');
 
@@ -51,6 +52,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection } = useEditorContext();
   const { maxMode } = useSettingsContext();
+  const { showToast } = useToast();
 
   const {
     generatingAction,
@@ -141,6 +143,54 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     await saveSession(updatedSession);
   }, [currentSession, generateId, saveSession]);
 
+  /**
+   * Helper to create or update session after Max Mode conversion.
+   * Used by both paste handler and Generate button conversion.
+   */
+  const createConversionSession = useCallback(async (
+    originalInput: string,
+    convertedPrompt: string,
+    versionId: string,
+    conversionDebugInfo?: DebugInfo,
+    feedback?: string
+  ): Promise<void> => {
+    setDebugInfo(conversionDebugInfo);
+    const now = new Date().toISOString();
+
+    const newVersion: PromptVersion = {
+      id: versionId,
+      content: convertedPrompt,
+      feedback: feedback || '[auto-converted to max format]',
+      timestamp: now,
+    };
+
+    const isNewSession = !currentSession;
+    const updatedSession: PromptSession = isNewSession
+      ? {
+          id: generateId(),
+          originalInput,
+          currentPrompt: convertedPrompt,
+          versionHistory: [newVersion],
+          createdAt: now,
+          updatedAt: now,
+        }
+      : {
+          ...currentSession,
+          currentPrompt: convertedPrompt,
+          versionHistory: [...currentSession.versionHistory, newVersion],
+          updatedAt: now,
+        };
+
+    if (isNewSession) {
+      setChatMessages(buildChatMessages(updatedSession));
+    } else {
+      setChatMessages(prev => [...prev, { role: "ai", content: "Converted to Max Mode format." }]);
+    }
+
+    setValidation({ ...EMPTY_VALIDATION });
+    await saveSession(updatedSession);
+  }, [currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation]);
+
   const handleGenerate = useCallback(async (input: string) => {
     if (isGenerating) return;
     
@@ -206,32 +256,32 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       // Max Mode conversion: if initial generation with Max Mode enabled and input is not already max format
       if (isInitial && maxMode && !isMaxFormat(input)) {
         log.info('Converting to Max Mode format');
-        const conversionResult = await api.convertToMaxFormat(input);
-        
-        if (conversionResult?.convertedPrompt && conversionResult.wasConverted) {
-          setDebugInfo(conversionResult.debugInfo);
-          const now = new Date().toISOString();
-          const newVersion: PromptVersion = {
-            id: conversionResult.versionId,
-            content: conversionResult.convertedPrompt,
-            timestamp: now,
-          };
-          const newSession: PromptSession = {
-            id: generateId(),
-            originalInput: input,
-            currentPrompt: conversionResult.convertedPrompt,
-            versionHistory: [newVersion],
-            createdAt: now,
-            updatedAt: now,
-          };
-          setChatMessages(buildChatMessages(newSession));
-          setValidation({ ...EMPTY_VALIDATION });
-          await saveSession(newSession);
-          setPendingInput("");
-          setLyricsTopic("");
-          return;
+        try {
+          const conversionResult = await api.convertToMaxFormat(input);
+          
+          if (conversionResult?.convertedPrompt && conversionResult.wasConverted) {
+            await createConversionSession(
+              input,
+              conversionResult.convertedPrompt,
+              conversionResult.versionId,
+              conversionResult.debugInfo
+            );
+            setPendingInput("");
+            setLyricsTopic("");
+            showToast('Converted to Max Mode format', 'success');
+            return;
+          }
+          // If conversion didn't happen (already max format), fall through to normal generation
+        } catch (error) {
+          // Don't show error for user cancellations/aborts - fall through to normal generation
+          if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+            log.info('Conversion cancelled, falling through to normal generation');
+          } else {
+            log.error('Max Mode conversion failed:', error);
+            showToast('Conversion failed, using normal generation', 'error');
+          }
+          // Fall through to normal generation on error
         }
-        // If conversion didn't happen (already max format), fall through to normal generation
       }
 
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
@@ -265,7 +315,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession, advancedSelection, maxMode, generateId, setDebugInfo]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession, advancedSelection, maxMode, createConversionSession, showToast]);
 
   const handleCopy = useCallback(() => {
     const prompt = currentSession?.currentPrompt || "";
@@ -388,43 +438,8 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     versionId: string,
     conversionDebugInfo?: DebugInfo
   ) => {
-    setDebugInfo(conversionDebugInfo);
-    const now = new Date().toISOString();
-
-    const newVersion: PromptVersion = {
-      id: versionId,
-      content: convertedPrompt,
-      feedback: '[auto-converted to max format]',
-      timestamp: now,
-    };
-
-    // Create new session or update existing
-    const isNewSession = !currentSession;
-    const updatedSession: PromptSession = isNewSession
-      ? {
-          id: generateId(),
-          originalInput,
-          currentPrompt: convertedPrompt,
-          versionHistory: [newVersion],
-          createdAt: now,
-          updatedAt: now,
-        }
-      : {
-          ...currentSession,
-          currentPrompt: convertedPrompt,
-          versionHistory: [...currentSession.versionHistory, newVersion],
-          updatedAt: now,
-        };
-
-    if (isNewSession) {
-      setChatMessages(buildChatMessages(updatedSession));
-    } else {
-      setChatMessages(prev => [...prev, { role: "ai", content: "Converted to Max Mode format." }]);
-    }
-
-    setValidation({ ...EMPTY_VALIDATION });
-    await saveSession(updatedSession);
-  }, [currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation]);
+    await createConversionSession(originalInput, convertedPrompt, versionId, conversionDebugInfo);
+  }, [createConversionSession]);
 
   return (
     <GenerationContext.Provider value={{
