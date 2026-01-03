@@ -6,6 +6,7 @@ import { HistorySidebar } from "@/components/history-sidebar";
 import { PromptEditor } from "@/components/prompt-editor";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AppProvider, useAppContext } from "@/context/app-context";
+import { ToastProvider } from "@/components/ui/toast";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { APP_CONSTANTS } from "@shared/constants";
 
@@ -52,6 +53,7 @@ function App() {
     handleCopy,
     handleRemix,
     handleRemixQuickVibes,
+    handleConversionComplete,
     handleRemixInstruments,
     handleRemixGenre,
     handleRemixMood,
@@ -120,6 +122,7 @@ function App() {
               onRemixRecording={handleRemixRecording}
               onRemixTitle={handleRemixTitle}
               onRemixLyrics={handleRemixLyrics}
+              onConversionComplete={handleConversionComplete}
               maxMode={maxMode}
               onMaxModeChange={setMaxMode}
               lyricsMode={lyricsMode}
@@ -143,9 +146,11 @@ if (container) {
     const root = createRoot(container);
     root.render(
       <ErrorBoundary>
-        <AppProvider>
-          <App />
-        </AppProvider>
+        <ToastProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </ToastProvider>
       </ErrorBoundary>
     );
 }

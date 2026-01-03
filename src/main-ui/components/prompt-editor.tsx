@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,12 +10,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { FormLabel } from "@/components/ui/form-label";
 import { Loader2, Send, AlertCircle, Bug, Settings2, Lock, MessageSquare, Music2, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { isMaxFormat } from "@/lib/max-format";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory } from "@shared/types";
 import { type GeneratingAction } from "@/context/app-context";
 import { APP_CONSTANTS } from "@shared/constants";
+import { api } from "@/services/rpc";
+import { createLogger } from "@/lib/logger";
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { RemixButtonGroup } from "@/components/remix-button-group";
 import { ChatHistorySection } from "@/components/chat-history-section";
@@ -26,6 +30,8 @@ import { DebugDrawerBody } from "@/components/prompt-editor/debug-drawer";
 import { ModeSelector } from "@/components/mode-selector";
 import { QuickVibesPanel } from "@/components/quick-vibes-panel";
 import { QuickVibesOutput } from "@/components/quick-vibes-output";
+
+const log = createLogger('PromptEditor');
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -65,6 +71,7 @@ type PromptEditorProps = {
   onRemixRecording: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
+  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: DebugInfo) => Promise<void>;
   maxMode: boolean;
   onMaxModeChange: (mode: boolean) => void;
   lyricsMode: boolean;
@@ -112,6 +119,7 @@ export function PromptEditor({
   onRemixRecording,
   onRemixTitle,
   onRemixLyrics,
+  onConversionComplete,
   maxMode,
   onMaxModeChange,
   lyricsMode,
@@ -123,6 +131,7 @@ export function PromptEditor({
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
+  const { showToast } = useToast();
 
   const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation, lyricsTopicOverLimit } = useMemo(() => ({
     charCount: currentPrompt.length,
@@ -168,8 +177,45 @@ export function PromptEditor({
     }
     onCopy();
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
+
+  /**
+   * Handle paste events for auto-conversion to Max Mode format
+   * When Max Mode is enabled and pasted text is not already in Max format,
+   * automatically convert it and display the result in the output area.
+   */
+  const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    // Only convert when Max Mode is enabled
+    if (!maxMode) return;
+
+    const pastedText = e.clipboardData.getData('text');
+    if (!pastedText.trim()) return;
+
+    // Check if already in max format - skip conversion
+    if (isMaxFormat(pastedText)) {
+      return;
+    }
+
+    // Trigger conversion in the background (don't prevent default paste)
+    try {
+      const result = await api.convertToMaxFormat(pastedText);
+      
+      if (result?.convertedPrompt && result.wasConverted) {
+        // Update output area with converted prompt
+        await onConversionComplete(
+          pastedText,
+          result.convertedPrompt,
+          result.versionId,
+          result.debugInfo
+        );
+        showToast('Converted to Max Mode format', 'success');
+      }
+    } catch (error) {
+      log.error('Conversion failed:', error);
+      showToast('Failed to convert to Max Mode format', 'error');
+    }
+  }, [maxMode, onConversionComplete, showToast]);
 
   return (
     <section className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
@@ -400,6 +446,7 @@ export function PromptEditor({
                     value={pendingInput}
                     onChange={(e) => onPendingInputChange(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
                     disabled={isGenerating}
                     className={cn(
                       "min-h-20 flex-1 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",

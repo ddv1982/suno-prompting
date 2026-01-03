@@ -36,6 +36,8 @@ import type {
   GenerateQuickVibesResponse,
   RefineQuickVibesParams,
   RefineQuickVibesResponse,
+  ConvertToMaxFormatParams,
+  ConvertToMaxFormatResponse,
 } from '@shared/types/api';
 import type { PromptMode } from '@shared/types/domain';
 
@@ -71,6 +73,7 @@ export type RPCHandlers = {
   setPromptMode: (params: SetPromptModeParams) => Promise<{ success: boolean }>;
   generateQuickVibes: (params: GenerateQuickVibesParams) => Promise<GenerateQuickVibesResponse>;
   refineQuickVibes: (params: RefineQuickVibesParams) => Promise<RefineQuickVibesResponse>;
+  convertToMaxFormat: (params: ConvertToMaxFormatParams) => Promise<ConvertToMaxFormatResponse>;
 };
 
 export type SunoRPCSchema = {
@@ -195,6 +198,10 @@ export type SunoRPCSchema = {
       refineQuickVibes: {
         params: RefineQuickVibesParams;
         response: RefineQuickVibesResponse;
+      };
+      convertToMaxFormat: {
+        params: ConvertToMaxFormatParams;
+        response: ConvertToMaxFormatResponse;
       };
     };
     messages: Record<string, never>;

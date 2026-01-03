@@ -5,6 +5,7 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { Check, Copy, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PromptOutput } from "@/components/prompt-output";
+import { APP_CONSTANTS } from "@shared/constants";
 
 type OutputSectionProps = {
   label: string;
@@ -30,7 +31,7 @@ export function OutputSection({
   const handleCopy = () => {
     onCopy();
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   return (

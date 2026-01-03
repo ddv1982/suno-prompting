@@ -55,8 +55,8 @@ export class AIEngine {
   setMaxMode = this.config.setMaxMode.bind(this.config);
   setLyricsMode = this.config.setLyricsMode.bind(this.config);
   initialize = this.config.initialize.bind(this.config);
-
-  private getModel = () => this.config.getModel();
+  isDebugMode = this.config.isDebugMode.bind(this.config);
+  getModel = () => this.config.getModel();
 
   private cleanJsonResponse(text: string): string {
     return text.trim().replace(/```json\n?|\n?```/g, '');

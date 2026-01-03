@@ -150,5 +150,9 @@ export const api = {
         category: QuickVibesCategory | null
     ): Promise<BunRequests['refineQuickVibes']['response']> {
         return await rpc.request.refineQuickVibes({ currentPrompt, feedback, withWordlessVocals, category });
+    },
+
+    async convertToMaxFormat(text: string): Promise<BunRequests['convertToMaxFormat']['response']> {
+        return await rpc.request.convertToMaxFormat({ text });
     }
 };

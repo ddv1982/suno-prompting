@@ -5,6 +5,7 @@ import { type AIEngine } from '@bun/ai';
 import { type StorageManager } from '@bun/storage';
 import { createLogger } from '@bun/logger';
 import type { GenerationResult } from '@bun/ai';
+import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 
 const log = createLogger('RPC');
 
@@ -251,6 +252,22 @@ export function createHandlers(
                 log.error('refineQuickVibes:failed', error);
                 throw error;
             }
+        },
+        convertToMaxFormat: async ({ text }) => {
+            return withErrorHandling('convertToMaxFormat', async () => {
+                const result = await convertToMaxFormat(text, aiEngine.getModel.bind(aiEngine));
+                const versionId = Bun.randomUUIDv7();
+                log.info('convertToMaxFormat:result', { 
+                    versionId, 
+                    wasConverted: result.wasConverted, 
+                    promptLength: result.convertedPrompt.length 
+                });
+                return {
+                    convertedPrompt: result.convertedPrompt,
+                    wasConverted: result.wasConverted,
+                    versionId
+                };
+            }, { textLength: text.length });
         }
     };
 }

@@ -12,6 +12,10 @@ export const APP_CONSTANTS = {
 [REALISM: MAX](MAX)
 [REAL_INSTRUMENTS: MAX](MAX)`,
     STORAGE_DIR: '.suno-prompting-app',
+    UI: {
+        TOAST_DURATION_MS: 3000,
+        COPY_FEEDBACK_DURATION_MS: 2000,
+    },
     AI: {
         MAX_RETRIES: 10,
         MAX_LENGTH_RETRIES: 10,

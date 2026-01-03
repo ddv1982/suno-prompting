@@ -1,10 +1,8 @@
 // Realism and style tags for Suno Max Mode
 // Based on community-discovered techniques for higher quality output
 
-export const MAX_MODE_HEADER = `[Is_MAX_MODE: MAX](MAX)
-[QUALITY: MAX](MAX)
-[REALISM: MAX](MAX)
-[REAL_INSTRUMENTS: MAX](MAX)`;
+// Re-export MAX_MODE_HEADER from shared for backwards compatibility
+export { MAX_MODE_HEADER } from '@shared/max-format';
 
 // Realism descriptors for organic/acoustic genres
 export const REALISM_TAGS = {

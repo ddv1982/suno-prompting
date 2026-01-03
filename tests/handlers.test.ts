@@ -1,7 +1,16 @@
-import { describe, expect, test, mock } from "bun:test";
+import { describe, expect, test, mock, beforeEach } from "bun:test";
 import { createHandlers } from "@bun/handlers";
 import { type PromptSession, type AppConfig, DEFAULT_API_KEYS } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
+
+// Mock the AI SDK for handler tests (same as max-conversion.test.ts)
+const mockGenerateText = mock(async () => ({
+  text: '{"styleTags": "raw, energetic", "recording": "studio session"}',
+}));
+
+mock.module("ai", () => ({
+  generateText: mockGenerateText,
+}));
 
 // Mock AIEngine
 function createMockAIEngine() {
@@ -24,6 +33,7 @@ function createMockAIEngine() {
     setDebugMode: mock(() => {}),
     setMaxMode: mock(() => {}),
     setLyricsMode: mock(() => {}),
+    getModel: mock(() => ({} as any)),
   };
 }
 
@@ -258,6 +268,102 @@ describe("RPC Handlers", () => {
       expect(result.prompt).toBe("Quick vibes prompt");
       expect(result.versionId).toBeDefined();
       expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", true);
+    });
+  });
+
+  // ============================================================================
+  // Task 5.5: Handler Integration Test - convertToMaxFormat
+  // ============================================================================
+
+  describe("convertToMaxFormat handler", () => {
+    beforeEach(() => {
+      mockGenerateText.mockClear();
+      mockGenerateText.mockImplementation(async () => ({
+        text: '{"styleTags": "raw, energetic", "recording": "studio session"}',
+      }));
+    });
+
+    test("returns correct response structure", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.convertToMaxFormat({
+        text: "Genre: Rock\nMood: energetic\nInstruments: guitar, drums",
+      });
+
+      expect(result).toHaveProperty("convertedPrompt");
+      expect(result).toHaveProperty("wasConverted");
+      expect(result).toHaveProperty("versionId");
+      expect(result.convertedPrompt).toContain("[Is_MAX_MODE: MAX](MAX)");
+      expect(result.wasConverted).toBe(true);
+    });
+
+    test("versionId is generated", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.convertToMaxFormat({
+        text: "A simple music prompt",
+      });
+
+      expect(result.versionId).toBeDefined();
+      expect(typeof result.versionId).toBe("string");
+      expect(result.versionId.length).toBeGreaterThan(0);
+    });
+
+    test("converts standard prompt and uses AI", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await handlers.convertToMaxFormat({ text: "Genre: Jazz\nMood: chill" });
+
+      // AI should be called for conversion
+      expect(mockGenerateText).toHaveBeenCalled();
+    });
+
+    test("returns wasConverted false for already-max-format prompts", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const maxFormatPrompt = `[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+genre: "jazz"
+bpm: "110"`;
+
+      const result = await handlers.convertToMaxFormat({
+        text: maxFormatPrompt,
+      });
+
+      expect(result.wasConverted).toBe(false);
+      expect(result.convertedPrompt).toBe(maxFormatPrompt);
+      // AI should NOT be called for already-max format
+      expect(mockGenerateText).not.toHaveBeenCalled();
+    });
+
+    test("includes all required max format fields in output", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.convertToMaxFormat({
+        text: "Genre: Electronic\nMood: energetic",
+      });
+
+      expect(result.convertedPrompt).toContain("[Is_MAX_MODE: MAX](MAX)");
+      expect(result.convertedPrompt).toContain("[QUALITY: MAX](MAX)");
+      expect(result.convertedPrompt).toContain("[REALISM: MAX](MAX)");
+      expect(result.convertedPrompt).toContain("[REAL_INSTRUMENTS: MAX](MAX)");
+      expect(result.convertedPrompt).toContain('genre:');
+      expect(result.convertedPrompt).toContain('bpm:');
+      expect(result.convertedPrompt).toContain('instruments:');
+      expect(result.convertedPrompt).toContain('style tags:');
+      expect(result.convertedPrompt).toContain('recording:');
     });
   });
 });

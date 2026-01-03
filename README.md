@@ -246,6 +246,45 @@ recording: "one person, one guitar, natural dynamics"
 
 Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
+### Auto-conversion from standard format
+
+When Max Mode is enabled and you paste a standard (non-max) format prompt, the app automatically converts it to Max Mode format:
+
+**Input (standard format):**
+```
+A dreamy ambient soundscape
+
+Genre: Ambient
+Mood: ethereal, calm, floating
+Instruments: synth pad, piano, strings
+
+[INTRO] Gentle pads fade in...
+[VERSE] Shimmering textures layer...
+```
+
+**Output (auto-converted to Max format):**
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+genre: "ambient"
+bpm: "65"
+instruments: "ethereal synth pad, warm piano, lush strings"
+style tags: "tape recorder, close-up, natural dynamics, room tone"
+recording: "intimate studio session with vintage microphone, analog warmth"
+```
+
+**How it works:**
+1. Paste any standard prompt while Max Mode is enabled
+2. The app detects the non-max format and triggers conversion
+3. BPM is inferred from the detected genre
+4. AI generates appropriate `style tags` and `recording` descriptions
+5. A toast notification confirms: "Converted to Max Mode format"
+6. Original input is preserved; converted output appears in the output area
+
+**Note**: If you paste a prompt that's already in Max Mode format, no conversion occurs.
+
 ## Title & Lyrics
 
 The app always generates an AI-powered song title alongside your style prompt. Optionally enable Lyrics Mode to also generate structured song lyrics.

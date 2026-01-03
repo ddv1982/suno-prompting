@@ -34,6 +34,7 @@ interface GenerationContextType {
   handleRemixLyrics: () => Promise<void>;
   handleGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
+  handleConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: DebugInfo) => Promise<void>;
 }
 
 const GenerationContext = createContext<GenerationContextType | null>(null);
@@ -347,6 +348,50 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     await handleGenerateQuickVibes(category, customDescription, storedWithWordlessVocals ?? false);
   }, [isGenerating, currentSession, handleGenerateQuickVibes]);
 
+  const handleConversionComplete = useCallback(async (
+    originalInput: string,
+    convertedPrompt: string,
+    versionId: string,
+    conversionDebugInfo?: DebugInfo
+  ) => {
+    setDebugInfo(conversionDebugInfo);
+    const now = new Date().toISOString();
+
+    const newVersion: PromptVersion = {
+      id: versionId,
+      content: convertedPrompt,
+      feedback: '[auto-converted to max format]',
+      timestamp: now,
+    };
+
+    // Create new session or update existing
+    const isNewSession = !currentSession;
+    const updatedSession: PromptSession = isNewSession
+      ? {
+          id: generateId(),
+          originalInput,
+          currentPrompt: convertedPrompt,
+          versionHistory: [newVersion],
+          createdAt: now,
+          updatedAt: now,
+        }
+      : {
+          ...currentSession,
+          currentPrompt: convertedPrompt,
+          versionHistory: [...currentSession.versionHistory, newVersion],
+          updatedAt: now,
+        };
+
+    if (isNewSession) {
+      setChatMessages(buildChatMessages(updatedSession));
+    } else {
+      setChatMessages(prev => [...prev, { role: "ai", content: "Converted to Max Mode format." }]);
+    }
+
+    setValidation({ ...EMPTY_VALIDATION });
+    await saveSession(updatedSession);
+  }, [currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation]);
+
   return (
     <GenerationContext.Provider value={{
       isGenerating,
@@ -369,6 +414,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       handleRemixLyrics: remixActions.handleRemixLyrics,
       handleGenerateQuickVibes,
       handleRemixQuickVibes,
+      handleConversionComplete,
     }}>
       {children}
     </GenerationContext.Provider>

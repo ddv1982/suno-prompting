@@ -34,7 +34,7 @@ export function QuickVibesOutput({
   const handleCopy = () => {
     onCopy();
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   return (

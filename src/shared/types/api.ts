@@ -124,3 +124,12 @@ export type RefineQuickVibesResponse = {
   versionId: string;
   debugInfo?: DebugInfo;
 };
+
+// Max Mode Format Conversion
+export type ConvertToMaxFormatParams = { text: string };
+export type ConvertToMaxFormatResponse = {
+  convertedPrompt: string;
+  wasConverted: boolean;
+  versionId: string;
+  debugInfo?: DebugInfo;
+};

@@ -78,5 +78,6 @@ export const useAppContext = () => {
     handleRemixLyrics: generation.handleRemixLyrics,
     handleGenerateQuickVibes: generation.handleGenerateQuickVibes,
     handleRemixQuickVibes: generation.handleRemixQuickVibes,
+    handleConversionComplete: generation.handleConversionComplete,
   };
 };
