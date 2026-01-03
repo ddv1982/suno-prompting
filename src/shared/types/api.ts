@@ -131,7 +131,7 @@ export type ConvertToMaxFormatResponse = {
   convertedPrompt: string;
   wasConverted: boolean;
   versionId: string;
-  debugInfo?: DebugInfo;
+  debugInfo?: Partial<DebugInfo>;
 };
 
 // Creative Boost endpoints

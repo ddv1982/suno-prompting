@@ -21,7 +21,7 @@ export function useGenerationState() {
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | undefined>(undefined);
+  const [debugInfo, setDebugInfo] = useState<Partial<DebugInfo> | undefined>(undefined);
 
   const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
 

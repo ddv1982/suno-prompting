@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo, type CreativeBoostInput } from '@shared/types';
+import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { useSessionContext } from '@/context/session-context';
@@ -9,30 +9,12 @@ import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
 import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
 import { useRemixActions } from '@/hooks/use-remix-actions';
+import { useQuickVibesActions } from '@/hooks/use-quick-vibes-actions';
+import { useCreativeBoostActions } from '@/hooks/use-creative-boost-actions';
 import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import { useToast } from '@/components/ui/toast';
 
 const log = createLogger('Generation');
-
-// Helper to build a clean copy of CreativeBoostInput for session persistence
-const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostInput => ({
-  creativityLevel: input.creativityLevel,
-  seedGenres: input.seedGenres,
-  sunoStyles: input.sunoStyles,
-  description: input.description,
-  lyricsTopic: input.lyricsTopic,
-  withWordlessVocals: input.withWordlessVocals,
-});
-
-// Helper to build the original input string for Creative Boost sessions
-const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {
-  return [
-    `[creativity: ${input.creativityLevel}%]`,
-    input.seedGenres.length > 0 ? `[genres: ${input.seedGenres.join(', ')}]` : null,
-    input.sunoStyles.length > 0 ? `[suno-styles: ${input.sunoStyles.join(', ')}]` : null,
-    input.description || null,
-  ].filter(Boolean).join(' ') || 'Creative Boost';
-};
 
 export type { GeneratingAction } from '@/hooks/use-generation-state';
 
@@ -41,7 +23,7 @@ interface GenerationContextType {
   generatingAction: GeneratingAction;
   chatMessages: ChatMessage[];
   validation: ValidationResult;
-  debugInfo: DebugInfo | undefined;
+  debugInfo: Partial<DebugInfo> | undefined;
   setValidation: (v: ValidationResult) => void;
   selectSession: (session: PromptSession) => void;
   newProject: () => void;
@@ -57,7 +39,7 @@ interface GenerationContextType {
   handleRemixLyrics: () => Promise<void>;
   handleGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
-  handleConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: DebugInfo) => Promise<void>;
+  handleConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
   handleGenerateCreativeBoost: () => Promise<void>;
   handleRefineCreativeBoost: (feedback: string) => Promise<void>;
 }
@@ -72,7 +54,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, resetCreativeBoostInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection, creativeBoostInput } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection, creativeBoostInput } = useEditorContext();
   const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
 
@@ -97,6 +79,37 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     setDebugInfo,
     setChatMessages,
     setValidation,
+  });
+
+  const quickVibesActions = useQuickVibesActions({
+    isGenerating,
+    currentSession,
+    generateId,
+    saveSession,
+    setGeneratingAction,
+    setDebugInfo,
+    setChatMessages,
+    setValidation,
+    resetQuickVibesInput,
+    setPendingInput,
+    withWordlessVocals,
+    quickVibesInput,
+  });
+
+  const creativeBoostActions = useCreativeBoostActions({
+    isGenerating,
+    currentSession,
+    generateId,
+    saveSession,
+    setGeneratingAction,
+    setDebugInfo,
+    setChatMessages,
+    setValidation,
+    setPendingInput,
+    showToast,
+    creativeBoostInput,
+    maxMode,
+    lyricsMode,
   });
 
   const selectSession = useCallback((session: PromptSession) => {
@@ -173,7 +186,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     originalInput: string,
     convertedPrompt: string,
     versionId: string,
-    conversionDebugInfo?: DebugInfo,
+    conversionDebugInfo?: Partial<DebugInfo>,
     feedback?: string
   ): Promise<void> => {
     setDebugInfo(conversionDebugInfo);
@@ -224,47 +237,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
 
     // Quick Vibes refinement: when in Quick Vibes mode with an existing prompt
     if (promptMode === 'quickVibes' && currentSession?.currentPrompt) {
-      const session = currentSession;
-      if (!session) return;
-      try {
-        setGeneratingAction('quickVibes');
-        setChatMessages(prev => [...prev, { role: "user", content: input }]);
-
-        const result = await api.refineQuickVibes(session.currentPrompt, input, withWordlessVocals, quickVibesInput.category);
-
-        if (!result?.prompt) {
-          throw new Error("Invalid result received from Quick Vibes refinement");
-        }
-
-        setDebugInfo(result.debugInfo);
-        const now = new Date().toISOString();
-        const newVersion: PromptVersion = {
-          id: result.versionId,
-          content: result.prompt,
-          timestamp: now,
-        };
-
-        const updatedSession: PromptSession = {
-          ...session,
-          currentPrompt: result.prompt,
-          versionHistory: [...session.versionHistory, newVersion],
-          updatedAt: now,
-        };
-
-        setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt refined." }]);
-        setValidation({ ...EMPTY_VALIDATION });
-        await saveSession(updatedSession);
-        setPendingInput("");
-        resetQuickVibesInput();
-      } catch (error) {
-        log.error("refineQuickVibes:failed", error);
-        setChatMessages(prev => [
-          ...prev,
-          { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to refine Quick Vibes"}.` },
-        ]);
-      } finally {
-        setGeneratingAction('none');
-      }
+      await quickVibesActions.handleRefineQuickVibes(input);
       return;
     }
 
@@ -378,232 +351,14 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, advancedSelection]);
 
-  const handleGenerateQuickVibes = useCallback(async (
-    category: QuickVibesCategory | null,
-    customDescription: string,
-    withWordlessVocals: boolean
-  ) => {
-    if (isGenerating) return;
-
-    try {
-      setGeneratingAction('quickVibes');
-      const result = await api.generateQuickVibes(category, customDescription, withWordlessVocals);
-
-      if (!result?.prompt) {
-        throw new Error("Invalid result received from Quick Vibes generation");
-      }
-
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
-      const originalInput = [
-        category ? `[${category}]` : null,
-        customDescription || null,
-      ].filter(Boolean).join(' ') || 'Quick Vibes';
-
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        timestamp: now,
-      };
-
-      const isNewSession = !currentSession;
-      const updatedSession: PromptSession = isNewSession
-        ? {
-            id: generateId(),
-            originalInput,
-            currentPrompt: result.prompt,
-            versionHistory: [newVersion],
-            createdAt: now,
-            updatedAt: now,
-            promptMode: 'quickVibes',
-            quickVibesInput: { category, customDescription, withWordlessVocals },
-          }
-        : {
-            ...currentSession,
-            currentPrompt: result.prompt,
-            versionHistory: [...currentSession.versionHistory, newVersion],
-            updatedAt: now,
-            promptMode: 'quickVibes',
-            quickVibesInput: { category, customDescription, withWordlessVocals },
-          };
-
-      if (isNewSession) {
-        setChatMessages(buildChatMessages(updatedSession));
-      } else {
-        setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt generated." }]);
-      }
-
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
-      resetQuickVibesInput();
-    } catch (error) {
-      log.error("generateQuickVibes:failed", error);
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate Quick Vibes"}.` },
-      ]);
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, currentSession, generateId, saveSession, resetQuickVibesInput]);
-
-  const handleRemixQuickVibes = useCallback(async () => {
-    if (isGenerating) return;
-    if (!currentSession?.quickVibesInput) return;
-
-    const { category, customDescription, withWordlessVocals: storedWithWordlessVocals } = currentSession.quickVibesInput;
-    await handleGenerateQuickVibes(category, customDescription, storedWithWordlessVocals ?? false);
-  }, [isGenerating, currentSession, handleGenerateQuickVibes]);
-
   const handleConversionComplete = useCallback(async (
     originalInput: string,
     convertedPrompt: string,
     versionId: string,
-    conversionDebugInfo?: DebugInfo
+    conversionDebugInfo?: Partial<DebugInfo>
   ) => {
     await createConversionSession(originalInput, convertedPrompt, versionId, conversionDebugInfo);
   }, [createConversionSession]);
-
-  const handleGenerateCreativeBoost = useCallback(async () => {
-    if (isGenerating) return;
-
-    try {
-      setGeneratingAction('creativeBoost');
-      const result = await api.generateCreativeBoost({
-        creativityLevel: creativeBoostInput.creativityLevel,
-        seedGenres: creativeBoostInput.seedGenres,
-        sunoStyles: creativeBoostInput.sunoStyles,
-        description: creativeBoostInput.description,
-        lyricsTopic: creativeBoostInput.lyricsTopic,
-        withWordlessVocals: creativeBoostInput.withWordlessVocals,
-        maxMode,
-        withLyrics: lyricsMode,
-      });
-
-      if (!result?.prompt) {
-        throw new Error("Invalid result received from Creative Boost generation");
-      }
-
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
-      const originalInput = buildCreativeBoostOriginalInput(creativeBoostInput);
-
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        title: result.title,
-        lyrics: result.lyrics,
-        timestamp: now,
-      };
-
-      const isNewSession = !currentSession;
-      const updatedSession: PromptSession = isNewSession
-        ? {
-            id: generateId(),
-            originalInput,
-            currentPrompt: result.prompt,
-            currentTitle: result.title,
-            currentLyrics: result.lyrics,
-            versionHistory: [newVersion],
-            createdAt: now,
-            updatedAt: now,
-            promptMode: 'creativeBoost',
-            creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
-          }
-        : {
-            ...currentSession,
-            currentPrompt: result.prompt,
-            currentTitle: result.title,
-            currentLyrics: result.lyrics,
-            versionHistory: [...currentSession.versionHistory, newVersion],
-            updatedAt: now,
-            promptMode: 'creativeBoost',
-            creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
-          };
-
-      if (isNewSession) {
-        setChatMessages(buildChatMessages(updatedSession));
-      } else {
-        setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt generated." }]);
-      }
-
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
-      showToast('Creative Boost generated!', 'success');
-    } catch (error) {
-      log.error("generateCreativeBoost:failed", error);
-      showToast(error instanceof Error ? error.message : "Failed to generate Creative Boost", 'error');
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate Creative Boost"}.` },
-      ]);
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, currentSession, generateId, saveSession, creativeBoostInput, maxMode, lyricsMode, showToast]);
-
-  const handleRefineCreativeBoost = useCallback(async (feedback: string) => {
-    if (isGenerating) return;
-    if (!currentSession?.currentPrompt || !currentSession?.currentTitle) return;
-
-    try {
-      setGeneratingAction('creativeBoost');
-      setChatMessages(prev => [...prev, { role: "user", content: feedback }]);
-
-      const result = await api.refineCreativeBoost({
-        currentPrompt: currentSession.currentPrompt,
-        currentTitle: currentSession.currentTitle,
-        feedback,
-        lyricsTopic: creativeBoostInput.lyricsTopic,
-        description: creativeBoostInput.description,
-        seedGenres: creativeBoostInput.seedGenres,
-        sunoStyles: creativeBoostInput.sunoStyles,
-        withWordlessVocals: creativeBoostInput.withWordlessVocals,
-        maxMode,
-        withLyrics: lyricsMode,
-      });
-
-      if (!result?.prompt) {
-        throw new Error("Invalid result received from Creative Boost refinement");
-      }
-
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        title: result.title,
-        lyrics: result.lyrics,
-        feedback,
-        timestamp: now,
-      };
-
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        currentPrompt: result.prompt,
-        currentTitle: result.title,
-        currentLyrics: result.lyrics,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
-        creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
-      };
-
-      setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt refined." }]);
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
-      setPendingInput("");
-      showToast('Creative Boost refined!', 'success');
-    } catch (error) {
-      log.error("refineCreativeBoost:failed", error);
-      showToast(error instanceof Error ? error.message : "Failed to refine Creative Boost", 'error');
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to refine Creative Boost"}.` },
-      ]);
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, currentSession, creativeBoostInput, maxMode, lyricsMode, saveSession, setPendingInput, showToast]);
 
   return (
     <GenerationContext.Provider value={{
@@ -625,11 +380,11 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       handleRemixRecording: remixActions.handleRemixRecording,
       handleRemixTitle: remixActions.handleRemixTitle,
       handleRemixLyrics: remixActions.handleRemixLyrics,
-      handleGenerateQuickVibes,
-      handleRemixQuickVibes,
+      handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
+      handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
       handleConversionComplete,
-      handleGenerateCreativeBoost,
-      handleRefineCreativeBoost,
+      handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
+      handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
     }}>
       {children}
     </GenerationContext.Provider>

@@ -2,16 +2,13 @@
 // Converts non-max format prompts to Max Mode format
 
 import { generateText } from 'ai';
-import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
-import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
-import { articulateInstrument } from '@bun/prompt/articulations';
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
-import { formatGenreLabels } from '@shared/labels';
+import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import type { LanguageModel } from 'ai';
 import type { DebugInfo } from '@shared/types';
 
-// Re-export isMaxFormat for consumers of this module
+// Re-exports for backwards compatibility
 export { isMaxFormat } from '@shared/max-format';
 
 // ============================================================================
@@ -51,53 +48,17 @@ export interface MaxConversionResult {
   debugInfo?: Partial<DebugInfo>;
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-const DEFAULT_BPM = 90;
-const DEFAULT_GENRE = 'ambient';
-const DEFAULT_INSTRUMENTS_FALLBACK = 'ambient pad, subtle textures';
-
-// Genre aliases for common variations
-const GENRE_ALIASES: Record<string, string> = {
-  'hip hop': 'trap',
-  'hip-hop': 'trap',
-  'hiphop': 'trap',
-  'rnb': 'rnb',
-  'r&b': 'rnb',
-  'r and b': 'rnb',
-  'lofi': 'lofi',
-  'lo-fi': 'lofi',
-  'lo fi': 'lofi',
-  'edm': 'electronic',
-  'dance': 'house',
-  'dnb': 'electronic',
-  'drum and bass': 'electronic',
-  'orchestral': 'cinematic',
-  'film score': 'cinematic',
-  'soundtrack': 'cinematic',
-  'acoustic': 'folk',
-  'singer-songwriter': 'folk',
-  'singer songwriter': 'folk',
-  'r&b/soul': 'rnb',
-  'progressive rock': 'rock',
-  'prog rock': 'rock',
-  'alternative': 'indie',
-  'alt rock': 'indie',
-  'hard rock': 'rock',
-  'classic rock': 'rock',
-  'nu metal': 'metal',
-  'heavy metal': 'metal',
-  'thrash': 'metal',
-  'neo soul': 'soul',
-  'neo-soul': 'soul',
-  'bossa nova': 'jazz',
-  'bossa': 'jazz',
-  'smooth jazz': 'jazz',
-  'bebop': 'jazz',
-  'fusion': 'jazz',
-};
+// Re-export shared utilities for backwards compatibility with existing consumers
+export { 
+  DEFAULT_BPM, 
+  DEFAULT_GENRE, 
+  DEFAULT_INSTRUMENTS_FALLBACK,
+  GENRE_ALIASES,
+  normalizeGenre,
+  inferBpm,
+  enhanceInstruments,
+  resolveGenre,
+} from '@bun/prompt/conversion-utils';
 
 // ============================================================================
 // Task 1.2: Non-Max Prompt Parser
@@ -187,51 +148,7 @@ export function parseNonMaxPrompt(text: string): ParsedPrompt {
   return { description, genre, moods, instruments, sections };
 }
 
-// ============================================================================
-// Task 1.3: BPM Inference
-// ============================================================================
 
-/**
- * Normalize genre string and look up in registry or aliases
- */
-function normalizeGenre(genre: string): string | null {
-  const normalized = genre.toLowerCase().trim();
-
-  // Direct registry lookup
-  if (normalized in GENRE_REGISTRY) {
-    return normalized;
-  }
-
-  // Check aliases
-  if (normalized in GENRE_ALIASES) {
-    return GENRE_ALIASES[normalized] || null;
-  }
-
-  // Try first word for compound genres like "jazz fusion"
-  const firstWord = normalized.split(/[\s,]+/)[0];
-  if (firstWord && firstWord in GENRE_REGISTRY) {
-    return firstWord;
-  }
-
-  return null;
-}
-
-/**
- * Infer BPM from detected genre using GENRE_REGISTRY
- */
-export function inferBpm(genre: string | null): number {
-  if (!genre) return DEFAULT_BPM;
-
-  const normalizedGenre = normalizeGenre(genre);
-  if (!normalizedGenre) return DEFAULT_BPM;
-
-  const genreDef = GENRE_REGISTRY[normalizedGenre as GenreType];
-  if (genreDef?.bpm) {
-    return genreDef.bpm.typical;
-  }
-
-  return DEFAULT_BPM;
-}
 
 // ============================================================================
 // Task 1.4: AI Enhancement
@@ -347,30 +264,6 @@ export async function enhanceWithAI(
 // ============================================================================
 
 /**
- * Enhance instruments list with articulations.
- * If no instruments provided, selects genre-appropriate defaults.
- */
-function enhanceInstruments(instruments: string[], genre: string | null): string {
-  let instrumentList = instruments;
-  
-  // If no instruments provided, select genre-appropriate defaults
-  if (instrumentList.length === 0) {
-    const normalizedGenre = genre ? normalizeGenre(genre) : null;
-    if (normalizedGenre && normalizedGenre in GENRE_REGISTRY) {
-      instrumentList = selectInstrumentsForGenre(normalizedGenre as GenreType, { maxTags: 3 });
-    } else {
-      return DEFAULT_INSTRUMENTS_FALLBACK;
-    }
-  }
-
-  const enhanced = instrumentList.map((instrument) =>
-    articulateInstrument(instrument, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE)
-  );
-
-  return enhanced.join(', ');
-}
-
-/**
  * Assemble final max format prompt from all fields
  */
 export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
@@ -413,39 +306,21 @@ export async function convertToMaxFormat(
   // Parse the input
   const parsed = parseNonMaxPrompt(text);
 
-  // Determine effective genre - priority: sunoStyles > seedGenres > detected
-  // sunoStyles are injected as-is (lowercase, no transformation)
-  // seedGenres use display name formatting
-  let effectiveGenreForOutput: string;
-  let effectiveGenreForLookup: string;
+  // Resolve effective genre using shared utility
+  const genre = resolveGenre(parsed.genre, seedGenres, sunoStyles);
 
-  if (sunoStyles?.length) {
-    // Suno V5 styles: inject EXACTLY as-is (comma-separated if multiple)
-    effectiveGenreForOutput = sunoStyles.join(', ');
-    // For BPM lookup, extract first "word" from first style as best-effort genre
-    effectiveGenreForLookup = sunoStyles[0]?.split(' ')[0] || DEFAULT_GENRE;
-  } else if (seedGenres?.length) {
-    // Seed genres: format using display names (existing behavior)
-    effectiveGenreForOutput = formatGenreLabels(seedGenres);
-    effectiveGenreForLookup = seedGenres[0] || DEFAULT_GENRE;
-  } else {
-    // Detected from text (existing fallback)
-    effectiveGenreForOutput = parsed.genre || DEFAULT_GENRE;
-    effectiveGenreForLookup = parsed.genre || DEFAULT_GENRE;
-  }
-
-  // Infer BPM from first genre
-  const bpm = inferBpm(effectiveGenreForLookup);
+  // Infer BPM from lookup genre
+  const bpm = inferBpm(genre.forLookup);
 
   // Enhance with AI (generate style tags and recording)
   const aiResult = await enhanceWithAI(parsed, getModel);
 
   // Build instruments string with articulations (genre-aware defaults)
-  const instruments = enhanceInstruments(parsed.instruments, effectiveGenreForLookup);
+  const instruments = enhanceInstruments(parsed.instruments, genre.forLookup);
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildMaxFormatPrompt({
-    genre: effectiveGenreForOutput,
+    genre: genre.forOutput,
     bpm,
     instruments,
     styleTags: aiResult.styleTags,

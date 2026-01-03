@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 
 interface SwitchProps {
+  id?: string;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
@@ -21,11 +22,12 @@ const sizeStyles = {
   }
 };
 
-export function Switch({ checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps) {
+export function Switch({ id, checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps) {
   const styles = sizeStyles[size];
   
   return (
     <button
+      id={id}
       type="button"
       role="switch"
       aria-checked={checked}

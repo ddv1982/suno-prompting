@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { api } from '@/services/rpc';
 import { type PromptSession, type PromptVersion } from '@shared/types';
 import { type ValidationResult } from '@shared/validation';
+import { type ChatMessage } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
 import { type GeneratingAction } from './use-generation-state';
 
@@ -14,7 +15,7 @@ type RemixActionDeps = {
   saveSession: (session: PromptSession) => Promise<void>;
   setGeneratingAction: (action: GeneratingAction) => void;
   setDebugInfo: (info: undefined) => void;
-  setChatMessages: React.Dispatch<React.SetStateAction<{ role: string; content: string }[]>>;
+  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
 };
 

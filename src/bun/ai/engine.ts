@@ -2,20 +2,9 @@ import { generateText } from 'ai';
 import { selectModes } from '@bun/instruments/selection';
 import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
-import type { DebugInfo } from '@shared/types';
+import type { DebugInfo, QuickVibesCategory } from '@shared/types';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
-import { buildQuickVibesSystemPrompt, buildQuickVibesUserPrompt, postProcessQuickVibes, applyQuickVibesMaxMode, stripMaxModeHeader, buildQuickVibesRefineSystemPrompt, buildQuickVibesRefineUserPrompt } from '@bun/prompt/quick-vibes-builder';
-import {
-  buildCreativeBoostSystemPrompt,
-  buildCreativeBoostUserPrompt,
-  parseCreativeBoostResponse,
-  buildCreativeBoostRefineSystemPrompt,
-  buildCreativeBoostRefineUserPrompt,
-} from '@bun/prompt/creative-boost-builder';
-import { convertToMaxFormat } from '@bun/prompt/max-conversion';
-import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
-import type { QuickVibesCategory } from '@shared/types';
-import { postProcessPrompt, injectLockedPhrase, enforceLengthLimit } from '@bun/prompt/postprocess';
+import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
 import { createLogger } from '@bun/logger';
 import { AIConfig } from '@bun/ai/config';
@@ -33,21 +22,20 @@ import {
   remixTitle as remixTitleImpl,
   remixLyrics as remixLyricsImpl,
 } from '@bun/ai/remix';
+import {
+  generateQuickVibes as generateQuickVibesImpl,
+  refineQuickVibes as refineQuickVibesImpl,
+} from '@bun/ai/quick-vibes-engine';
+import {
+  generateCreativeBoost as generateCreativeBoostImpl,
+  refineCreativeBoost as refineCreativeBoostImpl,
+} from '@bun/ai/creative-boost-engine';
+import type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
+
+// Re-export types for backwards compatibility
+export type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
 
 const log = createLogger('AIEngine');
-
-export type GenerationResult = {
-  text: string;
-  title?: string;
-  lyrics?: string;
-  debugInfo?: DebugInfo;
-};
-
-export type ParsedCombinedResponse = {
-  prompt: string;
-  title: string;
-  lyrics?: string;
-};
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
@@ -77,52 +65,6 @@ export class AIEngine {
 
   private cleanLyrics(lyrics: string | undefined): string | undefined {
     return lyrics?.trim() || undefined;
-  }
-
-  private async generateLyricsForCreativeBoost(
-    styleResult: string,
-    lyricsTopic: string,
-    description: string,
-    maxMode: boolean,
-    withLyrics: boolean
-  ): Promise<{ lyrics: string | undefined; debugInfo?: { systemPrompt: string; userPrompt: string } }> {
-    if (!withLyrics) return { lyrics: undefined };
-    
-    const genre = extractGenreFromPrompt(styleResult);
-    const mood = extractMoodFromPrompt(styleResult);
-    const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
-    const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, this.getModel);
-    
-    return {
-      lyrics: result.lyrics,
-      debugInfo: result.debugInfo,
-    };
-  }
-
-  /**
-   * Applies format conversion to a style prompt based on maxMode.
-   * - Max Mode ON: Uses convertToMaxFormat for metadata-style format
-   * - Max Mode OFF: Uses convertToNonMaxFormat for section-based format
-   * Both ensure proper structure with identifiable instruments for remixing.
-   * 
-   * Genre priority:
-   * 1. sunoStyles (if provided) - inject directly as-is (no transformation)
-   * 2. seedGenres (if provided) - format using display names
-   * 3. Detected from text (fallback)
-   */
-  private async applyMaxModeConversion(
-    style: string,
-    maxMode: boolean,
-    seedGenres?: string[],
-    sunoStyles?: string[]
-  ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
-    if (maxMode) {
-      const result = await convertToMaxFormat(style, this.getModel, seedGenres, sunoStyles);
-      return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
-    } else {
-      const result = await convertToNonMaxFormat(style, this.getModel, seedGenres, sunoStyles);
-      return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
-    }
   }
 
   private parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {
@@ -187,22 +129,6 @@ export class AIEngine {
       condense: (t) => condense(t, this.getModel),
       condenseWithDedup: (t, repeated) => condenseWithDedup(t, repeated, this.getModel),
     });
-  }
-
-  /**
-   * Enforce max character limit on already-formatted output.
-   * Used by Creative Boost where conversion already produces clean output.
-   */
-  private async enforceMaxLength(text: string): Promise<string> {
-    if (text.length <= MAX_CHARS) {
-      return text;
-    }
-    log.info('enforceMaxLength:processing', { originalLength: text.length, maxChars: MAX_CHARS });
-    const result = await enforceLengthLimit(text, MAX_CHARS, (t) => condense(t, this.getModel));
-    if (result.length < text.length) {
-      log.info('enforceMaxLength:reduced', { newLength: result.length });
-    }
-    return result;
   }
 
   private async runGeneration(
@@ -455,38 +381,12 @@ export class AIEngine {
     customDescription: string,
     withWordlessVocals: boolean
   ): Promise<GenerationResult> {
-    const systemPrompt = buildQuickVibesSystemPrompt(this.config.isMaxMode(), withWordlessVocals);
-    const userPrompt = buildQuickVibesUserPrompt(category, customDescription);
-
-    try {
-      const { text: rawResponse } = await generateText({
-        model: this.getModel(),
-        system: systemPrompt,
-        prompt: userPrompt,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      if (!rawResponse?.trim()) {
-        throw new AIGenerationError('Empty response from AI model (Quick Vibes)');
-      }
-
-      let result = postProcessQuickVibes(rawResponse);
-      result = applyQuickVibesMaxMode(result, this.config.isMaxMode());
-
-      return {
-        text: result,
-        debugInfo: this.config.isDebugMode()
-          ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
-          : undefined,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to generate Quick Vibes: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
+    return generateQuickVibesImpl(category, customDescription, withWordlessVocals, {
+      getModel: this.getModel,
+      isMaxMode: this.config.isMaxMode.bind(this.config),
+      isDebugMode: this.config.isDebugMode.bind(this.config),
+      buildDebugInfo: this.buildDebugInfo.bind(this),
+    });
   }
 
   async refineQuickVibes(
@@ -495,39 +395,12 @@ export class AIEngine {
     withWordlessVocals: boolean,
     category?: QuickVibesCategory | null
   ): Promise<GenerationResult> {
-    const cleanPrompt = stripMaxModeHeader(currentPrompt);
-    const systemPrompt = buildQuickVibesRefineSystemPrompt(this.config.isMaxMode(), withWordlessVocals);
-    const userPrompt = buildQuickVibesRefineUserPrompt(cleanPrompt, feedback, category);
-
-    try {
-      const { text: rawResponse } = await generateText({
-        model: this.getModel(),
-        system: systemPrompt,
-        prompt: userPrompt,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      if (!rawResponse?.trim()) {
-        throw new AIGenerationError('Empty response from AI model (Quick Vibes refine)');
-      }
-
-      let result = postProcessQuickVibes(rawResponse);
-      result = applyQuickVibesMaxMode(result, this.config.isMaxMode());
-
-      return {
-        text: result,
-        debugInfo: this.config.isDebugMode()
-          ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
-          : undefined,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to refine Quick Vibes: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
+    return refineQuickVibesImpl(currentPrompt, feedback, withWordlessVocals, category, {
+      getModel: this.getModel,
+      isMaxMode: this.config.isMaxMode.bind(this.config),
+      isDebugMode: this.config.isDebugMode.bind(this.config),
+      buildDebugInfo: this.buildDebugInfo.bind(this),
+    });
   }
 
   async generateCreativeBoost(
@@ -540,64 +413,15 @@ export class AIEngine {
     maxMode: boolean,
     withLyrics: boolean
   ): Promise<GenerationResult> {
-    const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
-    const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description);
-
-    try {
-      const { text: rawResponse } = await generateText({
-        model: this.getModel(),
-        system: systemPrompt,
-        prompt: userPrompt,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      if (!rawResponse?.trim()) {
-        throw new AIGenerationError('Empty response from AI model (Creative Boost)');
+    return generateCreativeBoostImpl(
+      creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
+      withWordlessVocals, maxMode, withLyrics,
+      {
+        getModel: this.getModel,
+        isDebugMode: this.config.isDebugMode.bind(this.config),
+        buildDebugInfo: this.buildDebugInfo.bind(this),
       }
-
-      const parsed = parseCreativeBoostResponse(rawResponse);
-      
-      // Apply Max Mode format using the same conversion as Full Mode
-      // Pass seedGenres/sunoStyles to inject user's genre selection directly into output
-      // sunoStyles takes priority over seedGenres (injected as-is, no transformation)
-      const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
-        parsed.style, maxMode, seedGenres, sunoStyles
-      );
-
-      // Enforce max char limit (conversion output is already clean, just check length)
-      const processedStyle = await this.enforceMaxLength(styleResult);
-
-      // Generate lyrics separately using existing generateLyrics function
-      const lyricsResult = await this.generateLyricsForCreativeBoost(
-        processedStyle, lyricsTopic, description, maxMode, withLyrics
-      );
-
-      // Build debug info including lyrics generation if applicable
-      let debugInfo: DebugInfo | undefined;
-      if (this.config.isDebugMode()) {
-        debugInfo = this.buildDebugInfo(systemPrompt, userPrompt, rawResponse);
-        if (maxConversionDebugInfo) {
-          debugInfo.maxConversion = maxConversionDebugInfo;
-        }
-        if (lyricsResult.debugInfo) {
-          debugInfo.lyricsGeneration = lyricsResult.debugInfo;
-        }
-      }
-
-      return {
-        text: processedStyle,
-        title: parsed.title,
-        lyrics: lyricsResult.lyrics,
-        debugInfo,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to generate Creative Boost: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
+    );
   }
 
   async refineCreativeBoost(
@@ -612,65 +436,15 @@ export class AIEngine {
     maxMode: boolean,
     withLyrics: boolean
   ): Promise<GenerationResult> {
-    const cleanPrompt = stripMaxModeHeader(currentPrompt);
-    const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
-    const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback);
-
-    try {
-      const { text: rawResponse } = await generateText({
-        model: this.getModel(),
-        system: systemPrompt,
-        prompt: userPrompt,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
-
-      if (!rawResponse?.trim()) {
-        throw new AIGenerationError('Empty response from AI model (Creative Boost refine)');
+    return refineCreativeBoostImpl(
+      currentPrompt, currentTitle, feedback, lyricsTopic, description,
+      seedGenres, sunoStyles, withWordlessVocals, maxMode, withLyrics,
+      {
+        getModel: this.getModel,
+        isDebugMode: this.config.isDebugMode.bind(this.config),
+        buildDebugInfo: this.buildDebugInfo.bind(this),
       }
-
-      const parsed = parseCreativeBoostResponse(rawResponse);
-      
-      // Apply Max Mode format using the same conversion as Full Mode
-      // Pass seedGenres/sunoStyles to preserve user's genre selection during refine
-      // sunoStyles takes priority over seedGenres (injected as-is, no transformation)
-      const { styleResult, debugInfo: maxConversionDebugInfo } = await this.applyMaxModeConversion(
-        parsed.style, maxMode, seedGenres, sunoStyles
-      );
-
-      // Enforce max char limit (conversion output is already clean, just check length)
-      const processedStyle = await this.enforceMaxLength(styleResult);
-
-      // Regenerate lyrics using existing generateLyrics function
-      const lyricsResult = await this.generateLyricsForCreativeBoost(
-        processedStyle, lyricsTopic, description, maxMode, withLyrics
-      );
-
-      // Build debug info including lyrics generation if applicable
-      let debugInfo: DebugInfo | undefined;
-      if (this.config.isDebugMode()) {
-        debugInfo = this.buildDebugInfo(systemPrompt, userPrompt, rawResponse);
-        if (maxConversionDebugInfo) {
-          debugInfo.maxConversion = maxConversionDebugInfo;
-        }
-        if (lyricsResult.debugInfo) {
-          debugInfo.lyricsGeneration = lyricsResult.debugInfo;
-        }
-      }
-
-      return {
-        text: processedStyle,
-        title: parsed.title,
-        lyrics: lyricsResult.lyrics,
-        debugInfo,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to refine Creative Boost: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
+    );
   }
 }
 

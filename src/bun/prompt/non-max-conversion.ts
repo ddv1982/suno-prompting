@@ -2,11 +2,8 @@
 // Converts Creative Boost style descriptions to proper non-max Suno format
 
 import { generateText } from 'ai';
-import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
-import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
-import { articulateInstrument } from '@bun/prompt/articulations';
 import { APP_CONSTANTS } from '@shared/constants';
-import { formatGenreLabels } from '@shared/labels';
+import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import type { LanguageModel } from 'ai';
 import type { DebugInfo } from '@shared/types';
 
@@ -43,12 +40,19 @@ export interface NonMaxConversionResult {
   debugInfo?: Partial<DebugInfo>;
 }
 
+// Re-export shared utilities for backwards compatibility
+export { 
+  DEFAULT_BPM, 
+  DEFAULT_GENRE, 
+  extractFirstGenre,
+  inferBpm,
+  enhanceInstruments,
+  resolveGenre,
+} from '@bun/prompt/conversion-utils';
+
 // ============================================================================
 // Constants
 // ============================================================================
-
-const DEFAULT_BPM = 90;
-const DEFAULT_GENRE = 'ambient';
 
 // Genre keywords for detection
 const GENRE_KEYWORDS: Record<string, string[]> = {
@@ -126,33 +130,6 @@ export function parseStyleDescription(text: string): ParsedStyleDescription {
     detectedMoods: detectedMoods.slice(0, 3), // Max 3 moods
     detectedInstruments: detectedInstruments.slice(0, 4), // Max 4 instruments
   };
-}
-
-/**
- * Extract the first genre from a potentially comma-separated genre string
- */
-function extractFirstGenre(genre: string): string {
-  return genre.split(/[\s,]+/)[0]?.toLowerCase().trim() || '';
-}
-
-/**
- * Infer BPM from detected genre using GENRE_REGISTRY
- * Handles comma-separated multi-genre strings by using the first genre
- */
-export function inferBpm(genre: string | null): number {
-  if (!genre) return DEFAULT_BPM;
-
-  const firstGenre = extractFirstGenre(genre);
-  
-  // Direct registry lookup
-  if (firstGenre in GENRE_REGISTRY) {
-    const genreDef = GENRE_REGISTRY[firstGenre as GenreType];
-    if (genreDef?.bpm) {
-      return genreDef.bpm.typical;
-    }
-  }
-
-  return DEFAULT_BPM;
 }
 
 // ============================================================================
@@ -263,31 +240,6 @@ async function generateSectionContent(
 // ============================================================================
 
 /**
- * Enhance instruments list with articulations.
- * If no instruments detected, selects genre-appropriate defaults.
- * Handles comma-separated multi-genre strings by using the first genre.
- */
-function enhanceInstruments(instruments: string[], genre: string | null): string {
-  let instrumentList = instruments;
-  
-  // If no instruments provided, select genre-appropriate defaults
-  if (instrumentList.length === 0) {
-    const firstGenre = genre ? extractFirstGenre(genre) : null;
-    if (firstGenre && firstGenre in GENRE_REGISTRY) {
-      instrumentList = selectInstrumentsForGenre(firstGenre as GenreType, { maxTags: 3 });
-    } else {
-      return 'ambient textures, subtle pads';
-    }
-  }
-
-  const enhanced = instrumentList.map((instrument) =>
-    articulateInstrument(instrument, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE)
-  );
-
-  return enhanced.join(', ');
-}
-
-/**
  * Build the mood line from detected moods or generate default
  * Handles comma-separated multi-genre strings by using the first genre.
  */
@@ -363,42 +315,28 @@ export async function convertToNonMaxFormat(
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
 
-  // Determine effective genre - priority: sunoStyles > seedGenres > detected
-  // sunoStyles are injected as-is (lowercase, no transformation)
-  // seedGenres use display name formatting
-  let effectiveGenreForOutput: string;
-  let effectiveGenreForLookup: string;
+  // Resolve effective genre using shared utility
+  const genre = resolveGenre(parsed.detectedGenre, seedGenres, sunoStyles);
 
-  if (sunoStyles?.length) {
-    // Suno V5 styles: inject EXACTLY as-is (comma-separated if multiple)
-    effectiveGenreForOutput = sunoStyles.join(', ');
-    // For BPM lookup, extract first "word" from first style as best-effort genre
-    effectiveGenreForLookup = sunoStyles[0]?.split(' ')[0] || DEFAULT_GENRE;
-  } else if (seedGenres?.length) {
-    // Seed genres: format using display names (existing behavior)
-    effectiveGenreForOutput = formatGenreLabels(seedGenres);
-    effectiveGenreForLookup = seedGenres[0] || DEFAULT_GENRE;
-  } else {
-    // Detected from text (existing fallback)
-    effectiveGenreForOutput = parsed.detectedGenre || DEFAULT_GENRE;
-    effectiveGenreForLookup = parsed.detectedGenre || DEFAULT_GENRE;
-  }
-
-  // Infer BPM from first genre
-  const bpm = inferBpm(effectiveGenreForLookup);
+  // Infer BPM from lookup genre
+  const bpm = inferBpm(genre.forLookup);
 
   // Generate section content using AI
   const { sections, debugInfo } = await generateSectionContent(parsed, getModel);
 
-  // Build instruments string with articulations
-  const instruments = enhanceInstruments(parsed.detectedInstruments, effectiveGenreForLookup);
+  // Build instruments string with articulations (with non-max fallback)
+  const instruments = enhanceInstruments(
+    parsed.detectedInstruments, 
+    genre.forLookup, 
+    'ambient textures, subtle pads'
+  );
 
   // Build mood line
-  const mood = buildMoodLine(parsed.detectedMoods, effectiveGenreForLookup);
+  const mood = buildMoodLine(parsed.detectedMoods, genre.forLookup);
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildNonMaxFormatPrompt({
-    genre: effectiveGenreForOutput,
+    genre: genre.forOutput,
     bpm,
     mood,
     instruments,

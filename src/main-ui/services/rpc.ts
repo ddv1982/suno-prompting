@@ -159,6 +159,7 @@ export const api = {
     async generateCreativeBoost(params: {
         creativityLevel: number;
         seedGenres: string[];
+        sunoStyles: string[];
         description: string;
         lyricsTopic: string;
         withWordlessVocals: boolean;
@@ -175,6 +176,7 @@ export const api = {
         lyricsTopic: string;
         description: string;
         seedGenres: string[];
+        sunoStyles: string[];
         withWordlessVocals: boolean;
         maxMode: boolean;
         withLyrics: boolean;

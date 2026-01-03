@@ -256,10 +256,10 @@ export const TIME_JOURNEY_DISPLAY_NAMES: Record<string, string> = {
  */
 export function formatGenreLabel(genreKey: string): string {
   if (genreKey in GENRE_LABELS) {
-    return GENRE_LABELS[genreKey];
+    return GENRE_LABELS[genreKey]!;
   }
   if (genreKey in GENRE_COMBINATION_DISPLAY_NAMES) {
-    return GENRE_COMBINATION_DISPLAY_NAMES[genreKey];
+    return GENRE_COMBINATION_DISPLAY_NAMES[genreKey]!;
   }
   return genreKey.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }

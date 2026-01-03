@@ -1,38 +1,21 @@
-import { useState, useMemo, useCallback } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useMemo } from "react";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { SectionLabel } from "@/components/ui/section-label";
-import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { FormLabel } from "@/components/ui/form-label";
-import { Loader2, Send, AlertCircle, Bug, Settings2, Lock, MessageSquare, Music2, Zap } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/toast";
-import { cn } from "@/lib/utils";
-import { isMaxFormat } from "@/lib/max-format";
+import { Bug } from "lucide-react";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput } from "@shared/types";
 import { type GeneratingAction } from "@/context/app-context";
 import { APP_CONSTANTS } from "@shared/constants";
-import { api } from "@/services/rpc";
-import { createLogger } from "@/lib/logger";
-import { AdvancedPanel } from "@/components/advanced-panel";
-import { RemixButtonGroup } from "@/components/remix-button-group";
 import { ChatHistorySection } from "@/components/chat-history-section";
-import { PromptOutput } from "@/components/prompt-output";
 import { ValidationMessages } from "@/components/prompt-editor/validation-messages";
-import { OutputSection } from "@/components/prompt-editor/output-section";
 import { DebugDrawerBody } from "@/components/prompt-editor/debug-drawer";
+import { OutputPanel } from "@/components/prompt-editor/output-panel";
+import { FullPromptInputPanel } from "@/components/prompt-editor/full-prompt-input-panel";
+import { EditorStatusFooter } from "@/components/prompt-editor/editor-status-footer";
 import { ModeSelector } from "@/components/mode-selector";
 import { QuickVibesPanel } from "@/components/quick-vibes-panel";
-import { QuickVibesOutput } from "@/components/quick-vibes-output";
 import { CreativeBoostPanel } from "@/components/creative-boost-panel";
-
-const log = createLogger('PromptEditor');
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -76,14 +59,14 @@ type PromptEditorProps = {
   onRemixRecording: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
-  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: DebugInfo) => Promise<void>;
+  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
   maxMode: boolean;
   onMaxModeChange: (mode: boolean) => void;
   lyricsMode: boolean;
   onLyricsModeChange: (mode: boolean) => void;
   maxChars?: number;
   currentModel?: string;
-  debugInfo?: DebugInfo;
+  debugInfo?: Partial<DebugInfo>;
 };
 
 export function PromptEditor({
@@ -140,7 +123,6 @@ export function PromptEditor({
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
-  const { showToast } = useToast();
 
   const { charCount, promptOverLimit, inputOverLimit, lockedPhraseValidation, lyricsTopicOverLimit } = useMemo(() => ({
     charCount: currentPrompt.length,
@@ -150,7 +132,7 @@ export function PromptEditor({
     lyricsTopicOverLimit: lyricsTopic.length > APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS,
   }), [currentPrompt, pendingInput, maxChars, lockedPhrase, lyricsTopic]);
 
-  const hasAdvancedSelection = editorMode === 'advanced' && (
+  const hasAdvancedSelection = editorMode === 'advanced' && Boolean(
     advancedSelection.singleGenre ||
     advancedSelection.genreCombination ||
     advancedSelection.harmonicStyle ||
@@ -160,156 +142,42 @@ export function PromptEditor({
     advancedSelection.timeSignatureJourney
   );
 
-  const handleSend = () => {
-    const trimmed = pendingInput.trim();
-    const canRefineWithoutInput = editorMode === 'advanced' && currentPrompt && hasAdvancedSelection;
-    
-    if (!trimmed && !canRefineWithoutInput) return;
-    if (isGenerating) return;
-    if (trimmed.length > maxChars) return;
-    if (!lockedPhraseValidation.isValid) return;
-    if (lyricsTopicOverLimit) return;
-    onGenerate(trimmed);
-    // Input will be cleared by context after successful generation
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   const handleCopy = () => {
-    if (promptOverLimit) {
-      return;
-    }
+    if (promptOverLimit) return;
     onCopy();
     setCopied(true);
     setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
-  /**
-   * Handle paste events for auto-conversion to Max Mode format
-   * When Max Mode is enabled and pasted text is not already in Max format,
-   * automatically convert it and display the result in the output area.
-   */
-  const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    // Only convert when Max Mode is enabled
-    if (!maxMode) return;
-
-    const pastedText = e.clipboardData.getData('text');
-    if (!pastedText.trim()) return;
-
-    // Check if already in max format - skip conversion
-    if (isMaxFormat(pastedText)) {
-      return;
-    }
-
-    // Trigger conversion in the background (don't prevent default paste)
-    try {
-      const result = await api.convertToMaxFormat(pastedText);
-      
-      if (result?.convertedPrompt && result.wasConverted) {
-        // Update output area with converted prompt
-        await onConversionComplete(
-          pastedText,
-          result.convertedPrompt,
-          result.versionId,
-          result.debugInfo
-        );
-        showToast('Converted to Max Mode format', 'success');
-      }
-    } catch (error) {
-      // Don't show error toast for user cancellations/aborts
-      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
-        log.info('Conversion cancelled by user');
-        return;
-      }
-      log.error('Conversion failed:', error);
-      showToast('Failed to convert to Max Mode format', 'error');
-    }
-  }, [maxMode, onConversionComplete, showToast]);
-
   return (
     <section className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
       <div className="flex-1 flex flex-col p-6 pb-[var(--space-8)] gap-6 max-w-6xl mx-auto w-full overflow-auto">
-        {currentPrompt && (
-          <div className="space-y-[var(--space-5)]">
-            {promptMode === 'quickVibes' ? (
-              /* Quick Vibes Output */
-              <QuickVibesOutput
-                prompt={currentPrompt}
-                isGenerating={isGenerating}
-                hasDebugInfo={!!debugInfo}
-                onRemix={onRemixQuickVibes}
-                onCopy={handleCopy}
-                onDebugOpen={() => setDebugOpen(true)}
-              />
-            ) : (
-              <>
-                {/* Title Section - always shown when available */}
-                {currentTitle && (
-                  <OutputSection
-                    label="Title"
-                    content={currentTitle}
-                    onCopy={() => navigator.clipboard.writeText(currentTitle)}
-                    onRemix={onRemixTitle}
-                    isGenerating={isGenerating}
-                    isRemixing={generatingAction === 'remixTitle'}
-                  />
-                )}
-
-                {/* Style Prompt Section - always shown */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <SectionLabel>Style Prompt</SectionLabel>
-                    <Badge
-                      variant={promptOverLimit ? "destructive" : "secondary"}
-                      className="text-tiny font-mono tabular-nums h-5"
-                    >
-                      {charCount} / {maxChars}
-                    </Badge>
-                  </div>
-                  <Card className="relative group border bg-surface overflow-hidden">
-                    <CardContent className="p-6">
-                      <PromptOutput text={currentPrompt} />
-                    </CardContent>
-                    <RemixButtonGroup
-                      isGenerating={isGenerating}
-                      generatingAction={generatingAction}
-                      maxMode={maxMode}
-                      copied={copied}
-                      promptOverLimit={promptOverLimit}
-                      hasDebugInfo={!!debugInfo}
-                      onDebugOpen={() => setDebugOpen(true)}
-                      onRemixGenre={onRemixGenre}
-                      onRemixMood={onRemixMood}
-                      onRemixInstruments={onRemixInstruments}
-                      onRemixStyleTags={onRemixStyleTags}
-                      onRemixRecording={onRemixRecording}
-                      onRemix={onRemix}
-                      onCopy={handleCopy}
-                    />
-                  </Card>
-                </div>
-
-                {/* Lyrics Section - only shown when lyrics mode is enabled */}
-                {lyricsMode && currentLyrics && (
-                  <OutputSection
-                    label="Lyrics"
-                    content={currentLyrics}
-                    onCopy={() => navigator.clipboard.writeText(currentLyrics)}
-                    onRemix={onRemixLyrics}
-                    isGenerating={isGenerating}
-                    isRemixing={generatingAction === 'remixLyrics'}
-                    scrollable
-                  />
-                )}
-              </>
-            )}
-          </div>
-        )}
+        <OutputPanel
+          promptMode={promptMode}
+          currentPrompt={currentPrompt}
+          currentTitle={currentTitle}
+          currentLyrics={currentLyrics}
+          isGenerating={isGenerating}
+          generatingAction={generatingAction}
+          maxMode={maxMode}
+          lyricsMode={lyricsMode}
+          copied={copied}
+          promptOverLimit={promptOverLimit}
+          charCount={charCount}
+          maxChars={maxChars}
+          debugInfo={debugInfo}
+          onRemixQuickVibes={onRemixQuickVibes}
+          onRemixTitle={onRemixTitle}
+          onRemixLyrics={onRemixLyrics}
+          onRemixGenre={onRemixGenre}
+          onRemixMood={onRemixMood}
+          onRemixInstruments={onRemixInstruments}
+          onRemixStyleTags={onRemixStyleTags}
+          onRemixRecording={onRemixRecording}
+          onRemix={onRemix}
+          onCopy={handleCopy}
+          onDebugOpen={() => setDebugOpen(true)}
+        />
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />
 
@@ -339,7 +207,6 @@ export function PromptEditor({
 
       <div className="border-t bg-surface p-6 shrink-0">
         <div className="max-w-6xl mx-auto w-full space-y-[var(--space-5)]">
-          {/* Prompt Mode Selector - Full Prompt vs Quick Vibes */}
           <ModeSelector
             promptMode={promptMode}
             onPromptModeChange={onPromptModeChange}
@@ -347,7 +214,6 @@ export function PromptEditor({
           />
 
           {promptMode === 'quickVibes' ? (
-            /* Quick Vibes Input Panel */
             <QuickVibesPanel
               input={quickVibesInput}
               withWordlessVocals={withWordlessVocals}
@@ -361,7 +227,6 @@ export function PromptEditor({
               onRefine={(feedback) => onGenerate(feedback)}
             />
           ) : promptMode === 'creativeBoost' ? (
-            /* Creative Boost Input Panel */
             <CreativeBoostPanel
               input={creativeBoostInput}
               maxMode={maxMode}
@@ -375,206 +240,36 @@ export function PromptEditor({
               onRefine={onRefineCreativeBoost}
             />
           ) : (
-            /* Full Prompt Input Panel */
-            <>
-              {/* Mode Toggle (Simple/Advanced) */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={editorMode === 'simple' ? 'default' : 'outline'}
-                    size="xs"
-                    onClick={() => onEditorModeChange('simple')}
-                    className="font-semibold"
-                  >
-                    Simple
-                  </Button>
-                  <Button
-                    variant={editorMode === 'advanced' ? 'default' : 'outline'}
-                    size="xs"
-                    onClick={() => onEditorModeChange('advanced')}
-                    className="font-semibold"
-                  >
-                    <Settings2 className="w-3 h-3" />
-                    Advanced
-                  </Button>
-                  {editorMode === 'simple' && (
-                    <span className="ui-helper ml-2 hidden sm:inline">
-                      AI auto-selects harmonic style, rhythm, and time signature
-                    </span>
-                  )}
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer shrink-0">
-                  <Music2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-footnote text-muted-foreground">Lyrics</span>
-                  <Switch 
-                    checked={lyricsMode} 
-                    onCheckedChange={onLyricsModeChange}
-                    disabled={isGenerating}
-                    size="sm"
-                  />
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer shrink-0">
-                  <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-footnote text-muted-foreground">Max</span>
-                  <Switch 
-                    checked={maxMode} 
-                    onCheckedChange={onMaxModeChange}
-                    disabled={isGenerating}
-                    size="sm"
-                  />
-                </label>
-              </div>
-
-              {/* Advanced Panel */}
-              {editorMode === 'advanced' && (
-                <AdvancedPanel
-                  selection={advancedSelection}
-                  onUpdate={onAdvancedSelectionUpdate}
-                  onClear={onAdvancedSelectionClear}
-                  computedPhrase={computedMusicPhrase}
-                />
-              )}
-
-              {/* Locked Phrase - available in both modes */}
-              <div className="space-y-1">
-                <FormLabel
-                  icon={<Lock className="w-3 h-3" />}
-                  badge="optional"
-                  charCount={lockedPhrase ? lockedPhrase.length : undefined}
-                  maxChars={lockedPhrase ? APP_CONSTANTS.MAX_LOCKED_PHRASE_CHARS : undefined}
-                  error={!lockedPhraseValidation.isValid}
-                >
-                  {editorMode === 'advanced' ? 'Additional Locked Text' : 'Locked Phrase'}
-                </FormLabel>
-                <Textarea
-                  value={lockedPhrase}
-                  onChange={(e) => onLockedPhraseChange(e.target.value)}
-                  disabled={isGenerating}
-                  className={cn(
-                    "min-h-12 max-h-24 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
-                    !lockedPhraseValidation.isValid && "border-destructive focus-visible:ring-destructive/20",
-                    isGenerating && "opacity-70"
-                  )}
-                  placeholder={editorMode === 'advanced' 
-                    ? "Additional text to lock (combined with music phrase above)"
-                    : "Text that will appear exactly as written in the output"}
-                />
-                {lockedPhraseValidation.error && (
-                  <p className="text-micro text-destructive flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {lockedPhraseValidation.error}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <FormLabel icon={<MessageSquare className="w-3 h-3" />}>
-                  {currentPrompt ? 'Refine Prompt' : (lyricsMode ? 'Musical Style' : 'Describe Your Song')}
-                </FormLabel>
-                <div className="flex gap-3 items-end">
-                  <Textarea
-                    value={pendingInput}
-                    onChange={(e) => onPendingInputChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onPaste={handlePaste}
-                    disabled={isGenerating}
-                    className={cn(
-                      "min-h-20 flex-1 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-                      isGenerating && "opacity-70"
-                    )}
-                    placeholder={currentPrompt 
-                      ? (lyricsMode 
-                        ? "How should the style change? (e.g., 'more epic', 'add orchestra')"
-                        : "How should the prompt change? (e.g., 'more energy', 'darker mood')")
-                      : (lyricsMode 
-                        ? "Describe the musical style, genre, mood, and instrumentation"
-                        : "Describe your song, style, mood, or refine the existing prompt")
-                    }
-                  />
-                  <Button
-                    onClick={handleSend}
-                    disabled={
-                      isGenerating ||
-                      inputOverLimit ||
-                      lyricsTopicOverLimit ||
-                      !lockedPhraseValidation.isValid ||
-                      (!pendingInput.trim() && !(editorMode === 'advanced' && currentPrompt && hasAdvancedSelection))
-                    }
-                    size="sm"
-                    className={cn(
-                      "h-9 px-4 rounded-lg gap-2 shadow-panel shrink-0 interactive",
-                      isGenerating && "w-9 px-0"
-                    )}
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        <span className="font-semibold text-tiny tracking-tight">
-                          {currentPrompt ? "REFINE" : "GENERATE"}
-                        </span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Song Topic - shown when lyrics mode is enabled */}
-              {lyricsMode && (
-                <div className="space-y-1">
-                  <FormLabel
-                    icon={<Music2 className="w-3 h-3" />}
-                    badge="optional"
-                    charCount={lyricsTopic ? lyricsTopic.length : undefined}
-                    maxChars={lyricsTopic ? APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS : undefined}
-                    error={lyricsTopicOverLimit}
-                  >
-                    {currentPrompt ? 'Song Topic' : 'Song Topic (for lyrics)'}
-                  </FormLabel>
-                  <Textarea
-                    value={lyricsTopic}
-                    onChange={(e) => onLyricsTopicChange(e.target.value)}
-                    disabled={isGenerating}
-                    className={cn(
-                      "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
-                      lyricsTopicOverLimit && "border-destructive focus-visible:ring-destructive/20",
-                      isGenerating && "opacity-70"
-                    )}
-                    placeholder="What is the song about? (e.g., 'the meaning of life', 'lost love', 'summer road trip')"
-                  />
-                  {lyricsTopicOverLimit ? (
-                    <p className="text-micro text-destructive flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Song topic exceeds {APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS} characters.
-                    </p>
-                  ) : (
-                    <p className="ui-helper">
-                      If provided, lyrics will focus on this topic instead of the musical style description above.
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {inputOverLimit && (
-                <p className="text-caption text-destructive flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" /> Feedback is over {maxChars} characters.
-                </p>
-              )}
-            </>
+            <FullPromptInputPanel
+              currentPrompt={currentPrompt}
+              pendingInput={pendingInput}
+              lockedPhrase={lockedPhrase}
+              lyricsTopic={lyricsTopic}
+              editorMode={editorMode}
+              advancedSelection={advancedSelection}
+              computedMusicPhrase={computedMusicPhrase}
+              maxMode={maxMode}
+              lyricsMode={lyricsMode}
+              isGenerating={isGenerating}
+              maxChars={maxChars}
+              lockedPhraseValidation={lockedPhraseValidation}
+              inputOverLimit={inputOverLimit}
+              lyricsTopicOverLimit={lyricsTopicOverLimit}
+              hasAdvancedSelection={hasAdvancedSelection}
+              onPendingInputChange={onPendingInputChange}
+              onLockedPhraseChange={onLockedPhraseChange}
+              onLyricsTopicChange={onLyricsTopicChange}
+              onEditorModeChange={onEditorModeChange}
+              onAdvancedSelectionUpdate={onAdvancedSelectionUpdate}
+              onAdvancedSelectionClear={onAdvancedSelectionClear}
+              onMaxModeChange={onMaxModeChange}
+              onLyricsModeChange={onLyricsModeChange}
+              onGenerate={onGenerate}
+              onConversionComplete={onConversionComplete}
+            />
           )}
 
-          <div className="flex justify-between items-center px-1 pb-[var(--space-2)]">
-            <span className="text-[length:var(--text-caption)] text-muted-foreground flex items-center gap-4 font-mono">
-              <span>⏎ send</span>
-              <span>⇧⏎ new line</span>
-            </span>
-            <div className="flex items-center gap-4">
-              {currentModel && (
-                <span className="ui-label text-primary/70">
-                  {currentModel.split('/').pop()}
-                </span>
-              )}
-              <StatusIndicator status={isGenerating ? "working" : "ready"} showLabel={false} />
-            </div>
-          </div>
+          <EditorStatusFooter isGenerating={isGenerating} currentModel={currentModel} />
         </div>
       </div>
     </section>
