@@ -30,6 +30,7 @@ export const ORCHESTRAL_COLOR_INSTRUMENTS = [
   'glockenspiel',
   'harp',
   'violin',
+  'viola',
   'cello',
   'french horn',
   'timpani',
@@ -37,21 +38,44 @@ export const ORCHESTRAL_COLOR_INSTRUMENTS = [
   'choir',
   'wordless choir',
   // Woodwinds
+  'oboe',
   'piccolo',
   'english horn',
   'bass clarinet',
+  'bassoon',
   'contrabassoon',
+  'alto flute',
+  'bass flute',
+  'recorder',
   // Brass
   'tuba',
   'bass trombone',
+  'euphonium',
+  'cornet',
   // Voice
   'solo soprano',
-  // Percussion
+  // Pitched Percussion
+  'xylophone',
+  'tubular bells',
+  'crotales',
+  'triangle',
+  // Unpitched Percussion
   'suspended cymbal',
   'crash cymbal',
   'tam tam',
   'mark tree',
   'orchestral bass drum',
+  'slapstick',
+  // Baroque/Period
+  'lute',
+  'theorbo',
+  'viola da gamba',
+  // String Techniques
+  'string tremolo',
+  'col legno',
+  'sul ponticello',
+  // Electronic/Modern
+  'ondes Martenot',
 ] as const;
 
 // Override lists to curate multi-genre “wildcards” for modern Suno prompts.
