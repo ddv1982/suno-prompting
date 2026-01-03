@@ -324,7 +324,7 @@ export function PromptEditor({
                     Advanced
                   </Button>
                   {editorMode === 'simple' && (
-                    <span className="text-micro text-muted-foreground ml-2 hidden sm:inline">
+                    <span className="ui-helper ml-2 hidden sm:inline">
                       AI auto-selects harmonic style, rhythm, and time signature
                     </span>
                   )}
@@ -425,7 +425,7 @@ export function PromptEditor({
                     }
                     size="sm"
                     className={cn(
-                      "h-9 px-4 rounded-lg gap-2 shadow-lg shadow-primary/10 shrink-0 interactive transition-all duration-300",
+                      "h-9 px-4 rounded-lg gap-2 shadow-panel shrink-0 interactive transition-all duration-300",
                       isGenerating && "w-9 px-0"
                     )}
                   >
@@ -434,7 +434,7 @@ export function PromptEditor({
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span className="font-bold text-tiny tracking-tight">
+                        <span className="font-semibold text-tiny tracking-tight">
                           {currentPrompt ? "REFINE" : "GENERATE"}
                         </span>
                       </>
@@ -471,7 +471,7 @@ export function PromptEditor({
                       <AlertCircle className="w-3 h-3" /> Song topic exceeds {APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS} characters.
                     </p>
                   ) : (
-                    <p className="text-micro text-muted-foreground">
+                    <p className="ui-helper">
                       If provided, lyrics will focus on this topic instead of the musical style description above.
                     </p>
                   )}
@@ -493,7 +493,7 @@ export function PromptEditor({
             </span>
             <div className="flex items-center gap-4">
               {currentModel && (
-                <span className="text-[length:var(--text-caption)] font-bold uppercase tracking-tight text-primary/70">
+                <span className="ui-label text-primary/70">
                   {currentModel.split('/').pop()}
                 </span>
               )}

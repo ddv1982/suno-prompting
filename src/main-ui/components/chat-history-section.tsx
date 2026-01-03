@@ -46,7 +46,7 @@ export function ChatHistorySection({
       <CollapsibleContent className="flex-1 overflow-hidden">
         <ScrollArea className="h-full pr-4" viewportRef={scrollRef}>
           {chatMessages.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-sm text-muted-foreground italic opacity-40">
+            <div className="h-full flex items-center justify-center ui-helper italic opacity-60">
               Conversation history will appear here.
             </div>
           ) : (
@@ -56,7 +56,7 @@ export function ChatHistorySection({
           )}
           {isGenerating && (
             <div className="flex w-full mb-3 justify-start">
-              <div className="bg-muted/50 rounded-2xl px-4 py-3 rounded-tl-none border shadow-sm animate-pulse">
+              <div className="bg-muted/50 rounded-2xl px-4 py-3 rounded-tl-none border shadow-soft animate-pulse">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
               </div>
             </div>
@@ -72,13 +72,13 @@ function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: st
     <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[85%] rounded-xl px-4 py-2.5 text-sm shadow-sm",
+          "max-w-[85%] rounded-xl px-4 py-2.5 text-body shadow-soft",
           role === "user"
-            ? "bg-primary text-primary-foreground rounded-tr-sm shadow-lg"
+            ? "bg-primary text-primary-foreground rounded-tr-sm shadow-panel"
             : "bg-surface text-foreground rounded-tl-sm border"
         )}
       >
-        <div className="font-bold opacity-70 mb-1 text-micro uppercase tracking-wider">
+        <div className="ui-label mb-1">
           {role === "user" ? "You" : "Assistant"}
         </div>
         <div className="leading-relaxed whitespace-pre-wrap">{content}</div>

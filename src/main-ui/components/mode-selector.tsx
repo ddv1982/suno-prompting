@@ -17,7 +17,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
           size="xs"
           onClick={() => onPromptModeChange('full')}
           disabled={disabled}
-          className="font-bold"
+          className="font-semibold"
         >
           <FileText className="w-3 h-3" />
           Full Prompt
@@ -27,13 +27,13 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
           size="xs"
           onClick={() => onPromptModeChange('quickVibes')}
           disabled={disabled}
-          className="font-bold"
+          className="font-semibold"
         >
           <Zap className="w-3 h-3" />
           Quick Vibes
         </Button>
       </div>
-      <p className="text-micro text-muted-foreground ml-0.5">
+      <p className="ui-helper ml-0.5">
         {promptMode === 'full' 
           ? 'Full-featured prompt generation with sections, instruments, and advanced options'
           : 'Short, evocative prompts (≤400 chars) for ambient, lo-fi, and background music'

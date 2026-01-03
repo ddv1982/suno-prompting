@@ -130,7 +130,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </option>
               ))}
             </select>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               Select your preferred AI provider
             </p>
           </div>
@@ -153,11 +153,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               Get your key from <a href={currentProvider.keyUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{currentProvider.keyUrl.replace('https://', '')}</a>
             </p>
             {!currentApiKey && !loading && (
-              <p className="text-tiny text-amber-500">
+              <p className="ui-helper text-amber-500">
                 No API key configured for {currentProvider.name}. Generation will fail.
               </p>
             )}
@@ -183,7 +183,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </option>
               ))}
             </select>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               Select the AI model for generating prompts
             </p>
           </div>
@@ -194,7 +194,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <Switch checked={useSunoTags} onCheckedChange={setUseSunoTags} disabled={maxMode} />
               <span className={`text-[length:var(--text-footnote)] ${maxMode ? 'text-muted-foreground' : ''}`}>Include [VERSE], [CHORUS], etc.</span>
             </label>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               When enabled, prompts include Suno V5 section and performance tags
               {maxMode && <span className="block text-amber-500 mt-1">Disabled when Max Mode is enabled</span>}
             </p>
@@ -209,7 +209,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <Switch checked={maxMode} onCheckedChange={setMaxMode} />
               <span className="text-[length:var(--text-footnote)]">Enable Suno Max Mode tags</span>
             </label>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               Uses community-discovered prompt format for higher quality output.
               Best for acoustic, country, rock, and organic genres.
               Not recommended for electronic music.
@@ -225,7 +225,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <Switch checked={lyricsMode} onCheckedChange={setLyricsMode} />
               <span className="text-[length:var(--text-footnote)]">Generate lyrics with prompts</span>
             </label>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               When enabled, generates a song title, style prompt, and lyrics in three sections.
               {maxMode && <span className="block text-amber-500 mt-1">In Max Mode, lyrics start with ///*****///</span>}
             </p>
@@ -240,7 +240,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <Switch checked={debugMode} onCheckedChange={setDebugMode} />
               <span className="text-[length:var(--text-footnote)]">Show AI prompts sent to provider</span>
             </label>
-            <p className="text-tiny text-muted-foreground">
+            <p className="ui-helper">
               When enabled, displays the system and user prompts sent to the AI model
             </p>
           </div>

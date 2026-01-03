@@ -256,7 +256,7 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
                     <p className="text-[length:var(--text-footnote)] font-mono bg-background/50 rounded px-3 py-2 border">
                         {computedPhrase}
                     </p>
-                    <p className="text-micro text-muted-foreground mt-1">
+                    <p className="ui-helper mt-1">
                         This phrase will appear verbatim in your prompt - the AI won't modify it.
                     </p>
                 </div>

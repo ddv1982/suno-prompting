@@ -311,6 +311,28 @@
   line-height: 1.6;
 }
 
+/* Micro-typography patterns */
+@utility ui-label {
+  font-size: var(--text-caption);
+  line-height: 1.2;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+}
+
+@utility ui-helper {
+  font-size: var(--text-tiny);
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+@utility ui-badge {
+  font-size: var(--text-tiny);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
 @utility text-headline {
   font-size: var(--text-headline);
   line-height: 1.3;
@@ -360,6 +382,15 @@
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+/* Elevation utilities */
+@utility shadow-soft {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+@utility shadow-panel {
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.28);
 }
 
 /* Surface utilities (background hierarchy) */

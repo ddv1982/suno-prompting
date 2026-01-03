@@ -17,12 +17,12 @@ export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps) {
 
   return (
     <div className="mt-4 space-y-3 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 is-scrolling">
-      <div className="text-tiny text-muted-foreground flex items-center gap-3">
+      <div className="ui-helper flex items-center gap-3">
         <span className="font-mono text-foreground">{new Date(debugInfo.timestamp).toLocaleString()}</span>
-        <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase text-[10px] tracking-wide">
+        <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary ui-label">
           {debugInfo.provider}
         </span>
-        <span className="font-mono text-foreground/70 text-[10px]">
+        <span className="font-mono text-foreground/70">
           {debugInfo.model.split('/').pop()}
         </span>
       </div>

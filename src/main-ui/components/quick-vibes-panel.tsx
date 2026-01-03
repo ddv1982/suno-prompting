@@ -97,7 +97,7 @@ export function QuickVibesPanel({
           </FormLabel>
           <Badge
             variant="secondary"
-            className="text-tiny font-mono tabular-nums h-5"
+            className="ui-badge font-mono h-5"
           >
             {charCount} / {APP_CONSTANTS.QUICK_VIBES_MAX_CHARS}
           </Badge>
@@ -116,7 +116,7 @@ export function QuickVibesPanel({
             : "e.g., mellow afternoon coding session, rainy window coffee shop, late night study vibes..."
           }
         />
-        <p className="text-micro text-muted-foreground">
+        <p className="ui-helper">
           {isRefineMode 
             ? input.category
               ? `Will refine toward "${getCategoryLabel(input.category)}". Add feedback or leave blank.`
@@ -132,7 +132,7 @@ export function QuickVibesPanel({
       <label className="flex items-center gap-3 py-2 cursor-pointer">
         <Mic className="w-3.5 h-3.5 text-muted-foreground" />
         <span className="text-[length:var(--text-footnote)]">Wordless vocals</span>
-        <span className="text-micro text-muted-foreground">(humming, oohs)</span>
+        <span className="ui-helper">(humming, oohs)</span>
         <Switch
           checked={withWordlessVocals}
           onCheckedChange={onWordlessVocalsChange}
@@ -153,7 +153,7 @@ export function QuickVibesPanel({
             size="sm"
           />
         </label>
-        <p className="text-micro text-muted-foreground pl-6">
+        <p className="ui-helper pl-6">
           {maxMode 
             ? "Creates a slightly different flavour with real instruments and subtle realism tags. Can be really nice!"
             : "Keeps quick vibe genres more pure and focused."
@@ -165,7 +165,7 @@ export function QuickVibesPanel({
       <Button
         onClick={handleSubmit}
         disabled={!canSubmit || isGenerating}
-        className="w-full h-11 font-bold text-[length:var(--text-footnote)] shadow-lg shadow-primary/10 gap-2"
+        className="w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2"
       >
         {isGenerating ? (
           <>
