@@ -14,7 +14,7 @@ export const MULTI_GENRE_COMBINATIONS = [
   'ambient rock', 'ambient metal', 'ambient symphonic rock', 'ambient symphonic metal',
   // Soul/R&B blends
   'neo soul', 'psychedelic soul', 'funk soul', 'country soul',
-  'ambient soul', 'downtempo soul', 'chill soul', 'indie soul', 'bedroom soul', 'alternative soul', 'future soul',
+  'ambient soul', 'downtempo soul', 'ambient soul downtempo', 'chill soul', 'indie soul', 'bedroom soul', 'alternative soul', 'future soul',
   'alternative r&b',
   // Soulful house blends
   'soulful house', 'gospel house', 'vocal house',
