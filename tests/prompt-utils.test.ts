@@ -145,8 +145,7 @@ instruments: "piano, bass"`;
       expect(isStructuredPrompt('[HOOK] Catchy melody')).toBe(true);
     });
 
-    it('does not match colon without space', () => {
-      // "Genre:rock" without space should still match due to \s* in regex
+    it('matches colon without space (space after colon is optional)', () => {
       expect(isStructuredPrompt('Genre:rock')).toBe(true);
     });
 
@@ -155,6 +154,26 @@ instruments: "piano, bass"`;
 Genre: electronic
 More content`;
       expect(isStructuredPrompt(prompt)).toBe(true);
+    });
+
+    it('does NOT match Genre: mid-sentence (not at line start)', () => {
+      expect(isStructuredPrompt('The Genre: rock is my favorite')).toBe(false);
+    });
+
+    it('returns false for whitespace-only input', () => {
+      expect(isStructuredPrompt('   \n\t  ')).toBe(false);
+    });
+
+    it('matches standard section tags but not numbered variants', () => {
+      // [VERSE] should match
+      expect(isStructuredPrompt('[VERSE] Some lyrics')).toBe(true);
+      // [Verse 1] should NOT match (numbered variant not in our pattern)
+      expect(isStructuredPrompt('[Verse 1] Some lyrics')).toBe(false);
+    });
+
+    it('does NOT match field name in middle of word', () => {
+      // "Subgenre:" should not match as "Genre:" - it's at line start but starts with "Sub"
+      expect(isStructuredPrompt('Subgenre: rock')).toBe(false);
     });
   });
 });

@@ -23,6 +23,9 @@ export function stripMaxModeHeader(prompt: string): string {
  * - Max format prompts (with header)
  * - Non-max structured prompts (Genre:, BPM:, section tags)
  * - Max format body without header (genre: "...", bpm: "...")
+ * 
+ * @param text - The input text to analyze
+ * @returns true if text appears to be a structured prompt, false if it's a simple description
  */
 export function isStructuredPrompt(text: string): boolean {
   // 1. Check for max format header
