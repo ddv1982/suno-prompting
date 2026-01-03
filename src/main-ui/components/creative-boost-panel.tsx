@@ -6,7 +6,7 @@ import { FormLabel } from "@/components/ui/form-label";
 import { Switch } from "@/components/ui/switch";
 import { Dice3, Loader2, MessageSquare, Mic, RefreshCw, Zap, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { CreativeBoostInput } from "@shared/types";
+import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
 import { CreativitySlider } from "@/components/creativity-slider";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
@@ -42,7 +42,7 @@ export function CreativeBoostPanel({
   const descriptionCharCount = input.description.length;
   const isRefineMode = hasCurrentPrompt;
 
-  const handleCreativityChange = useCallback((value: number) => {
+  const handleCreativityChange = useCallback((value: CreativitySliderValue) => {
     onInputChange({ ...input, creativityLevel: value });
   }, [input, onInputChange]);
 

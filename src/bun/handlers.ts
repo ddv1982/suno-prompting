@@ -1,6 +1,6 @@
 import { type RPCHandlers } from '@shared/types';
 import { validatePrompt } from '@shared/validation';
-import { APP_CONSTANTS } from '@shared/constants';
+import { APP_CONSTANTS, VALID_CREATIVITY_LEVELS } from '@shared/constants';
 import { type AIEngine } from '@bun/ai';
 import { type StorageManager } from '@bun/storage';
 import { createLogger } from '@bun/logger';
@@ -280,8 +280,8 @@ export function createHandlers(
             withLyrics 
         }) => {
             return withErrorHandling('generateCreativeBoost', async () => {
-                if (creativityLevel < 0 || creativityLevel > 100) {
-                    throw new Error('Creativity level must be between 0 and 100');
+                if (!VALID_CREATIVITY_LEVELS.includes(creativityLevel as typeof VALID_CREATIVITY_LEVELS[number])) {
+                    throw new Error('Invalid creativity level. Must be 0, 25, 50, 75, or 100');
                 }
                 if (seedGenres.length > 2) {
                     throw new Error('Maximum 2 seed genres allowed');
@@ -327,6 +327,9 @@ export function createHandlers(
                 }
                 if (!currentTitle?.trim()) {
                     throw new Error('Current title is required for refinement');
+                }
+                if (!feedback?.trim()) {
+                    throw new Error('Feedback is required for refinement');
                 }
                 const result = await aiEngine.refineCreativeBoost(
                     currentPrompt,

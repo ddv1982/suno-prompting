@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, type ReactNode } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
+import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo, type CreativeBoostInput } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { useSessionContext } from '@/context/session-context';
@@ -13,6 +13,24 @@ import { isMaxFormat } from '@/lib/max-format';
 import { useToast } from '@/components/ui/toast';
 
 const log = createLogger('Generation');
+
+// Helper to build a clean copy of CreativeBoostInput for session persistence
+const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostInput => ({
+  creativityLevel: input.creativityLevel,
+  seedGenres: input.seedGenres,
+  description: input.description,
+  lyricsTopic: input.lyricsTopic,
+  withWordlessVocals: input.withWordlessVocals,
+});
+
+// Helper to build the original input string for Creative Boost sessions
+const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {
+  return [
+    `[creativity: ${input.creativityLevel}%]`,
+    input.seedGenres.length > 0 ? `[genres: ${input.seedGenres.join(', ')}]` : null,
+    input.description || null,
+  ].filter(Boolean).join(' ') || 'Creative Boost';
+};
 
 export type { GeneratingAction } from '@/hooks/use-generation-state';
 
@@ -464,11 +482,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
 
       setDebugInfo(result.debugInfo);
       const now = new Date().toISOString();
-      const originalInput = [
-        `[creativity: ${creativeBoostInput.creativityLevel}%]`,
-        creativeBoostInput.seedGenres.length > 0 ? `[genres: ${creativeBoostInput.seedGenres.join(', ')}]` : null,
-        creativeBoostInput.description || null,
-      ].filter(Boolean).join(' ') || 'Creative Boost';
+      const originalInput = buildCreativeBoostOriginalInput(creativeBoostInput);
 
       const newVersion: PromptVersion = {
         id: result.versionId,
@@ -479,13 +493,6 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       };
 
       const isNewSession = !currentSession;
-      const savedCreativeBoostInput = {
-        creativityLevel: creativeBoostInput.creativityLevel,
-        seedGenres: creativeBoostInput.seedGenres,
-        description: creativeBoostInput.description,
-        lyricsTopic: creativeBoostInput.lyricsTopic,
-        withWordlessVocals: creativeBoostInput.withWordlessVocals,
-      };
       const updatedSession: PromptSession = isNewSession
         ? {
             id: generateId(),
@@ -497,7 +504,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
             createdAt: now,
             updatedAt: now,
             promptMode: 'creativeBoost',
-            creativeBoostInput: savedCreativeBoostInput,
+            creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
           }
         : {
             ...currentSession,
@@ -507,7 +514,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
             versionHistory: [...currentSession.versionHistory, newVersion],
             updatedAt: now,
             promptMode: 'creativeBoost',
-            creativeBoostInput: savedCreativeBoostInput,
+            creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
           };
 
       if (isNewSession) {
@@ -572,13 +579,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         currentLyrics: result.lyrics,
         versionHistory: [...currentSession.versionHistory, newVersion],
         updatedAt: now,
-        creativeBoostInput: {
-          creativityLevel: creativeBoostInput.creativityLevel,
-          seedGenres: creativeBoostInput.seedGenres,
-          description: creativeBoostInput.description,
-          lyricsTopic: creativeBoostInput.lyricsTopic,
-          withWordlessVocals: creativeBoostInput.withWordlessVocals,
-        },
+        creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
       };
 
       setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt refined." }]);

@@ -14,6 +14,9 @@ export const CREATIVITY_LEVEL_DISPLAY_NAMES = {
     high: 'High',
 } as const;
 
+// Valid discrete slider positions for creativity level
+export const VALID_CREATIVITY_LEVELS = [0, 25, 50, 75, 100] as const;
+
 export const APP_CONSTANTS = {
     MAX_PROMPT_CHARS: 1000,
     MIN_PROMPT_CHARS: 20,
