@@ -27,6 +27,12 @@ export const CINEMATIC_GENRE: GenreDefinition = {
         'harp',
         'english horn',
         'piccolo',
+        'alto flute',
+        'bass flute',
+        'tubular bells',
+        'xylophone',
+        'string tremolo',
+        'euphonium',
       ],
     },
     movement: {
@@ -36,7 +42,7 @@ export const CINEMATIC_GENRE: GenreDefinition = {
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.4,
-      instruments: ['braams', 'impacts', 'FX risers', 'sub-bass'],
+      instruments: ['braams', 'impacts', 'FX risers', 'sub-bass', 'ondes Martenot', 'col legno', 'sul ponticello', 'crotales'],
     },
   },
   poolOrder: ['harmonic', 'color', 'movement', 'rare'],
