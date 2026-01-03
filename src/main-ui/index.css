@@ -5,14 +5,16 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Typography - Font families (Apple style) */
-  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, 
-               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, 
+  /* Typography - Font families (system) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial,
+               "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco,
                Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* Typography - Type scale (Apple standard) */
   --text-micro: 0.5625rem;        /* 9px - timestamps, badges, helper text */
+  --text-tiny: 0.75rem;           /* 12px - counters, compact UI */
   --text-caption: 0.6875rem;      /* 11px - captions, metadata */
   --text-footnote: 0.8125rem;     /* 13px - secondary text, labels */
   --text-body: 0.9375rem;         /* 15px - body text, default */
@@ -21,10 +23,10 @@
   --text-large-title: 1.375rem;   /* 22px - page titles */
 
   /* Typography - Font weights */
-  --font-regular: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
 
   /* Spacing scale (4px base, linear progression) */
   --space-1: 0.25rem;    /* 4px */
@@ -179,7 +181,7 @@
     --secondary: oklch(0.2 0.012 260);
     --secondary-foreground: oklch(0.95 0.01 260);
     --muted: oklch(0.18 0.012 260);
-    --muted-foreground: oklch(0.65 0.02 260);
+    --muted-foreground: oklch(0.70 0.02 260);
     --accent: oklch(0.2 0.015 260);
     --accent-foreground: oklch(0.95 0.01 260);
     --destructive: oklch(0.55 0.2 25);
@@ -277,54 +279,64 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
 
 /* Typography utilities (Apple type scale) */
 @utility text-micro {
   font-size: var(--text-micro);
+  line-height: 1.5;
+}
+
+@utility text-tiny {
+  font-size: var(--text-tiny);
   line-height: 1.4;
 }
+
 @utility text-caption {
   font-size: var(--text-caption);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 @utility text-footnote {
   font-size: var(--text-footnote);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 @utility text-body {
   font-size: var(--text-body);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 @utility text-headline {
   font-size: var(--text-headline);
   line-height: 1.3;
-  font-weight: var(--font-semibold);
+  font-weight: var(--weight-semibold);
 }
 
 @utility text-title {
   font-size: var(--text-title);
   line-height: 1.25;
-  font-weight: var(--font-semibold);
+  font-weight: var(--weight-semibold);
 }
 
 @utility text-large-title {
   font-size: var(--text-large-title);
   line-height: 1.2;
-  font-weight: var(--font-bold);
+  font-weight: var(--weight-bold);
 }
 
 /* Label pattern utility */
 @utility label-section {
   font-size: var(--text-caption);
-  font-weight: var(--font-semibold);
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted-foreground);
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  color: oklch(0.75 0.02 260);
 }
 
 /* Micro-interactions */

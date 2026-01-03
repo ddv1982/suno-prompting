@@ -43,7 +43,7 @@ export function OutputSection({
           {scrollable ? (
             <PromptOutput text={content} />
           ) : (
-            <div className="font-mono text-[length:var(--text-footnote)]">{content}</div>
+            <div className="font-mono text-[length:var(--text-body)] leading-[1.6]">{content}</div>
           )}
         </CardContent>
         <div className="absolute top-4 right-4 flex gap-2">

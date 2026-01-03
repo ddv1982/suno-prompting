@@ -139,13 +139,15 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     const isInitial = !currentPrompt;
     const effectiveLockedPhrase = getEffectiveLockedPhrase();
 
-    // Quick Vibes refinement: when in Quick Vibes mode with existing prompt
-    if (promptMode === 'quickVibes' && currentPrompt) {
+    // Quick Vibes refinement: when in Quick Vibes mode with an existing prompt
+    if (promptMode === 'quickVibes' && currentSession?.currentPrompt) {
+      const session = currentSession;
+      if (!session) return;
       try {
         setGeneratingAction('quickVibes');
         setChatMessages(prev => [...prev, { role: "user", content: input }]);
 
-        const result = await api.refineQuickVibes(currentPrompt, input, withWordlessVocals, quickVibesInput.category);
+        const result = await api.refineQuickVibes(session.currentPrompt, input, withWordlessVocals, quickVibesInput.category);
 
         if (!result?.prompt) {
           throw new Error("Invalid result received from Quick Vibes refinement");
@@ -160,9 +162,9 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         };
 
         const updatedSession: PromptSession = {
-          ...currentSession,
+          ...session,
           currentPrompt: result.prompt,
-          versionHistory: [...currentSession.versionHistory, newVersion],
+          versionHistory: [...session.versionHistory, newVersion],
           updatedAt: now,
         };
 

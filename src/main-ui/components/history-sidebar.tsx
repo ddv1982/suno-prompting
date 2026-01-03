@@ -140,13 +140,13 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
           <div className="flex flex-col gap-0.5">
             <span
               className={cn(
-                "text-sm font-medium leading-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
+                "text-sm font-medium leading-tight tracking-tight text-sidebar-foreground line-clamp-2 wrap-break-word",
                 isActive && "font-semibold"
               )}
             >
               {session.currentTitle || session.originalInput || "Untitled Project"}
             </span>
-            <span className="text-micro text-sidebar-foreground/50">
+            <span className="text-micro text-sidebar-foreground/40">
               {date.toLocaleDateString()}
             </span>
           </div>

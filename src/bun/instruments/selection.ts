@@ -168,8 +168,8 @@ export async function selectModes(
       effectiveGenre = genreOverride as GenreType;
     } else {
       // For combinations (e.g., "jazz fusion"), extract base genre for Max Mode features
-      const baseGenre = genreOverride.split(' ')[0];
-      if (baseGenre in GENRE_REGISTRY) {
+      const baseGenre = genreOverride.split(' ').at(0);
+      if (baseGenre && baseGenre in GENRE_REGISTRY) {
         effectiveGenre = baseGenre as GenreType;
       }
     }

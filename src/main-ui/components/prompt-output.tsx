@@ -9,7 +9,7 @@ export function PromptOutput({ text }: PromptOutputProps) {
   const lines = useMemo(() => text.split('\n'), [text]);
 
   return (
-    <div className="font-mono text-[length:var(--text-footnote)] leading-relaxed whitespace-pre-wrap break-words">
+    <div className="font-mono text-[length:var(--text-body)] leading-[1.7] whitespace-pre-wrap break-words">
       {lines.map((line, idx) => {
         if (line.trim().length === 0) {
           return <div key={idx} className="h-4" />;

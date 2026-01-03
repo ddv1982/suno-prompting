@@ -13,7 +13,7 @@ export function Header({ onOpenSettings }: HeaderProps) {
         <div className="flex items-center justify-center w-9 h-9 rounded-xl">
           <LogoMark size={32} className="drop-shadow-[0_8px_24px_color-mix(in_oklab,var(--primary)60%,transparent)]" />
         </div>
-        <h1 className="text-lg font-bold tracking-tight">
+        <h1 className="text-lg font-semibold tracking-tight">
           Suno <span className="text-muted-foreground font-normal">Prompting</span>
         </h1>
       </div>

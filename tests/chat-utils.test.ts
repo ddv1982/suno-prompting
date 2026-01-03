@@ -114,11 +114,11 @@ describe("buildChatMessages", () => {
     const messages = buildChatMessages(session);
 
     expect(messages).toHaveLength(6);
-    expect(messages[0].content).toBe('Project initialized: "funky jazz ballad"');
-    expect(messages[1].content).toBe('Generated prompt - "Title 1".');
-    expect(messages[2].content).toBe("more epic");
-    expect(messages[3].content).toBe('Refined prompt - "Title 2".');
-    expect(messages[4].content).toBe("add lyrics");
-    expect(messages[5].content).toBe('Refined prompt - "Title 3" with lyrics.');
+    expect(messages[0]!.content).toBe('Project initialized: "funky jazz ballad"');
+    expect(messages[1]!.content).toBe('Generated prompt - "Title 1".');
+    expect(messages[2]!.content).toBe("more epic");
+    expect(messages[3]!.content).toBe('Refined prompt - "Title 2".');
+    expect(messages[4]!.content).toBe("add lyrics");
+    expect(messages[5]!.content).toBe('Refined prompt - "Title 3" with lyrics.');
   });
 });
