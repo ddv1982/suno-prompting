@@ -7,6 +7,30 @@ import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
 import { ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
 import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
 
+// Memoization cache for detection functions
+// Uses a simple LRU-like approach with max size to prevent memory leaks
+const CACHE_MAX_SIZE = 100;
+const detectionCache = new Map<string, unknown>();
+
+function memoize<T>(cacheKey: string, compute: () => T): T {
+  if (detectionCache.has(cacheKey)) {
+    return detectionCache.get(cacheKey) as T;
+  }
+  
+  const result = compute();
+  
+  // Simple cache eviction: clear half when full
+  if (detectionCache.size >= CACHE_MAX_SIZE) {
+    const keysToDelete = Array.from(detectionCache.keys()).slice(0, CACHE_MAX_SIZE / 2);
+    for (const key of keysToDelete) {
+      detectionCache.delete(key);
+    }
+  }
+  
+  detectionCache.set(cacheKey, result);
+  return result;
+}
+
 const HARMONIC_PRIORITY: HarmonicStyle[] = [
   'lydian_dominant', 'lydian_augmented', 'lydian_sharp_two',
   'harmonic_minor', 'melodic_minor',
@@ -31,11 +55,15 @@ function detectFromKeywords<K extends string>(
 }
 
 export function detectHarmonic(description: string): HarmonicStyle | null {
-  return detectFromKeywords(description, HARMONIC_STYLES, HARMONIC_PRIORITY);
+  return memoize(`harmonic:${description}`, () => 
+    detectFromKeywords(description, HARMONIC_STYLES, HARMONIC_PRIORITY)
+  );
 }
 
 export function detectRhythmic(description: string): RhythmicStyle | null {
-  return detectFromKeywords(description, RHYTHMIC_STYLES, RHYTHMIC_PRIORITY);
+  return memoize(`rhythmic:${description}`, () =>
+    detectFromKeywords(description, RHYTHMIC_STYLES, RHYTHMIC_PRIORITY)
+  );
 }
 
 const GENRE_PRIORITY: GenreType[] = [
@@ -50,19 +78,21 @@ const GENRE_PRIORITY: GenreType[] = [
 ];
 
 export function detectGenre(description: string): GenreType | null {
-  const lower = description.toLowerCase();
-  for (const key of GENRE_PRIORITY) {
-    const genre = GENRE_REGISTRY[key];
-    // Match against name (case-insensitive)
-    if (lower.includes(genre.name.toLowerCase())) {
-      return key;
+  return memoize(`genre:${description}`, () => {
+    const lower = description.toLowerCase();
+    for (const key of GENRE_PRIORITY) {
+      const genre = GENRE_REGISTRY[key];
+      // Match against name (case-insensitive)
+      if (lower.includes(genre.name.toLowerCase())) {
+        return key;
+      }
+      // Match against keywords
+      if (genre.keywords.some(kw => lower.includes(kw))) {
+        return key;
+      }
     }
-    // Match against keywords
-    if (genre.keywords.some(kw => lower.includes(kw))) {
-      return key;
-    }
-  }
-  return null;
+    return null;
+  });
 }
 
 export function detectAmbient(description: string): boolean {
@@ -76,7 +106,9 @@ const COMBINATION_PRIORITY: CombinationType[] = [
 ];
 
 export function detectCombination(description: string): CombinationType | null {
-  return detectFromKeywords(description, ALL_COMBINATIONS, COMBINATION_PRIORITY);
+  return memoize(`combination:${description}`, () =>
+    detectFromKeywords(description, ALL_COMBINATIONS, COMBINATION_PRIORITY)
+  );
 }
 
 const POLYRHYTHM_COMBINATION_PRIORITY: PolyrhythmCombinationType[] = [
@@ -85,7 +117,9 @@ const POLYRHYTHM_COMBINATION_PRIORITY: PolyrhythmCombinationType[] = [
 ];
 
 export function detectPolyrhythmCombination(description: string): PolyrhythmCombinationType | null {
-  return detectFromKeywords(description, ALL_POLYRHYTHM_COMBINATIONS, POLYRHYTHM_COMBINATION_PRIORITY);
+  return memoize(`polyrhythm:${description}`, () =>
+    detectFromKeywords(description, ALL_POLYRHYTHM_COMBINATIONS, POLYRHYTHM_COMBINATION_PRIORITY)
+  );
 }
 
 const TIME_SIGNATURE_PRIORITY: TimeSignatureType[] = [
@@ -96,7 +130,9 @@ const TIME_SIGNATURE_PRIORITY: TimeSignatureType[] = [
 ];
 
 export function detectTimeSignature(description: string): TimeSignatureType | null {
-  return detectFromKeywords(description, TIME_SIGNATURES, TIME_SIGNATURE_PRIORITY);
+  return memoize(`timesig:${description}`, () =>
+    detectFromKeywords(description, TIME_SIGNATURES, TIME_SIGNATURE_PRIORITY)
+  );
 }
 
 const TIME_SIGNATURE_JOURNEY_PRIORITY: TimeSignatureJourneyType[] = [
@@ -105,5 +141,7 @@ const TIME_SIGNATURE_JOURNEY_PRIORITY: TimeSignatureJourneyType[] = [
 ];
 
 export function detectTimeSignatureJourney(description: string): TimeSignatureJourneyType | null {
-  return detectFromKeywords(description, TIME_SIGNATURE_JOURNEYS, TIME_SIGNATURE_JOURNEY_PRIORITY);
+  return memoize(`journey:${description}`, () =>
+    detectFromKeywords(description, TIME_SIGNATURE_JOURNEYS, TIME_SIGNATURE_JOURNEY_PRIORITY)
+  );
 }
