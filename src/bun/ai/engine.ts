@@ -15,7 +15,7 @@ import {
 import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import type { QuickVibesCategory } from '@shared/types';
-import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
+import { postProcessPrompt, injectLockedPhrase, enforceLengthLimit } from '@bun/prompt/postprocess';
 import { injectBpm } from '@bun/prompt/bpm';
 import { createLogger } from '@bun/logger';
 import { AIConfig } from '@bun/ai/config';
@@ -182,6 +182,22 @@ export class AIEngine {
       condense: (t) => condense(t, this.getModel),
       condenseWithDedup: (t, repeated) => condenseWithDedup(t, repeated, this.getModel),
     });
+  }
+
+  /**
+   * Enforce max character limit on already-formatted output.
+   * Used by Creative Boost where conversion already produces clean output.
+   */
+  private async enforceMaxLength(text: string): Promise<string> {
+    if (text.length <= MAX_CHARS) {
+      return text;
+    }
+    log.info('enforceMaxLength:processing', { originalLength: text.length, maxChars: MAX_CHARS });
+    const result = await enforceLengthLimit(text, MAX_CHARS, (t) => condense(t, this.getModel));
+    if (result.length < text.length) {
+      log.info('enforceMaxLength:reduced', { newLength: result.length });
+    }
+    return result;
   }
 
   private async runGeneration(
@@ -542,9 +558,12 @@ export class AIEngine {
         parsed.style, maxMode, seedGenres
       );
 
+      // Enforce max char limit (conversion output is already clean, just check length)
+      const processedStyle = await this.enforceMaxLength(styleResult);
+
       // Generate lyrics separately using existing generateLyrics function
       const lyricsResult = await this.generateLyricsForCreativeBoost(
-        styleResult, lyricsTopic, description, maxMode, withLyrics
+        processedStyle, lyricsTopic, description, maxMode, withLyrics
       );
 
       // Build debug info including lyrics generation if applicable
@@ -560,7 +579,7 @@ export class AIEngine {
       }
 
       return {
-        text: styleResult,
+        text: processedStyle,
         title: parsed.title,
         lyrics: lyricsResult.lyrics,
         debugInfo,
@@ -610,9 +629,12 @@ export class AIEngine {
         parsed.style, maxMode, seedGenres
       );
 
+      // Enforce max char limit (conversion output is already clean, just check length)
+      const processedStyle = await this.enforceMaxLength(styleResult);
+
       // Regenerate lyrics using existing generateLyrics function
       const lyricsResult = await this.generateLyricsForCreativeBoost(
-        styleResult, lyricsTopic, description, maxMode, withLyrics
+        processedStyle, lyricsTopic, description, maxMode, withLyrics
       );
 
       // Build debug info including lyrics generation if applicable
@@ -628,7 +650,7 @@ export class AIEngine {
       }
 
       return {
-        text: styleResult,
+        text: processedStyle,
         title: parsed.title,
         lyrics: lyricsResult.lyrics,
         debugInfo,

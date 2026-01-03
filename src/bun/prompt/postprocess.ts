@@ -71,6 +71,24 @@ export function truncateToLimit(text: string, limit: number): string {
   return (breakPoint > limit * 0.7 ? truncated.slice(0, breakPoint) : truncated) + '...';
 }
 
+/**
+ * Enforce character limit: condense if over, truncate as last resort.
+ * Shared by Full Mode (postProcessPrompt) and Creative Boost (enforceMaxLength).
+ */
+export async function enforceLengthLimit(
+  text: string,
+  maxChars: number,
+  condense: (text: string) => Promise<string>
+): Promise<string> {
+  if (text.length <= maxChars) {
+    return text;
+  }
+  const condensed = await condense(text);
+  return condensed.length <= maxChars
+    ? condensed
+    : truncateToLimit(condensed, maxChars);
+}
+
 export function detectRepeatedWords(text: string): string[] {
   const words = text.toLowerCase().split(/[\s,;.()[\]]+/);
   const seen = new Set<string>();
@@ -121,8 +139,7 @@ export async function postProcessPrompt(text: string, deps: PostProcessDeps): Pr
   }
 
   if (result.length > deps.maxChars) {
-    const condensed = await deps.condense(result);
-    result = condensed.length <= deps.maxChars ? condensed : truncateToLimit(condensed, deps.maxChars);
+    result = await enforceLengthLimit(result, deps.maxChars, deps.condense);
   }
 
   result = stripLeakedMetaLines(result);

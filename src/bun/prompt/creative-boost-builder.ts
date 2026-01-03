@@ -1,6 +1,9 @@
 import { getCreativityLevel } from '@shared/creative-boost-utils';
+import { APP_CONSTANTS } from '@shared/constants';
 
 export { getCreativityLevel };
+
+const MAX_STYLE_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
 /**
  * Builds the system prompt for Creative Boost generation.
@@ -75,7 +78,7 @@ RULES:
 1. The "style" should be a rich description of the sound, not just genre names
 2. Include sonic textures, mood, and character in the style
 3. The title should be evocative and match the vibe
-4. Keep style under 400 characters
+4. Keep style under ${MAX_STYLE_CHARS} characters
 5. Do NOT wrap the JSON in markdown code blocks`;
 }
 
@@ -171,7 +174,7 @@ Return a JSON object with:
 
 RULES:
 1. Apply the user's feedback while maintaining musical coherence
-2. Keep style under 400 characters
+2. Keep style under ${MAX_STYLE_CHARS} characters
 3. The title should still be evocative and match the vibe
 4. Do NOT wrap the JSON in markdown code blocks`;
 }
