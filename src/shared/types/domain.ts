@@ -25,6 +25,8 @@ export type QuickVibesInput = {
   category: QuickVibesCategory | null;
   customDescription: string;
   withWordlessVocals: boolean;
+  /** 0-4 Suno V5 style keys (mutually exclusive with category) */
+  sunoStyles: string[];
 };
 
 // Creative Boost input state

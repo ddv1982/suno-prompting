@@ -229,10 +229,17 @@ export function createHandlers(
             await storage.saveConfig({ promptMode });
             return { success: true };
         },
-        generateQuickVibes: async ({ category, customDescription, withWordlessVocals }) => {
-            log.info('generateQuickVibes', { category, customDescription, withWordlessVocals });
+        generateQuickVibes: async ({ category, customDescription, withWordlessVocals, sunoStyles = [] }) => {
+            log.info('generateQuickVibes', { category, customDescription, withWordlessVocals, sunoStylesCount: sunoStyles.length });
             try {
-                const result = await aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals);
+                // Validate mutual exclusivity
+                if (category !== null && sunoStyles.length > 0) {
+                    throw new Error('Cannot use both Category and Suno V5 Styles. Please select only one.');
+                }
+                if (sunoStyles.length > 4) {
+                    throw new Error('Maximum 4 Suno V5 styles allowed');
+                }
+                const result = await aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals, sunoStyles);
                 const versionId = Bun.randomUUIDv7();
                 log.info('generateQuickVibes:complete', { versionId, promptLength: result.text.length });
                 return { prompt: result.text, versionId, debugInfo: result.debugInfo };
@@ -241,10 +248,17 @@ export function createHandlers(
                 throw error;
             }
         },
-        refineQuickVibes: async ({ currentPrompt, feedback, withWordlessVocals, category }) => {
-            log.info('refineQuickVibes', { currentPrompt, feedback, withWordlessVocals, category });
+        refineQuickVibes: async ({ currentPrompt, feedback, withWordlessVocals, category, sunoStyles = [] }) => {
+            log.info('refineQuickVibes', { currentPrompt, feedback, withWordlessVocals, category, sunoStylesCount: sunoStyles.length });
             try {
-                const result = await aiEngine.refineQuickVibes(currentPrompt, feedback, withWordlessVocals, category);
+                // Validate mutual exclusivity
+                if (category !== null && sunoStyles.length > 0) {
+                    throw new Error('Cannot use both Category and Suno V5 Styles. Please select only one.');
+                }
+                if (sunoStyles.length > 4) {
+                    throw new Error('Maximum 4 Suno V5 styles allowed');
+                }
+                const result = await aiEngine.refineQuickVibes(currentPrompt, feedback, withWordlessVocals, category, sunoStyles);
                 const versionId = Bun.randomUUIDv7();
                 log.info('refineQuickVibes:complete', { versionId, promptLength: result.text.length });
                 return { prompt: result.text, versionId, debugInfo: result.debugInfo };

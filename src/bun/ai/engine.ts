@@ -379,9 +379,10 @@ export class AIEngine {
   async generateQuickVibes(
     category: QuickVibesCategory | null,
     customDescription: string,
-    withWordlessVocals: boolean
+    withWordlessVocals: boolean,
+    sunoStyles: string[]
   ): Promise<GenerationResult> {
-    return generateQuickVibesImpl(category, customDescription, withWordlessVocals, {
+    return generateQuickVibesImpl(category, customDescription, withWordlessVocals, sunoStyles, {
       getModel: this.getModel,
       isMaxMode: this.config.isMaxMode.bind(this.config),
       isDebugMode: this.config.isDebugMode.bind(this.config),
@@ -393,9 +394,10 @@ export class AIEngine {
     currentPrompt: string,
     feedback: string,
     withWordlessVocals: boolean,
-    category?: QuickVibesCategory | null
+    category?: QuickVibesCategory | null,
+    sunoStyles: string[] = []
   ): Promise<GenerationResult> {
-    return refineQuickVibesImpl(currentPrompt, feedback, withWordlessVocals, category, {
+    return refineQuickVibesImpl(currentPrompt, feedback, withWordlessVocals, category, sunoStyles, {
       getModel: this.getModel,
       isMaxMode: this.config.isMaxMode.bind(this.config),
       isDebugMode: this.config.isDebugMode.bind(this.config),

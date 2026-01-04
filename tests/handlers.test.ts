@@ -263,11 +263,12 @@ describe("RPC Handlers", () => {
         category: "lofi-study",
         customDescription: "relaxing",
         withWordlessVocals: true,
+        sunoStyles: [],
       });
 
       expect(result.prompt).toBe("Quick vibes prompt");
       expect(result.versionId).toBeDefined();
-      expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", true);
+      expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", true, []);
     });
   });
 

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +10,26 @@ import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
 import { QUICK_VIBES_CATEGORIES } from "@shared/quick-vibes-categories";
 import { CategorySelector } from "@/components/category-selector";
+import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
+import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 const getCategoryLabel = (categoryId: QuickVibesCategory): string => {
   return QUICK_VIBES_CATEGORIES[categoryId]?.label ?? categoryId;
+};
+
+const getDescriptionHelperText = (
+  isRefineMode: boolean,
+  isDirectMode: boolean,
+  category: QuickVibesCategory | null
+): string => {
+  if (isRefineMode) {
+    if (category) return `Will refine toward "${getCategoryLabel(category)}". Add feedback or leave blank.`;
+    if (isDirectMode) return "Styles are fixed in Direct Mode. Change style selection to get different styles.";
+    return "Describe how you'd like to adjust the current vibe, or select a category above.";
+  }
+  if (isDirectMode) return "Description is not used when Suno V5 Styles are selected.";
+  if (category) return `Category "${getCategoryLabel(category)}" selected. Add custom details or leave blank.`;
+  return "Describe the mood, setting, or activity for your music.";
 };
 
 type QuickVibesPanelProps = {
@@ -41,19 +59,36 @@ export function QuickVibesPanel({
 }: QuickVibesPanelProps) {
   const charCount = input.customDescription.length;
   const isRefineMode = hasCurrentPrompt;
+  const isDirectMode = input.sunoStyles.length > 0;
   const canSubmit = isRefineMode 
-    ? input.customDescription.trim().length > 0 || input.category !== null
-    : input.category !== null || input.customDescription.trim().length > 0;
+    ? input.customDescription.trim().length > 0 || input.category !== null || isDirectMode
+    : input.category !== null || input.customDescription.trim().length > 0 || isDirectMode;
 
-  const handleCategorySelect = (categoryId: QuickVibesCategory | null) => {
-    onInputChange({ ...input, category: categoryId });
-  };
+  const handleCategorySelect = useCallback((categoryId: QuickVibesCategory | null) => {
+    // Clear suno styles when category is selected (mutual exclusivity)
+    if (categoryId !== null && input.sunoStyles.length > 0) {
+      onInputChange({ ...input, category: categoryId, sunoStyles: [] });
+    } else {
+      onInputChange({ ...input, category: categoryId });
+    }
+  }, [input, onInputChange]);
 
-  const handleDescriptionChange = (value: string) => {
+  const handleSunoStylesChange = useCallback((styles: string[]) => {
+    // Validate all styles are valid Suno V5 styles
+    const validStyles = styles.filter(isSunoV5Style);
+    // Clear category when suno styles are selected (mutual exclusivity)
+    if (validStyles.length > 0 && input.category !== null) {
+      onInputChange({ ...input, sunoStyles: validStyles, category: null });
+    } else {
+      onInputChange({ ...input, sunoStyles: validStyles });
+    }
+  }, [input, onInputChange]);
+
+  const handleDescriptionChange = useCallback((value: string) => {
     onInputChange({ ...input, customDescription: value });
-  };
+  }, [input, onInputChange]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && canSubmit && !isGenerating) {
       e.preventDefault();
       if (isRefineMode) {
@@ -62,36 +97,60 @@ export function QuickVibesPanel({
         onGenerate();
       }
     }
-  };
+  }, [canSubmit, isGenerating, isRefineMode, input.customDescription, onRefine, onGenerate]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (isRefineMode) {
       onRefine(input.customDescription);
     } else {
       onGenerate();
     }
-  };
+  }, [isRefineMode, input.customDescription, onRefine, onGenerate]);
 
   return (
     <div className="space-y-[var(--space-5)]">
       {/* Category Selection */}
       <div className="space-y-2">
-        <FormLabel icon={<Sparkles className="w-3 h-3" />} badge="optional">
+        <FormLabel 
+          icon={<Sparkles className="w-3 h-3" />} 
+          badge={isDirectMode ? "disabled" : "optional"}
+        >
           {isRefineMode ? "Refine toward category" : "Category"}
         </FormLabel>
         <CategorySelector
           selectedCategory={input.category}
           onSelect={handleCategorySelect}
-          disabled={isGenerating}
+          disabled={isGenerating || isDirectMode}
         />
+        {isDirectMode && (
+          <p className="ui-helper">
+            Disabled when Suno V5 Styles are selected
+          </p>
+        )}
       </div>
+
+      {/* Suno V5 Styles Multi-Select */}
+      <SunoStylesMultiSelect
+        selected={input.sunoStyles}
+        onChange={handleSunoStylesChange}
+        maxSelections={4}
+        disabled={isGenerating || input.category !== null}
+        helperText={
+          input.category !== null
+            ? "Disabled when Category is selected"
+            : isDirectMode
+              ? "Selected styles will be used exactly as-is"
+              : undefined
+        }
+        badgeText={input.category !== null ? "disabled" : "optional"}
+      />
 
       {/* Description / Feedback Input */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <FormLabel 
             icon={<MessageSquare className="w-3 h-3" />} 
-            badge={isRefineMode ? undefined : "optional"}
+            badge={isRefineMode ? undefined : isDirectMode ? "disabled" : "optional"}
           >
             {isRefineMode ? "Refine the vibe" : "Describe the vibe"}
           </FormLabel>
@@ -106,57 +165,75 @@ export function QuickVibesPanel({
           value={input.customDescription}
           onChange={(e) => handleDescriptionChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={isGenerating}
+          disabled={isGenerating || isDirectMode}
           className={cn(
             "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-            isGenerating && "opacity-70"
+            (isGenerating || isDirectMode) && "opacity-70"
           )}
           placeholder={isRefineMode 
             ? "How should the vibe change? (e.g., 'more dreamy', 'add rain sounds', 'slower tempo')"
-            : "e.g., mellow afternoon coding session, rainy window coffee shop, late night study vibes..."
+            : isDirectMode
+              ? "Description not used with Suno V5 Styles"
+              : "e.g., mellow afternoon coding session, rainy window coffee shop, late night study vibes..."
           }
         />
         <p className="ui-helper">
-          {isRefineMode 
-            ? input.category
-              ? `Will refine toward "${getCategoryLabel(input.category)}". Add feedback or leave blank.`
-              : "Describe how you'd like to adjust the current vibe, or select a category above."
-            : input.category 
-              ? `Category "${getCategoryLabel(input.category)}" selected. Add custom details or leave blank.`
-              : "Describe the mood, setting, or activity for your music."
-          }
+          {getDescriptionHelperText(isRefineMode, isDirectMode, input.category)}
         </p>
       </div>
 
-      {/* Wordless Vocals Toggle */}
-      <label className="flex items-center gap-3 py-2 cursor-pointer">
-        <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-[length:var(--text-footnote)]">Wordless vocals</span>
-        <span className="ui-helper">(humming, oohs)</span>
-        <Switch
-          checked={withWordlessVocals}
-          onCheckedChange={onWordlessVocalsChange}
-          disabled={isGenerating}
-          size="sm"
-        />
-      </label>
+      {/* Toggles Section */}
+      <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
+        {/* Wordless Vocals Toggle */}
+        <label 
+          className={cn(
+            "flex items-center gap-3 py-2",
+            isDirectMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+          )}
+        >
+          <Mic className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-[length:var(--text-footnote)]">Wordless vocals</span>
+          <span className="ui-helper">(humming, oohs)</span>
+          {isDirectMode && (
+            <Badge variant="secondary" className="ui-badge h-4 text-[10px]">
+              N/A
+            </Badge>
+          )}
+          <Switch
+            checked={isDirectMode ? false : withWordlessVocals}
+            onCheckedChange={onWordlessVocalsChange}
+            disabled={isGenerating || isDirectMode}
+            size="sm"
+          />
+        </label>
 
-      {/* Max Mode Toggle with Info */}
-      <div className="space-y-1">
-        <label className="flex items-center gap-3 py-2 cursor-pointer">
+        {/* Max Mode Toggle */}
+        <label
+          className={cn(
+            "flex items-center gap-3 py-2",
+            isDirectMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+          )}
+        >
           <Zap className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[length:var(--text-footnote)]">Max Mode</span>
+          {isDirectMode && (
+            <Badge variant="secondary" className="ui-badge h-4 text-[10px]">
+              N/A
+            </Badge>
+          )}
           <Switch
-            checked={maxMode}
+            checked={isDirectMode ? false : maxMode}
             onCheckedChange={onMaxModeChange}
-            disabled={isGenerating}
+            disabled={isGenerating || isDirectMode}
             size="sm"
           />
         </label>
         <p className="ui-helper pl-6">
-          {maxMode 
-            ? "Creates a slightly different flavour with real instruments and subtle realism tags. Can be really nice!"
-            : "Keeps quick vibe genres more pure and focused."
+          {isDirectMode
+            ? "Not applicable with Suno V5 Styles"
+            : maxMode 
+              ? "Creates a slightly different flavour with real instruments and subtle realism tags. Can be really nice!"
+              : "Keeps quick vibe genres more pure and focused."
           }
         </p>
       </div>

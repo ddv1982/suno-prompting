@@ -104,6 +104,8 @@ export type GenerateQuickVibesParams = {
   category: QuickVibesCategory | null;
   customDescription: string;
   withWordlessVocals: boolean;
+  /** Suno V5 styles (0-4 selections, mutually exclusive with category) */
+  sunoStyles: string[];
 };
 
 export type GenerateQuickVibesResponse = {
@@ -117,6 +119,8 @@ export type RefineQuickVibesParams = {
   feedback: string;
   withWordlessVocals: boolean;
   category?: QuickVibesCategory | null;
+  /** Suno V5 styles (0-4 selections, mutually exclusive with category) */
+  sunoStyles?: string[];
 };
 
 export type RefineQuickVibesResponse = {

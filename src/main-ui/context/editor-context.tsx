@@ -18,6 +18,7 @@ const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = {
   category: null,
   customDescription: '',
   withWordlessVocals: false,
+  sunoStyles: [],
 };
 
 const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [
