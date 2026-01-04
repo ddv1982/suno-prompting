@@ -1,3 +1,4 @@
+import { isMultiGenre } from '@bun/instruments';
 import { getConciseLabel } from '@shared/labels';
 
 import type { AdvancedSelection } from '@shared/types';
@@ -6,16 +7,17 @@ import type { AdvancedSelection } from '@shared/types';
  * Builds a concise music phrase from advanced selections.
  * This phrase is used as a locked phrase that Suno sees verbatim.
  * 
- * Example output: "Lydian #11, 2:3→4:3 build, 7/8 (2+2+3)"
+ * Example output: "Jazz, Lydian #11, 2:3→4:3 build, 7/8 (2+2+3)"
  */
 export function buildMusicPhrase(selection: AdvancedSelection): string {
     const parts: string[] = [];
 
-    // Genre: either single or combination (mutually exclusive) - comes first
-    if (selection.singleGenre) {
-        parts.push(getConciseLabel('genre', selection.singleGenre));
-    } else if (selection.genreCombination) {
-        parts.push(getConciseLabel('genreCombination', selection.genreCombination));
+    // Genres: up to 4 genres or genre combinations - comes first
+    if (selection.seedGenres.length > 0) {
+        const genreLabels = selection.seedGenres.map(g =>
+            getConciseLabel(isMultiGenre(g) ? 'genreCombination' : 'genre', g)
+        );
+        parts.push(genreLabels.join(', '));
     }
 
     // Harmonic: either single style or combination (mutually exclusive)
@@ -45,8 +47,7 @@ export function buildMusicPhrase(selection: AdvancedSelection): string {
  */
 export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
     return !!(
-        selection.singleGenre ||
-        selection.genreCombination ||
+        selection.seedGenres.length > 0 ||
         selection.harmonicStyle ||
         selection.harmonicCombination ||
         selection.polyrhythmCombination ||
@@ -61,7 +62,7 @@ export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
  */
 export function countSelections(selection: AdvancedSelection): number {
     let count = 0;
-    if (selection.singleGenre || selection.genreCombination) count++;
+    if (selection.seedGenres.length > 0) count++;
     if (selection.harmonicStyle || selection.harmonicCombination) count++;
     if (selection.polyrhythmCombination) count++;
     if (selection.timeSignature || selection.timeSignatureJourney) count++;

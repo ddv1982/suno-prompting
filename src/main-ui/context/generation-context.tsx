@@ -279,7 +279,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
-      const genreOverride = advancedSelection.singleGenre || advancedSelection.genreCombination || undefined;
+      const genreOverride = advancedSelection.seedGenres[0] || undefined;
       const result = isInitial
         ? await api.generateInitial(input, effectiveLockedPhrase, effectiveLyricsTopic, genreOverride)
         : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics, effectiveLyricsTopic, genreOverride);
@@ -315,7 +315,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const handleRemix = useCallback(async () => {
     if (isGenerating || !currentSession?.originalInput) return;
     const effectiveLockedPhrase = getEffectiveLockedPhrase();
-    const genreOverride = advancedSelection.singleGenre || advancedSelection.genreCombination || undefined;
+    const genreOverride = advancedSelection.seedGenres[0] || undefined;
 
     try {
       setGeneratingAction('remix');

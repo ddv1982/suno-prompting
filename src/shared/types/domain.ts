@@ -59,8 +59,7 @@ export type AdvancedSelection = {
   polyrhythmCombination: string | null;
   timeSignature: string | null;
   timeSignatureJourney: string | null;
-  singleGenre: string | null;
-  genreCombination: string | null;
+  seedGenres: string[];  // 0-4 genres or genre combinations
 };
 
 export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
@@ -69,8 +68,7 @@ export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
   polyrhythmCombination: null,
   timeSignature: null,
   timeSignatureJourney: null,
-  singleGenre: null,
-  genreCombination: null,
+  seedGenres: [],
 };
 
 export type PromptVersion = {

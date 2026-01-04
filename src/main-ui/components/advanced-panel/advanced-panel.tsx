@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 
+import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import {
@@ -8,8 +9,6 @@ import {
   POLYRHYTHM_DISPLAY_NAMES,
   TIME_SIGNATURE_DISPLAY_NAMES,
   TIME_JOURNEY_DISPLAY_NAMES,
-  GENRE_DISPLAY_NAMES,
-  GENRE_COMBINATION_DISPLAY_NAMES,
 } from "@shared/labels";
 
 import { AdvancedOption } from "./advanced-option";
@@ -25,14 +24,6 @@ type AdvancedPanelProps = {
 };
 
 // All options for Combobox (sorted alphabetically by label)
-const GENRE_OPTIONS = Object.entries(GENRE_DISPLAY_NAMES)
-  .map(([value, label]) => ({ value, label }))
-  .sort((a, b) => a.label.localeCompare(b.label));
-
-const GENRE_COMBINATION_OPTIONS = Object.entries(GENRE_COMBINATION_DISPLAY_NAMES)
-  .map(([value, label]) => ({ value, label }))
-  .sort((a, b) => a.label.localeCompare(b.label));
-
 const HARMONIC_OPTIONS = Object.entries(HARMONIC_DISPLAY_NAMES)
   .map(([value, label]) => ({ value, label }))
   .sort((a, b) => a.label.localeCompare(b.label));
@@ -55,8 +46,7 @@ const TIME_JOURNEY_OPTIONS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES)
 
 export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: AdvancedPanelProps) {
   const hasAnySelection = !!(
-    selection.singleGenre ||
-    selection.genreCombination ||
+    selection.seedGenres.length > 0 ||
     selection.harmonicStyle ||
     selection.harmonicCombination ||
     selection.polyrhythmCombination ||
@@ -81,29 +71,14 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
         )}
       </div>
 
+      {/* Genre Multi-Select - spans full width */}
+      <GenreMultiSelect
+        selected={selection.seedGenres}
+        onChange={(genres) => { onUpdate({ seedGenres: genres }); }}
+        maxSelections={4}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)]">
-        <AdvancedOption
-          label="Genre"
-          options={GENRE_OPTIONS}
-          value={selection.singleGenre}
-          onValueChange={(val) => { onUpdate({ singleGenre: val }); }}
-          disabledByMutualExclusion={!!selection.genreCombination}
-          placeholder="Select genre..."
-          searchPlaceholder="Search genres..."
-          emptyText="No genre found."
-        />
-
-        <AdvancedOption
-          label="Genre Combination"
-          options={GENRE_COMBINATION_OPTIONS}
-          value={selection.genreCombination}
-          onValueChange={(val) => { onUpdate({ genreCombination: val }); }}
-          disabledByMutualExclusion={!!selection.singleGenre}
-          placeholder="Select combination..."
-          searchPlaceholder="Search combinations..."
-          emptyText="No combination found."
-        />
-
         <AdvancedOption
           label="Harmonic Style"
           options={HARMONIC_OPTIONS}

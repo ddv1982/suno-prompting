@@ -134,8 +134,7 @@ export function PromptEditor({
   }), [currentPrompt, pendingInput, maxChars, lockedPhrase, lyricsTopic]);
 
   const hasAdvancedSelection = editorMode === 'advanced' && Boolean(
-    advancedSelection.singleGenre ||
-    advancedSelection.genreCombination ||
+    advancedSelection.seedGenres.length > 0 ||
     advancedSelection.harmonicStyle ||
     advancedSelection.harmonicCombination ||
     advancedSelection.polyrhythmCombination ||

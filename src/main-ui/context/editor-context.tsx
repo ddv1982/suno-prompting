@@ -23,10 +23,10 @@ const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = {
   sunoStyles: [],
 };
 
-const MUTUALLY_EXCLUSIVE_FIELDS: [keyof AdvancedSelection, keyof AdvancedSelection][] = [
+type NullableAdvancedField = 'harmonicStyle' | 'harmonicCombination' | 'polyrhythmCombination' | 'timeSignature' | 'timeSignatureJourney';
+const MUTUALLY_EXCLUSIVE_FIELDS: [NullableAdvancedField, NullableAdvancedField][] = [
   ['harmonicStyle', 'harmonicCombination'],
   ['timeSignature', 'timeSignatureJourney'],
-  ['singleGenre', 'genreCombination'],
 ];
 
 interface EditorContextType {

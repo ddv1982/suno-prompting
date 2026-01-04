@@ -14,7 +14,7 @@ describe('buildMusicPhrase', () => {
     test('builds phrase with single genre', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
+            seedGenres: ['jazz'],
         };
         const result = buildMusicPhrase(selection);
         expect(result).toBe('Jazz');
@@ -23,26 +23,34 @@ describe('buildMusicPhrase', () => {
     test('builds phrase with genre combination', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            genreCombination: 'jazz fusion',
+            seedGenres: ['jazz fusion'],
         };
         const result = buildMusicPhrase(selection);
         expect(result).toBe('Jazz Fusion');
     });
 
-    test('prefers singleGenre over genreCombination when both set', () => {
+    test('builds phrase with multiple genres', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
-            genreCombination: 'progressive rock',
+            seedGenres: ['jazz', 'electronic', 'ambient'],
         };
         const result = buildMusicPhrase(selection);
-        expect(result).toBe('Jazz');
+        expect(result).toBe('Jazz, Electronic, Ambient');
     });
 
-    test('places genre at start of phrase', () => {
+    test('builds phrase with mixed genres and combinations', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
+            seedGenres: ['jazz', 'progressive rock'],
+        };
+        const result = buildMusicPhrase(selection);
+        expect(result).toBe('Jazz, Progressive Rock');
+    });
+
+    test('places genres at start of phrase', () => {
+        const selection: AdvancedSelection = {
+            ...EMPTY_ADVANCED_SELECTION,
+            seedGenres: ['jazz'],
             harmonicStyle: 'lydian',
             polyrhythmCombination: 'hemiola',
         };
@@ -140,13 +148,25 @@ describe('buildMusicPhrase', () => {
     test('builds full phrase with genre and all other selections', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
+            seedGenres: ['jazz'],
             harmonicStyle: 'lydian',
             polyrhythmCombination: 'complexity_build',
             timeSignature: 'time_7_8',
         };
         const result = buildMusicPhrase(selection);
         expect(result).toBe('Jazz, Lydian #11, 2:3→4:3→5:4 build, 7/8 (2+2+3)');
+    });
+
+    test('builds full phrase with multiple genres and all other selections', () => {
+        const selection: AdvancedSelection = {
+            ...EMPTY_ADVANCED_SELECTION,
+            seedGenres: ['jazz', 'electronic'],
+            harmonicStyle: 'lydian',
+            polyrhythmCombination: 'complexity_build',
+            timeSignature: 'time_7_8',
+        };
+        const result = buildMusicPhrase(selection);
+        expect(result).toBe('Jazz, Electronic, Lydian #11, 2:3→4:3→5:4 build, 7/8 (2+2+3)');
     });
 });
 
@@ -155,18 +175,18 @@ describe('hasAdvancedSelection', () => {
         expect(hasAdvancedSelection(EMPTY_ADVANCED_SELECTION)).toBe(false);
     });
 
-    test('returns true when singleGenre is set', () => {
+    test('returns true when seedGenres has items', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
+            seedGenres: ['jazz'],
         };
         expect(hasAdvancedSelection(selection)).toBe(true);
     });
 
-    test('returns true when genreCombination is set', () => {
+    test('returns true when seedGenres has multiple items', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            genreCombination: 'jazz fusion',
+            seedGenres: ['jazz', 'electronic'],
         };
         expect(hasAdvancedSelection(selection)).toBe(true);
     });
@@ -217,17 +237,17 @@ describe('countSelections', () => {
         expect(countSelections(EMPTY_ADVANCED_SELECTION)).toBe(0);
     });
 
-    test('counts genre as 1 (single or combination)', () => {
+    test('counts genres as 1 regardless of count', () => {
         const selectionSingle: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
+            seedGenres: ['jazz'],
         };
-        const selectionCombo: AdvancedSelection = {
+        const selectionMultiple: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            genreCombination: 'jazz fusion',
+            seedGenres: ['jazz', 'electronic', 'ambient'],
         };
         expect(countSelections(selectionSingle)).toBe(1);
-        expect(countSelections(selectionCombo)).toBe(1);
+        expect(countSelections(selectionMultiple)).toBe(1);
     });
 
     test('counts harmonic as 1 (style or combination)', () => {
@@ -275,10 +295,10 @@ describe('countSelections', () => {
         expect(countSelections(selection)).toBe(3);
     });
 
-    test('counts all four categories (with genre)', () => {
+    test('counts all four categories (with genres)', () => {
         const selection: AdvancedSelection = {
             ...EMPTY_ADVANCED_SELECTION,
-            singleGenre: 'jazz',
+            seedGenres: ['jazz', 'electronic'],
             harmonicStyle: 'lydian',
             polyrhythmCombination: 'complexity_build',
             timeSignature: 'time_7_8',
