@@ -10,6 +10,7 @@ import {
   TIME_SIGNATURE_DISPLAY_NAMES,
   TIME_JOURNEY_DISPLAY_NAMES,
 } from "@shared/labels";
+import { hasAdvancedSelection } from "@shared/music-phrase";
 
 import { AdvancedOption } from "./advanced-option";
 import { PhrasePreview } from "./phrase-preview";
@@ -45,14 +46,7 @@ const TIME_JOURNEY_OPTIONS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES)
   .sort((a, b) => a.label.localeCompare(b.label));
 
 export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: AdvancedPanelProps) {
-  const hasAnySelection = !!(
-    selection.seedGenres.length > 0 ||
-    selection.harmonicStyle ||
-    selection.harmonicCombination ||
-    selection.polyrhythmCombination ||
-    selection.timeSignature ||
-    selection.timeSignatureJourney
-  );
+  const hasAnySelection = hasAdvancedSelection(selection);
 
   return (
     <div className="space-y-[var(--space-5)] p-[var(--space-panel)] panel">
