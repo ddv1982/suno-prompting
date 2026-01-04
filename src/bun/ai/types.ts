@@ -1,3 +1,4 @@
+import type { LanguageModel } from 'ai';
 import type { DebugInfo } from '@shared/types';
 
 export type GenerationResult = {
@@ -19,3 +20,14 @@ export type DebugInfoBuilder = (
   rawResponse: string,
   messages?: Array<{ role: string; content: string }>
 ) => DebugInfo;
+
+/**
+ * Unified configuration for AI engines
+ * Used by Quick Vibes, Creative Boost, and other generation engines
+ */
+export type EngineConfig = {
+  getModel: () => LanguageModel;
+  isDebugMode: () => boolean;
+  buildDebugInfo: DebugInfoBuilder;
+  isMaxMode?: () => boolean;
+};

@@ -1,6 +1,5 @@
 import { generateText } from 'ai';
 import type { LanguageModel } from 'ai';
-import { AIGenerationError } from '@shared/errors';
 import { APP_CONSTANTS } from '@shared/constants';
 import type { DebugInfo } from '@shared/types';
 import {
@@ -18,16 +17,13 @@ import { condense } from '@bun/ai/llm-rewriter';
 import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
-import type { GenerationResult, DebugInfoBuilder } from './types';
+import type { GenerationResult, EngineConfig } from './types';
+import { callLLM, generateDirectModeTitle } from './llm-utils';
 
 const log = createLogger('CreativeBoostEngine');
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
-export type CreativeBoostEngineConfig = {
-  getModel: () => LanguageModel;
-  isDebugMode: () => boolean;
-  buildDebugInfo: DebugInfoBuilder;
-};
+export type CreativeBoostEngineConfig = EngineConfig;
 
 async function applyMaxModeConversion(
   style: string,
@@ -129,8 +125,7 @@ async function postProcessCreativeBoostResponse(
 
 /**
  * Direct Mode generation - bypasses LLM for styles
- * Used when Suno V5 Styles are selected
- * Styles are returned exactly as-is (joined with ', ')
+ * Styles are returned exactly as selected, title generated via LLM
  */
 async function generateDirectMode(
   sunoStyles: string[],
@@ -139,32 +134,10 @@ async function generateDirectMode(
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  // Style is exactly the selected styles, joined with comma
   const styleResult = sunoStyles.join(', ');
+  log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics });
 
-  log.info('generateDirectMode:start', {
-    stylesCount: sunoStyles.length,
-    withLyrics,
-  });
-
-  // Generate title based on styles (uses existing title generation)
-  let title = 'Untitled';
-  try {
-    const genre = sunoStyles[0] || 'music'; // Use first style as genre hint
-    const mood = extractMoodFromPrompt(styleResult) || 'creative';
-    const titleResult = await generateTitle(
-      styleResult,
-      genre,
-      mood,
-      config.getModel
-    );
-    title = titleResult.title;
-  } catch (error) {
-    log.warn('generateDirectMode:title:failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-    // Continue with fallback title
-  }
+  const title = await generateDirectModeTitle(description, sunoStyles, config.getModel);
 
   // Generate lyrics without max mode header (maxMode: false always in direct mode)
   const lyricsResult = await generateLyricsForCreativeBoost(
@@ -323,41 +296,28 @@ export async function generateCreativeBoost(
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description);
 
-  try {
-    const { text: rawResponse } = await generateText({
-      model: config.getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-    });
+  const rawResponse = await callLLM({
+    getModel: config.getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext: 'generate Creative Boost',
+  });
 
-    if (!rawResponse?.trim()) {
-      throw new AIGenerationError('Empty response from AI model (Creative Boost)');
-    }
+  const parsed = parseCreativeBoostResponse(rawResponse);
 
-    const parsed = parseCreativeBoostResponse(rawResponse);
-
-    return postProcessCreativeBoostResponse(parsed, {
-      rawStyle: parsed.style,
-      maxMode,
-      seedGenres,
-      sunoStyles,
-      lyricsTopic,
-      description,
-      withLyrics,
-      systemPrompt,
-      userPrompt,
-      rawResponse,
-      config,
-    });
-  } catch (error) {
-    if (error instanceof AIGenerationError) throw error;
-    throw new AIGenerationError(
-      `Failed to generate Creative Boost: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined
-    );
-  }
+  return postProcessCreativeBoostResponse(parsed, {
+    rawStyle: parsed.style,
+    maxMode,
+    seedGenres,
+    sunoStyles,
+    lyricsTopic,
+    description,
+    withLyrics,
+    systemPrompt,
+    userPrompt,
+    rawResponse,
+    config,
+  });
 }
 
 export async function refineCreativeBoost(
@@ -393,39 +353,26 @@ export async function refineCreativeBoost(
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback);
 
-  try {
-    const { text: rawResponse } = await generateText({
-      model: config.getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-    });
+  const rawResponse = await callLLM({
+    getModel: config.getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext: 'refine Creative Boost',
+  });
 
-    if (!rawResponse?.trim()) {
-      throw new AIGenerationError('Empty response from AI model (Creative Boost refine)');
-    }
+  const parsed = parseCreativeBoostResponse(rawResponse);
 
-    const parsed = parseCreativeBoostResponse(rawResponse);
-
-    return postProcessCreativeBoostResponse(parsed, {
-      rawStyle: parsed.style,
-      maxMode,
-      seedGenres,
-      sunoStyles,
-      lyricsTopic,
-      description,
-      withLyrics,
-      systemPrompt,
-      userPrompt,
-      rawResponse,
-      config,
-    });
-  } catch (error) {
-    if (error instanceof AIGenerationError) throw error;
-    throw new AIGenerationError(
-      `Failed to refine Creative Boost: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined
-    );
-  }
+  return postProcessCreativeBoostResponse(parsed, {
+    rawStyle: parsed.style,
+    maxMode,
+    seedGenres,
+    sunoStyles,
+    lyricsTopic,
+    description,
+    withLyrics,
+    systemPrompt,
+    userPrompt,
+    rawResponse,
+    config,
+  });
 }

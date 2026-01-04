@@ -382,12 +382,15 @@ export class AIEngine {
     withWordlessVocals: boolean,
     sunoStyles: string[]
   ): Promise<GenerationResult> {
-    return generateQuickVibesImpl(category, customDescription, withWordlessVocals, sunoStyles, {
-      getModel: this.getModel,
-      isMaxMode: this.config.isMaxMode.bind(this.config),
-      isDebugMode: this.config.isDebugMode.bind(this.config),
-      buildDebugInfo: this.buildDebugInfo.bind(this),
-    });
+    return generateQuickVibesImpl(
+      { category, customDescription, withWordlessVocals, sunoStyles },
+      {
+        getModel: this.getModel,
+        isMaxMode: this.config.isMaxMode.bind(this.config),
+        isDebugMode: this.config.isDebugMode.bind(this.config),
+        buildDebugInfo: this.buildDebugInfo.bind(this),
+      }
+    );
   }
 
   async refineQuickVibes(options: {
