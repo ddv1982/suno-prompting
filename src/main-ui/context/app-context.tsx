@@ -1,10 +1,10 @@
 // Compatibility layer - combines all split contexts into a single useAppContext hook
 // This allows existing components to continue working without changes
 
-import { useEditorContext } from '@/context/editor-context';
-import { useGenerationContext } from '@/context/generation-context';
-import { useSessionContext } from '@/context/session-context';
-import { useSettingsContext } from '@/context/settings-context';
+import { type EditorContextType, useEditorContext } from '@/context/editor-context';
+import { type GenerationContextType, useGenerationContext } from '@/context/generation-context';
+import { type SessionContextType, useSessionContext } from '@/context/session-context';
+import { type SettingsContextType, useSettingsContext } from '@/context/settings-context';
 
 // Re-export types for backwards compatibility
 export type { GeneratingAction } from '@/context/generation-context';
@@ -12,8 +12,15 @@ export type { GeneratingAction } from '@/context/generation-context';
 // Re-export the new AppProvider
 export { AppProvider } from '@/context/app-provider';
 
+// Combined context type for backwards compatibility
+type AppContextType = 
+  & Pick<SessionContextType, 'sessions' | 'currentSession' | 'loadHistory' | 'saveSession' | 'deleteSession'>
+  & Pick<SettingsContextType, 'currentModel' | 'maxMode' | 'lyricsMode' | 'settingsOpen' | 'setSettingsOpen' | 'setMaxMode' | 'setLyricsMode'>
+  & Pick<EditorContextType, 'editorMode' | 'promptMode' | 'advancedSelection' | 'lockedPhrase' | 'pendingInput' | 'lyricsTopic' | 'computedMusicPhrase' | 'setEditorMode' | 'setPromptMode' | 'setAdvancedSelection' | 'updateAdvancedSelection' | 'clearAdvancedSelection' | 'setLockedPhrase' | 'setPendingInput' | 'setLyricsTopic' | 'quickVibesInput' | 'withWordlessVocals' | 'setQuickVibesInput' | 'setWithWordlessVocals' | 'creativeBoostInput' | 'setCreativeBoostInput'>
+  & Pick<GenerationContextType, 'isGenerating' | 'generatingAction' | 'chatMessages' | 'validation' | 'debugInfo' | 'setValidation' | 'selectSession' | 'newProject' | 'handleGenerate' | 'handleCopy' | 'handleRemix' | 'handleRemixInstruments' | 'handleRemixGenre' | 'handleRemixMood' | 'handleRemixStyleTags' | 'handleRemixRecording' | 'handleRemixTitle' | 'handleRemixLyrics' | 'handleGenerateQuickVibes' | 'handleRemixQuickVibes' | 'handleConversionComplete' | 'handleGenerateCreativeBoost' | 'handleRefineCreativeBoost'>;
+
 // Backwards-compatible hook that combines all contexts
-export const useAppContext = () => {
+export const useAppContext = (): AppContextType => {
   const session = useSessionContext();
   const settings = useSettingsContext();
   const editor = useEditorContext();

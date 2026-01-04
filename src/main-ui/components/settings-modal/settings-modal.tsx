@@ -65,7 +65,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         setLoading(false);
       }
     };
-    loadSettings();
+    void loadSettings();
   }, [isOpen]);
 
   const handleProviderChange = (newProvider: AIProvider) => {

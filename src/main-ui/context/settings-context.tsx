@@ -5,7 +5,7 @@ import { api } from '@/services/rpc';
 
 const log = createLogger('Settings');
 
-interface SettingsContextType {
+export interface SettingsContextType {
   currentModel: string;
   maxMode: boolean;
   lyricsMode: boolean;
@@ -18,13 +18,13 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
-export const useSettingsContext = () => {
+export const useSettingsContext = (): SettingsContextType => {
   const context = useContext(SettingsContext);
   if (!context) throw new Error('useSettingsContext must be used within SettingsProvider');
   return context;
 };
 
-export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const [currentModel, setCurrentModel] = useState("");
   const [maxMode, setMaxMode] = useState(false);
   const [lyricsMode, setLyricsMode] = useState(false);

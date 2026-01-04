@@ -26,7 +26,7 @@ const log = createLogger('Generation');
 
 export type { GeneratingAction } from '@/hooks/use-generation-state';
 
-interface GenerationContextType {
+export interface GenerationContextType {
   isGenerating: boolean;
   generatingAction: GeneratingAction;
   chatMessages: ChatMessage[];
@@ -54,13 +54,13 @@ interface GenerationContextType {
 
 const GenerationContext = createContext<GenerationContextType | null>(null);
 
-export const useGenerationContext = () => {
+export const useGenerationContext = (): GenerationContextType => {
   const context = useContext(GenerationContext);
   if (!context) throw new Error('useGenerationContext must be used within GenerationProvider');
   return context;
 };
 
-export const GenerationProvider = ({ children }: { children: ReactNode }) => {
+export const GenerationProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput, setWithWordlessVocals, promptMode, withWordlessVocals, advancedSelection, creativeBoostInput } = useEditorContext();
   const { maxMode, lyricsMode } = useSettingsContext();
@@ -308,9 +308,9 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, advancedSelection, maxMode, createConversionSession, showToast, quickVibesActions, setChatMessages, setGeneratingAction]);
 
-  const handleCopy = useCallback(() => {
+  const handleCopy = useCallback((): void => {
     const prompt = currentSession?.currentPrompt || "";
-    navigator.clipboard.writeText(prompt);
+    void navigator.clipboard.writeText(prompt);
   }, [currentSession?.currentPrompt]);
 
   const handleRemix = useCallback(async () => {

@@ -29,7 +29,7 @@ const MUTUALLY_EXCLUSIVE_FIELDS: [NullableAdvancedField, NullableAdvancedField][
   ['timeSignature', 'timeSignatureJourney'],
 ];
 
-interface EditorContextType {
+export interface EditorContextType {
   editorMode: EditorMode;
   promptMode: PromptMode;
   advancedSelection: AdvancedSelection;
@@ -61,13 +61,13 @@ interface EditorContextType {
 
 const EditorContext = createContext<EditorContextType | null>(null);
 
-export const useEditorContext = () => {
+export const useEditorContext = (): EditorContextType => {
   const context = useContext(EditorContext);
   if (!context) throw new Error('useEditorContext must be used within EditorProvider');
   return context;
 };
 
-export const EditorProvider = ({ children }: { children: ReactNode }) => {
+export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const [editorMode, setEditorMode] = useState<EditorMode>('simple');
   const [promptMode, setPromptModeState] = useState<PromptMode>('full');
   const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
@@ -84,7 +84,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     setQuickVibesInputState(input);
   }, []);
 
-  const getQuickVibesInput = useCallback(() => quickVibesInputRef.current, []);
+  const getQuickVibesInput = useCallback((): QuickVibesInput => quickVibesInputRef.current, []);
 
   // Load promptMode once on mount - no reload, no race conditions
   useEffect(() => {
@@ -96,7 +96,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
         log.error("loadPromptMode:failed", err);
       }
     };
-    loadPromptMode();
+    void loadPromptMode();
   }, []);
 
   // Fire-and-forget save - no rollback needed for UI preference

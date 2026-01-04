@@ -42,9 +42,9 @@ export function QuickVibesOutput({
     setTimeout(() => { setCopiedPrompt(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
-  const handleCopyTitle = () => {
+  const handleCopyTitle = (): void => {
     if (!title) return;
-    navigator.clipboard.writeText(title);
+    void navigator.clipboard.writeText(title);
     setCopiedTitle(true);
     setTimeout(() => { setCopiedTitle(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };

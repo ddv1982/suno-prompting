@@ -7,7 +7,7 @@ import { nowISO } from '@shared/utils';
 
 const log = createLogger('Session');
 
-function generateId() {
+function generateId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }
@@ -17,7 +17,7 @@ function generateId() {
   );
 }
 
-interface SessionContextType {
+export interface SessionContextType {
   sessions: PromptSession[];
   currentSession: PromptSession | null;
   setCurrentSession: (session: PromptSession | null) => void;
@@ -30,13 +30,13 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | null>(null);
 
-export const useSessionContext = () => {
+export const useSessionContext = (): SessionContextType => {
   const context = useContext(SessionContext);
   if (!context) throw new Error('useSessionContext must be used within SessionProvider');
   return context;
 };
 
-export const SessionProvider = ({ children }: { children: ReactNode }) => {
+export const SessionProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const [sessions, setSessions] = useState<PromptSession[]>([]);
   const [currentSession, setCurrentSession] = useState<PromptSession | null>(null);
 
@@ -104,7 +104,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    loadHistory();
+    void loadHistory();
   }, [loadHistory]);
 
   // Memoize the context value to prevent unnecessary re-renders of consumers

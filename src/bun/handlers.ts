@@ -46,7 +46,7 @@ function validateSeedGenresLimit(seedGenres: string[]): void {
  * Throws ValidationError if both are specified.
  */
 function validateCategoryStylesMutualExclusivity(
-    category: unknown | null, 
+    category: unknown, 
     sunoStyles: string[]
 ): void {
     if (category !== null && sunoStyles.length > 0) {

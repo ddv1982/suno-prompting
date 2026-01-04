@@ -5,7 +5,7 @@ import { GenerationProvider } from '@/context/generation-context';
 import { SessionProvider } from '@/context/session-context';
 import { SettingsProvider } from '@/context/settings-context';
 
-export const AppProvider = ({ children }: { children: ReactNode }) => {
+export const AppProvider = ({ children }: { children: ReactNode }): ReactNode => {
   return (
     <SettingsProvider>
       <SessionProvider>

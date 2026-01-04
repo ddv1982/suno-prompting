@@ -62,14 +62,14 @@ function buildExtendedChords(scaleNotes: Note[]): ExtendedChord[] {
   return extended;
 }
 
-export function getLydianChords(root: Note | string): LydianScaleChords {
+export function getLydianChords(root: Note): LydianScaleChords {
   const scaleNotes = getScaleNotes(root, LYDIAN_SCALE.intervals);
   const triads = buildScaleChords(root, LYDIAN_SCALE, 'triads');
   const sevenths = buildScaleChords(root, LYDIAN_SCALE, 'sevenths');
   const extended = buildExtendedChords(scaleNotes);
 
   return {
-    root: scaleNotes[0] ?? root as Note,
+    root: scaleNotes[0] ?? root,
     scaleNotes,
     triads,
     sevenths,
