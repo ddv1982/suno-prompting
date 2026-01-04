@@ -126,6 +126,12 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
 
     // Get stored input from session (not current UI state which may be reset)
     const storedInput = currentSession.quickVibesInput;
+    
+    // Calculate effective values once (UI state if changed, otherwise stored session)
+    const effectiveSunoStyles = quickVibesInput.sunoStyles.length > 0
+      ? quickVibesInput.sunoStyles
+      : storedInput?.sunoStyles ?? [];
+    const effectiveDescription = quickVibesInput.customDescription || storedInput?.customDescription || '';
 
     try {
       setGeneratingAction('quickVibes');
@@ -134,14 +140,11 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
       const result = await api.refineQuickVibes({
         currentPrompt: currentSession.currentPrompt,
         currentTitle: currentSession.currentTitle,
-        description: quickVibesInput.customDescription,
+        description: effectiveDescription,
         feedback: input,
         withWordlessVocals,
         category: storedInput?.category ?? null,
-        // Use current input if user changed styles, otherwise use stored session
-        sunoStyles: quickVibesInput.sunoStyles.length > 0
-          ? quickVibesInput.sunoStyles
-          : storedInput?.sunoStyles ?? [],
+        sunoStyles: effectiveSunoStyles,
       });
 
       if (!result?.prompt) {
@@ -157,11 +160,6 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         timestamp: now,
       };
 
-      // Determine effective styles (user's new selection or stored)
-      const effectiveSunoStyles = quickVibesInput.sunoStyles.length > 0
-        ? quickVibesInput.sunoStyles
-        : storedInput?.sunoStyles ?? [];
-
       const updatedSession: PromptSession = {
         ...currentSession,
         currentPrompt: result.prompt,
@@ -170,7 +168,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         updatedAt: now,
         quickVibesInput: {
           category: storedInput?.category ?? null,
-          customDescription: quickVibesInput.customDescription || storedInput?.customDescription || '',
+          customDescription: effectiveDescription,
           withWordlessVocals: storedInput?.withWordlessVocals ?? false,
           sunoStyles: effectiveSunoStyles,
         },

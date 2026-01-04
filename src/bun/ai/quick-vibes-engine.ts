@@ -31,6 +31,26 @@ export type RefineQuickVibesOptions = {
   sunoStyles: string[];
 };
 
+/**
+ * Build Direct Mode result - styles passed through as-is with LLM-generated title
+ */
+function buildDirectModeResult(
+  sunoStyles: string[],
+  title: string,
+  description: string | undefined,
+  debugLabel: string,
+  config: EngineConfig
+): GenerationResult {
+  const styleResult = sunoStyles.join(', ');
+  return {
+    text: styleResult,
+    title,
+    debugInfo: config.isDebugMode()
+      ? config.buildDebugInfo(debugLabel, `Styles: ${styleResult}\nDescription: ${description || '(none)'}`, styleResult)
+      : undefined,
+  };
+}
+
 export async function generateQuickVibes(
   options: GenerateQuickVibesOptions,
   config: EngineConfig & { isMaxMode: () => boolean }
@@ -39,22 +59,9 @@ export async function generateQuickVibes(
 
   // ============ DIRECT MODE BYPASS ============
   if (sunoStyles.length > 0) {
-    const styleResult = sunoStyles.join(', ');
     log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription });
-
     const title = await generateDirectModeTitle(customDescription, sunoStyles, config.getModel);
-
-    return {
-      text: styleResult,
-      title,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(
-            'DIRECT_MODE: Styles passed through as-is. Title generated via LLM.',
-            `Suno V5 Styles: ${styleResult}\nDescription: ${customDescription || '(none)'}`,
-            styleResult
-          )
-        : undefined,
-    };
+    return buildDirectModeResult(sunoStyles, title, customDescription, 'DIRECT_MODE: Styles passed through, title generated.', config);
   }
   // ============ END DIRECT MODE BYPASS ============
 
@@ -87,23 +94,10 @@ export async function refineQuickVibes(
 
   // ============ DIRECT MODE REFINE ============
   if (sunoStyles.length > 0) {
-    const styleResult = sunoStyles.join(', ');
     log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description });
-
     const titleSource = description || feedback;
     const title = await generateDirectModeTitle(titleSource, sunoStyles, config.getModel);
-
-    return {
-      text: styleResult,
-      title,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(
-            'DIRECT_MODE_REFINE: Styles updated, title regenerated.',
-            `New styles: ${styleResult}\nDescription: ${description || '(none)'}`,
-            styleResult
-          )
-        : undefined,
-    };
+    return buildDirectModeResult(sunoStyles, title, description, 'DIRECT_MODE_REFINE: Styles updated, title regenerated.', config);
   }
   // ============ END DIRECT MODE REFINE ============
 
