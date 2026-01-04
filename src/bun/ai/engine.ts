@@ -390,19 +390,24 @@ export class AIEngine {
     });
   }
 
-  async refineQuickVibes(
-    currentPrompt: string,
-    feedback: string,
-    withWordlessVocals: boolean,
-    category?: QuickVibesCategory | null,
-    sunoStyles: string[] = []
-  ): Promise<GenerationResult> {
-    return refineQuickVibesImpl(currentPrompt, feedback, withWordlessVocals, category, sunoStyles, {
-      getModel: this.getModel,
-      isMaxMode: this.config.isMaxMode.bind(this.config),
-      isDebugMode: this.config.isDebugMode.bind(this.config),
-      buildDebugInfo: this.buildDebugInfo.bind(this),
-    });
+  async refineQuickVibes(options: {
+    currentPrompt: string;
+    currentTitle?: string;
+    description?: string;
+    feedback: string;
+    withWordlessVocals: boolean;
+    category?: QuickVibesCategory | null;
+    sunoStyles?: string[];
+  }): Promise<GenerationResult> {
+    return refineQuickVibesImpl(
+      { ...options, sunoStyles: options.sunoStyles ?? [] },
+      {
+        getModel: this.getModel,
+        isMaxMode: this.config.isMaxMode.bind(this.config),
+        isDebugMode: this.config.isDebugMode.bind(this.config),
+        buildDebugInfo: this.buildDebugInfo.bind(this),
+      }
+    );
   }
 
   async generateCreativeBoost(

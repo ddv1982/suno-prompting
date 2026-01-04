@@ -68,6 +68,7 @@ export function OutputPanel({
       <div className="space-y-[var(--space-5)]">
         <QuickVibesOutput
           prompt={currentPrompt}
+          title={currentTitle}
           isGenerating={isGenerating}
           hasDebugInfo={!!debugInfo}
           onRemix={onRemixQuickVibes}

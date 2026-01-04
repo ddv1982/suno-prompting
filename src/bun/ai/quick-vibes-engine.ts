@@ -14,6 +14,7 @@ import {
 } from '@bun/prompt/quick-vibes-builder';
 import { createLogger } from '@bun/logger';
 import type { GenerationResult, DebugInfoBuilder } from './types';
+import { generateTitle } from './content-generator';
 
 const log = createLogger('QuickVibesEngine');
 
@@ -24,6 +25,34 @@ export type QuickVibesEngineConfig = {
   buildDebugInfo: DebugInfoBuilder;
 };
 
+export type RefineQuickVibesOptions = {
+  currentPrompt: string;
+  currentTitle?: string;
+  description?: string;
+  feedback: string;
+  withWordlessVocals: boolean;
+  category?: QuickVibesCategory | null;
+  sunoStyles: string[];
+};
+
+async function generateDirectModeTitle(
+  description: string,
+  styles: string[],
+  getModel: () => LanguageModel
+): Promise<string> {
+  try {
+    const titleSource = description || styles.join(', ');
+    const genre = styles[0] || 'music';
+    const result = await generateTitle(titleSource, genre, 'creative', getModel);
+    return result.title;
+  } catch (error) {
+    log.warn('generateDirectModeTitle:failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    return 'Untitled';
+  }
+}
+
 export async function generateQuickVibes(
   category: QuickVibesCategory | null,
   customDescription: string,
@@ -32,17 +61,21 @@ export async function generateQuickVibes(
   config: QuickVibesEngineConfig
 ): Promise<GenerationResult> {
   // ============ DIRECT MODE BYPASS ============
-  // When Suno V5 Styles are selected, bypass LLM generation
-  // Output is exactly the selected styles, no transformation
+  // When Suno V5 Styles are selected, bypass LLM for styles
+  // Styles are returned exactly as-is, title is generated via LLM
   if (sunoStyles.length > 0) {
     const styleResult = sunoStyles.join(', ');
-    log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length });
+    log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription });
+
+    const title = await generateDirectModeTitle(customDescription, sunoStyles, config.getModel);
+
     return {
       text: styleResult,
+      title,
       debugInfo: config.isDebugMode()
         ? config.buildDebugInfo(
-            'DIRECT_MODE: No system prompt - styles passed through as-is',
-            `Suno V5 Styles: ${sunoStyles.join(', ')}`,
+            'DIRECT_MODE: Styles passed through as-is. Title generated via LLM.',
+            `Suno V5 Styles: ${styleResult}\nDescription: ${customDescription || '(none)'}`,
             styleResult
           )
         : undefined,
@@ -85,24 +118,28 @@ export async function generateQuickVibes(
 }
 
 export async function refineQuickVibes(
-  currentPrompt: string,
-  feedback: string,
-  withWordlessVocals: boolean,
-  category: QuickVibesCategory | null | undefined,
-  sunoStyles: string[],
+  options: RefineQuickVibesOptions,
   config: QuickVibesEngineConfig
 ): Promise<GenerationResult> {
+  const { currentPrompt, currentTitle, description, feedback, withWordlessVocals, category, sunoStyles } = options;
+
   // ============ DIRECT MODE REFINE ============
   // When Suno V5 Styles are selected, styles remain unchanged
-  // User must change style selection to get different styles
+  // Title is regenerated using updated description
   if (sunoStyles.length > 0) {
-    log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length });
+    log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description });
+
+    // Use description if provided, otherwise use feedback as title source
+    const titleSource = description || feedback;
+    const title = await generateDirectModeTitle(titleSource, sunoStyles, config.getModel);
+
     return {
-      text: currentPrompt, // Keep styles unchanged
+      text: currentPrompt,
+      title,
       debugInfo: config.isDebugMode()
         ? config.buildDebugInfo(
-            'DIRECT_MODE_REFINE: Styles unchanged - select different styles to change',
-            `Current styles: ${currentPrompt}`,
+            'DIRECT_MODE_REFINE: Styles unchanged, title regenerated.',
+            `Current styles: ${currentPrompt}\nDescription: ${description || '(none)'}`,
             currentPrompt
           )
         : undefined,

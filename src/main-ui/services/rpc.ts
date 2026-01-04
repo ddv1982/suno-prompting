@@ -144,14 +144,16 @@ export const api = {
         return await rpc.request.generateQuickVibes({ category, customDescription, withWordlessVocals, sunoStyles });
     },
 
-    async refineQuickVibes(
-        currentPrompt: string,
-        feedback: string,
-        withWordlessVocals: boolean,
-        category: QuickVibesCategory | null,
-        sunoStyles: string[] = []
-    ): Promise<BunRequests['refineQuickVibes']['response']> {
-        return await rpc.request.refineQuickVibes({ currentPrompt, feedback, withWordlessVocals, category, sunoStyles });
+    async refineQuickVibes(options: {
+        currentPrompt: string;
+        currentTitle?: string;
+        description?: string;
+        feedback: string;
+        withWordlessVocals: boolean;
+        category?: QuickVibesCategory | null;
+        sunoStyles?: string[];
+    }): Promise<BunRequests['refineQuickVibes']['response']> {
+        return await rpc.request.refineQuickVibes(options);
     },
 
     async convertToMaxFormat(text: string): Promise<BunRequests['convertToMaxFormat']['response']> {

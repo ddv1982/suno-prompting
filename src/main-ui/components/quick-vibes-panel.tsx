@@ -24,10 +24,10 @@ const getDescriptionHelperText = (
 ): string => {
   if (isRefineMode) {
     if (category) return `Will refine toward "${getCategoryLabel(category)}". Add feedback or leave blank.`;
-    if (isDirectMode) return "Styles are fixed in Direct Mode. Change style selection to get different styles.";
+    if (isDirectMode) return "Styles are fixed. Update description to regenerate the title.";
     return "Describe how you'd like to adjust the current vibe, or select a category above.";
   }
-  if (isDirectMode) return "Description is not used when Suno V5 Styles are selected.";
+  if (isDirectMode) return "Used to generate a title. Styles are output exactly as selected.";
   if (category) return `Category "${getCategoryLabel(category)}" selected. Add custom details or leave blank.`;
   return "Describe the mood, setting, or activity for your music.";
 };
@@ -150,9 +150,13 @@ export function QuickVibesPanel({
         <div className="flex items-center justify-between">
           <FormLabel 
             icon={<MessageSquare className="w-3 h-3" />} 
-            badge={isRefineMode ? undefined : isDirectMode ? "disabled" : "optional"}
+            badge={isRefineMode ? undefined : "optional"}
           >
-            {isRefineMode ? "Refine the vibe" : "Describe the vibe"}
+            {isRefineMode 
+              ? "Refine the vibe" 
+              : isDirectMode 
+                ? "Describe the vibe (for title)" 
+                : "Describe the vibe"}
           </FormLabel>
           <Badge
             variant="secondary"
@@ -165,15 +169,17 @@ export function QuickVibesPanel({
           value={input.customDescription}
           onChange={(e) => handleDescriptionChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={isGenerating || isDirectMode}
+          disabled={isGenerating}
           className={cn(
             "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-            (isGenerating || isDirectMode) && "opacity-70"
+            isGenerating && "opacity-70"
           )}
           placeholder={isRefineMode 
-            ? "How should the vibe change? (e.g., 'more dreamy', 'add rain sounds', 'slower tempo')"
+            ? isDirectMode
+              ? "Update the description to regenerate the title..."
+              : "How should the vibe change? (e.g., 'more dreamy', 'add rain sounds', 'slower tempo')"
             : isDirectMode
-              ? "Description not used with Suno V5 Styles"
+              ? "Describe the vibe for title generation (optional - will use styles if empty)..."
               : "e.g., mellow afternoon coding session, rainy window coffee shop, late night study vibes..."
           }
         />

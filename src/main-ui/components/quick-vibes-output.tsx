@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SectionLabel } from "@/components/ui/section-label";
 import { PromptOutput } from "@/components/prompt-output";
+import { OutputSection } from "@/components/prompt-editor/output-section";
 import { RefreshCw, Copy, Check, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
@@ -11,6 +12,7 @@ import { stripMaxModeHeader } from "@shared/prompt-utils";
 
 type QuickVibesOutputProps = {
   prompt: string;
+  title?: string;
   isGenerating: boolean;
   hasDebugInfo: boolean;
   onRemix: () => void;
@@ -20,6 +22,7 @@ type QuickVibesOutputProps = {
 
 export function QuickVibesOutput({
   prompt,
+  title,
   isGenerating,
   hasDebugInfo,
   onRemix,
@@ -38,20 +41,29 @@ export function QuickVibesOutput({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <SectionLabel>Quick Vibes Prompt</SectionLabel>
-        <Badge
-          variant={isOverLimit ? "destructive" : "secondary"}
-          className="text-tiny font-mono tabular-nums h-5"
-        >
-          {charCount} / {APP_CONSTANTS.QUICK_VIBES_MAX_CHARS}
-        </Badge>
-      </div>
-      <Card className="relative group border bg-surface overflow-hidden">
-        <CardContent className="p-6">
-          <PromptOutput text={prompt} />
-        </CardContent>
+    <div className="space-y-[var(--space-5)]">
+      {title && (
+        <OutputSection
+          label="Title"
+          content={title}
+          onCopy={() => navigator.clipboard.writeText(title)}
+        />
+      )}
+      
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <SectionLabel>Quick Vibes Prompt</SectionLabel>
+          <Badge
+            variant={isOverLimit ? "destructive" : "secondary"}
+            className="text-tiny font-mono tabular-nums h-5"
+          >
+            {charCount} / {APP_CONSTANTS.QUICK_VIBES_MAX_CHARS}
+          </Badge>
+        </div>
+        <Card className="relative group border bg-surface overflow-hidden">
+          <CardContent className="p-6">
+            <PromptOutput text={prompt} />
+          </CardContent>
         
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex gap-2">
@@ -88,8 +100,9 @@ export function QuickVibesOutput({
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? "COPIED" : "COPY"}
           </Button>
-        </div>
-      </Card>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

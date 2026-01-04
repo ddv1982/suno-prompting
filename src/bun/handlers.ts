@@ -241,15 +241,15 @@ export function createHandlers(
                 }
                 const result = await aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals, sunoStyles);
                 const versionId = Bun.randomUUIDv7();
-                log.info('generateQuickVibes:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, debugInfo: result.debugInfo };
+                log.info('generateQuickVibes:complete', { versionId, promptLength: result.text.length, hasTitle: !!result.title });
+                return { prompt: result.text, title: result.title, versionId, debugInfo: result.debugInfo };
             } catch (error) {
                 log.error('generateQuickVibes:failed', error);
                 throw error;
             }
         },
-        refineQuickVibes: async ({ currentPrompt, feedback, withWordlessVocals, category, sunoStyles = [] }) => {
-            log.info('refineQuickVibes', { currentPrompt, feedback, withWordlessVocals, category, sunoStylesCount: sunoStyles.length });
+        refineQuickVibes: async ({ currentPrompt, currentTitle, description, feedback, withWordlessVocals, category, sunoStyles = [] }) => {
+            log.info('refineQuickVibes', { feedback, withWordlessVocals, category, sunoStylesCount: sunoStyles.length });
             try {
                 // Validate mutual exclusivity
                 if (category !== null && sunoStyles.length > 0) {
@@ -258,10 +258,18 @@ export function createHandlers(
                 if (sunoStyles.length > 4) {
                     throw new Error('Maximum 4 Suno V5 styles allowed');
                 }
-                const result = await aiEngine.refineQuickVibes(currentPrompt, feedback, withWordlessVocals, category, sunoStyles);
+                const result = await aiEngine.refineQuickVibes({
+                    currentPrompt,
+                    currentTitle,
+                    description,
+                    feedback,
+                    withWordlessVocals,
+                    category,
+                    sunoStyles,
+                });
                 const versionId = Bun.randomUUIDv7();
-                log.info('refineQuickVibes:complete', { versionId, promptLength: result.text.length });
-                return { prompt: result.text, versionId, debugInfo: result.debugInfo };
+                log.info('refineQuickVibes:complete', { versionId, promptLength: result.text.length, hasTitle: !!result.title });
+                return { prompt: result.text, title: result.title, versionId, debugInfo: result.debugInfo };
             } catch (error) {
                 log.error('refineQuickVibes:failed', error);
                 throw error;

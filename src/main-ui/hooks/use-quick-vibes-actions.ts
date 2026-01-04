@@ -65,6 +65,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
       const newVersion: PromptVersion = {
         id: result.versionId,
         content: result.prompt,
+        title: result.title,
         timestamp: now,
       };
 
@@ -74,6 +75,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
             id: generateId(),
             originalInput,
             currentPrompt: result.prompt,
+            currentTitle: result.title,
             versionHistory: [newVersion],
             createdAt: now,
             updatedAt: now,
@@ -83,6 +85,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         : {
             ...currentSession,
             currentPrompt: result.prompt,
+            currentTitle: result.title,
             versionHistory: [...currentSession.versionHistory, newVersion],
             updatedAt: now,
             promptMode: 'quickVibes',
@@ -125,7 +128,15 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
       setGeneratingAction('quickVibes');
       setChatMessages(prev => [...prev, { role: "user", content: input }]);
 
-      const result = await api.refineQuickVibes(currentSession.currentPrompt, input, withWordlessVocals, quickVibesInput.category, quickVibesInput.sunoStyles);
+      const result = await api.refineQuickVibes({
+        currentPrompt: currentSession.currentPrompt,
+        currentTitle: currentSession.currentTitle,
+        description: quickVibesInput.customDescription,
+        feedback: input,
+        withWordlessVocals,
+        category: quickVibesInput.category,
+        sunoStyles: quickVibesInput.sunoStyles,
+      });
 
       if (!result?.prompt) {
         throw new Error("Invalid result received from Quick Vibes refinement");
@@ -136,12 +147,14 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
       const newVersion: PromptVersion = {
         id: result.versionId,
         content: result.prompt,
+        title: result.title,
         timestamp: now,
       };
 
       const updatedSession: PromptSession = {
         ...currentSession,
         currentPrompt: result.prompt,
+        currentTitle: result.title,
         versionHistory: [...currentSession.versionHistory, newVersion],
         updatedAt: now,
       };

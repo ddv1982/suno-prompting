@@ -110,12 +110,15 @@ export type GenerateQuickVibesParams = {
 
 export type GenerateQuickVibesResponse = {
   prompt: string;
+  title?: string;
   versionId: string;
   debugInfo?: DebugInfo;
 };
 
 export type RefineQuickVibesParams = {
   currentPrompt: string;
+  currentTitle?: string;
+  description?: string;
   feedback: string;
   withWordlessVocals: boolean;
   category?: QuickVibesCategory | null;
@@ -125,6 +128,7 @@ export type RefineQuickVibesParams = {
 
 export type RefineQuickVibesResponse = {
   prompt: string;
+  title?: string;
   versionId: string;
   debugInfo?: DebugInfo;
 };

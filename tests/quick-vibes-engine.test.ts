@@ -146,11 +146,19 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
     expect(result.text).toBe("rock, pop, jazz, blues");
   });
 
-  it("bypasses LLM in direct mode (no generateText call)", async () => {
-    await engine.generateQuickVibes(null, "", false, ["synthwave"]);
+  it("calls LLM only for title generation in direct mode", async () => {
+    mockGenerateText.mockImplementation(async () => ({
+      text: "Generated Title",
+    }));
 
-    // Direct mode should not call generateText
-    expect(mockGenerateText).not.toHaveBeenCalled();
+    const result = await engine.generateQuickVibes(null, "", false, ["synthwave"]);
+
+    // Direct mode calls generateText for title generation only
+    expect(mockGenerateText).toHaveBeenCalled();
+    // Styles are still exact (not transformed by LLM)
+    expect(result.text).toBe("synthwave");
+    // Title is generated
+    expect(result.title).toBeDefined();
   });
 
   it("uses normal LLM flow when sunoStyles is empty", async () => {
@@ -183,29 +191,39 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
 
   it("keeps styles unchanged when refining in direct mode", async () => {
     const currentPrompt = "lo-fi jazz, dark goa trance";
-    const result = await engine.refineQuickVibes(
+    const result = await engine.refineQuickVibes({
       currentPrompt,
-      "make it darker",
-      false,
-      null,
-      ["lo-fi jazz", "dark goa trance"]
-    );
+      currentTitle: "Current Title",
+      description: "some description",
+      feedback: "make it darker",
+      withWordlessVocals: false,
+      category: null,
+      sunoStyles: ["lo-fi jazz", "dark goa trance"],
+    });
 
     // Styles should remain unchanged in direct mode
     expect(result.text).toBe(currentPrompt);
   });
 
-  it("bypasses LLM when refining in direct mode", async () => {
-    await engine.refineQuickVibes(
-      "ambient, drone",
-      "more atmospheric",
-      false,
-      null,
-      ["ambient", "drone"]
-    );
+  it("bypasses LLM for styles when refining in direct mode", async () => {
+    // Reset mock to track calls for title generation only
+    mockGenerateText.mockClear();
+    mockGenerateText.mockImplementation(async () => ({
+      text: "New Title",
+    }));
 
-    // Direct mode refine should not call generateText
-    expect(mockGenerateText).not.toHaveBeenCalled();
+    await engine.refineQuickVibes({
+      currentPrompt: "ambient, drone",
+      currentTitle: "Old Title",
+      description: "updated description",
+      feedback: "more atmospheric",
+      withWordlessVocals: false,
+      category: null,
+      sunoStyles: ["ambient", "drone"],
+    });
+
+    // Direct mode refine calls generateText for title regeneration
+    expect(mockGenerateText).toHaveBeenCalled();
   });
 
   it("uses normal LLM flow when sunoStyles is empty during refine", async () => {
@@ -213,15 +231,88 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       text: "refined vibes",
     }));
 
-    await engine.refineQuickVibes(
-      "original vibes",
-      "make it better",
-      false,
-      "lofi-study",
-      []
-    );
+    await engine.refineQuickVibes({
+      currentPrompt: "original vibes",
+      feedback: "make it better",
+      withWordlessVocals: false,
+      category: "lofi-study",
+      sunoStyles: [],
+    });
 
     // Should call generateText when no sunoStyles
     expect(mockGenerateText).toHaveBeenCalled();
+  });
+});
+
+describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    mockGenerateText.mockImplementation(async () => ({
+      text: "Midnight Jazz Session",
+    }));
+  });
+
+  it("generates title from description when provided", async () => {
+    const result = await engine.generateQuickVibes(
+      null,
+      "late night jazz vibes",
+      false,
+      ["lo-fi jazz", "smooth jazz"]
+    );
+
+    expect(result.title).toBeDefined();
+    expect(result.title).toBe("Midnight Jazz Session");
+    // generateText called for title
+    expect(mockGenerateText).toHaveBeenCalled();
+  });
+
+  it("generates title from styles when no description", async () => {
+    const result = await engine.generateQuickVibes(
+      null,
+      "",
+      false,
+      ["synthwave", "retrowave"]
+    );
+
+    expect(result.title).toBeDefined();
+    // generateText called for title using styles as source
+    expect(mockGenerateText).toHaveBeenCalled();
+  });
+
+  it("returns fallback title on title generation failure", async () => {
+    mockGenerateText.mockImplementation(async () => {
+      throw new Error("Title generation failed");
+    });
+
+    const result = await engine.generateQuickVibes(
+      null,
+      "",
+      false,
+      ["ambient"]
+    );
+
+    // Should have fallback title
+    expect(result.title).toBe("Untitled");
+    // Styles should still be correct
+    expect(result.text).toBe("ambient");
+  });
+
+  it("regenerates title on refine with new description", async () => {
+    const result = await engine.refineQuickVibes({
+      currentPrompt: "lo-fi jazz",
+      currentTitle: "Old Title",
+      description: "dreamy coffee shop morning",
+      feedback: "refine feedback",
+      withWordlessVocals: false,
+      category: null,
+      sunoStyles: ["lo-fi jazz"],
+    });
+
+    expect(result.title).toBeDefined();
+    expect(result.text).toBe("lo-fi jazz"); // Styles unchanged
+    expect(mockGenerateText).toHaveBeenCalled(); // Called for title
   });
 });
