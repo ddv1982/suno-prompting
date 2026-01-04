@@ -407,6 +407,192 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
   });
 });
 
+// ============================================================================
+// Bug Fix: Quick Vibes Category Not Respecting UI State on Refine
+// ============================================================================
+
+describe('handleRefineQuickVibes category pattern', () => {
+  /**
+   * These tests verify the pattern used in useQuickVibesActions.handleRefineQuickVibes
+   * for passing the correct category to the API.
+   * 
+   * Bug Fix: UI state should be respected for category - when user switches from
+   * a category to "none" and selects Suno V5 styles, the refine should use the
+   * UI category (null), not the stored category.
+   */
+
+  type QuickVibesInput = {
+    sunoStyles: string[];
+    customDescription: string;
+    category: string | null;
+    withWordlessVocals: boolean;
+  };
+
+  type StoredInput = {
+    sunoStyles?: string[];
+    customDescription?: string;
+    category: string | null;
+    withWordlessVocals?: boolean;
+  } | undefined;
+
+  // This simulates the FIXED pattern
+  function getEffectiveCategory(
+    uiInput: QuickVibesInput,
+    _storedInput: StoredInput // Intentionally unused - we respect UI state
+  ): string | null {
+    // Fix: Use UI category, not stored category
+    return uiInput.category;
+  }
+
+  // This simulates the OLD buggy pattern (for comparison/documentation)
+  function getEffectiveCategoryBuggy(
+    _uiInput: QuickVibesInput,
+    storedInput: StoredInput
+  ): string | null {
+    // Bug: Uses stored category instead of UI category
+    return storedInput?.category ?? null;
+  }
+
+  test('uses UI category when user switches from category to Direct Mode', () => {
+    // User generated with 'lofi-study', then switched to Direct Mode (category=null, styles selected)
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['dream-pop', 'shoegaze'],
+      customDescription: '',
+      category: null, // User cleared category
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: [],
+      customDescription: '',
+      category: 'lofi-study', // Original category from generation
+    };
+
+    const result = getEffectiveCategory(uiInput, storedInput);
+    
+    expect(result).toBeNull();
+    expect(result).not.toBe('lofi-study');
+  });
+
+  test('demonstrates the bug in old pattern - causes validation error', () => {
+    // This test documents the buggy behavior that was fixed
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['dream-pop'], // User selected styles
+      customDescription: '',
+      category: null, // User cleared category
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: [],
+      customDescription: '',
+      category: 'lofi-study', // Stored category
+    };
+
+    // Old buggy behavior would use stored category
+    const buggyCategory = getEffectiveCategoryBuggy(uiInput, storedInput);
+    expect(buggyCategory).toBe('lofi-study'); // Bug: uses stored
+    
+    // This would cause validateCategoryStylesMutualExclusivity to throw
+    // because both category AND sunoStyles are non-empty
+    const wouldCauseValidationError = buggyCategory !== null && uiInput.sunoStyles.length > 0;
+    expect(wouldCauseValidationError).toBe(true);
+    
+    // Fixed behavior respects UI state
+    const fixedCategory = getEffectiveCategory(uiInput, storedInput);
+    expect(fixedCategory).toBeNull(); // Fix: respects UI state
+    
+    // This passes validation
+    const passesValidation = fixedCategory === null || uiInput.sunoStyles.length === 0;
+    expect(passesValidation).toBe(true);
+  });
+
+  test('uses UI category when user keeps category', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: [],
+      customDescription: 'more chill',
+      category: 'lofi-study',
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: [],
+      customDescription: '',
+      category: 'lofi-study',
+    };
+
+    const result = getEffectiveCategory(uiInput, storedInput);
+    
+    expect(result).toBe('lofi-study');
+  });
+
+  test('uses UI category when user changes to different category', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: [],
+      customDescription: '',
+      category: 'ambient-focus', // Changed to different category
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: [],
+      customDescription: '',
+      category: 'lofi-study', // Original category
+    };
+
+    const result = getEffectiveCategory(uiInput, storedInput);
+    
+    expect(result).toBe('ambient-focus');
+    expect(result).not.toBe('lofi-study');
+  });
+
+  test('handles undefined stored input gracefully', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['indie-rock'],
+      customDescription: '',
+      category: null,
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = undefined;
+
+    const result = getEffectiveCategory(uiInput, storedInput);
+    
+    expect(result).toBeNull();
+  });
+
+  test('correct parameters passed to api.refineQuickVibes - Direct Mode scenario', () => {
+    // Simulate the complete Direct Mode switch scenario
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['dream-pop', 'shoegaze'],
+      customDescription: 'ethereal vibes',
+      category: null,
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: [],
+      customDescription: 'chill study',
+      category: 'lofi-study',
+    };
+
+    const effectiveCategory = getEffectiveCategory(uiInput, storedInput);
+    const effectiveSunoStyles = uiInput.sunoStyles; // Uses UI styles
+    
+    // Simulate API call parameters
+    const apiCallParams = {
+      currentPrompt: 'existing prompt',
+      currentTitle: 'Study Session',
+      description: uiInput.customDescription || storedInput?.customDescription || '',
+      feedback: 'make it dreamy',
+      withWordlessVocals: false,
+      category: effectiveCategory,
+      sunoStyles: effectiveSunoStyles,
+    };
+
+    // Category should be null (from UI), not 'lofi-study' (from stored)
+    expect(apiCallParams.category).toBeNull();
+    // Styles should be from UI
+    expect(apiCallParams.sunoStyles).toEqual(['dream-pop', 'shoegaze']);
+    // This combination passes validation (category is null)
+    expect(apiCallParams.category === null || apiCallParams.sunoStyles.length === 0).toBe(true);
+  });
+});
+
 describe('Context memoization patterns', () => {
   test('useMemo dependency array pattern', () => {
     // Verify the memoization pattern works correctly

@@ -105,14 +105,8 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     if (isGenerating) return;
     if (!currentSession?.currentPrompt) return;
 
-    const quickVibesInput = getQuickVibesInput();
-    const storedInput = currentSession.quickVibesInput;
-    
-    // Fix: Respect UI state for styles - empty array means user cleared them
-    // Do NOT fall back to stored styles when UI is explicitly empty
-    // This enables category-only refinements when user clears Suno V5 styles
-    const effectiveSunoStyles = quickVibesInput.sunoStyles;
-    const effectiveDescription = quickVibesInput.customDescription || storedInput?.customDescription || '';
+    // Use current UI state for all inputs - what user sees is what gets sent
+    const uiInput = getQuickVibesInput();
 
     try {
       setGeneratingAction('quickVibes');
@@ -121,30 +115,23 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
       const result = await api.refineQuickVibes({
         currentPrompt: currentSession.currentPrompt,
         currentTitle: currentSession.currentTitle,
-        description: effectiveDescription,
+        description: uiInput.customDescription,
         feedback: input,
         withWordlessVocals,
-        category: storedInput?.category ?? null,
-        sunoStyles: effectiveSunoStyles,
+        category: uiInput.category,
+        sunoStyles: uiInput.sunoStyles,
       });
 
       if (!result?.prompt) {
         throw new Error("Invalid result received from Quick Vibes refinement");
       }
 
-      const quickVibesInputUpdate = {
-        category: storedInput?.category ?? null,
-        customDescription: effectiveDescription,
-        withWordlessVocals: storedInput?.withWordlessVocals ?? false,
-        sunoStyles: effectiveSunoStyles,
-      };
-
       await completeSessionUpdate(
         sessionDeps,
         result,
         currentSession.originalInput,
         'quickVibes',
-        { quickVibesInput: quickVibesInputUpdate },
+        { quickVibesInput: { ...uiInput, withWordlessVocals } },
         "Quick Vibes prompt refined."
       );
       setPendingInput("");
