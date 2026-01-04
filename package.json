@@ -24,7 +24,9 @@
     "readme:check": "bun run scripts/generate-readme-genre-table.ts --check",
     "test": "bun test",
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
-    "validate": "bun run typecheck && bun run test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "validate": "bun run typecheck && bun run lint && bun run test",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -32,7 +34,13 @@
     "@types/dompurify": "^3.2.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "husky": "^9.1.7"
+    "eslint": "^9.0.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "husky": "^9.1.7",
+    "typescript-eslint": "^8.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

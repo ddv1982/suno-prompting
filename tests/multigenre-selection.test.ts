@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import { selectInstrumentsForGenre } from '@bun/instruments/services/select';
-import { createRng } from '@bun/instruments/services/random';
+
 import {
   isFoundationalInstrument,
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
 } from '@bun/instruments/datasets/instrument-classes';
+import { createRng } from '@bun/instruments/services/random';
+import { selectInstrumentsForGenre } from '@bun/instruments/services/select';
 
 describe('Multi-genre + foundational selection', () => {
   test('injects 1-2 multigenre instruments when none are present in pools (when slots allow)', () => {

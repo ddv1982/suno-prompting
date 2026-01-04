@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { createRng } from '@bun/instruments/services/random';
 
-// Articulations
+import { createRng } from '@bun/instruments/services/random';
 import {
   ARTICULATIONS,
   INSTRUMENT_CATEGORIES,
@@ -9,27 +8,6 @@ import {
   articulateInstrument,
   type InstrumentCategory,
 } from '@bun/prompt/articulations';
-
-// Vocal Descriptors
-import {
-  VOCAL_RANGES,
-  VOCAL_DELIVERIES,
-  VOCAL_TECHNIQUES,
-  GENRE_VOCAL_STYLES,
-  getVocalSuggestionsForGenre,
-  buildVocalDescriptor,
-} from '@bun/prompt/vocal-descriptors';
-
-// Production Elements
-import {
-  REVERB_TYPES,
-  RECORDING_TEXTURES,
-  GENRE_PRODUCTION_STYLES,
-  getProductionSuggestionsForGenre,
-  buildProductionDescriptor,
-} from '@bun/prompt/production-elements';
-
-// Chord Progressions
 import {
   POP_PROGRESSIONS,
   DARK_PROGRESSIONS,
@@ -41,6 +19,21 @@ import {
   buildProgressionDescriptor,
   detectProgression,
 } from '@bun/prompt/chord-progressions';
+import {
+  REVERB_TYPES,
+  RECORDING_TEXTURES,
+  GENRE_PRODUCTION_STYLES,
+  getProductionSuggestionsForGenre,
+  buildProductionDescriptor,
+} from '@bun/prompt/production-elements';
+import {
+  VOCAL_RANGES,
+  VOCAL_DELIVERIES,
+  VOCAL_TECHNIQUES,
+  GENRE_VOCAL_STYLES,
+  getVocalSuggestionsForGenre,
+  buildVocalDescriptor,
+} from '@bun/prompt/vocal-descriptors';
 
 // Test categories
 const ARTICULATION_CATEGORIES: InstrumentCategory[] = [

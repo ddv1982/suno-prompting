@@ -1,4 +1,4 @@
-import type { QuickVibesCategory } from '@shared/types';
+import { createLogger } from '@bun/logger';
 import {
   buildQuickVibesSystemPrompt,
   buildQuickVibesUserPrompt,
@@ -8,9 +8,11 @@ import {
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt,
 } from '@bun/prompt/quick-vibes-builder';
-import { createLogger } from '@bun/logger';
-import type { GenerationResult, EngineConfig } from './types';
+
 import { callLLM, generateDirectModeTitle } from './llm-utils';
+
+import type { GenerationResult, EngineConfig } from './types';
+import type { QuickVibesCategory } from '@shared/types';
 
 const log = createLogger('QuickVibesEngine');
 

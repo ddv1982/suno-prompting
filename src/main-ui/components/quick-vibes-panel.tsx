@@ -1,17 +1,19 @@
-import { useCallback } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { FormLabel } from "@/components/ui/form-label";
-import { ToggleRow } from "@/components/ui/toggle-row";
 import { Sparkles, Loader2, MessageSquare, Mic, RefreshCw, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
-import { APP_CONSTANTS } from "@shared/constants";
-import { QUICK_VIBES_CATEGORIES } from "@shared/quick-vibes-categories";
+import { useCallback } from "react";
+
 import { CategorySelector } from "@/components/category-selector";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { FormLabel } from "@/components/ui/form-label";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleRow } from "@/components/ui/toggle-row";
+import { cn } from "@/lib/utils";
+import { APP_CONSTANTS } from "@shared/constants";
+import { QUICK_VIBES_CATEGORIES } from "@shared/quick-vibes-categories";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
+
+import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 
 const getCategoryLabel = (categoryId: QuickVibesCategory): string => {
   return QUICK_VIBES_CATEGORIES[categoryId]?.label ?? categoryId;
@@ -167,7 +169,7 @@ export function QuickVibesPanel({
         </div>
         <Textarea
           value={input.customDescription}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
+          onChange={(e) => { handleDescriptionChange(e.target.value); }}
           onKeyDown={handleKeyDown}
           disabled={isGenerating}
           className={cn(

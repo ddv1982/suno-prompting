@@ -1,6 +1,7 @@
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+
 import type { ReactNode } from "react";
 
 type ToggleRowProps = {

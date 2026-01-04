@@ -79,7 +79,8 @@ const TIME_JOURNEY_LABELS: Record<string, string> = {
 };
 
 // Genre labels for music phrase output and UI dropdowns
-export const GENRE_LABELS: Record<string, string> = {
+// Internal lookup table used by getConciseLabel and as alias for GENRE_DISPLAY_NAMES
+const GENRE_LABELS: Record<string, string> = {
   ambient: 'Ambient',
   jazz: 'Jazz',
   electronic: 'Electronic',

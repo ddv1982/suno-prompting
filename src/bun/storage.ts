@@ -1,12 +1,25 @@
-import { join } from 'path';
-import { homedir } from 'os';
 import { mkdir } from 'fs/promises';
-import { type PromptSession, type AppConfig, type APIKeys, DEFAULT_API_KEYS } from '@shared/types';
-import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
+import { homedir } from 'os';
+import { join } from 'path';
+
 import { encrypt, decrypt } from '@bun/crypto';
+import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { StorageError } from '@shared/errors';
-import { createLogger } from '@bun/logger';
+import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
+import { type PromptSession, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode } from '@shared/types';
+
+// Type for the stored config (with encrypted API keys)
+type StoredConfig = Partial<{
+    provider: AIProvider;
+    apiKeys: Partial<Record<AIProvider, string | null>>;
+    model: string;
+    useSunoTags: boolean;
+    debugMode: boolean;
+    maxMode: boolean;
+    lyricsMode: boolean;
+    promptMode: PromptMode;
+}>;
 
 const log = createLogger('Storage');
 
@@ -48,7 +61,7 @@ export class StorageManager {
             if (!(await file.exists())) {
                 return [];
             }
-            const sessions = await file.json();
+            const sessions = await file.json() as PromptSession[];
             return sortByUpdated(sessions);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -87,15 +100,16 @@ export class StorageManager {
             if (!(await file.exists())) {
                 return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
             }
-            const config = await file.json();
+            const config = await file.json() as StoredConfig;
             
             // Decrypt all API keys
             const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
             if (config.apiKeys) {
                 for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
-                    if (config.apiKeys[provider]) {
+                    const encryptedKey = config.apiKeys[provider];
+                    if (encryptedKey) {
                         try {
-                            apiKeys[provider] = await decrypt(config.apiKeys[provider]);
+                            apiKeys[provider] = await decrypt(encryptedKey);
                         } catch (e) {
                             const message = e instanceof Error ? e.message : String(e);
                             log.error('getConfig:decryptFailed', { provider, error: message });
@@ -107,6 +121,7 @@ export class StorageManager {
             }
             
             return {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- false positive: both sides are ProviderId type
                 provider: config.provider ?? DEFAULT_CONFIG.provider,
                 apiKeys,
                 model: config.model ?? DEFAULT_CONFIG.model,
@@ -134,7 +149,7 @@ export class StorageManager {
             for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
                 if (toSave.apiKeys[provider]) {
                     try {
-                        encryptedKeys[provider] = await encrypt(toSave.apiKeys[provider]!);
+                        encryptedKeys[provider] = await encrypt(toSave.apiKeys[provider]);
                     } catch (e) {
                         const message = e instanceof Error ? e.message : String(e);
                         log.error('saveConfig:encryptFailed', { provider, error: message });

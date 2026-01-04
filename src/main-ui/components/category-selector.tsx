@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import type { QuickVibesCategory } from "@shared/types";
 import { QUICK_VIBES_CATEGORY_LIST } from "@shared/quick-vibes-categories";
+
+import type { QuickVibesCategory } from "@shared/types";
 
 type CategorySelectorProps = {
   selectedCategory: QuickVibesCategory | null;
@@ -18,7 +19,7 @@ export function CategorySelector({
       <Button
         variant={selectedCategory === null ? 'default' : 'outline'}
         size="xs"
-        onClick={() => onSelect(null)}
+        onClick={() => { onSelect(null); }}
         disabled={disabled}
         className="font-medium"
       >
@@ -29,7 +30,7 @@ export function CategorySelector({
           key={cat.id}
           variant={selectedCategory === cat.id ? 'default' : 'outline'}
           size="xs"
-          onClick={() => onSelect(cat.id)}
+          onClick={() => { onSelect(cat.id); }}
           disabled={disabled}
           className="font-medium"
           title={cat.description}

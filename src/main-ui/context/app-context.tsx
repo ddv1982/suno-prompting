@@ -1,10 +1,10 @@
 // Compatibility layer - combines all split contexts into a single useAppContext hook
 // This allows existing components to continue working without changes
 
-import { useSessionContext } from '@/context/session-context';
-import { useSettingsContext } from '@/context/settings-context';
 import { useEditorContext } from '@/context/editor-context';
 import { useGenerationContext } from '@/context/generation-context';
+import { useSessionContext } from '@/context/session-context';
+import { useSettingsContext } from '@/context/settings-context';
 
 // Re-export types for backwards compatibility
 export type { GeneratingAction } from '@/context/generation-context';

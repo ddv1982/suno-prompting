@@ -1,15 +1,98 @@
+import { type AIEngine } from '@bun/ai';
+import { createLogger } from '@bun/logger';
+import { convertToMaxFormat } from '@bun/prompt/max-conversion';
+import { type StorageManager } from '@bun/storage';
+import { APP_CONSTANTS, VALID_CREATIVITY_LEVELS } from '@shared/constants';
+import { ValidationError } from '@shared/errors';
 import { type RPCHandlers } from '@shared/types';
 import { validatePrompt } from '@shared/validation';
-import { APP_CONSTANTS, VALID_CREATIVITY_LEVELS } from '@shared/constants';
-import { type AIEngine } from '@bun/ai';
-import { type StorageManager } from '@bun/storage';
-import { createLogger } from '@bun/logger';
+
 import type { GenerationResult } from '@bun/ai';
-import { convertToMaxFormat } from '@bun/prompt/max-conversion';
+
 
 const log = createLogger('RPC');
 
 type ActionMeta = Record<string, unknown>;
+
+// ============================================================================
+// Validation Helpers - Consolidated DRY patterns
+// ============================================================================
+
+const MAX_SUNO_STYLES = 4;
+const MAX_SEED_GENRES = 4;
+
+/**
+ * Validates Suno V5 styles array count.
+ * Throws ValidationError if more than MAX_SUNO_STYLES.
+ */
+function validateSunoStylesLimit(sunoStyles: string[]): void {
+    if (sunoStyles.length > MAX_SUNO_STYLES) {
+        throw new ValidationError(`Maximum ${MAX_SUNO_STYLES} Suno V5 styles allowed`, 'sunoStyles');
+    }
+}
+
+/**
+ * Validates seed genres array count.
+ * Throws ValidationError if more than MAX_SEED_GENRES.
+ */
+function validateSeedGenresLimit(seedGenres: string[]): void {
+    if (seedGenres.length > MAX_SEED_GENRES) {
+        throw new ValidationError(`Maximum ${MAX_SEED_GENRES} seed genres allowed`, 'seedGenres');
+    }
+}
+
+/**
+ * Validates mutual exclusivity between category and sunoStyles (Quick Vibes).
+ * Throws ValidationError if both are specified.
+ */
+function validateCategoryStylesMutualExclusivity(
+    category: unknown | null, 
+    sunoStyles: string[]
+): void {
+    if (category !== null && sunoStyles.length > 0) {
+        throw new ValidationError(
+            'Cannot use both Category and Suno V5 Styles. Please select only one.',
+            'sunoStyles'
+        );
+    }
+}
+
+/**
+ * Validates mutual exclusivity between seedGenres and sunoStyles (Creative Boost).
+ * Throws ValidationError if both are specified.
+ */
+function validateGenreStylesMutualExclusivity(
+    seedGenres: string[], 
+    sunoStyles: string[]
+): void {
+    if (seedGenres.length > 0 && sunoStyles.length > 0) {
+        throw new ValidationError(
+            'Cannot use both Seed Genres and Suno V5 Styles. Please select only one.',
+            'sunoStyles'
+        );
+    }
+}
+
+/**
+ * Validates creativity level is one of the allowed values.
+ */
+function validateCreativityLevel(level: number): void {
+    if (!VALID_CREATIVITY_LEVELS.includes(level as typeof VALID_CREATIVITY_LEVELS[number])) {
+        throw new ValidationError(
+            'Invalid creativity level. Must be 0, 25, 50, 75, or 100',
+            'creativityLevel'
+        );
+    }
+}
+
+/**
+ * Validates required string field is non-empty.
+ */
+function validateRequiredField(value: string | undefined, fieldName: string, message: string): void {
+    if (!value?.trim()) {
+        throw new ValidationError(message, fieldName);
+    }
+}
 
 /**
  * Generic error handling wrapper for async operations.
@@ -69,6 +152,32 @@ export function createHandlers(
 
     async function runSingleFieldRemix<T>(name: string, operation: () => Promise<T>): Promise<T> {
         return withErrorHandling(name, operation);
+    }
+
+    /**
+     * Runs a Quick Vibes action with common result processing.
+     * Generates versionId and returns standardized response.
+     */
+    async function runQuickVibesAction(
+        actionName: string, 
+        meta: ActionMeta, 
+        operation: () => Promise<GenerationResult>
+    ) {
+        return withErrorHandling(actionName, async () => {
+            const result = await operation();
+            const versionId = Bun.randomUUIDv7();
+            log.info(`${actionName}:result`, { 
+                versionId, 
+                promptLength: result.text.length, 
+                hasTitle: !!result.title 
+            });
+            return { 
+                prompt: result.text, 
+                title: result.title, 
+                versionId, 
+                debugInfo: result.debugInfo 
+            };
+        }, meta);
     }
 
     return {
@@ -187,7 +296,7 @@ export function createHandlers(
             aiEngine.setProvider(provider);
             for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
                 if (apiKeys[p]) {
-                    aiEngine.setApiKey(p, apiKeys[p]!);
+                    aiEngine.setApiKey(p, apiKeys[p]);
                 }
             }
             aiEngine.setModel(model);
@@ -229,36 +338,26 @@ export function createHandlers(
             await storage.saveConfig({ promptMode });
             return { success: true };
         },
-        generateQuickVibes: async ({ category, customDescription, withWordlessVocals, sunoStyles = [] }) => {
-            log.info('generateQuickVibes', { category, customDescription, withWordlessVocals, sunoStylesCount: sunoStyles.length });
-            try {
-                // Validate mutual exclusivity
-                if (category !== null && sunoStyles.length > 0) {
-                    throw new Error('Cannot use both Category and Suno V5 Styles. Please select only one.');
-                }
-                if (sunoStyles.length > 4) {
-                    throw new Error('Maximum 4 Suno V5 styles allowed');
-                }
-                const result = await aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals, sunoStyles);
-                const versionId = Bun.randomUUIDv7();
-                log.info('generateQuickVibes:complete', { versionId, promptLength: result.text.length, hasTitle: !!result.title });
-                return { prompt: result.text, title: result.title, versionId, debugInfo: result.debugInfo };
-            } catch (error) {
-                log.error('generateQuickVibes:failed', error);
-                throw error;
-            }
+        generateQuickVibes: async ({ category, customDescription, withWordlessVocals, sunoStyles }) => {
+            // Validate before processing
+            validateCategoryStylesMutualExclusivity(category, sunoStyles);
+            validateSunoStylesLimit(sunoStyles);
+            
+            return runQuickVibesAction(
+                'generateQuickVibes',
+                { category, customDescription, withWordlessVocals, sunoStylesCount: sunoStyles.length },
+                () => aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals, sunoStyles)
+            );
         },
         refineQuickVibes: async ({ currentPrompt, currentTitle, description, feedback, withWordlessVocals, category, sunoStyles = [] }) => {
-            log.info('refineQuickVibes', { feedback, withWordlessVocals, category, sunoStylesCount: sunoStyles.length });
-            try {
-                // Validate mutual exclusivity
-                if (category !== null && sunoStyles.length > 0) {
-                    throw new Error('Cannot use both Category and Suno V5 Styles. Please select only one.');
-                }
-                if (sunoStyles.length > 4) {
-                    throw new Error('Maximum 4 Suno V5 styles allowed');
-                }
-                const result = await aiEngine.refineQuickVibes({
+            // Validate before processing
+            validateCategoryStylesMutualExclusivity(category, sunoStyles);
+            validateSunoStylesLimit(sunoStyles);
+            
+            return runQuickVibesAction(
+                'refineQuickVibes',
+                { feedback, withWordlessVocals, category, sunoStylesCount: sunoStyles.length },
+                () => aiEngine.refineQuickVibes({
                     currentPrompt,
                     currentTitle,
                     description,
@@ -266,14 +365,8 @@ export function createHandlers(
                     withWordlessVocals,
                     category,
                     sunoStyles,
-                });
-                const versionId = Bun.randomUUIDv7();
-                log.info('refineQuickVibes:complete', { versionId, promptLength: result.text.length, hasTitle: !!result.title });
-                return { prompt: result.text, title: result.title, versionId, debugInfo: result.debugInfo };
-            } catch (error) {
-                log.error('refineQuickVibes:failed', error);
-                throw error;
-            }
+                })
+            );
         },
         convertToMaxFormat: async ({ text }) => {
             return withErrorHandling('convertToMaxFormat', async () => {
@@ -295,27 +388,20 @@ export function createHandlers(
         generateCreativeBoost: async ({ 
             creativityLevel, 
             seedGenres, 
-            sunoStyles = [],
+            sunoStyles,
             description, 
             lyricsTopic, 
             withWordlessVocals, 
             maxMode, 
             withLyrics 
         }) => {
+            // Validate all inputs upfront
+            validateCreativityLevel(creativityLevel);
+            validateSeedGenresLimit(seedGenres);
+            validateSunoStylesLimit(sunoStyles);
+            validateGenreStylesMutualExclusivity(seedGenres, sunoStyles);
+            
             return withErrorHandling('generateCreativeBoost', async () => {
-                if (!VALID_CREATIVITY_LEVELS.includes(creativityLevel as typeof VALID_CREATIVITY_LEVELS[number])) {
-                    throw new Error('Invalid creativity level. Must be 0, 25, 50, 75, or 100');
-                }
-                if (seedGenres.length > 4) {
-                    throw new Error('Maximum 4 seed genres allowed');
-                }
-                if (sunoStyles.length > 4) {
-                    throw new Error('Maximum 4 Suno V5 styles allowed');
-                }
-                // Mutual exclusivity: only one of seedGenres or sunoStyles should have values
-                if (seedGenres.length > 0 && sunoStyles.length > 0) {
-                    throw new Error('Cannot use both Seed Genres and Suno V5 Styles. Please select only one.');
-                }
                 const result = await aiEngine.generateCreativeBoost(
                     creativityLevel,
                     seedGenres,
@@ -349,28 +435,19 @@ export function createHandlers(
             lyricsTopic,
             description,
             seedGenres,
-            sunoStyles = [],
+            sunoStyles,
             withWordlessVocals,
             maxMode,
             withLyrics
         }) => {
+            // Validate all inputs upfront
+            validateRequiredField(currentPrompt, 'currentPrompt', 'Current prompt is required for refinement');
+            validateRequiredField(currentTitle, 'currentTitle', 'Current title is required for refinement');
+            validateRequiredField(feedback, 'feedback', 'Feedback is required for refinement');
+            validateSunoStylesLimit(sunoStyles);
+            validateGenreStylesMutualExclusivity(seedGenres, sunoStyles);
+            
             return withErrorHandling('refineCreativeBoost', async () => {
-                if (!currentPrompt?.trim()) {
-                    throw new Error('Current prompt is required for refinement');
-                }
-                if (!currentTitle?.trim()) {
-                    throw new Error('Current title is required for refinement');
-                }
-                if (!feedback?.trim()) {
-                    throw new Error('Feedback is required for refinement');
-                }
-                // Validate sunoStyles limit and mutual exclusivity
-                if (sunoStyles.length > 4) {
-                    throw new Error('Maximum 4 Suno V5 styles allowed');
-                }
-                if (seedGenres.length > 0 && sunoStyles.length > 0) {
-                    throw new Error('Cannot use both Seed Genres and Suno V5 Styles. Please select only one.');
-                }
                 const result = await aiEngine.refineCreativeBoost(
                     currentPrompt,
                     currentTitle,

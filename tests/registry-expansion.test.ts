@@ -1,4 +1,5 @@
 import { describe, test, expect } from 'bun:test';
+
 import { isValidInstrument, toCanonical, getCategory } from '@bun/instruments/registry';
 
 describe('Latin Percussion Instruments', () => {
@@ -28,12 +29,12 @@ describe('Latin Percussion Instruments', () => {
 
   test('all latin percussion are valid instruments', () => {
     const instruments = ['guiro', 'cuica', 'agogo bells', 'cowbell', 'cabasa', 'pandeiro', 'maracas', 'repinique'];
-    instruments.forEach(i => expect(isValidInstrument(i)).toBe(true));
+    instruments.forEach(i => { expect(isValidInstrument(i)).toBe(true); });
   });
 
   test('all latin percussion are movement category', () => {
     const instruments = ['guiro', 'cuica', 'agogo bells', 'cowbell', 'cabasa', 'pandeiro', 'maracas', 'repinique'];
-    instruments.forEach(i => expect(getCategory(i)).toBe('movement'));
+    instruments.forEach(i => { expect(getCategory(i)).toBe('movement'); });
   });
 });
 
@@ -55,12 +56,12 @@ describe('Extended-Range Guitars', () => {
 
   test('all extended-range guitars are valid instruments', () => {
     const instruments = ['seven-string guitar', 'eight-string guitar', 'baritone guitar'];
-    instruments.forEach(i => expect(isValidInstrument(i)).toBe(true));
+    instruments.forEach(i => { expect(isValidInstrument(i)).toBe(true); });
   });
 
   test('all extended-range guitars are harmonic category', () => {
     const instruments = ['seven-string guitar', 'eight-string guitar', 'baritone guitar'];
-    instruments.forEach(i => expect(getCategory(i)).toBe('harmonic'));
+    instruments.forEach(i => { expect(getCategory(i)).toBe('harmonic'); });
   });
 });
 
@@ -86,7 +87,7 @@ describe('Country/Americana Instruments', () => {
 
   test('all country instruments are valid', () => {
     const instruments = ['dobro', 'lap steel guitar', 'autoharp', 'hammered dulcimer', 'mountain dulcimer', 'washboard'];
-    instruments.forEach(i => expect(isValidInstrument(i)).toBe(true));
+    instruments.forEach(i => { expect(isValidInstrument(i)).toBe(true); });
   });
 });
 
@@ -104,7 +105,7 @@ describe('Jazz Brass Instruments', () => {
 
   test('all jazz brass are color category', () => {
     const instruments = ['baritone saxophone', 'flugelhorn'];
-    instruments.forEach(i => expect(getCategory(i)).toBe('color'));
+    instruments.forEach(i => { expect(getCategory(i)).toBe('color'); });
   });
 });
 

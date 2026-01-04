@@ -1,9 +1,10 @@
 import { describe, expect, test, beforeEach, afterEach } from "bun:test";
-import { join } from "path";
-import { tmpdir } from "os";
 import { rm, mkdir } from "fs/promises";
-import { type PromptSession } from "@shared/types";
+import { tmpdir } from "os";
+import { join } from "path";
+
 import { APP_CONSTANTS } from "@shared/constants";
+import { type PromptSession } from "@shared/types";
 
 // Create a testable version of StorageManager with custom paths
 class TestableStorageManager {

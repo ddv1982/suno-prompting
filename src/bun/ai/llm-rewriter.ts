@@ -1,6 +1,7 @@
 import { generateText, type LanguageModel } from 'ai';
-import { APP_CONSTANTS } from '@shared/constants';
+
 import { createLogger } from '@bun/logger';
+import { APP_CONSTANTS } from '@shared/constants';
 
 const log = createLogger('LLMRewriter');
 

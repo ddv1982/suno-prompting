@@ -57,12 +57,16 @@ function extractTokensFromText(text: string): string[] {
   
   // Try single words and 2-3 word combinations
   for (let i = 0; i < words.length; i++) {
-    tokens.push(words[i]!);
+    const word = words[i];
+    if (word) tokens.push(word);
     if (i + 1 < words.length) {
-      tokens.push(`${words[i]} ${words[i + 1]}`);
+      const next = words[i + 1];
+      if (word && next) tokens.push(`${word} ${next}`);
     }
     if (i + 2 < words.length) {
-      tokens.push(`${words[i]} ${words[i + 1]} ${words[i + 2]}`);
+      const next = words[i + 1];
+      const nextNext = words[i + 2];
+      if (word && next && nextNext) tokens.push(`${word} ${next} ${nextNext}`);
     }
   }
 

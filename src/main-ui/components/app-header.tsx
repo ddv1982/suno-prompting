@@ -1,6 +1,7 @@
 import { Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { LogoMark } from "@/components/logo-mark";
+import { Button } from "@/components/ui/button";
 
 type HeaderProps = {
   onOpenSettings: () => void;

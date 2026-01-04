@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'bun:test';
+
 import { getCreativityLevel } from '@shared/creative-boost-utils';
 
 describe('getCreativityLevel (shared)', () => {

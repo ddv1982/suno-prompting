@@ -1,5 +1,5 @@
-import { getCreativityLevel } from '@shared/creative-boost-utils';
 import { APP_CONSTANTS } from '@shared/constants';
+import { getCreativityLevel } from '@shared/creative-boost-utils';
 
 export { getCreativityLevel };
 
@@ -132,7 +132,7 @@ export function parseCreativeBoostResponse(text: string): {
       cleaned = jsonMatch[0];
     }
 
-    const parsed = JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned) as { title?: string; style?: string };
 
     return {
       title: parsed.title || 'Untitled',

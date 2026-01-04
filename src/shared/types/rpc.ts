@@ -1,6 +1,7 @@
 // RPC Schema and Handler types
 
 import { type RPCSchema } from 'electrobun';
+
 import type {
   GenerateInitialParams,
   GenerateInitialResponse,

@@ -1,6 +1,7 @@
 import { expect, test, describe } from "bun:test";
-import { validatePrompt } from "@shared/validation";
+
 import { _testStripLeakedMetaLines } from "@bun/ai/engine";
+import { validatePrompt } from "@shared/validation";
 
 describe("validatePrompt", () => {
     test("should pass for valid prompt under 1000 characters", () => {

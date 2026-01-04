@@ -10,7 +10,7 @@ export function useIsMobile() {
     
     checkMobile()
     window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
+    return () => { window.removeEventListener("resize", checkMobile); }
   }, [])
 
   return isMobile

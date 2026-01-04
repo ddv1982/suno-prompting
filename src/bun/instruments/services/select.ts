@@ -1,5 +1,3 @@
-import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
@@ -8,8 +6,12 @@ import {
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
 } from '@bun/instruments/datasets/instrument-classes';
-import type { Rng } from '@bun/instruments/services/random';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { shuffle, randomIntInclusive, rollChance } from '@bun/instruments/services/random';
+
+import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
+import type { Rng } from '@bun/instruments/services/random';
+
 
 export type InstrumentSelectionOptions = {
   readonly userInstruments?: readonly string[];

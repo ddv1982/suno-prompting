@@ -1,4 +1,6 @@
 import { type LanguageModel } from 'ai';
+
+import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
 import {
   selectInstrumentsForGenre,
   GENRE_REGISTRY,
@@ -6,11 +8,11 @@ import {
   isMultiGenre,
 } from '@bun/instruments';
 import { MOOD_POOL } from '@bun/instruments/datasets';
-import type { GenreType } from '@bun/instruments';
 import { selectModes } from '@bun/instruments/selection';
-import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
-import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
+import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
+
+import type { GenreType } from '@bun/instruments';
 
 export type RemixResult = {
   text: string;

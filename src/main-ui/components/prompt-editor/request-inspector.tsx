@@ -1,9 +1,10 @@
+import { Check, Copy } from "lucide-react";
 import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionLabel } from "@/components/ui/section-label";
-import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type RequestMessage = { role: string; content: string };
@@ -29,7 +30,7 @@ export function RequestInspector({
 
   const parsed: ParsedRequest | null = useMemo(() => {
     try {
-      return JSON.parse(requestBody);
+      return JSON.parse(requestBody) as ParsedRequest;
     } catch {
       return null;
     }
@@ -55,7 +56,7 @@ export function RequestInspector({
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <SectionLabel>{provider.toUpperCase()} Request Body</SectionLabel>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => onCopy(requestBody, 'request')}>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => { onCopy(requestBody, 'request'); }}>
             {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </Button>
         </div>
@@ -74,12 +75,12 @@ export function RequestInspector({
         <SectionLabel>{provider.toUpperCase()} Request Body</SectionLabel>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowRawJson(!showRawJson)}
+            onClick={() => { setShowRawJson(!showRawJson); }}
             className="ui-helper hover:text-foreground transition-colors underline"
           >
             {showRawJson ? "Structured" : "Raw JSON"}
           </button>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => onCopy(requestBody, 'request')}>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-tiny" onClick={() => { onCopy(requestBody, 'request'); }}>
             {copiedSection === 'request' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </Button>
         </div>
@@ -113,7 +114,7 @@ export function RequestInspector({
                   </Badge>
                   <div className="flex items-center gap-1">
                     <span className="ui-helper">{msg.content.length} chars</span>
-                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => onCopy(msg.content, `msg-${idx}`)}>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { onCopy(msg.content, `msg-${idx}`); }}>
                       {copiedSection === `msg-${idx}` ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
                     </Button>
                   </div>
@@ -132,7 +133,7 @@ export function RequestInspector({
                   )}
                   {needsTruncation && (
                     <button
-                      onClick={() => toggleMessage(idx)}
+                      onClick={() => { toggleMessage(idx); }}
                       className="mt-2 ui-helper text-primary hover:underline"
                     >
                       {isExpanded ? "Show less" : `Show more (${lines.length} lines)`}
@@ -154,7 +155,7 @@ export function RequestInspector({
               </Badge>
               <div className="flex items-center gap-1">
                 <span className="ui-helper">{responseBody.length} chars</span>
-                <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => onCopy(responseBody, 'response')}>
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { onCopy(responseBody, 'response'); }}>
                   {copiedSection === 'response' ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
                 </Button>
               </div>

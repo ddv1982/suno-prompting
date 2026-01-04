@@ -1,24 +1,25 @@
-import { createContext, useContext, useCallback, type ReactNode } from 'react';
-import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
-import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
-import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
-import { useSessionContext } from '@/context/session-context';
-import { useEditorContext } from '@/context/editor-context';
-import { useSettingsContext } from '@/context/settings-context';
-import { createLogger } from '@/lib/logger';
-import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
-import { useRemixActions } from '@/hooks/use-remix-actions';
-import { useQuickVibesActions } from '@/hooks/use-quick-vibes-actions';
-import { useCreativeBoostActions } from '@/hooks/use-creative-boost-actions';
-import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
+import { createContext, useContext, useCallback, useMemo, type ReactNode } from 'react';
+
 import { useToast } from '@/components/ui/toast';
+import { useEditorContext } from '@/context/editor-context';
+import { useSessionContext } from '@/context/session-context';
+import { useSettingsContext } from '@/context/settings-context';
+import { useCreativeBoostActions } from '@/hooks/use-creative-boost-actions';
+import { useGenerationState, type GeneratingAction } from '@/hooks/use-generation-state';
+import { useQuickVibesActions } from '@/hooks/use-quick-vibes-actions';
+import { useRemixActions } from '@/hooks/use-remix-actions';
+import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import { createLogger } from '@/lib/logger';
+import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import {
   createVersion,
   updateChatMessagesAfterGeneration,
   handleGenerationError,
   addUserMessage,
 } from '@/lib/session-helpers';
+import { api } from '@/services/rpc';
+import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
+import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 const log = createLogger('Generation');
 
@@ -137,7 +138,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     setChatMessages([]);
     setValidation({ ...EMPTY_VALIDATION });
     resetEditor();
-  }, [setCurrentSession, resetEditor]);
+  }, [setCurrentSession, setChatMessages, setValidation, resetEditor]);
 
   const updateSessionWithResult = useCallback(async (
     result: { prompt: string; title?: string; lyrics?: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo },
@@ -180,7 +181,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     updateChatMessagesAfterGeneration(setChatMessages, updatedSession, isNewSession, successMessage);
     setValidation(result.validation);
     await saveSession(updatedSession);
-  }, [currentSession, generateId, saveSession]);
+  }, [currentSession, generateId, saveSession, setChatMessages, setDebugInfo, setValidation]);
 
   /**
    * Helper to create or update session after Max Mode conversion.
@@ -304,7 +305,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, withWordlessVocals, saveSession, advancedSelection, maxMode, createConversionSession, showToast]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, promptMode, advancedSelection, maxMode, createConversionSession, showToast, quickVibesActions, setChatMessages, setGeneratingAction]);
 
   const handleCopy = useCallback(() => {
     const prompt = currentSession?.currentPrompt || "";
@@ -338,7 +339,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, advancedSelection]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, advancedSelection, setChatMessages, setGeneratingAction]);
 
   const handleConversionComplete = useCallback(async (
     originalInput: string,
@@ -349,32 +350,59 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     await createConversionSession(originalInput, convertedPrompt, versionId, conversionDebugInfo);
   }, [createConversionSession]);
 
+  // Memoize the context value to prevent unnecessary re-renders of consumers
+  const contextValue = useMemo<GenerationContextType>(() => ({
+    isGenerating,
+    generatingAction,
+    chatMessages,
+    validation,
+    debugInfo,
+    setValidation,
+    selectSession,
+    newProject,
+    handleGenerate,
+    handleCopy,
+    handleRemix,
+    handleRemixInstruments: remixActions.handleRemixInstruments,
+    handleRemixGenre: remixActions.handleRemixGenre,
+    handleRemixMood: remixActions.handleRemixMood,
+    handleRemixStyleTags: remixActions.handleRemixStyleTags,
+    handleRemixRecording: remixActions.handleRemixRecording,
+    handleRemixTitle: remixActions.handleRemixTitle,
+    handleRemixLyrics: remixActions.handleRemixLyrics,
+    handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
+    handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
+    handleConversionComplete,
+    handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
+    handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
+  }), [
+    isGenerating,
+    generatingAction,
+    chatMessages,
+    validation,
+    debugInfo,
+    setValidation,
+    selectSession,
+    newProject,
+    handleGenerate,
+    handleCopy,
+    handleRemix,
+    remixActions.handleRemixInstruments,
+    remixActions.handleRemixGenre,
+    remixActions.handleRemixMood,
+    remixActions.handleRemixStyleTags,
+    remixActions.handleRemixRecording,
+    remixActions.handleRemixTitle,
+    remixActions.handleRemixLyrics,
+    quickVibesActions.handleGenerateQuickVibes,
+    quickVibesActions.handleRemixQuickVibes,
+    handleConversionComplete,
+    creativeBoostActions.handleGenerateCreativeBoost,
+    creativeBoostActions.handleRefineCreativeBoost,
+  ]);
+
   return (
-    <GenerationContext.Provider value={{
-      isGenerating,
-      generatingAction,
-      chatMessages,
-      validation,
-      debugInfo,
-      setValidation,
-      selectSession,
-      newProject,
-      handleGenerate,
-      handleCopy,
-      handleRemix,
-      handleRemixInstruments: remixActions.handleRemixInstruments,
-      handleRemixGenre: remixActions.handleRemixGenre,
-      handleRemixMood: remixActions.handleRemixMood,
-      handleRemixStyleTags: remixActions.handleRemixStyleTags,
-      handleRemixRecording: remixActions.handleRemixRecording,
-      handleRemixTitle: remixActions.handleRemixTitle,
-      handleRemixLyrics: remixActions.handleRemixLyrics,
-      handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
-      handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
-      handleConversionComplete,
-      handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
-      handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
-    }}>
+    <GenerationContext.Provider value={contextValue}>
       {children}
     </GenerationContext.Provider>
   );

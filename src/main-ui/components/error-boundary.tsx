@@ -1,6 +1,7 @@
-import React, { Component, type ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
+import React, { Component, type ReactNode } from 'react';
+
+import { Button } from '@/components/ui/button';
 
 interface Props {
     children: ReactNode;

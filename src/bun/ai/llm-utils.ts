@@ -1,8 +1,10 @@
 import { generateText } from 'ai';
-import type { LanguageModel } from 'ai';
-import { AIGenerationError } from '@shared/errors';
-import { APP_CONSTANTS } from '@shared/constants';
+
 import { createLogger } from '@bun/logger';
+import { APP_CONSTANTS } from '@shared/constants';
+import { AIGenerationError } from '@shared/errors';
+
+import type { LanguageModel } from 'ai';
 
 const log = createLogger('LLMUtils');
 

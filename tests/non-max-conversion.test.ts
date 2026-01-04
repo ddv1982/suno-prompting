@@ -1,11 +1,12 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
+
+import { GENRE_REGISTRY } from '../src/bun/instruments/genres';
 import {
   parseStyleDescription,
   inferBpm,
   buildNonMaxFormatPrompt,
   convertToNonMaxFormat,
 } from '../src/bun/prompt/non-max-conversion';
-import { GENRE_REGISTRY } from '../src/bun/instruments/genres';
 
 // Mock the AI SDK for conversion tests
 const mockGenerateText = mock(async () => ({

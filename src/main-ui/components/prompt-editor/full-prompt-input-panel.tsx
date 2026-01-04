@@ -1,17 +1,19 @@
+import { Loader2, Send, AlertCircle, Settings2, Lock, MessageSquare, Music2, Zap } from "lucide-react";
 import { useCallback } from "react";
+
+import { AdvancedPanel } from "@/components/advanced-panel";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { FormLabel } from "@/components/ui/form-label";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Send, AlertCircle, Settings2, Lock, MessageSquare, Music2, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { isMaxFormat } from "@/lib/max-format";
-import { type EditorMode, type AdvancedSelection } from "@shared/types";
-import { APP_CONSTANTS } from "@shared/constants";
-import { api } from "@/services/rpc";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import { createLogger } from "@/lib/logger";
-import { AdvancedPanel } from "@/components/advanced-panel";
+import { isMaxFormat } from "@/lib/max-format";
+import { cn } from "@/lib/utils";
+import { api } from "@/services/rpc";
+import { APP_CONSTANTS } from "@shared/constants";
+import { type EditorMode, type AdvancedSelection } from "@shared/types";
+
 import type { DebugInfo } from "@shared/types";
 
 const log = createLogger('FullPromptInputPanel');
@@ -133,7 +135,7 @@ export function FullPromptInputPanel({
           <Button
             variant={editorMode === 'simple' ? 'default' : 'outline'}
             size="xs"
-            onClick={() => onEditorModeChange('simple')}
+            onClick={() => { onEditorModeChange('simple'); }}
             className="font-semibold"
           >
             Simple
@@ -141,7 +143,7 @@ export function FullPromptInputPanel({
           <Button
             variant={editorMode === 'advanced' ? 'default' : 'outline'}
             size="xs"
-            onClick={() => onEditorModeChange('advanced')}
+            onClick={() => { onEditorModeChange('advanced'); }}
             className="font-semibold"
           >
             <Settings2 className="w-3 h-3" />
@@ -198,7 +200,7 @@ export function FullPromptInputPanel({
         </FormLabel>
         <Textarea
           value={lockedPhrase}
-          onChange={(e) => onLockedPhraseChange(e.target.value)}
+          onChange={(e) => { onLockedPhraseChange(e.target.value); }}
           disabled={isGenerating}
           className={cn(
             "min-h-12 max-h-24 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
@@ -224,7 +226,7 @@ export function FullPromptInputPanel({
         <div className="flex gap-3 items-end">
           <Textarea
             value={pendingInput}
-            onChange={(e) => onPendingInputChange(e.target.value)}
+            onChange={(e) => { onPendingInputChange(e.target.value); }}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             disabled={isGenerating}
@@ -284,7 +286,7 @@ export function FullPromptInputPanel({
           </FormLabel>
           <Textarea
             value={lyricsTopic}
-            onChange={(e) => onLyricsTopicChange(e.target.value)}
+            onChange={(e) => { onLyricsTopicChange(e.target.value); }}
             disabled={isGenerating}
             className={cn(
               "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",

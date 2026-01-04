@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'bun:test';
-import { getRandomBpmForGenre, injectBpm } from '../src/bun/prompt/bpm';
+
 import { GENRE_REGISTRY } from '../src/bun/instruments/genres';
+import { getRandomBpmForGenre, injectBpm } from '../src/bun/prompt/bpm';
 
 describe('getRandomBpmForGenre', () => {
   it('returns BPM within range for known genre', () => {

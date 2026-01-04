@@ -1,5 +1,6 @@
-import type { AdvancedSelection } from '@shared/types';
 import { getConciseLabel } from '@shared/labels';
+
+import type { AdvancedSelection } from '@shared/types';
 
 /**
  * Builds a concise music phrase from advanced selections.

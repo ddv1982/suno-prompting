@@ -1,5 +1,6 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, AlertTriangle } from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type ValidationMessagesProps = {
   errors: string[];

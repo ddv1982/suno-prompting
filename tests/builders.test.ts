@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'bun:test';
+
 import {
   buildSystemPrompt,
   buildContextualPrompt,
   buildMaxModeSystemPrompt,
   buildMaxModeContextualPrompt,
 } from '@bun/prompt/builders';
+
 import type { ModeSelection } from '@bun/instruments/selection';
 
 const createEmptySelection = (): ModeSelection => ({

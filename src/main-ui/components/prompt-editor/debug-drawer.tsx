@@ -1,6 +1,8 @@
 import { useState } from "react";
-import type { DebugInfo } from "@shared/types";
+
 import { RequestInspector } from "@/components/prompt-editor/request-inspector";
+
+import type { DebugInfo } from "@shared/types";
 
 type DebugDrawerBodyProps = {
   debugInfo: Partial<DebugInfo>;
@@ -12,7 +14,7 @@ export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps) {
   const copyToClipboard = (text: string, section: string) => {
     navigator.clipboard.writeText(text);
     setCopiedSection(section);
-    setTimeout(() => setCopiedSection(null), 2000);
+    setTimeout(() => { setCopiedSection(null); }, 2000);
   };
 
   return (

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { INSTRUMENT_REGISTRY, toCanonical } from '@bun/instruments/registry';
 

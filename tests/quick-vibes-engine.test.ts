@@ -1,4 +1,5 @@
 import { describe, it, expect, mock, beforeEach } from "bun:test";
+
 import { AIEngine } from "@bun/ai/engine";
 import { QUICK_VIBES_MAX_CHARS } from "@shared/quick-vibes-categories";
 

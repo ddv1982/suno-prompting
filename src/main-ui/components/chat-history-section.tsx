@@ -1,10 +1,11 @@
+import { Loader2, ChevronDown } from "lucide-react";
 import { useEffect, useRef } from "react";
+
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionLabel } from "@/components/ui/section-label";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { type ChatMessage } from "@/lib/chat-utils";
+import { cn } from "@/lib/utils";
 
 type ChatHistorySectionProps = {
   chatMessages: ChatMessage[];

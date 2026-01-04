@@ -1,21 +1,22 @@
+import { Bug } from "lucide-react";
 import { useState, useMemo } from "react";
+
+import { ChatHistorySection } from "@/components/chat-history-section";
+import { CreativeBoostPanel } from "@/components/creative-boost-panel";
+import { ModeSelector } from "@/components/mode-selector";
+import { DebugDrawerBody } from "@/components/prompt-editor/debug-drawer";
+import { EditorStatusFooter } from "@/components/prompt-editor/editor-status-footer";
+import { FullPromptInputPanel } from "@/components/prompt-editor/full-prompt-input-panel";
+import { OutputPanel } from "@/components/prompt-editor/output-panel";
+import { ValidationMessages } from "@/components/prompt-editor/validation-messages";
+import { QuickVibesPanel } from "@/components/quick-vibes-panel";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Bug } from "lucide-react";
-import { type ChatMessage } from "@/lib/chat-utils";
-import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
-import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput } from "@shared/types";
 import { type GeneratingAction } from "@/context/app-context";
+import { type ChatMessage } from "@/lib/chat-utils";
 import { APP_CONSTANTS } from "@shared/constants";
-import { ChatHistorySection } from "@/components/chat-history-section";
-import { ValidationMessages } from "@/components/prompt-editor/validation-messages";
-import { DebugDrawerBody } from "@/components/prompt-editor/debug-drawer";
-import { OutputPanel } from "@/components/prompt-editor/output-panel";
-import { FullPromptInputPanel } from "@/components/prompt-editor/full-prompt-input-panel";
-import { EditorStatusFooter } from "@/components/prompt-editor/editor-status-footer";
-import { ModeSelector } from "@/components/mode-selector";
-import { QuickVibesPanel } from "@/components/quick-vibes-panel";
-import { CreativeBoostPanel } from "@/components/creative-boost-panel";
+import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput } from "@shared/types";
+import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 
 type PromptEditorProps = {
   currentPrompt: string;
@@ -146,7 +147,7 @@ export function PromptEditor({
     if (promptOverLimit) return;
     onCopy();
     setCopied(true);
-    setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   return (
@@ -176,7 +177,7 @@ export function PromptEditor({
           onRemixRecording={onRemixRecording}
           onRemix={onRemix}
           onCopy={handleCopy}
-          onDebugOpen={() => setDebugOpen(true)}
+          onDebugOpen={() => { setDebugOpen(true); }}
         />
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />
@@ -223,8 +224,8 @@ export function PromptEditor({
               onInputChange={onQuickVibesInputChange}
               onWordlessVocalsChange={onWordlessVocalsChange}
               onMaxModeChange={onMaxModeChange}
-              onGenerate={() => onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals, quickVibesInput.sunoStyles)}
-              onRefine={(feedback) => onGenerate(feedback)}
+              onGenerate={() => { onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals, quickVibesInput.sunoStyles); }}
+              onRefine={(feedback) => { onGenerate(feedback); }}
             />
           ) : promptMode === 'creativeBoost' ? (
             <CreativeBoostPanel

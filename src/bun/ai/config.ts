@@ -1,8 +1,10 @@
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
 import { type LanguageModel } from 'ai';
+
 import { APP_CONSTANTS } from '@shared/constants';
+
 import type { AppConfig, AIProvider, APIKeys } from '@shared/types';
 
 export class AIConfig {

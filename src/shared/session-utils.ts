@@ -1,5 +1,5 @@
-import { type PromptSession, type PromptVersion } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
+import { type PromptSession, type PromptVersion } from "@shared/types";
 
 /**
  * Limits version history to the most recent N versions.

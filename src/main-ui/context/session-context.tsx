@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+
+import { createLogger } from '@/lib/logger';
 import { api } from '@/services/rpc';
 import { type PromptSession } from '@shared/types';
-import { createLogger } from '@/lib/logger';
 
 const log = createLogger('Session');
 
@@ -105,17 +106,27 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     loadHistory();
   }, [loadHistory]);
 
+  // Memoize the context value to prevent unnecessary re-renders of consumers
+  const contextValue = useMemo<SessionContextType>(() => ({
+    sessions,
+    currentSession,
+    setCurrentSession,
+    loadHistory,
+    saveSession,
+    deleteSession,
+    createNewSession,
+    generateId,
+  }), [
+    sessions,
+    currentSession,
+    loadHistory,
+    saveSession,
+    deleteSession,
+    createNewSession,
+  ]);
+
   return (
-    <SessionContext.Provider value={{
-      sessions,
-      currentSession,
-      setCurrentSession,
-      loadHistory,
-      saveSession,
-      deleteSession,
-      createNewSession,
-      generateId,
-    }}>
+    <SessionContext.Provider value={contextValue}>
       {children}
     </SessionContext.Provider>
   );

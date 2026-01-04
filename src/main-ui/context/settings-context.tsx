@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { api } from '@/services/rpc';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+
 import { createLogger } from '@/lib/logger';
+import { api } from '@/services/rpc';
 
 const log = createLogger('Settings');
 
@@ -89,17 +90,28 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [settingsOpen, reloadSettings]);
 
+  // Memoize the context value to prevent unnecessary re-renders of consumers
+  const contextValue = useMemo<SettingsContextType>(() => ({
+    currentModel,
+    maxMode,
+    lyricsMode,
+    settingsOpen,
+    setSettingsOpen,
+    setMaxMode: handleSetMaxMode,
+    setLyricsMode: handleSetLyricsMode,
+    reloadSettings,
+  }), [
+    currentModel,
+    maxMode,
+    lyricsMode,
+    settingsOpen,
+    handleSetMaxMode,
+    handleSetLyricsMode,
+    reloadSettings,
+  ]);
+
   return (
-    <SettingsContext.Provider value={{
-      currentModel,
-      maxMode,
-      lyricsMode,
-      settingsOpen,
-      setSettingsOpen,
-      setMaxMode: handleSetMaxMode,
-      setLyricsMode: handleSetLyricsMode,
-      reloadSettings,
-    }}>
+    <SettingsContext.Provider value={contextValue}>
       {children}
     </SettingsContext.Provider>
   );

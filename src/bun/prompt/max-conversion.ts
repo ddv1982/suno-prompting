@@ -2,11 +2,14 @@
 // Converts non-max format prompts to Max Mode format
 
 import { generateText } from 'ai';
+
+import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
-import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
-import type { LanguageModel } from 'ai';
+import { cleanJsonResponse } from '@shared/prompt-utils';
+
 import type { DebugInfo } from '@shared/types';
+import type { LanguageModel } from 'ai';
 
 // Re-exports for backwards compatibility
 export { isMaxFormat } from '@shared/max-format';
@@ -213,7 +216,7 @@ function buildMaxConversionUserPrompt(parsed: ParsedPrompt): string {
  */
 function parseAIEnhancementResponse(text: string): AIEnhancementResult {
   // Remove markdown code blocks if present
-  const cleaned = text.trim().replace(/```json\n?|\n?```/g, '');
+  const cleaned = cleanJsonResponse(text);
 
   try {
     const parsed = JSON.parse(cleaned) as AIEnhancementResult;

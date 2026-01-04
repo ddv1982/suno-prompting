@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
-import type { LanguageModel } from 'ai';
 import { z } from 'zod';
+
 import {
   detectGenre,
   detectCombination,
@@ -10,10 +10,13 @@ import {
   detectTimeSignatureJourney,
 } from '@bun/instruments/detection';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
+import { createLogger } from '@bun/logger';
+import { cleanJsonResponse } from '@shared/prompt-utils';
+
 import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
 import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
-import { createLogger } from '@bun/logger';
+import type { LanguageModel } from 'ai';
 
 const log = createLogger('Selection');
 
@@ -125,8 +128,8 @@ export async function selectModesWithLLM(
     temperature: 0.1,
   });
 
-  const cleaned = text.trim().replace(/```json\n?|\n?```/g, '');
-  const rawParsed = JSON.parse(cleaned);
+  const cleaned = cleanJsonResponse(text);
+  const rawParsed: unknown = JSON.parse(cleaned);
   const validated = LLMResponseSchema.parse(rawParsed);
 
   return {

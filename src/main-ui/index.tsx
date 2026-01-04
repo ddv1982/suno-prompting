@@ -1,12 +1,13 @@
-import { createRoot } from "react-dom/client";
 import { lazy, Suspense } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { createRoot } from "react-dom/client";
+
 import { Header } from "@/components/app-header";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { HistorySidebar } from "@/components/history-sidebar";
 import { PromptEditor } from "@/components/prompt-editor";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { AppProvider, useAppContext } from "@/context/app-context";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ToastProvider } from "@/components/ui/toast";
+import { AppProvider, useAppContext } from "@/context/app-context";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { APP_CONSTANTS } from "@shared/constants";
 
@@ -86,7 +87,7 @@ function App() {
           onNewProject={newProject}
         />
         <SidebarInset className="flex flex-1 min-w-0 flex-col bg-background">
-          <Header onOpenSettings={() => setSettingsOpen(true)} />
+          <Header onOpenSettings={() => { setSettingsOpen(true); }} />
           <main className="flex-1 min-h-0 overflow-auto">
             <PromptEditor
               currentPrompt={currentPrompt}
@@ -143,7 +144,7 @@ function App() {
         </SidebarInset>
       </div>
       <Suspense fallback={null}>
-        {settingsOpen && <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />}
+        {settingsOpen && <SettingsModal isOpen={settingsOpen} onClose={() => { setSettingsOpen(false); }} />}
       </Suspense>
     </SidebarProvider>
   );

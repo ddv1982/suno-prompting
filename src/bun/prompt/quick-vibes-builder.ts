@@ -1,6 +1,7 @@
-import type { QuickVibesCategory } from '@shared/types';
 import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_GENERATION_LIMIT } from '@bun/prompt/quick-vibes-categories';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
+
+import type { QuickVibesCategory } from '@shared/types';
 export { stripMaxModeHeader } from '@shared/prompt-utils';
 
 /**

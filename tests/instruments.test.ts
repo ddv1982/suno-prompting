@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+
 import {
   detectHarmonic,
   getHarmonicGuidance,
@@ -20,7 +21,6 @@ import {
   toCanonical,
   INSTRUMENT_REGISTRY,
 } from '@bun/instruments';
-
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,

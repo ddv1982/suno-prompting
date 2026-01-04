@@ -1,23 +1,59 @@
+/**
+ * Base error class for all application errors.
+ * Provides consistent error structure with code and cause properties.
+ */
 export class AppError extends Error {
+    public readonly code: string;
+
     constructor(
         message: string,
-        public code: string,
-        public recoverable: boolean = true
+        code: string,
+        cause?: Error
     ) {
-        super(message);
+        super(message, { cause });
         this.name = 'AppError';
+        this.code = code;
     }
 }
 
+/**
+ * Error thrown when input validation fails.
+ * Includes optional field name for form error display.
+ */
+export class ValidationError extends AppError {
+    constructor(
+        message: string,
+        public readonly field?: string,
+        cause?: Error
+    ) {
+        super(message, 'VALIDATION_ERROR', cause);
+        this.name = 'ValidationError';
+    }
+}
+
+/**
+ * Error thrown when AI generation fails.
+ * Used for LLM API failures, empty responses, parsing errors, etc.
+ */
 export class AIGenerationError extends AppError {
-    constructor(message: string, public originalError?: Error) {
-        super(message, 'AI_GENERATION_ERROR');
+    constructor(message: string, cause?: Error) {
+        super(message, 'AI_GENERATION_ERROR', cause);
+        this.name = 'AIGenerationError';
     }
 }
 
+/**
+ * Error thrown when storage operations fail.
+ * Includes the specific operation that failed for debugging.
+ */
 export class StorageError extends AppError {
-    constructor(message: string, public operation: 'read' | 'write' | 'decrypt' | 'encrypt') {
-        super(message, 'STORAGE_ERROR');
+    constructor(
+        message: string,
+        public readonly operation: 'read' | 'write' | 'decrypt' | 'encrypt',
+        cause?: Error
+    ) {
+        super(message, 'STORAGE_ERROR', cause);
+        this.name = 'StorageError';
     }
 }
 

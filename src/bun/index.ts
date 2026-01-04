@@ -1,9 +1,10 @@
 import { BrowserWindow, BrowserView, ApplicationMenu } from 'electrobun/bun';
+
 import { AIEngine } from '@bun/ai';
-import { StorageManager } from '@bun/storage';
-import { type SunoRPCSchema } from '@shared/types';
 import { createHandlers } from '@bun/handlers';
 import { createLogger } from '@bun/logger';
+import { StorageManager } from '@bun/storage';
+import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
 

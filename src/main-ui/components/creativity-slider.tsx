@@ -1,9 +1,11 @@
 import { Dice3 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
 import { Slider } from "@/components/ui/slider";
 import { CREATIVITY_LEVEL_HELPER_TEXT, CREATIVITY_LEVEL_DISPLAY_NAMES } from "@shared/constants";
 import { getCreativityLevel } from "@shared/creative-boost-utils";
+
 import type { CreativitySliderValue } from "@shared/types";
 
 type CreativitySliderProps = {
@@ -29,7 +31,7 @@ export function CreativitySlider({ value, onChange, disabled }: CreativitySlider
 
       <Slider
         value={[value]}
-        onValueChange={(values) => onChange((values[0] ?? value) as CreativitySliderValue)}
+        onValueChange={(values) => { onChange((values[0] ?? value) as CreativitySliderValue); }}
         min={0}
         max={100}
         step={25}

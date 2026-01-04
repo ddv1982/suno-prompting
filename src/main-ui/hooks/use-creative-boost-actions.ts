@@ -1,17 +1,20 @@
 import { useCallback } from 'react';
-import { api } from '@/services/rpc';
-import { type PromptSession, type DebugInfo, type CreativeBoostInput } from '@shared/types';
-import { type ValidationResult } from '@shared/validation';
+
 import { type ChatMessage } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
-import { getErrorMessage } from '@shared/errors';
-import type { GeneratingAction } from '@/hooks/use-generation-state';
 import {
   completeSessionUpdate,
   handleGenerationError,
   addUserMessage,
   type SessionDeps,
 } from '@/lib/session-helpers';
+import { api } from '@/services/rpc';
+import { getErrorMessage } from '@shared/errors';
+import { type PromptSession, type DebugInfo, type CreativeBoostInput } from '@shared/types';
+import { type ValidationResult } from '@shared/validation';
+
+import type { GeneratingAction } from '@/hooks/use-generation-state';
+
 
 const log = createLogger('CreativeBoost');
 

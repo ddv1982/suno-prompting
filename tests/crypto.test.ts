@@ -1,4 +1,5 @@
 import { expect, test, describe } from "bun:test";
+
 import { encrypt, decrypt } from "@bun/crypto";
 
 describe("Crypto module", () => {

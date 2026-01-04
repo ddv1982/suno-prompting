@@ -1,5 +1,3 @@
-import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
@@ -8,6 +6,9 @@ import {
   isMultiGenreInstrument,
   isOrchestralColorInstrument,
 } from '@bun/instruments/datasets/instrument-classes';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
+
+import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 
 function uniqLower(items: readonly string[]): string[] {
   const seen = new Set<string>();

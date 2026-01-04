@@ -1,7 +1,8 @@
 import { describe, expect, test, mock, beforeEach } from "bun:test";
+
 import { createHandlers } from "@bun/handlers";
-import { type PromptSession, type AppConfig, DEFAULT_API_KEYS } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
+import { type PromptSession, type AppConfig, DEFAULT_API_KEYS } from "@shared/types";
 
 // Mock the AI SDK for handler tests (same as max-conversion.test.ts)
 const mockGenerateText = mock(async () => ({
@@ -365,6 +366,137 @@ bpm: "110"`;
       expect(result.convertedPrompt).toContain('instruments:');
       expect(result.convertedPrompt).toContain('style tags:');
       expect(result.convertedPrompt).toContain('recording:');
+    });
+  });
+
+  describe("validation error handling", () => {
+    test("generateQuickVibes throws ValidationError for both category and sunoStyles", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.generateQuickVibes({
+        category: "lofi-study",
+        customDescription: "",
+        withWordlessVocals: false,
+        sunoStyles: ["dream-pop"],
+      })).rejects.toThrow("Cannot use both Category and Suno V5 Styles");
+    });
+
+    test("generateQuickVibes throws ValidationError for too many sunoStyles", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.generateQuickVibes({
+        category: null,
+        customDescription: "",
+        withWordlessVocals: false,
+        sunoStyles: ["a", "b", "c", "d", "e"], // 5 is too many
+      })).rejects.toThrow("Maximum 4 Suno V5 styles allowed");
+    });
+
+    test("refineQuickVibes throws ValidationError for both category and sunoStyles", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.refineQuickVibes({
+        currentPrompt: "test",
+        feedback: "make it better",
+        withWordlessVocals: false,
+        category: "lofi-study",
+        sunoStyles: ["dream-pop"],
+      })).rejects.toThrow("Cannot use both Category and Suno V5 Styles");
+    });
+
+    test("generateCreativeBoost throws ValidationError for invalid creativityLevel", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.generateCreativeBoost({
+        creativityLevel: 42 as any, // Invalid value
+        seedGenres: [],
+        sunoStyles: [],
+        description: "",
+        lyricsTopic: "",
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      })).rejects.toThrow("Invalid creativity level");
+    });
+
+    test("generateCreativeBoost throws ValidationError for too many seedGenres", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.generateCreativeBoost({
+        creativityLevel: 50,
+        seedGenres: ["a", "b", "c", "d", "e"],
+        sunoStyles: [],
+        description: "",
+        lyricsTopic: "",
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      })).rejects.toThrow("Maximum 4 seed genres allowed");
+    });
+
+    test("generateCreativeBoost throws ValidationError for both seedGenres and sunoStyles", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.generateCreativeBoost({
+        creativityLevel: 50,
+        seedGenres: ["jazz"],
+        sunoStyles: ["dream-pop"],
+        description: "",
+        lyricsTopic: "",
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      })).rejects.toThrow("Cannot use both Seed Genres and Suno V5 Styles");
+    });
+
+    test("refineCreativeBoost throws ValidationError for missing currentPrompt", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.refineCreativeBoost({
+        currentPrompt: "",
+        currentTitle: "Title",
+        feedback: "make it better",
+        lyricsTopic: "",
+        description: "",
+        seedGenres: [],
+        sunoStyles: [],
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      })).rejects.toThrow("Current prompt is required for refinement");
+    });
+
+    test("refineCreativeBoost throws ValidationError for missing feedback", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.refineCreativeBoost({
+        currentPrompt: "test prompt",
+        currentTitle: "Title",
+        feedback: "",
+        lyricsTopic: "",
+        description: "",
+        seedGenres: [],
+        sunoStyles: [],
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      })).rejects.toThrow("Feedback is required for refinement");
     });
   });
 });

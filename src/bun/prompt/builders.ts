@@ -6,13 +6,14 @@ import {
   selectInstrumentsForGenre,
 } from '@bun/instruments';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import type { ModeSelection } from '@bun/instruments/selection';
-import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import { articulateInstrument } from '@bun/prompt/articulations';
-import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
-import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
+import { buildProductionDescriptor } from '@bun/prompt/production-elements';
+import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
+import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
+
+import type { ModeSelection } from '@bun/instruments/selection';
 
 export function buildSystemPrompt(maxChars: number, useSunoTags: boolean): string {
   const songStructure = useSunoTags ? `
@@ -265,16 +266,16 @@ Then section tags on subsequent lines.`
     : '';
 
   if (refinement) {
-    const hasExistingLyrics = refinement.currentLyrics && refinement.currentLyrics.trim().length > 0;
-    const lyricsSection = hasExistingLyrics
-      ? `CURRENT LYRICS:\n${refinement.currentLyrics}`
+    const existingLyrics = refinement.currentLyrics?.trim();
+    const lyricsSection = existingLyrics && existingLyrics.length > 0
+      ? `CURRENT LYRICS:\n${existingLyrics}`
       : `CURRENT LYRICS: None - generate fresh lyrics based on the refined prompt and title`;
     
     const lyricsTopicSection = refinement.lyricsTopic 
       ? `\nLYRICS TOPIC (use this as the core subject for lyrics, NOT the musical style):\n${refinement.lyricsTopic}`
       : '';
     
-    const freshLyricsRequirements = !hasExistingLyrics ? `
+    const freshLyricsRequirements = !(existingLyrics && existingLyrics.length > 0) ? `
 LYRICS REQUIREMENTS FOR NEW LYRICS:
 - Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
 - Each section should have 2-4 lines

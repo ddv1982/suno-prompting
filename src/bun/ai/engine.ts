@@ -1,15 +1,16 @@
 import { generateText } from 'ai';
-import { selectModes } from '@bun/instruments/selection';
-import { AIGenerationError } from '@shared/errors';
-import { APP_CONSTANTS } from '@shared/constants';
-import type { DebugInfo, QuickVibesCategory } from '@shared/types';
-import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
-import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
-import { injectBpm } from '@bun/prompt/bpm';
-import { createLogger } from '@bun/logger';
+
 import { AIConfig } from '@bun/ai/config';
-import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
 import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
+import {
+  generateCreativeBoost as generateCreativeBoostImpl,
+  refineCreativeBoost as refineCreativeBoostImpl,
+} from '@bun/ai/creative-boost-engine';
+import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
+import {
+  generateQuickVibes as generateQuickVibesImpl,
+  refineQuickVibes as refineQuickVibesImpl,
+} from '@bun/ai/quick-vibes-engine';
 import {
   extractGenreFromPrompt,
   extractMoodFromPrompt,
@@ -22,15 +23,17 @@ import {
   remixTitle as remixTitleImpl,
   remixLyrics as remixLyricsImpl,
 } from '@bun/ai/remix';
-import {
-  generateQuickVibes as generateQuickVibesImpl,
-  refineQuickVibes as refineQuickVibesImpl,
-} from '@bun/ai/quick-vibes-engine';
-import {
-  generateCreativeBoost as generateCreativeBoostImpl,
-  refineCreativeBoost as refineCreativeBoostImpl,
-} from '@bun/ai/creative-boost-engine';
+import { selectModes } from '@bun/instruments/selection';
+import { createLogger } from '@bun/logger';
+import { injectBpm } from '@bun/prompt/bpm';
+import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
+import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
+import { APP_CONSTANTS } from '@shared/constants';
+import { AIGenerationError } from '@shared/errors';
+import { cleanJsonResponse } from '@shared/prompt-utils';
+
 import type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
+import type { DebugInfo, QuickVibesCategory } from '@shared/types';
 
 // Re-export types for backwards compatibility
 export type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
@@ -56,7 +59,7 @@ export class AIEngine {
   getModel = () => this.config.getModel();
 
   private cleanJsonResponse(text: string): string {
-    return text.trim().replace(/```json\n?|\n?```/g, '');
+    return cleanJsonResponse(text);
   }
 
   private cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
@@ -72,7 +75,7 @@ export class AIEngine {
       const cleaned = this.cleanJsonResponse(rawResponse);
       const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
       if (!parsed.prompt) {
-        throw new Error('Missing prompt in response');
+        throw new AIGenerationError('Missing prompt in response');
       }
       return parsed;
     } catch (e) {
@@ -459,7 +462,7 @@ export class AIEngine {
 }
 
 export function _testCleanJsonResponse(text: string): string {
-  return text.trim().replace(/```json\n?|\n?```/g, '');
+  return cleanJsonResponse(text);
 }
 
 export function _testCleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {

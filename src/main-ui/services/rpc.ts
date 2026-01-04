@@ -1,6 +1,7 @@
 import { Electroview } from 'electrobun/view';
-import { type SunoRPCSchema, type PromptSession, type PromptMode, type QuickVibesCategory } from '@shared/types';
+
 import { APP_CONSTANTS } from '@shared/constants';
+import { type SunoRPCSchema, type PromptSession, type PromptMode, type QuickVibesCategory } from '@shared/types';
 
 const rpc = Electroview.defineRPC<SunoRPCSchema>({
     maxRequestTime: APP_CONSTANTS.AI.TIMEOUT_MS,

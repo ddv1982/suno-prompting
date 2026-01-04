@@ -1,17 +1,20 @@
-import { useCallback } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { FormLabel } from "@/components/ui/form-label";
-import { ToggleRow } from "@/components/ui/toggle-row";
 import { Dice3, Loader2, MessageSquare, Mic, RefreshCw, Zap, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
-import { APP_CONSTANTS } from "@shared/constants";
+import { useCallback } from "react";
+
 import { CreativitySlider } from "@/components/creativity-slider";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { FormLabel } from "@/components/ui/form-label";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleRow } from "@/components/ui/toggle-row";
+import { cn } from "@/lib/utils";
+import { APP_CONSTANTS } from "@shared/constants";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
+
+import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
+
 
 const MAX_DESCRIPTION_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS;
 const MAX_LYRICS_TOPIC_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS;
@@ -179,7 +182,7 @@ export function CreativeBoostPanel({
         </div>
         <Textarea
           value={input.description}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
+          onChange={(e) => { handleDescriptionChange(e.target.value); }}
           onKeyDown={handleKeyDown}
           disabled={isGenerating || (isDirectMode && !isRefineMode)}
           maxLength={MAX_DESCRIPTION_CHARS}
@@ -221,7 +224,7 @@ export function CreativeBoostPanel({
           </div>
           <Textarea
             value={input.lyricsTopic}
-            onChange={(e) => handleLyricsTopicChange(e.target.value)}
+            onChange={(e) => { handleLyricsTopicChange(e.target.value); }}
             onKeyDown={handleKeyDown}
             disabled={isGenerating}
             maxLength={MAX_LYRICS_TOPIC_CHARS}

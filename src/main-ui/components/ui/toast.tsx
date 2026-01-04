@@ -1,6 +1,6 @@
-import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { CheckCircle2, XCircle, Info } from "lucide-react"
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { APP_CONSTANTS } from "@shared/constants"

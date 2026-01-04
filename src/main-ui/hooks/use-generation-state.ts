@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback } from 'react';
+
+import { type ChatMessage } from '@/lib/chat-utils';
 import { type DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
-import { type ChatMessage } from '@/lib/chat-utils';
 
 export type GeneratingAction = 
   | 'none' 

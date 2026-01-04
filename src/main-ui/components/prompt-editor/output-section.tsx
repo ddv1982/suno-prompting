@@ -1,10 +1,11 @@
+import { Check, Copy, Shuffle } from "lucide-react";
 import { useState } from "react";
+
+import { PromptOutput } from "@/components/prompt-output";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionLabel } from "@/components/ui/section-label";
-import { Check, Copy, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PromptOutput } from "@/components/prompt-output";
 import { APP_CONSTANTS } from "@shared/constants";
 
 type OutputSectionProps = {
@@ -31,7 +32,7 @@ export function OutputSection({
   const handleCopy = () => {
     onCopy();
     setCopied(true);
-    setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   return (

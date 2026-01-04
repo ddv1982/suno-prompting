@@ -1,12 +1,13 @@
-import { useState } from "react";
 import { Plus, Search, Trash2 } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuItem } from "@/components/ui/sidebar";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/section-label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuItem } from "@/components/ui/sidebar";
 import { createLogger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 import { type PromptSession } from "@shared/types";
 
 const log = createLogger('HistorySidebar');
@@ -63,7 +64,7 @@ export function HistorySidebar({
           <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => { setQuery(e.target.value); }}
             placeholder="Search projects…"
             className="pl-9"
           />
@@ -83,7 +84,7 @@ export function HistorySidebar({
                     key={session.id}
                     session={session}
                     isActive={session.id === currentSessionId}
-                    onSelect={() => onSelectSession(session)}
+                    onSelect={() => { onSelectSession(session); }}
                     onDelete={() => onDeleteSession(session.id)}
                   />
                 ))
@@ -158,7 +159,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
           showOnHover
           data-testid="history-delete"
           disabled={deleting}
-          onClick={() => setConfirmOpen(true)}
+          onClick={() => { setConfirmOpen(true); }}
         >
           <Trash2 className="w-4 h-4" />
         </SidebarMenuAction>
@@ -172,7 +173,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button variant="outline" onClick={() => { setConfirmOpen(false); }}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>

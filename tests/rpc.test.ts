@@ -1,9 +1,10 @@
 import { expect, test, describe, mock } from "bun:test";
-import { createHandlers } from "@bun/handlers";
+
 import { type AIEngine } from "@bun/ai";
+import { createHandlers } from "@bun/handlers";
 import { type StorageManager } from "@bun/storage";
-import { type PromptSession } from "@shared/types";
 import { APP_CONSTANTS } from "@shared/constants";
+import { type PromptSession } from "@shared/types";
 
 type MockAIEngine = Pick<AIEngine, 'generateInitial' | 'refinePrompt' | 'setApiKey'>;
 type MockStorageManager = Pick<StorageManager, 'getHistory' | 'saveSession' | 'deleteSession' | 'getConfig' | 'saveConfig' | 'initialize'>;

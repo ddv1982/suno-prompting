@@ -1,5 +1,9 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
 import { useRef } from 'react';
+
+import { createLogger } from '@/lib/logger';
+import { api } from '@/services/rpc';
+import { buildMusicPhrase } from '@shared/music-phrase';
 import { 
   type EditorMode, 
   type AdvancedSelection, 
@@ -9,9 +13,6 @@ import {
   EMPTY_ADVANCED_SELECTION,
   EMPTY_CREATIVE_BOOST_INPUT,
 } from '@shared/types';
-import { buildMusicPhrase } from '@shared/music-phrase';
-import { api } from '@/services/rpc';
-import { createLogger } from '@/lib/logger';
 
 const log = createLogger('Editor');
 
@@ -100,13 +101,11 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
 
   // Fire-and-forget save - no rollback needed for UI preference
   // This pattern avoids race conditions that occur with optimistic update + reload
-  const setPromptMode = useCallback(async (mode: PromptMode) => {
+  const setPromptMode = useCallback((mode: PromptMode) => {
     setPromptModeState(mode);
-    try {
-      await api.setPromptMode(mode);
-    } catch (err) {
+    void api.setPromptMode(mode).catch((err: unknown) => {
       log.error("setPromptMode:failed", err);
-    }
+    });
   }, []);
 
   const computedMusicPhrase = useMemo(() => {
@@ -153,11 +152,11 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT);
     setWithWordlessVocals(false);
     resetCreativeBoostInput();
-  }, [resetCreativeBoostInput]);
+  }, [resetCreativeBoostInput, setQuickVibesInput]);
 
   const resetQuickVibesInput = useCallback(() => {
     setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT);
-  }, []);
+  }, [setQuickVibesInput]);
 
   return (
     <EditorContext.Provider value={{

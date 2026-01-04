@@ -1,7 +1,9 @@
 import { generateText } from 'ai';
-import type { LanguageModel } from 'ai';
-import { APP_CONSTANTS } from '@shared/constants';
-import type { DebugInfo } from '@shared/types';
+
+import { generateLyrics } from '@bun/ai/content-generator';
+import { condense } from '@bun/ai/llm-rewriter';
+import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
+import { createLogger } from '@bun/logger';
 import {
   buildCreativeBoostSystemPrompt,
   buildCreativeBoostUserPrompt,
@@ -9,16 +11,18 @@ import {
   buildCreativeBoostRefineSystemPrompt,
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
-import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
 import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
-import { condense } from '@bun/ai/llm-rewriter';
-import { generateLyrics } from '@bun/ai/content-generator';
-import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
-import { createLogger } from '@bun/logger';
-import type { GenerationResult, EngineConfig } from './types';
+import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
+import { APP_CONSTANTS } from '@shared/constants';
+
+
 import { callLLM, generateDirectModeTitle } from './llm-utils';
+
+import type { GenerationResult, EngineConfig } from './types';
+import type { DebugInfo } from '@shared/types';
+import type { LanguageModel } from 'ai';
 
 const log = createLogger('CreativeBoostEngine');
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;

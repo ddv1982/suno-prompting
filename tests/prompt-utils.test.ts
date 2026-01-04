@@ -1,6 +1,65 @@
 import { describe, it, expect } from 'bun:test';
-import { stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
+
 import { MAX_MODE_HEADER } from '../src/shared/max-format';
+import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
+
+// ============================================================================
+// cleanJsonResponse Tests
+// ============================================================================
+
+describe('cleanJsonResponse', () => {
+  it('removes ```json and ``` markers from response', () => {
+    const input = '```json\n{"prompt": "test"}\n```';
+    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+  });
+
+  it('handles response without markers', () => {
+    const input = '{"prompt": "test"}';
+    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+  });
+
+  it('handles response with only opening marker', () => {
+    const input = '```json\n{"prompt": "test"}';
+    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+  });
+
+  it('handles response with only closing marker', () => {
+    const input = '{"prompt": "test"}\n```';
+    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+  });
+
+  it('trims whitespace from result', () => {
+    const input = '  ```json\n{"prompt": "test"}\n```  ';
+    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+  });
+
+  it('handles multiline JSON content', () => {
+    const input = '```json\n{\n  "prompt": "test",\n  "title": "Title"\n}\n```';
+    const expected = '{\n  "prompt": "test",\n  "title": "Title"\n}';
+    expect(cleanJsonResponse(input)).toBe(expected);
+  });
+
+  it('handles empty input', () => {
+    expect(cleanJsonResponse('')).toBe('');
+  });
+
+  it('handles whitespace-only input', () => {
+    expect(cleanJsonResponse('   \n  ')).toBe('');
+  });
+
+  it('produces valid JSON after cleaning', () => {
+    const input = '```json\n{"prompt": "Genre: jazz, BPM: 110", "title": "Test"}\n```';
+    const cleaned = cleanJsonResponse(input);
+    const parsed = JSON.parse(cleaned);
+    expect(parsed.prompt).toBe('Genre: jazz, BPM: 110');
+    expect(parsed.title).toBe('Test');
+  });
+
+  it('handles adjacent newlines correctly', () => {
+    const input = '```json{"prompt": "test"}```';
+    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+  });
+});
 
 // ============================================================================
 // stripMaxModeHeader Tests

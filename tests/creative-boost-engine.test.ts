@@ -1,4 +1,5 @@
 import { describe, it, expect, mock, beforeEach } from "bun:test";
+
 import { AIEngine } from "@bun/ai/engine";
 import { MAX_MODE_SIGNATURE } from "@shared/max-format";
 

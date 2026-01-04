@@ -1,5 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { Zap, FileText, Dice3 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
 import type { PromptMode } from "@shared/types";
 
 type ModeSelectorProps = {
@@ -21,7 +23,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
         <Button
           variant={promptMode === 'full' ? 'default' : 'outline'}
           size="xs"
-          onClick={() => onPromptModeChange('full')}
+          onClick={() => { onPromptModeChange('full'); }}
           disabled={disabled}
           className="font-semibold"
         >
@@ -31,7 +33,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
         <Button
           variant={promptMode === 'quickVibes' ? 'default' : 'outline'}
           size="xs"
-          onClick={() => onPromptModeChange('quickVibes')}
+          onClick={() => { onPromptModeChange('quickVibes'); }}
           disabled={disabled}
           className="font-semibold"
         >
@@ -41,7 +43,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
         <Button
           variant={promptMode === 'creativeBoost' ? 'default' : 'outline'}
           size="xs"
-          onClick={() => onPromptModeChange('creativeBoost')}
+          onClick={() => { onPromptModeChange('creativeBoost'); }}
           disabled={disabled}
           className="font-semibold"
         >

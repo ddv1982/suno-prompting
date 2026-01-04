@@ -1,11 +1,13 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres';
-import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
+
 import {
   FOUNDATIONAL_INSTRUMENTS,
   MULTIGENRE_INSTRUMENTS,
   ORCHESTRAL_COLOR_INSTRUMENTS,
 } from '@bun/instruments/datasets/instrument-classes';
+import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres';
+
+import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 
 export const GENRE_TABLE_START = '<!-- GENRE_TABLE_START -->';
 export const GENRE_TABLE_END = '<!-- GENRE_TABLE_END -->';

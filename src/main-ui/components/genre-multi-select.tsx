@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
 import { X, Music } from "lucide-react";
+import { useMemo, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
-import { FormLabel } from "@/components/ui/form-label";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -11,6 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { FormLabel } from "@/components/ui/form-label";
 import {
   Popover,
   PopoverContent,
@@ -129,7 +130,7 @@ export function GenreMultiSelect({
                   <CommandItem
                     key={option.value}
                     value={option.label}
-                    onSelect={() => handleSelect(option.value)}
+                    onSelect={() => { handleSelect(option.value); }}
                     className="cursor-pointer"
                   >
                     <span>{option.label}</span>
@@ -160,7 +161,7 @@ export function GenreMultiSelect({
               {getDisplayLabel(genreValue)}
               <button
                 type="button"
-                onClick={() => handleRemove(genreValue)}
+                onClick={() => { handleRemove(genreValue); }}
                 disabled={disabled}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 disabled:opacity-50"
                 aria-label={`Remove ${getDisplayLabel(genreValue)}`}

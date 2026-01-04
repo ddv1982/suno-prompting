@@ -32,7 +32,7 @@ export function Switch({ id, checked, onCheckedChange, disabled = false, size = 
       role="switch"
       aria-checked={checked}
       disabled={disabled}
-      onClick={() => onCheckedChange(!checked)}
+      onClick={() => { onCheckedChange(!checked); }}
       className={cn(
         "relative inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-150",
         "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",

@@ -2,10 +2,13 @@
 // Converts Creative Boost style descriptions to proper non-max Suno format
 
 import { generateText } from 'ai';
-import { APP_CONSTANTS } from '@shared/constants';
+
 import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
-import type { LanguageModel } from 'ai';
+import { APP_CONSTANTS } from '@shared/constants';
+import { cleanJsonResponse } from '@shared/prompt-utils';
+
 import type { DebugInfo } from '@shared/types';
+import type { LanguageModel } from 'ai';
 
 // ============================================================================
 // Types
@@ -184,7 +187,7 @@ function buildNonMaxConversionUserPrompt(parsed: ParsedStyleDescription): string
  * Parse the AI response for section content
  */
 function parseNonMaxAIResponse(text: string): SectionContent {
-  const cleaned = text.trim().replace(/```json\n?|\n?```/g, '');
+  const cleaned = cleanJsonResponse(text);
 
   try {
     const parsed = JSON.parse(cleaned) as Partial<SectionContent>;

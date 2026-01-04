@@ -1,8 +1,8 @@
 // API Request/Response types
 
-import type { ValidationResult } from '@shared/validation';
 import type { AIProvider, APIKeys } from '@shared/types/config';
 import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory } from '@shared/types/domain';
+import type { ValidationResult } from '@shared/validation';
 
 // Generation endpoints
 export type GenerateInitialParams = { 

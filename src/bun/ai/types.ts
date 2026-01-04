@@ -1,5 +1,5 @@
-import type { LanguageModel } from 'ai';
 import type { DebugInfo } from '@shared/types';
+import type { LanguageModel } from 'ai';
 
 export type GenerationResult = {
   text: string;

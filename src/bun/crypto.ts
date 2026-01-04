@@ -1,6 +1,7 @@
 import { hostname, userInfo } from 'os';
-import { StorageError } from '@shared/errors';
+
 import { createLogger } from '@bun/logger';
+import { StorageError } from '@shared/errors';
 
 const log = createLogger('Crypto');
 
@@ -43,7 +44,7 @@ export async function encrypt(text: string): Promise<string> {
         combined.set(new Uint8Array(ciphertext), iv.length);
         
         return Buffer.from(combined).toString('base64');
-    } catch (error) {
+    } catch {
         throw new StorageError('Failed to encrypt sensitive data', 'encrypt');
     }
 }
@@ -54,8 +55,8 @@ export async function decrypt(encryptedBase64: string): Promise<string> {
         const key = await deriveKey(secret);
         const combined = Buffer.from(encryptedBase64, 'base64');
         
-        const iv = combined.slice(0, 12);
-        const ciphertext = combined.slice(12);
+        const iv = combined.subarray(0, 12);
+        const ciphertext = combined.subarray(12);
         
         const decrypted = await crypto.subtle.decrypt(
             { name: 'AES-GCM', iv },

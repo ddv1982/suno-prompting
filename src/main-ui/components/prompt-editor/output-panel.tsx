@@ -1,12 +1,13 @@
+import { OutputSection } from "@/components/prompt-editor/output-section";
+import { PromptOutput } from "@/components/prompt-output";
+import { QuickVibesOutput } from "@/components/quick-vibes-output";
+import { RemixButtonGroup } from "@/components/remix-button-group";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionLabel } from "@/components/ui/section-label";
-import { PromptOutput } from "@/components/prompt-output";
-import { RemixButtonGroup } from "@/components/remix-button-group";
-import { OutputSection } from "@/components/prompt-editor/output-section";
-import { QuickVibesOutput } from "@/components/quick-vibes-output";
-import type { DebugInfo } from "@shared/types";
+
 import type { GeneratingAction } from "@/context/app-context";
+import type { DebugInfo } from "@shared/types";
 
 type OutputPanelProps = {
   promptMode: 'full' | 'quickVibes' | 'creativeBoost';

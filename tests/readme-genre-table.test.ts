@@ -1,6 +1,7 @@
+import { $ } from 'bun';
 import { describe, expect, test } from 'bun:test';
 import { readFile, writeFile } from 'node:fs/promises';
-import { $ } from 'bun';
+
 import {
   buildGenreTableMarkdown,
   GENRE_TABLE_END,
@@ -114,22 +115,22 @@ describe('validateAllMarkers', () => {
 
   test('passes when all markers present', () => {
     const readme = createValidReadme();
-    expect(() => validateAllMarkers(readme)).not.toThrow();
+    expect(() => { validateAllMarkers(readme); }).not.toThrow();
   });
 
   test('throws descriptive error for missing count marker', () => {
     const readme = createValidReadme().replace('<!-- SINGLE_GENRE_COUNT -->', '');
-    expect(() => validateAllMarkers(readme)).toThrow('Missing required marker: <!-- SINGLE_GENRE_COUNT -->');
+    expect(() => { validateAllMarkers(readme); }).toThrow('Missing required marker: <!-- SINGLE_GENRE_COUNT -->');
   });
 
   test('throws descriptive error for missing table marker', () => {
     const readme = createValidReadme().replace('<!-- GENRE_TABLE_START -->', '');
-    expect(() => validateAllMarkers(readme)).toThrow('Missing required marker: <!-- GENRE_TABLE_START -->');
+    expect(() => { validateAllMarkers(readme); }).toThrow('Missing required marker: <!-- GENRE_TABLE_START -->');
   });
 
   test('throws descriptive error for missing closing tag', () => {
     const readme = createValidReadme().replace('<!-- /MULTI_GENRE_COUNT -->', '');
-    expect(() => validateAllMarkers(readme)).toThrow('Missing closing tag for marker: <!-- /MULTI_GENRE_COUNT -->');
+    expect(() => { validateAllMarkers(readme); }).toThrow('Missing closing tag for marker: <!-- /MULTI_GENRE_COUNT -->');
   });
 });
 

@@ -1,7 +1,9 @@
 import { describe, test, expect } from 'bun:test';
+
 import { buildMusicPhrase, hasAdvancedSelection, countSelections } from '../src/shared/music-phrase';
-import type { AdvancedSelection } from '../src/shared/types';
 import { EMPTY_ADVANCED_SELECTION } from '../src/shared/types';
+
+import type { AdvancedSelection } from '../src/shared/types';
 
 describe('buildMusicPhrase', () => {
     test('returns empty string for empty selection', () => {

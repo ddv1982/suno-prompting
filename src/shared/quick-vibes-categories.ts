@@ -1,5 +1,6 @@
-import type { QuickVibesCategory } from '@shared/types';
 import { APP_CONSTANTS } from '@shared/constants';
+
+import type { QuickVibesCategory } from '@shared/types';
 
 export type QuickVibesCategoryDefinition = {
   label: string;

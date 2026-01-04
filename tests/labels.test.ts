@@ -1,4 +1,5 @@
 import { describe, test, expect } from 'bun:test';
+
 import { getConciseLabel } from '../src/shared/labels';
 
 describe('getConciseLabel', () => {

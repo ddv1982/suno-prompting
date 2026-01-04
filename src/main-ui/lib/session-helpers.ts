@@ -1,9 +1,10 @@
-import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, DebugInfo } from '@shared/types';
-import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
-import { getErrorMessage } from '@shared/errors';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import { getErrorMessage } from '@shared/errors';
+import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
+
 import type { GeneratingAction } from '@/hooks/use-generation-state';
 import type { Logger } from '@/lib/logger';
+import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, DebugInfo } from '@shared/types';
 
 export type GenerationResultBase = {
   prompt: string;

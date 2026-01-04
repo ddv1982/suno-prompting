@@ -1,19 +1,20 @@
-import { HARMONIC_STYLES, ALL_COMBINATIONS, selectInstrumentsForMode } from '@bun/instruments/modes';
-import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
-import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import type { GenreType } from '@bun/instruments/genres';
-import { ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
-import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
 import { RHYTHMIC_STYLES } from '@bun/instruments/datasets/rhythm';
-import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
-import type { Rng } from '@bun/instruments/services/random';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
+import { HARMONIC_STYLES, ALL_COMBINATIONS, selectInstrumentsForMode } from '@bun/instruments/modes';
+import { ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
 import { shuffle, pickRandom } from '@bun/instruments/services/random';
 import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun/instruments/services/select';
 import { articulateInstrument } from '@bun/prompt/articulations';
-import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
-import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
+import { buildProductionDescriptor } from '@bun/prompt/production-elements';
+import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
+
+import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
+import type { GenreType } from '@bun/instruments/genres';
+import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
+import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
+import type { Rng } from '@bun/instruments/services/random';
 
 export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random): string {
   const s = HARMONIC_STYLES[style];

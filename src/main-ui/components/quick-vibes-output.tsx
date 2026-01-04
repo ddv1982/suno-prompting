@@ -1,11 +1,12 @@
+import { RefreshCw, Copy, Check, Bug } from "lucide-react";
 import { useState } from "react";
+
+import { OutputSection } from "@/components/prompt-editor/output-section";
+import { PromptOutput } from "@/components/prompt-output";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { SectionLabel } from "@/components/ui/section-label";
-import { PromptOutput } from "@/components/prompt-output";
-import { OutputSection } from "@/components/prompt-editor/output-section";
-import { RefreshCw, Copy, Check, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 import { stripMaxModeHeader } from "@shared/prompt-utils";
@@ -38,14 +39,14 @@ export function QuickVibesOutput({
   const handleCopyPrompt = () => {
     onCopy();
     setCopiedPrompt(true);
-    setTimeout(() => setCopiedPrompt(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    setTimeout(() => { setCopiedPrompt(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   const handleCopyTitle = () => {
     if (!title) return;
     navigator.clipboard.writeText(title);
     setCopiedTitle(true);
-    setTimeout(() => setCopiedTitle(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    setTimeout(() => { setCopiedTitle(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   return (

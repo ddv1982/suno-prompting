@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'bun:test';
+
 import {
   SUNO_V5_STYLES,
   SUNO_V5_STYLE_DISPLAY_NAMES,

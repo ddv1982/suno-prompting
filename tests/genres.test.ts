@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+
 import {
   GENRE_REGISTRY,
   JAZZ_GENRE,

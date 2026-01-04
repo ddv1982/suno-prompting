@@ -1,8 +1,9 @@
 import { generateText, type LanguageModel } from 'ai';
+
+import { createLogger } from '@bun/logger';
+import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
-import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
-import { createLogger } from '@bun/logger';
 
 const log = createLogger('ContentGenerator');
 

@@ -1,6 +1,19 @@
 import { isMaxFormat } from '@shared/max-format';
 
 /**
+ * Cleans JSON response from LLM by removing markdown code blocks.
+ * Handles common LLM output patterns like:
+ * - ```json\n{...}\n```
+ * - ``` followed by code blocks
+ * 
+ * @param text - Raw LLM response text
+ * @returns Cleaned text ready for JSON.parse
+ */
+export function cleanJsonResponse(text: string): string {
+  return text.trim().replace(/```json\n?|\n?```/g, '');
+}
+
+/**
  * Strips MAX_MODE_HEADER from prompt if present
  * Used for accurate character counting (header is metadata, not content)
  */
