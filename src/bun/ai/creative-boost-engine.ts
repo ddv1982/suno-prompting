@@ -30,6 +30,16 @@ const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
 export type CreativeBoostEngineConfig = EngineConfig;
 
+/**
+ * Applies max or non-max mode conversion to style output.
+ *
+ * @param style - The raw style text from Creative Boost LLM
+ * @param maxMode - Whether to use Max Mode format
+ * @param getModel - Model factory function
+ * @param seedGenres - Seed genres for genre resolution
+ * @param sunoStyles - Suno V5 styles (takes priority over seedGenres)
+ * @param performanceInstruments - Instruments from performance guidance to preserve through conversion
+ */
 async function applyMaxModeConversion(
   style: string,
   maxMode: boolean,

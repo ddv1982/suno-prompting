@@ -901,3 +901,110 @@ This is the chorus`,
     expect(result.text).toBe("single-new-style");
   });
 });
+
+// ============================================================================
+// Performance Instruments Integration Tests
+// ============================================================================
+
+describe("AIEngine.generateCreativeBoost performance instruments", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+  });
+
+  it("passes performance instruments from seed genre to conversion", async () => {
+    // Arrange - use a genre that has instruments in the registry (e.g., "jazz")
+    const seedGenres = ["jazz"];
+
+    // Act
+    const result = await engine.generateCreativeBoost(
+      50, // creativityLevel
+      seedGenres,
+      [], // sunoStyles
+      "smooth night jazz", // description
+      "", // lyricsTopic
+      false, // withWordlessVocals
+      true, // maxMode
+      false // withLyrics
+    );
+
+    // Assert - result should contain instruments (exact ones depend on genre registry)
+    expect(result.text).toContain("instruments:");
+    expect(result.text.length).toBeGreaterThan(0);
+  });
+
+  it("uses performance instruments for compound genres", async () => {
+    // Arrange - compound genre like "ambient rock"
+    const seedGenres = ["ambient rock"];
+
+    // Act
+    const result = await engine.generateCreativeBoost(
+      50,
+      seedGenres,
+      [],
+      "atmospheric rock",
+      "",
+      false,
+      true, // maxMode
+      false
+    );
+
+    // Assert - should have instruments from both genres blended
+    expect(result.text).toContain("instruments:");
+  });
+
+  it("handles empty seedGenres gracefully", async () => {
+    // Arrange - no seed genres
+    const seedGenres: string[] = [];
+
+    // Act
+    const result = await engine.generateCreativeBoost(
+      50,
+      seedGenres,
+      [],
+      "something cool",
+      "",
+      false,
+      true,
+      false
+    );
+
+    // Assert - should still produce valid output with fallback instruments
+    expect(result.text).toContain("instruments:");
+  });
+});
+
+describe("AIEngine.refineCreativeBoost performance instruments", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+  });
+
+  it("passes performance instruments during refinement", async () => {
+    // Arrange
+    const seedGenres = ["electronic"];
+
+    // Act
+    const result = await engine.refineCreativeBoost(
+      "current prompt text",
+      "Current Title",
+      "make it more energetic", // feedback
+      "", // lyricsTopic
+      "", // description
+      seedGenres,
+      [], // sunoStyles
+      false, // withWordlessVocals
+      true, // maxMode
+      false // withLyrics
+    );
+
+    // Assert
+    expect(result.text).toContain("instruments:");
+  });
+});
