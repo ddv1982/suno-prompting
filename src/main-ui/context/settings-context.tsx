@@ -86,7 +86,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
   // Load settings on mount and reload when settings modal closes
   useEffect(() => {
     if (!settingsOpen) {
-      reloadSettings();
+      void reloadSettings();
     }
   }, [settingsOpen, reloadSettings]);
 
