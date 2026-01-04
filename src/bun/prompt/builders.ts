@@ -15,6 +15,33 @@ import { APP_CONSTANTS } from '@shared/constants';
 
 import type { ModeSelection } from '@bun/instruments/selection';
 
+/**
+ * Builds song concept parts for LLM prompts.
+ * Uses lyricsTopic as title context when description is empty.
+ */
+function buildSongConceptParts(
+  header: string,
+  description: string,
+  lyricsTopic?: string
+): string[] {
+  const trimmedDescription = description.trim();
+  const trimmedTopic = lyricsTopic?.trim();
+  
+  const parts = [header];
+  
+  if (trimmedDescription) {
+    parts.push(trimmedDescription);
+  } else if (trimmedTopic) {
+    parts.push(`(Based on lyrics topic: ${trimmedTopic})`);
+  }
+  
+  if (trimmedTopic) {
+    parts.push('', `LYRICS TOPIC (use this topic for lyrics content):`, trimmedTopic);
+  }
+  
+  return parts;
+}
+
 export function buildSystemPrompt(maxChars: number, useSunoTags: boolean): string {
   const songStructure = useSunoTags ? `
 OUTPUT FORMAT (follow this structure exactly):
@@ -59,17 +86,11 @@ export function buildContextualPrompt(
   const rhythmic = detectRhythmic(description);
   const { found: userInstruments } = extractInstruments(description);
 
-  // Build song concept section - use lyricsTopic for title context when description empty
-  const parts = [`USER'S SONG CONCEPT (preserve this narrative and meaning):`];
-  if (description.trim()) {
-    parts.push(description);
-  } else if (lyricsTopic?.trim()) {
-    parts.push(`(Based on lyrics topic: ${lyricsTopic.trim()})`);
-  }
-
-  if (lyricsTopic?.trim()) {
-    parts.push('', `LYRICS TOPIC (use this topic for lyrics content):`, lyricsTopic.trim());
-  }
+  const parts = buildSongConceptParts(
+    `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
+    description,
+    lyricsTopic
+  );
 
   const hasGuidance =
     selection.genre ||
@@ -134,17 +155,7 @@ export function buildMaxModeContextualPrompt(
   const { found: userInstruments } = extractInstruments(description);
   const detectedGenre = selection.genre || 'acoustic';
 
-  // Build song concept section - use lyricsTopic for title context when description empty
-  const parts = [`USER'S SONG CONCEPT:`];
-  if (description.trim()) {
-    parts.push(description);
-  } else if (lyricsTopic?.trim()) {
-    parts.push(`(Based on lyrics topic: ${lyricsTopic.trim()})`);
-  }
-
-  if (lyricsTopic?.trim()) {
-    parts.push('', `LYRICS TOPIC (use this topic for lyrics content):`, lyricsTopic.trim());
-  }
+  const parts = buildSongConceptParts(`USER'S SONG CONCEPT:`, description, lyricsTopic);
 
   parts.push(
     '',
