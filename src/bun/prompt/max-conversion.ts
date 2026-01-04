@@ -3,7 +3,7 @@
 
 import { generateText } from 'ai';
 
-import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import { inferBpm, enhanceInstruments, applyVocalTagToInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
@@ -323,7 +323,8 @@ export async function convertToMaxFormat(
   const aiResult = await enhanceWithAI(parsed, getModel);
 
   // Build instruments string with articulations (genre-aware defaults)
-  const instruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
+  const baseInstruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
+  const instruments = applyVocalTagToInstruments(baseInstruments, text);
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildMaxFormatPrompt({

@@ -9,7 +9,7 @@ let generateTextCalls: number = 0;
 // Mock the AI SDK generateText
 // First call: Creative Boost JSON response
 // Second call: Conversion AI enhancement response (max or non-max)
-const mockGenerateText = mock(async () => {
+const mockGenerateText = mock(async (_args?: unknown) => {
   generateTextCalls++;
   if (generateTextCalls === 1) {
     // Creative Boost response
@@ -250,14 +250,17 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
 
 describe("AIEngine.generateCreativeBoost Direct Mode", () => {
   let engine: AIEngine;
+  let generateTextCallArgs: Array<{ system?: string; prompt?: string }> = [];
 
   beforeEach(() => {
     engine = new AIEngine();
     mockGenerateText.mockClear();
     generateTextCalls = 0;
+    generateTextCallArgs = [];
 
     // Mock for direct mode: Title generation returns a title, lyrics returns lyrics
-    mockGenerateText.mockImplementation(async () => {
+    mockGenerateText.mockImplementation(async (args: unknown) => {
+      generateTextCallArgs.push(args as { system?: string; prompt?: string });
       generateTextCalls++;
       // In direct mode:
       // - Call 1: Title generation
@@ -344,6 +347,24 @@ Let the rhythm flow`,
     // Should make 2 calls: 1 for title, 1 for lyrics
     // Style is NOT generated via LLM
     expect(generateTextCalls).toBe(2);
+  });
+
+  it("includes performance tags guidance in lyrics generation when useSunoTags is enabled", async () => {
+    engine.setUseSunoTags(true);
+
+    await engine.generateCreativeBoost(
+      50,
+      [],
+      ["indie rock"],
+      "",
+      "",
+      false,
+      false,
+      true
+    );
+
+    expect(generateTextCalls).toBe(2);
+    expect(generateTextCallArgs[1]?.system).toContain("(breathy)");
   });
 
   // Task 4.3: Test direct mode lyrics without max mode header

@@ -133,11 +133,12 @@ export async function remixLyrics(
   originalInput: string,
   lyricsTopic: string | undefined,
   maxMode: boolean,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  useSunoTags: boolean = false
 ): Promise<{ lyrics: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
   const topicForLyrics = lyricsTopic?.trim() || originalInput;
-  const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel);
+  const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel, useSunoTags);
   return { lyrics: result.lyrics };
 }

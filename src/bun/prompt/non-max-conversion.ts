@@ -3,7 +3,7 @@
 
 import { generateText } from 'ai';
 
-import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import { extractFirstGenre, inferBpm, enhanceInstruments, applyVocalTagToInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { APP_CONSTANTS } from '@shared/constants';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
@@ -332,12 +332,13 @@ export async function convertToNonMaxFormat(
   const { sections, debugInfo } = await generateSectionContent(parsed, getModel);
 
   // Build instruments string with articulations (with non-max fallback)
-  const instruments = enhanceInstruments(
+  const baseInstruments = enhanceInstruments(
     parsed.detectedInstruments, 
     genre.forLookup, 
     'ambient textures, subtle pads',
     performanceInstruments
   );
+  const instruments = applyVocalTagToInstruments(baseInstruments, styleDescription);
 
   // Build mood line
   const mood = buildMoodLine(parsed.detectedMoods, genre.forLookup);

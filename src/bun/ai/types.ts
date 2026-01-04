@@ -30,4 +30,5 @@ export type EngineConfig = {
   isDebugMode: () => boolean;
   buildDebugInfo: DebugInfoBuilder;
   isMaxMode?: () => boolean;
+  getUseSunoTags?: () => boolean;
 };

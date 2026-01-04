@@ -56,9 +56,10 @@ export async function generateLyrics(
   genre: string,
   mood: string,
   maxMode: boolean,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  useSunoTags: boolean = false
 ): Promise<LyricsResult> {
-  const systemPrompt = buildLyricsSystemPrompt(maxMode);
+  const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
   const userPrompt = buildLyricsUserPrompt(description, genre, mood);
   const debugInfo = { systemPrompt, userPrompt };
 

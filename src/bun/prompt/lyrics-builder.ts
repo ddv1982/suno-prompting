@@ -1,9 +1,18 @@
-export function buildLyricsSystemPrompt(maxMode: boolean): string {
+export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags: boolean = false): string {
   const maxModeInstructions = maxMode 
     ? `CRITICAL REQUIREMENT: The VERY FIRST LINE of your output MUST be exactly:
 ///*****///
 
 Then continue with the lyrics on subsequent lines.` 
+    : '';
+
+  const performanceTags = useSunoTags
+    ? `
+
+PERFORMANCE TAGS (optional):
+You may include inline vocal performance tags in parentheses to guide delivery:
+(breathy), (belt), (whisper), (ad-lib), (hold)
+Use them sparingly and only when they enhance the vocal moment.`
     : '';
 
   return `You are a professional songwriter who crafts meaningful, narrative-driven lyrics.
@@ -33,6 +42,8 @@ STRUCTURE REQUIREMENTS:
 - Each section should have 2-4 lines
 - Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
 - The chorus should be memorable and repeatable
+
+${performanceTags}
 
 ABSTRACT INTERPRETATION:
 - You may interpret the description creatively and abstractly

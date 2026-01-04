@@ -253,7 +253,14 @@ export class AIEngine {
 
     if (this.config.isLyricsMode()) {
       const topicForLyrics = lyricsTopic?.trim() || description;
-      const lyricsResult = await generateLyrics(topicForLyrics, genre, mood, this.config.isMaxMode(), this.getModel);
+      const lyricsResult = await generateLyrics(
+        topicForLyrics,
+        genre,
+        mood,
+        this.config.isMaxMode(),
+        this.getModel,
+        this.config.getUseSunoTags()
+      );
       result.lyrics = lyricsResult.lyrics;
 
       if (result.debugInfo) {
@@ -379,7 +386,14 @@ export class AIEngine {
   }
 
   async remixLyrics(currentPrompt: string, originalInput: string, lyricsTopic?: string): Promise<{ lyrics: string }> {
-    return remixLyricsImpl(currentPrompt, originalInput, lyricsTopic, this.config.isMaxMode(), this.getModel);
+    return remixLyricsImpl(
+      currentPrompt,
+      originalInput,
+      lyricsTopic,
+      this.config.isMaxMode(),
+      this.getModel,
+      this.config.getUseSunoTags()
+    );
   }
 
   async generateQuickVibes(
@@ -436,6 +450,7 @@ export class AIEngine {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfo.bind(this),
+        getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
       }
     );
   }
@@ -459,6 +474,7 @@ export class AIEngine {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfo.bind(this),
+        getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
       }
     );
   }

@@ -450,6 +450,84 @@ Instruments: electric guitar, drums, bass`;
     expect(result.convertedPrompt).toContain('recording:');
   });
 
+  it('adds vocal descriptor to instruments when style text mentions vocals', async () => {
+    const style = `A brooding ambient-metal soundscape where a resonant baritone guitar drifts beneath crystalline synth pads.
+Alto vocals glide in a breathy, haunting tone, singing verses of yearning love, while the chorus erupts in powerful shouted hooks.`;
+
+    const result = await convertToMaxFormat(
+      style,
+      mockGetModel,
+      ['ambient metal'],
+      [],
+      ['baritone guitar', 'ambient pad', 'crystalline synth pads']
+    );
+
+    const lower = result.convertedPrompt.toLowerCase();
+    expect(lower).toContain('instruments:');
+    expect(lower).toContain('alto vocals');
+    expect(lower).toContain('breathy vocals');
+    expect(lower).toContain('haunting vocals');
+    expect(lower).toContain('shouted hooks');
+  });
+
+  it('caps instruments list while preserving vocal tags', async () => {
+    const style = `A brooding ambient-metal soundscape with many layers.
+Alto vocals glide in a breathy, haunting tone, while the chorus erupts in powerful shouted hooks.`;
+
+    const result = await convertToMaxFormat(
+      style,
+      mockGetModel,
+      ['ambient metal'],
+      [],
+      [
+        'baritone guitar',
+        'ambient pad',
+        'crystalline synth pads',
+        'sub bass',
+        'granular textures',
+        'cinematic drums',
+        'reverse guitar swells',
+      ]
+    );
+
+    const instrumentsLine = result.convertedPrompt
+      .split('\n')
+      .find((l) => l.toLowerCase().startsWith('instruments:'));
+    expect(instrumentsLine).toBeTruthy();
+
+    const match = instrumentsLine?.match(/instruments:\s*"([^"]+)"/i);
+    expect(match?.[1]).toBeTruthy();
+
+    const items = (match?.[1] ?? '')
+      .split(',')
+      .map((i) => i.trim())
+      .filter(Boolean);
+
+    expect(items.length).toBeLessThanOrEqual(6);
+
+    const lower = result.convertedPrompt.toLowerCase();
+    expect(lower).toContain('alto vocals');
+    expect(lower).toContain('breathy vocals');
+    expect(lower).toContain('haunting vocals');
+    expect(lower).toContain('shouted hooks');
+  });
+
+  it('does not add vocals to instruments when style text is instrumental', async () => {
+    const style = `Instrumental ambient-metal soundscape with baritone guitar and crystalline synth pads. No vocals.`;
+
+    const result = await convertToMaxFormat(
+      style,
+      mockGetModel,
+      ['ambient metal'],
+      [],
+      ['baritone guitar', 'ambient pad', 'crystalline synth pads']
+    );
+
+    const lower = result.convertedPrompt.toLowerCase();
+    expect(lower).toContain('instruments:');
+    expect(lower).not.toContain('vocals');
+  });
+
   it('already-max-format passes through unchanged with wasConverted false', async () => {
     const maxFormatPrompt = `[Is_MAX_MODE: MAX](MAX)
 [QUALITY: MAX](MAX)

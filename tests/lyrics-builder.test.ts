@@ -56,6 +56,19 @@ describe("lyrics-builder", () => {
       const prompt = buildLyricsSystemPrompt(false);
       expect(prompt).not.toContain("Match the genre's typical lyrical style and vocabulary");
     });
+
+    it("includes performance tags guidance when useSunoTags is true", () => {
+      const prompt = buildLyricsSystemPrompt(false, true);
+      expect(prompt).toContain("(breathy)");
+      expect(prompt).toContain("(belt)");
+      expect(prompt).toContain("(ad-lib)");
+    });
+
+    it("does not include performance tags guidance when useSunoTags is false", () => {
+      const prompt = buildLyricsSystemPrompt(false, false);
+      expect(prompt).not.toContain("(breathy)");
+      expect(prompt).not.toContain("(belt)");
+    });
   });
 
   describe("buildLyricsUserPrompt", () => {

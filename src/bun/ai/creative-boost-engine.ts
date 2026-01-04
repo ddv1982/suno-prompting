@@ -75,14 +75,15 @@ async function generateLyricsForCreativeBoost(
   description: string,
   maxMode: boolean,
   withLyrics: boolean,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  useSunoTags: boolean
 ): Promise<{ lyrics: string | undefined; debugInfo?: { systemPrompt: string; userPrompt: string } }> {
   if (!withLyrics) return { lyrics: undefined };
 
   const genre = extractGenreFromPrompt(styleResult);
   const mood = extractMoodFromPrompt(styleResult);
   const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
-  const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel);
+  const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel, useSunoTags);
 
   return {
     lyrics: result.lyrics,
@@ -118,7 +119,13 @@ async function postProcessCreativeBoostResponse(
   const processedStyle = await enforceMaxLength(styleResult, config.getModel);
 
   const lyricsResult = await generateLyricsForCreativeBoost(
-    processedStyle, lyricsTopic, description, maxMode, withLyrics, config.getModel
+    processedStyle,
+    lyricsTopic,
+    description,
+    maxMode,
+    withLyrics,
+    config.getModel,
+    config.getUseSunoTags?.() ?? false
   );
 
   let debugInfo: DebugInfo | undefined;
@@ -160,7 +167,15 @@ async function generateDirectMode(
       lyricsTopic,
       withLyrics,
       generateLyrics: (styleResult, topic, desc) =>
-        generateLyricsForCreativeBoost(styleResult, topic, desc, false, true, config.getModel),
+        generateLyricsForCreativeBoost(
+          styleResult,
+          topic,
+          desc,
+          false,
+          true,
+          config.getModel,
+          config.getUseSunoTags?.() ?? false
+        ),
     },
     config
   );
@@ -249,7 +264,8 @@ Output ONLY the new title, nothing else. Do not include quotes around the title.
         feedback,
         false, // maxMode = false for direct mode
         true,
-        config.getModel
+        config.getModel,
+        config.getUseSunoTags?.() ?? false
       );
       lyrics = lyricsResult.lyrics;
     } catch (error) {

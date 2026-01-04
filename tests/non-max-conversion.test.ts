@@ -229,6 +229,57 @@ describe('convertToNonMaxFormat', () => {
     expect(result.convertedPrompt).toContain('[OUTRO]');
   });
 
+  it('uses a specific vocal tag when style text includes a vocal range', async () => {
+    const result = await convertToNonMaxFormat(
+      'ambient metal with baritone guitar and crystalline synth pads. Alto vocals glide in a breathy, haunting tone while the chorus erupts in powerful shouted hooks.',
+      mockGetModel,
+      ['ambient metal']
+    );
+
+    const lower = result.convertedPrompt.toLowerCase();
+    expect(lower).toContain('instruments:');
+    expect(lower).toContain('alto vocals');
+    expect(lower).toContain('breathy vocals');
+    expect(lower).toContain('haunting vocals');
+    expect(lower).toContain('shouted hooks');
+  });
+
+  it('caps instruments list while preserving vocal tags', async () => {
+    const result = await convertToNonMaxFormat(
+      'ambient metal with many layers. Alto vocals glide in a breathy, haunting tone while the chorus erupts in powerful shouted hooks.',
+      mockGetModel,
+      ['ambient metal'],
+      [],
+      [
+        'baritone guitar',
+        'ambient pad',
+        'crystalline synth pads',
+        'sub bass',
+        'granular textures',
+        'cinematic drums',
+        'reverse guitar swells',
+      ]
+    );
+
+    const instrumentsLine = result.convertedPrompt
+      .split('\n')
+      .find((l) => l.toLowerCase().startsWith('instruments:'));
+    expect(instrumentsLine).toBeTruthy();
+
+    const content = instrumentsLine?.split(':')[1]?.trim() ?? '';
+    const items = content
+      .split(',')
+      .map((i) => i.trim())
+      .filter(Boolean);
+    expect(items.length).toBeLessThanOrEqual(6);
+
+    const lower = result.convertedPrompt.toLowerCase();
+    expect(lower).toContain('alto vocals');
+    expect(lower).toContain('breathy vocals');
+    expect(lower).toContain('haunting vocals');
+    expect(lower).toContain('shouted hooks');
+  });
+
   it('detects genre from style description', async () => {
     const result = await convertToNonMaxFormat(
       'smooth jazz vibes with warm tones',
