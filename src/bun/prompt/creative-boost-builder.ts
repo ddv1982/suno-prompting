@@ -1,5 +1,16 @@
+import { selectInstrumentsForGenre } from '@bun/instruments';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
+import { articulateInstrument } from '@bun/prompt/articulations';
+import { buildProductionDescriptor } from '@bun/prompt/production-elements';
+import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
+
+import type { GenreType } from '@bun/instruments/genres';
+
+function isValidGenre(genre: string): genre is GenreType {
+  return genre in GENRE_REGISTRY;
+}
 
 export { getCreativityLevel };
 
@@ -79,7 +90,8 @@ RULES:
 2. Include sonic textures, mood, and character in the style
 3. The title should be evocative and match the vibe
 4. Keep style under ${MAX_STYLE_CHARS} characters
-5. Do NOT wrap the JSON in markdown code blocks`;
+5. Do NOT wrap the JSON in markdown code blocks
+6. When performance guidance is provided, weave vocal style and production elements naturally into the style`;
 }
 
 /**
@@ -98,6 +110,23 @@ export function buildCreativeBoostUserPrompt(
 
   if (seedGenres.length > 0) {
     parts.push(`Seed genres to explore: ${seedGenres.join(', ')}`);
+
+    // Add performance guidance from primary genre (if it's a known genre)
+    const primaryGenre = seedGenres[0];
+    if (primaryGenre && isValidGenre(primaryGenre)) {
+      parts.push('');
+      parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
+      parts.push(`Vocal style: ${buildVocalDescriptor(primaryGenre)}`);
+      parts.push(`Production: ${buildProductionDescriptor(primaryGenre)}`);
+
+      const instruments = selectInstrumentsForGenre(primaryGenre, {});
+      const articulated = instruments
+        .slice(0, 3)
+        .map((i) => articulateInstrument(i, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE));
+      if (articulated.length > 0) {
+        parts.push(`Suggested instruments: ${articulated.join(', ')}`);
+      }
+    }
   } else {
     parts.push('No seed genres - surprise me with something interesting');
   }
