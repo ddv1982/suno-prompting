@@ -59,13 +59,16 @@ export function buildContextualPrompt(
   const rhythmic = detectRhythmic(description);
   const { found: userInstruments } = extractInstruments(description);
 
-  const parts = [
-    `USER'S SONG CONCEPT (preserve this narrative and meaning):`,
-    description,
-  ];
+  // Build song concept section - use lyricsTopic for title context when description empty
+  const parts = [`USER'S SONG CONCEPT (preserve this narrative and meaning):`];
+  if (description.trim()) {
+    parts.push(description);
+  } else if (lyricsTopic?.trim()) {
+    parts.push(`(Based on lyrics topic: ${lyricsTopic.trim()})`);
+  }
 
-  if (lyricsTopic) {
-    parts.push('', `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`, lyricsTopic);
+  if (lyricsTopic?.trim()) {
+    parts.push('', `LYRICS TOPIC (use this topic for lyrics content):`, lyricsTopic.trim());
   }
 
   const hasGuidance =
@@ -131,13 +134,16 @@ export function buildMaxModeContextualPrompt(
   const { found: userInstruments } = extractInstruments(description);
   const detectedGenre = selection.genre || 'acoustic';
 
-  const parts = [
-    `USER'S SONG CONCEPT:`,
-    description,
-  ];
+  // Build song concept section - use lyricsTopic for title context when description empty
+  const parts = [`USER'S SONG CONCEPT:`];
+  if (description.trim()) {
+    parts.push(description);
+  } else if (lyricsTopic?.trim()) {
+    parts.push(`(Based on lyrics topic: ${lyricsTopic.trim()})`);
+  }
 
-  if (lyricsTopic) {
-    parts.push('', `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`, lyricsTopic);
+  if (lyricsTopic?.trim()) {
+    parts.push('', `LYRICS TOPIC (use this topic for lyrics content):`, lyricsTopic.trim());
   }
 
   parts.push(

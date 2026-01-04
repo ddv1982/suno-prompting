@@ -241,7 +241,9 @@ export class AIEngine {
     }
 
     const mood = extractMoodFromPrompt(result.text);
-    const titleResult = await generateTitle(description, genre, mood, this.getModel);
+    // Use lyricsTopic as fallback for title context when description is empty
+    const titleContext = description.trim() || lyricsTopic?.trim() || '';
+    const titleResult = await generateTitle(titleContext, genre, mood, this.getModel);
     result.title = titleResult.title;
 
     if (result.debugInfo) {
