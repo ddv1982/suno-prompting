@@ -16,35 +16,35 @@ export class AIConfig {
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
   private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
 
-  setProvider(provider: AIProvider) {
+  setProvider(provider: AIProvider): void {
     this.provider = provider;
   }
 
-  setApiKey(provider: AIProvider, key: string) {
+  setApiKey(provider: AIProvider, key: string): void {
     this.apiKeys[provider] = key;
   }
 
-  setModel(model: string) {
+  setModel(model: string): void {
     this.model = model;
   }
 
-  setUseSunoTags(value: boolean) {
+  setUseSunoTags(value: boolean): void {
     this.useSunoTags = value;
   }
 
-  setDebugMode(value: boolean) {
+  setDebugMode(value: boolean): void {
     this.debugMode = value;
   }
 
-  setMaxMode(value: boolean) {
+  setMaxMode(value: boolean): void {
     this.maxMode = value;
   }
 
-  setLyricsMode(value: boolean) {
+  setLyricsMode(value: boolean): void {
     this.lyricsMode = value;
   }
 
-  initialize(config: Partial<AppConfig>) {
+  initialize(config: Partial<AppConfig>): void {
     if (config.provider) this.provider = config.provider;
     if (config.apiKeys) this.apiKeys = { ...this.apiKeys, ...config.apiKeys };
     if (config.model) this.model = config.model;

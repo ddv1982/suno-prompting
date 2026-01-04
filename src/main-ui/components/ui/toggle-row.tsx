@@ -24,7 +24,7 @@ export function ToggleRow({
   disabled = false,
   showNaBadge = false,
   onChange,
-}: ToggleRowProps) {
+}: ToggleRowProps): React.JSX.Element {
   return (
     <label
       htmlFor={id}

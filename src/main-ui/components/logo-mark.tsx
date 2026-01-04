@@ -3,7 +3,7 @@ type LogoMarkProps = {
   className?: string;
 };
 
-export function LogoMark({ size = 32, className }: LogoMarkProps) {
+export function LogoMark({ size = 32, className }: LogoMarkProps): React.JSX.Element {
   return (
     <svg
       width={size}

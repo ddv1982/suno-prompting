@@ -41,7 +41,12 @@ type CreativeBoostActionsConfig = GenerationActionDeps & {
   lyricsMode: boolean;
 };
 
-export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
+export interface CreativeBoostActionsResult {
+  handleGenerateCreativeBoost: () => Promise<void>;
+  handleRefineCreativeBoost: (feedback: string) => Promise<void>;
+}
+
+export function useCreativeBoostActions(config: CreativeBoostActionsConfig): CreativeBoostActionsResult {
   const {
     currentSession,
     setChatMessages,

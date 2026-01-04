@@ -19,7 +19,7 @@ export function FormLabel({
   className,
   icon,
   badge
-}: FormLabelProps) {
+}: FormLabelProps): React.JSX.Element {
   const showCharCount = charCount !== undefined && maxChars !== undefined;
   
   return (

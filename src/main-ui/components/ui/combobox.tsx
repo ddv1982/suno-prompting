@@ -39,7 +39,7 @@ export function Combobox({
   disabled = false,
   className,
   "aria-label": ariaLabel,
-}: ComboboxProps) {
+}: ComboboxProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
 
   const selectedOption = options.find((opt) => opt.value === value);

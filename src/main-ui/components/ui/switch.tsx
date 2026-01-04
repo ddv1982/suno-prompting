@@ -22,7 +22,7 @@ const sizeStyles = {
   }
 };
 
-export function Switch({ id, checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps) {
+export function Switch({ id, checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps): React.JSX.Element {
   const styles = sizeStyles[size];
   
   return (

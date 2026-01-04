@@ -29,8 +29,8 @@ export function ApiKeySection({
   onProviderChange,
   onApiKeyChange,
   onToggleShowKey,
-}: ApiKeySectionProps) {
-  const currentProvider = PROVIDERS.find(p => p.id === provider) || PROVIDERS[0];
+}: ApiKeySectionProps): React.JSX.Element {
+  const currentProvider = PROVIDERS.find(p => p.id === provider) ?? PROVIDERS[0];
   const currentApiKey = apiKeys[provider] || '';
 
   return (

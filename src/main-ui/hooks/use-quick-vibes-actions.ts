@@ -19,7 +19,18 @@ type QuickVibesActionsConfig = GenerationActionDeps & {
   getQuickVibesInput: () => QuickVibesInput;
 };
 
-export function useQuickVibesActions(config: QuickVibesActionsConfig) {
+export interface QuickVibesActionsResult {
+  handleGenerateQuickVibes: (
+    category: QuickVibesCategory | null,
+    customDescription: string,
+    wordlessVocals: boolean,
+    sunoStyles?: string[]
+  ) => Promise<void>;
+  handleRemixQuickVibes: () => Promise<void>;
+  handleRefineQuickVibes: (input: string) => Promise<void>;
+}
+
+export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibesActionsResult {
   const {
     isGenerating,
     currentSession,

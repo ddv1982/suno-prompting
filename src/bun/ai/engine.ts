@@ -1,4 +1,4 @@
-import { generateText } from 'ai';
+import { generateText, type LanguageModel } from 'ai';
 
 import { AIConfig } from '@bun/ai/config';
 import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
@@ -57,7 +57,7 @@ export class AIEngine {
   setLyricsMode = this.config.setLyricsMode.bind(this.config);
   initialize = this.config.initialize.bind(this.config);
   isDebugMode = this.config.isDebugMode.bind(this.config);
-  getModel = () => this.config.getModel();
+  getModel = (): LanguageModel => this.config.getModel();
 
   private cleanJsonResponse(text: string): string {
     return cleanJsonResponse(text);

@@ -45,7 +45,7 @@ const TIME_JOURNEY_OPTIONS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES)
   .map(([value, label]) => ({ value, label }))
   .sort((a, b) => a.label.localeCompare(b.label));
 
-export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: AdvancedPanelProps) {
+export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: AdvancedPanelProps): React.JSX.Element {
   const hasAnySelection = hasAdvancedSelection(selection);
 
   return (

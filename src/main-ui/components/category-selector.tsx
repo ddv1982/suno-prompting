@@ -13,7 +13,7 @@ export function CategorySelector({
   selectedCategory,
   onSelect,
   disabled = false,
-}: CategorySelectorProps) {
+}: CategorySelectorProps): React.JSX.Element {
   return (
     <div className="flex flex-wrap gap-2">
       <Button

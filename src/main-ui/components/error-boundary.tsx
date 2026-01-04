@@ -20,15 +20,15 @@ export class ErrorBoundary extends Component<Props, State> {
         return { hasError: true, error };
     }
 
-    override componentDidCatch(error: Error, info: React.ErrorInfo) {
+    override componentDidCatch(error: Error, info: React.ErrorInfo): void {
         console.error('React Error Boundary caught:', error, info);
     }
 
-    handleRestart = () => {
+    handleRestart = (): void => {
         window.location.reload();
     };
 
-    override render() {
+    override render(): ReactNode {
         if (this.state.hasError) {
             return this.props.fallback ?? (
                 <div className="flex h-screen w-full flex-col items-center justify-center space-y-4 p-8 text-center bg-background">

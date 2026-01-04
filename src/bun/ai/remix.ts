@@ -69,11 +69,11 @@ export function remixGenre(currentPrompt: string): RemixResult {
 
     if (isMultiGenre(singleGenre)) {
       const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== singleGenre);
-      newGenreValue = available[Math.floor(Math.random() * available.length)]!;
+      newGenreValue = available[Math.floor(Math.random() * available.length)] ?? available[0] ?? singleGenre;
     } else {
       const availableGenres = allSingleGenres.filter(g => g !== singleGenre);
       if (availableGenres.length === 0) return { text: currentPrompt };
-      newGenreValue = availableGenres[Math.floor(Math.random() * availableGenres.length)]!;
+      newGenreValue = availableGenres[Math.floor(Math.random() * availableGenres.length)] ?? availableGenres[0] ?? 'ambient';
     }
   } else {
     const availableGenres = allGenreOptions.filter(g => !currentGenres.includes(g.toLowerCase()));

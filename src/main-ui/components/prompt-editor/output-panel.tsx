@@ -61,7 +61,7 @@ export function OutputPanel({
   onRemix,
   onCopy,
   onDebugOpen,
-}: OutputPanelProps) {
+}: OutputPanelProps): React.JSX.Element | null {
   if (!currentPrompt) return null;
 
   if (promptMode === 'quickVibes') {

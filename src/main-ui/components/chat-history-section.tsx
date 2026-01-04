@@ -19,7 +19,7 @@ export function ChatHistorySection({
   isGenerating,
   expanded,
   onExpandedChange,
-}: ChatHistorySectionProps) {
+}: ChatHistorySectionProps): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function ChatHistorySection({
   );
 }
 
-function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }) {
+function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }): React.JSX.Element {
   return (
     <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
       <div

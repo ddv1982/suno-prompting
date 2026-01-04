@@ -25,7 +25,7 @@ export function FeatureToggles({
   onMaxModeChange,
   onLyricsModeChange,
   onDebugModeChange,
-}: FeatureTogglesProps) {
+}: FeatureTogglesProps): React.JSX.Element {
   return (
     <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
       <SectionLabel>Feature Settings</SectionLabel>

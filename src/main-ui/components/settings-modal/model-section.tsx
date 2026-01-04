@@ -18,7 +18,7 @@ export function ModelSection({
   model,
   loading,
   onModelChange,
-}: ModelSectionProps) {
+}: ModelSectionProps): React.JSX.Element {
   const availableModels = MODELS_BY_PROVIDER[provider];
 
   return (

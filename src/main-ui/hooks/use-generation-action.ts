@@ -80,7 +80,14 @@ export type ExecuteGenerationOptions<TResult extends GenerationResultBase> = {
  * Hook that provides a reusable execute function for generation actions.
  * Handles the common try/catch/finally pattern with proper state management.
  */
-export function useGenerationAction(deps: GenerationActionDeps) {
+export interface UseGenerationActionResult {
+  execute: <TResult extends GenerationResultBase>(
+    options: ExecuteGenerationOptions<TResult>,
+    sessionDeps: SessionDeps
+  ) => Promise<void>;
+}
+
+export function useGenerationAction(deps: GenerationActionDeps): UseGenerationActionResult {
   const {
     isGenerating,
     setGeneratingAction,

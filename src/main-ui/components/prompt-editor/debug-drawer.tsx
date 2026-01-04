@@ -8,11 +8,11 @@ type DebugDrawerBodyProps = {
   debugInfo: Partial<DebugInfo>;
 };
 
-export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps) {
+export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps): React.JSX.Element {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string, section: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = (text: string, section: string): void => {
+    void navigator.clipboard.writeText(text);
     setCopiedSection(section);
     setTimeout(() => { setCopiedSection(null); }, 2000);
   };

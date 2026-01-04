@@ -15,13 +15,19 @@ export function shuffle<T>(arr: readonly T[], rng: Rng = Math.random): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    [result[i], result[j]] = [result[j]!, result[i]!];
+    const temp = result[i];
+    const swapVal = result[j];
+    if (temp !== undefined && swapVal !== undefined) {
+      result[i] = swapVal;
+      result[j] = temp;
+    }
   }
   return result;
 }
 
-export function pickRandom<T>(arr: readonly T[], rng: Rng = Math.random): T {
-  return arr[Math.floor(rng() * arr.length)]!;
+export function pickRandom<T>(arr: readonly T[], rng: Rng = Math.random): T | undefined {
+  if (arr.length === 0) return undefined;
+  return arr[Math.floor(rng() * arr.length)];
 }
 
 export function randomIntInclusive(min: number, max: number, rng: Rng = Math.random): number {

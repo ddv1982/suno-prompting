@@ -61,7 +61,7 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
 });
 
 // Initialize storage, AI engine, and then launch the window
-(async () => {
+async function initializeApp(): Promise<void> {
     log.info('init:start');
     await storage.initialize();
     const config = await storage.getConfig();
@@ -79,4 +79,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             y: 200,
         }
     });
-})();
+}
+
+initializeApp().catch((error: unknown) => {
+    log.error('init:failed', { error: error instanceof Error ? error.message : String(error) });
+});

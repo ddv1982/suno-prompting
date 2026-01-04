@@ -5,7 +5,7 @@ type EditorStatusFooterProps = {
   currentModel?: string;
 };
 
-export function EditorStatusFooter({ isGenerating, currentModel }: EditorStatusFooterProps) {
+export function EditorStatusFooter({ isGenerating, currentModel }: EditorStatusFooterProps): React.JSX.Element {
   return (
     <div className="flex justify-between items-center px-1 pb-[var(--space-2)]">
       <span className="text-[length:var(--text-caption)] text-muted-foreground flex items-center gap-4 font-mono">

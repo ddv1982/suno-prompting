@@ -45,7 +45,7 @@ export class StorageManager {
         this.configPath = join(this.baseDir, 'config.json');
     }
 
-    async initialize() {
+    async initialize(): Promise<void> {
         try {
             await mkdir(this.baseDir, { recursive: true });
         } catch (error) {
@@ -72,7 +72,7 @@ export class StorageManager {
         }
     }
 
-    async saveHistory(sessions: PromptSession[]) {
+    async saveHistory(sessions: PromptSession[]): Promise<void> {
         try {
             await Bun.write(this.historyPath, JSON.stringify(sessions, null, 2));
         } catch (error) {
@@ -82,13 +82,13 @@ export class StorageManager {
         }
     }
 
-    async saveSession(session: PromptSession) {
+    async saveSession(session: PromptSession): Promise<void> {
         const history = await this.getHistory();
         const updated = upsertSessionList(history, session);
         await this.saveHistory(updated);
     }
 
-    async deleteSession(id: string) {
+    async deleteSession(id: string): Promise<void> {
         const history = await this.getHistory();
         const filtered = removeSessionById(history, id);
         await this.saveHistory(filtered);
@@ -121,7 +121,6 @@ export class StorageManager {
             }
             
             return {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- false positive: both sides are ProviderId type
                 provider: config.provider ?? DEFAULT_CONFIG.provider,
                 apiKeys,
                 model: config.model ?? DEFAULT_CONFIG.model,
@@ -139,7 +138,7 @@ export class StorageManager {
         }
     }
 
-    async saveConfig(config: Partial<AppConfig>) {
+    async saveConfig(config: Partial<AppConfig>): Promise<void> {
         try {
             const existing = await this.getConfig();
             const toSave = { ...existing, ...config };

@@ -39,7 +39,7 @@ interface ToastProps extends React.ComponentProps<"div">, VariantProps<typeof to
   message: string
 }
 
-function ToastItem({ message, variant, className, ...props }: ToastProps) {
+function ToastItem({ message, variant, className, ...props }: ToastProps): React.JSX.Element {
   const Icon = toastIcons[variant ?? "success"]
 
   return (
@@ -65,7 +65,7 @@ const ToastContext = React.createContext<ToastContextType | null>(null)
 
 // useToast hook
 export function useToast(): ToastContextType {
-  const context = React.useContext(ToastContext)
+  const context: ToastContextType | null = React.useContext(ToastContext)
   if (!context) {
     throw new Error("useToast must be used within a ToastProvider")
   }
@@ -76,10 +76,10 @@ export function useToast(): ToastContextType {
 const TOAST_DISMISS_DURATION = APP_CONSTANTS.UI.TOAST_DURATION_MS
 
 // ToastProvider component
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function ToastProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [toasts, setToasts] = React.useState<Toast[]>([])
 
-  const showToast = React.useCallback((message: string, type: Toast["type"] = "success") => {
+  const showToast = React.useCallback((message: string, type: Toast["type"] = "success"): void => {
     const id = crypto.randomUUID()
     setToasts((prev) => [...prev, { id, message, type }])
 

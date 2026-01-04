@@ -26,7 +26,7 @@ export function AdvancedOption({
   searchPlaceholder = "Search...",
   emptyText = "No option found.",
   className,
-}: AdvancedOptionProps) {
+}: AdvancedOptionProps): React.JSX.Element {
   const isDisabled = disabled || disabledByMutualExclusion;
 
   return (

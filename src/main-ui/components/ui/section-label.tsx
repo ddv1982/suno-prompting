@@ -5,7 +5,7 @@ interface SectionLabelProps {
   className?: string;
 }
 
-export function SectionLabel({ children, className }: SectionLabelProps) {
+export function SectionLabel({ children, className }: SectionLabelProps): React.JSX.Element {
   return (
     <span className={cn("label-section", className)}>
       {children}

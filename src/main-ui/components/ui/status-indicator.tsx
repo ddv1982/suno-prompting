@@ -21,7 +21,7 @@ const statusLabels: Record<StatusType, string> = {
   error: "Error",
 };
 
-export function StatusIndicator({ status, label, showLabel = true, className }: StatusIndicatorProps) {
+export function StatusIndicator({ status, label, showLabel = true, className }: StatusIndicatorProps): React.JSX.Element {
   const displayLabel = label ?? statusLabels[status];
   
   return (

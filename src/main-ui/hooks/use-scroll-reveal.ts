@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 
-export function useScrollReveal() {
+export function useScrollReveal(): void {
   useEffect(() => {
     let scrollTimeout: ReturnType<typeof setTimeout>;
 
-    const handleScroll = (e: Event) => {
+    const handleScroll = (e: Event): void => {
       const target = e.target as HTMLElement;
       if (!target.classList) return;
       

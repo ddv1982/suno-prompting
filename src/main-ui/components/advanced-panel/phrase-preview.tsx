@@ -5,7 +5,7 @@ type PhrasePreviewProps = {
   phrase: string;
 };
 
-export function PhrasePreview({ phrase }: PhrasePreviewProps) {
+export function PhrasePreview({ phrase }: PhrasePreviewProps): React.JSX.Element | null {
   if (!phrase) return null;
 
   return (

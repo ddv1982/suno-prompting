@@ -6,7 +6,7 @@ type PromptOutputProps = {
   text: string;
 };
 
-export function PromptOutput({ text }: PromptOutputProps) {
+export function PromptOutput({ text }: PromptOutputProps): React.JSX.Element {
   const lines = useMemo(() => text.split('\n'), [text]);
 
   return (

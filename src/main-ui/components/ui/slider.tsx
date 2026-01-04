@@ -22,11 +22,11 @@ export function Slider({
   className,
   "aria-label": ariaLabel,
   showTicks = false,
-}: SliderProps) {
+}: SliderProps): React.JSX.Element {
   const currentValue = value[0] ?? min;
   const percentage = ((currentValue - min) / (max - min)) * 100;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newValue = Number(e.target.value);
     onValueChange([newValue]);
   };

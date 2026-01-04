@@ -7,7 +7,7 @@ type ValidationMessagesProps = {
   warnings: string[];
 };
 
-export function ValidationMessages({ errors, warnings }: ValidationMessagesProps) {
+export function ValidationMessages({ errors, warnings }: ValidationMessagesProps): React.JSX.Element | null {
   if (errors.length === 0 && warnings.length === 0) return null;
 
   return (

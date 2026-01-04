@@ -26,7 +26,7 @@ export function HistorySidebar({
   onSelectSession,
   onDeleteSession,
   onNewProject,
-}: HistorySidebarProps) {
+}: HistorySidebarProps): React.JSX.Element {
   const [query, setQuery] = useState("");
 
   const q = query.trim().toLowerCase();
@@ -104,12 +104,12 @@ type HistoryItemProps = {
   onDelete: () => Promise<void>;
 };
 
-function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps) {
+function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps): React.JSX.Element {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const date = new Date(session.updatedAt);
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     setDeleting(true);
     setConfirmOpen(false);
     try {

@@ -26,10 +26,10 @@ export function OutputSection({
   isGenerating = false,
   isRemixing = false,
   scrollable = false,
-}: OutputSectionProps) {
+}: OutputSectionProps): React.JSX.Element {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
+  const handleCopy = (): void => {
     onCopy();
     setCopied(true);
     setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);

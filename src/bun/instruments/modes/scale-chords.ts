@@ -63,12 +63,12 @@ export function getNoteIndex(note: string): number {
 export function transposeNote(note: string, semitones: number): Note {
   const index = getNoteIndex(note);
   const newIndex = (index + semitones + 12) % 12;
-  return NOTES[newIndex]!;
+  return NOTES[newIndex] ?? 'C';
 }
 
 export function getScaleNotes(root: string, intervals: number[]): Note[] {
   const rootIndex = getNoteIndex(root);
-  return intervals.map(interval => NOTES[(rootIndex + interval) % 12]!);
+  return intervals.map(interval => NOTES[(rootIndex + interval) % 12] ?? 'C');
 }
 
 export function formatChordName(root: string, quality: ChordQuality): string {
@@ -121,8 +121,8 @@ export function getTriadNotes(root: string, quality: ChordQuality): Note[] {
     '5': [0, 7],
   };
 
-  const pattern = intervals[quality] ?? intervals.maj!;
-  return pattern.map(i => NOTES[(rootIndex + i) % 12]!);
+  const pattern = intervals[quality] ?? intervals.maj ?? [0, 4, 7];
+  return pattern.map(i => NOTES[(rootIndex + i) % 12] ?? 'C');
 }
 
 export function getSeventhChordNotes(root: string, quality: ChordQuality): Note[] {
@@ -141,8 +141,8 @@ export function getSeventhChordNotes(root: string, quality: ChordQuality): Note[
     '7sus4': [0, 5, 7, 10],
   };
 
-  const pattern = intervals[quality] ?? intervals.maj7!;
-  return pattern.map(i => NOTES[(rootIndex + i) % 12]!);
+  const pattern = intervals[quality] ?? intervals.maj7 ?? [0, 4, 7, 11];
+  return pattern.map(i => NOTES[(rootIndex + i) % 12] ?? 'C');
 }
 
 export function buildScaleChords(
@@ -154,7 +154,7 @@ export function buildScaleChords(
   const qualities = type === 'triads' ? scale.triadQualities : scale.seventhQualities;
 
   return scaleNotes.map((note, degree) => {
-    const quality = qualities[degree]!;
+    const quality = qualities[degree] ?? 'maj';
     const notes =
       type === 'triads' ? getTriadNotes(note, quality) : getSeventhChordNotes(note, quality);
 
@@ -168,6 +168,6 @@ export function buildScaleChords(
 }
 
 export function formatChordWithNotes(chord: ScaleChord): string {
-  const name = formatChordName(chord.notes[0]!, chord.quality);
+  const name = formatChordName(chord.notes[0] ?? 'C', chord.quality);
   return `${chord.roman}: ${name} (${chord.notes.join('-')})`;
 }

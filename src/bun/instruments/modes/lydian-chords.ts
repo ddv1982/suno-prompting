@@ -69,7 +69,7 @@ export function getLydianChords(root: Note | string): LydianScaleChords {
   const extended = buildExtendedChords(scaleNotes);
 
   return {
-    root: scaleNotes[0]!,
+    root: scaleNotes[0] ?? root as Note,
     scaleNotes,
     triads,
     sevenths,

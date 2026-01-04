@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
 import { type ChatMessage } from '@/lib/chat-utils';
 import { type DebugInfo } from '@shared/types';
@@ -18,7 +18,23 @@ export type GeneratingAction =
   | 'quickVibes'
   | 'creativeBoost';
 
-export function useGenerationState() {
+export interface GenerationStateResult {
+  generatingAction: GeneratingAction;
+  isGenerating: boolean;
+  chatMessages: ChatMessage[];
+  validation: ValidationResult;
+  debugInfo: Partial<DebugInfo> | undefined;
+  setGeneratingAction: (action: GeneratingAction) => void;
+  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  setValidation: (v: ValidationResult) => void;
+  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
+  resetState: () => void;
+  addErrorMessage: (error: unknown, context: string) => void;
+  addSuccessMessage: (message: string) => void;
+  addUserMessage: (content: string) => void;
+}
+
+export function useGenerationState(): GenerationStateResult {
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
@@ -26,22 +42,22 @@ export function useGenerationState() {
 
   const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
 
-  const resetState = useCallback(() => {
+  const resetState = useCallback((): void => {
     setChatMessages([]);
     setValidation({ ...EMPTY_VALIDATION });
     setDebugInfo(undefined);
   }, []);
 
-  const addErrorMessage = useCallback((error: unknown, context: string) => {
+  const addErrorMessage = useCallback((error: unknown, context: string): void => {
     const message = error instanceof Error ? error.message : `Failed to ${context}`;
     setChatMessages(prev => [...prev, { role: "ai", content: `Error: ${message}.` }]);
   }, []);
 
-  const addSuccessMessage = useCallback((message: string) => {
+  const addSuccessMessage = useCallback((message: string): void => {
     setChatMessages(prev => [...prev, { role: "ai", content: message }]);
   }, []);
 
-  const addUserMessage = useCallback((content: string) => {
+  const addUserMessage = useCallback((content: string): void => {
     setChatMessages(prev => [...prev, { role: "user", content }]);
   }, []);
 

@@ -14,7 +14,7 @@ type CreativitySliderProps = {
   disabled?: boolean;
 };
 
-export function CreativitySlider({ value, onChange, disabled }: CreativitySliderProps) {
+export function CreativitySlider({ value, onChange, disabled }: CreativitySliderProps): React.JSX.Element {
   const level = getCreativityLevel(value);
   const helperText = CREATIVITY_LEVEL_HELPER_TEXT[level];
 

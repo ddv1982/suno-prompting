@@ -27,7 +27,7 @@ export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random
     `Chord: ${s.chordType}`,
     `Formula: ${s.formula}`,
     ...chars.map(c => `- ${c}`),
-    `Suggested Progression: ${prog}`,
+    `Suggested Progression: ${String(prog)}`,
     `Examples: ${s.keyExamples}`,
   ];
 
@@ -137,7 +137,7 @@ export function getTimeSignatureGuidance(sig: TimeSignatureType, rng: Rng = Math
     '',
     `Feel: ${s.feel}`,
     `Beats: ${s.beats} per measure (${s.subdivision} note pulse)`,
-    `Grouping: ${grouping}`,
+    `Grouping: ${String(grouping)}`,
     '',
     'Characteristics:',
     ...chars.map(c => `- ${c}`),

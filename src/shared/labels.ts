@@ -257,11 +257,13 @@ export const TIME_JOURNEY_DISPLAY_NAMES: Record<string, string> = {
  * Handles single genres, genre combinations, and falls back to title case.
  */
 export function formatGenreLabel(genreKey: string): string {
-  if (genreKey in GENRE_LABELS) {
-    return GENRE_LABELS[genreKey]!;
+  const genreLabel = GENRE_LABELS[genreKey];
+  if (genreLabel) {
+    return genreLabel;
   }
-  if (genreKey in GENRE_COMBINATION_DISPLAY_NAMES) {
-    return GENRE_COMBINATION_DISPLAY_NAMES[genreKey]!;
+  const comboLabel = GENRE_COMBINATION_DISPLAY_NAMES[genreKey];
+  if (comboLabel) {
+    return comboLabel;
   }
   return genreKey.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
