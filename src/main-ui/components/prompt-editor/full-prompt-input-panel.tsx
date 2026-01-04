@@ -75,11 +75,12 @@ export function FullPromptInputPanel({
 }: FullPromptInputPanelProps) {
   const { showToast } = useToast();
 
+  // Allow generation without description when: advanced mode + selection + (refine OR lyrics topic)
+  const canGenerateWithAdvancedSelection = editorMode === 'advanced' && hasAdvancedSelection &&
+    (currentPrompt || (lyricsMode && lyricsTopic.trim()));
+
   const handleSend = () => {
     const trimmed = pendingInput.trim();
-    // Allow generation without description when: advanced mode + selection + (refine OR lyrics topic)
-    const canGenerateWithAdvancedSelection = editorMode === 'advanced' && hasAdvancedSelection &&
-      (currentPrompt || (lyricsMode && lyricsTopic.trim()));
     
     if (!trimmed && !canGenerateWithAdvancedSelection) return;
     if (isGenerating) return;
@@ -252,7 +253,7 @@ export function FullPromptInputPanel({
               inputOverLimit ||
               lyricsTopicOverLimit ||
               !lockedPhraseValidation.isValid ||
-              (!pendingInput.trim() && !(editorMode === 'advanced' && hasAdvancedSelection && (currentPrompt || (lyricsMode && lyricsTopic.trim()))))
+              (!pendingInput.trim() && !canGenerateWithAdvancedSelection)
             }
             size="sm"
             className={cn(
