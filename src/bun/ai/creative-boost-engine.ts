@@ -14,7 +14,7 @@ import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
 import { condense } from '@bun/ai/llm-rewriter';
-import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
+import { generateLyrics } from '@bun/ai/content-generator';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
 import type { GenerationResult, EngineConfig } from './types';

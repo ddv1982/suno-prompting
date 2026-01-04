@@ -20,3 +20,17 @@ export class StorageError extends AppError {
         super(message, 'STORAGE_ERROR');
     }
 }
+
+/**
+ * Extracts error message from unknown error type.
+ * Use this instead of repeating `error instanceof Error ? error.message : fallback` pattern.
+ */
+export function getErrorMessage(error: unknown, fallback: string = 'Unknown error'): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    if (typeof error === 'string') {
+        return error;
+    }
+    return fallback;
+}

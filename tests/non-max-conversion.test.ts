@@ -84,17 +84,17 @@ describe('parseStyleDescription', () => {
 describe('inferBpm', () => {
   it('returns correct BPM for jazz genre', () => {
     const bpm = inferBpm('jazz');
-    expect(bpm).toBe(GENRE_REGISTRY.jazz.bpm.typical);
+    expect(bpm).toBe(GENRE_REGISTRY.jazz.bpm!.typical);
   });
 
   it('returns correct BPM for rock genre', () => {
     const bpm = inferBpm('rock');
-    expect(bpm).toBe(GENRE_REGISTRY.rock.bpm.typical);
+    expect(bpm).toBe(GENRE_REGISTRY.rock.bpm!.typical);
   });
 
   it('returns correct BPM for electronic genre', () => {
     const bpm = inferBpm('electronic');
-    expect(bpm).toBe(GENRE_REGISTRY.electronic.bpm.typical);
+    expect(bpm).toBe(GENRE_REGISTRY.electronic.bpm!.typical);
   });
 
   it('returns default BPM (90) for null genre', () => {
@@ -110,7 +110,7 @@ describe('inferBpm', () => {
   it('handles case insensitivity', () => {
     const bpm = inferBpm('JAZZ');
     // Should match 'jazz' in registry after lowercase normalization
-    expect(bpm).toBe(GENRE_REGISTRY.jazz.bpm.typical);
+    expect(bpm).toBe(GENRE_REGISTRY.jazz.bpm!.typical);
   });
 });
 

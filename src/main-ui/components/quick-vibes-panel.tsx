@@ -24,7 +24,7 @@ const getDescriptionHelperText = (
 ): string => {
   if (isRefineMode) {
     if (category) return `Will refine toward "${getCategoryLabel(category)}". Add feedback or leave blank.`;
-    if (isDirectMode) return "Styles are fixed. Update description to regenerate the title.";
+    if (isDirectMode) return "Update Suno V5 styles above and/or update the description to regenerate the title.";
     return "Describe how you'd like to adjust the current vibe, or select a category above.";
   }
   if (isDirectMode) return "Used to generate a title. Styles are output exactly as selected.";

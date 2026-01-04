@@ -1,10 +1,16 @@
 import { useCallback } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type DebugInfo, type QuickVibesInput, type QuickVibesCategory } from '@shared/types';
-import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
-import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import { type PromptSession, type DebugInfo, type QuickVibesInput, type QuickVibesCategory } from '@shared/types';
+import { type ValidationResult } from '@shared/validation';
+import { type ChatMessage } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
 import type { GeneratingAction } from '@/hooks/use-generation-state';
+import {
+  completeSessionUpdate,
+  handleGenerationError,
+  addUserMessage,
+  type SessionDeps,
+} from '@/lib/session-helpers';
 
 const log = createLogger('QuickVibes');
 
@@ -17,10 +23,9 @@ type QuickVibesActionsConfig = {
   setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
-  resetQuickVibesInput: () => void;
   setPendingInput: (input: string) => void;
   withWordlessVocals: boolean;
-  quickVibesInput: QuickVibesInput;
+  getQuickVibesInput: () => QuickVibesInput;
 };
 
 export function useQuickVibesActions(config: QuickVibesActionsConfig) {
@@ -33,11 +38,21 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     setDebugInfo,
     setChatMessages,
     setValidation,
-    resetQuickVibesInput,
     setPendingInput,
     withWordlessVocals,
-    quickVibesInput,
+    getQuickVibesInput,
   } = config;
+
+  const sessionDeps: SessionDeps = {
+    currentSession,
+    generateId,
+    saveSession,
+    setDebugInfo,
+    setChatMessages,
+    setValidation,
+    setGeneratingAction,
+    log,
+  };
 
   const handleGenerateQuickVibes = useCallback(async (
     category: QuickVibesCategory | null,
@@ -55,62 +70,25 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         throw new Error("Invalid result received from Quick Vibes generation");
       }
 
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
       const originalInput = sunoStyles.length > 0
         ? `[Suno V5] ${sunoStyles.join(', ')}`
         : [category ? `[${category}]` : null, customDescription || null]
             .filter(Boolean).join(' ') || 'Quick Vibes';
 
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        title: result.title,
-        timestamp: now,
-      };
-
-      const isNewSession = !currentSession;
-      const updatedSession: PromptSession = isNewSession
-        ? {
-            id: generateId(),
-            originalInput,
-            currentPrompt: result.prompt,
-            currentTitle: result.title,
-            versionHistory: [newVersion],
-            createdAt: now,
-            updatedAt: now,
-            promptMode: 'quickVibes',
-            quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles },
-          }
-        : {
-            ...currentSession,
-            currentPrompt: result.prompt,
-            currentTitle: result.title,
-            versionHistory: [...currentSession.versionHistory, newVersion],
-            updatedAt: now,
-            promptMode: 'quickVibes',
-            quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles },
-          };
-
-      if (isNewSession) {
-        setChatMessages(buildChatMessages(updatedSession));
-      } else {
-        setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt generated." }]);
-      }
-
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
-      resetQuickVibesInput();
+      await completeSessionUpdate(
+        sessionDeps,
+        result,
+        originalInput,
+        'quickVibes',
+        { quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles } },
+        "Quick Vibes prompt generated."
+      );
     } catch (error) {
-      log.error("generateQuickVibes:failed", error);
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate Quick Vibes"}.` },
-      ]);
+      handleGenerationError(error, "generate Quick Vibes", setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, generateId, saveSession, resetQuickVibesInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
 
   const handleRemixQuickVibes = useCallback(async () => {
     if (isGenerating) return;
@@ -124,10 +102,10 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     if (isGenerating) return;
     if (!currentSession?.currentPrompt) return;
 
-    // Get stored input from session (not current UI state which may be reset)
+    const quickVibesInput = getQuickVibesInput();
     const storedInput = currentSession.quickVibesInput;
     
-    // Calculate effective values once (UI state if changed, otherwise stored session)
+    // Calculate effective values (UI state if changed, otherwise stored session)
     const effectiveSunoStyles = quickVibesInput.sunoStyles.length > 0
       ? quickVibesInput.sunoStyles
       : storedInput?.sunoStyles ?? [];
@@ -135,7 +113,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
 
     try {
       setGeneratingAction('quickVibes');
-      setChatMessages(prev => [...prev, { role: "user", content: input }]);
+      addUserMessage(setChatMessages, input);
 
       const result = await api.refineQuickVibes({
         currentPrompt: currentSession.currentPrompt,
@@ -151,44 +129,28 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         throw new Error("Invalid result received from Quick Vibes refinement");
       }
 
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        title: result.title,
-        timestamp: now,
+      const quickVibesInputUpdate = {
+        category: storedInput?.category ?? null,
+        customDescription: effectiveDescription,
+        withWordlessVocals: storedInput?.withWordlessVocals ?? false,
+        sunoStyles: effectiveSunoStyles,
       };
 
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        currentPrompt: result.prompt,
-        currentTitle: result.title,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
-        quickVibesInput: {
-          category: storedInput?.category ?? null,
-          customDescription: effectiveDescription,
-          withWordlessVocals: storedInput?.withWordlessVocals ?? false,
-          sunoStyles: effectiveSunoStyles,
-        },
-      };
-
-      setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt refined." }]);
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
+      await completeSessionUpdate(
+        sessionDeps,
+        result,
+        currentSession.originalInput,
+        'quickVibes',
+        { quickVibesInput: quickVibesInputUpdate },
+        "Quick Vibes prompt refined."
+      );
       setPendingInput("");
-      resetQuickVibesInput();
     } catch (error) {
-      log.error("refineQuickVibes:failed", error);
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to refine Quick Vibes"}.` },
-      ]);
+      handleGenerationError(error, "refine Quick Vibes", setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, withWordlessVocals, quickVibesInput.customDescription, quickVibesInput.sunoStyles, saveSession, resetQuickVibesInput, setPendingInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [getQuickVibesInput, isGenerating, currentSession, withWordlessVocals, saveSession, setPendingInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
 
   return {
     handleGenerateQuickVibes,

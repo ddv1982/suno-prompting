@@ -1,5 +1,6 @@
 import { generateText, type LanguageModel } from 'ai';
 import { APP_CONSTANTS } from '@shared/constants';
+import { getErrorMessage } from '@shared/errors';
 import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
 import { createLogger } from '@bun/logger';
 
@@ -35,7 +36,7 @@ export async function generateTitle(
       model: getModel(),
       system: systemPrompt,
       prompt: userPrompt,
-      maxRetries: 3,
+      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });
 
@@ -44,7 +45,7 @@ export async function generateTitle(
       debugInfo,
     };
   } catch (error) {
-    log.warn('generateTitle:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('generateTitle:failed', { error: getErrorMessage(error) });
     return { title: 'Untitled', debugInfo };
   }
 }
@@ -65,13 +66,13 @@ export async function generateLyrics(
       model: getModel(),
       system: systemPrompt,
       prompt: userPrompt,
-      maxRetries: 3,
+      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });
 
     return { lyrics: text.trim(), debugInfo };
   } catch (error) {
-    log.warn('generateLyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('generateLyrics:failed', { error: getErrorMessage(error) });
     return { lyrics: '[VERSE]\nLyrics generation failed...', debugInfo };
   }
 }

@@ -1,1 +1,3 @@
 bun run readme:check
+bun run typecheck
+bun run test

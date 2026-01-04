@@ -13,6 +13,12 @@ import { useQuickVibesActions } from '@/hooks/use-quick-vibes-actions';
 import { useCreativeBoostActions } from '@/hooks/use-creative-boost-actions';
 import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import { useToast } from '@/components/ui/toast';
+import {
+  createVersion,
+  updateChatMessagesAfterGeneration,
+  handleGenerationError,
+  addUserMessage,
+} from '@/lib/session-helpers';
 
 const log = createLogger('Generation');
 
@@ -54,7 +60,7 @@ export const useGenerationContext = () => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, promptMode, withWordlessVocals, quickVibesInput, advancedSelection, creativeBoostInput } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput, setWithWordlessVocals, promptMode, withWordlessVocals, advancedSelection, creativeBoostInput } = useEditorContext();
   const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
 
@@ -90,10 +96,9 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     setDebugInfo,
     setChatMessages,
     setValidation,
-    resetQuickVibesInput,
     setPendingInput,
     withWordlessVocals,
-    quickVibesInput,
+    getQuickVibesInput,
   });
 
   const creativeBoostActions = useCreativeBoostActions({
@@ -117,7 +122,15 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     setChatMessages(buildChatMessages(session));
     setValidation({ ...EMPTY_VALIDATION });
     setLyricsTopic(session.lyricsTopic || "");
-  }, [setCurrentSession, setLyricsTopic]);
+
+    if (session.promptMode === 'quickVibes' && session.quickVibesInput) {
+      setQuickVibesInput(session.quickVibesInput);
+      setWithWordlessVocals(session.quickVibesInput.withWordlessVocals ?? false);
+    } else {
+      resetQuickVibesInput();
+      setWithWordlessVocals(false);
+    }
+  }, [resetQuickVibesInput, setChatMessages, setCurrentSession, setLyricsTopic, setQuickVibesInput, setValidation, setWithWordlessVocals]);
 
   const newProject = useCallback(() => {
     setCurrentSession(null);
@@ -137,15 +150,11 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     setDebugInfo(result.debugInfo);
     const now = new Date().toISOString();
-    const newVersion: PromptVersion = {
-      id: result.versionId,
-      content: result.prompt,
-      title: result.title,
-      lyrics: result.lyrics,
-      feedback: feedbackLabel,
-      lockedPhrase,
-      timestamp: now,
-    };
+    
+    const baseVersion = createVersion(result, feedbackLabel);
+    const newVersion: PromptVersion = lockedPhrase 
+      ? { ...baseVersion, lockedPhrase } 
+      : baseVersion;
 
     const updatedSession: PromptSession = isNewSession || !currentSession
       ? {
@@ -168,12 +177,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
           updatedAt: now,
         };
 
-    if (isNewSession) {
-      setChatMessages(buildChatMessages(updatedSession));
-    } else {
-      setChatMessages(prev => [...prev, { role: "ai", content: successMessage }]);
-    }
-
+    updateChatMessagesAfterGeneration(setChatMessages, updatedSession, isNewSession, successMessage);
     setValidation(result.validation);
     await saveSession(updatedSession);
   }, [currentSession, generateId, saveSession]);
@@ -192,12 +196,10 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     setDebugInfo(conversionDebugInfo);
     const now = new Date().toISOString();
 
-    const newVersion: PromptVersion = {
-      id: versionId,
-      content: convertedPrompt,
-      feedback: feedback || '[auto-converted to max format]',
-      timestamp: now,
-    };
+    const newVersion = createVersion(
+      { prompt: convertedPrompt, versionId },
+      feedback || '[auto-converted to max format]'
+    );
 
     const isNewSession = !currentSession;
     const updatedSession: PromptSession = isNewSession
@@ -216,12 +218,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
           updatedAt: now,
         };
 
-    if (isNewSession) {
-      setChatMessages(buildChatMessages(updatedSession));
-    } else {
-      setChatMessages(prev => [...prev, { role: "ai", content: "Converted to Max Mode format." }]);
-    }
-
+    updateChatMessagesAfterGeneration(setChatMessages, updatedSession, isNewSession, "Converted to Max Mode format.");
     setValidation({ ...EMPTY_VALIDATION });
     await saveSession(updatedSession);
   }, [currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation]);
@@ -245,7 +242,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     try {
       setGeneratingAction('generate');
       if (!isInitial) {
-        setChatMessages(prev => [...prev, { role: "user", content: input }]);
+        addUserMessage(setChatMessages, input);
       }
 
       // Max Mode conversion: only if input looks like a structured prompt (not a simple description)
@@ -303,11 +300,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       setPendingInput("");
       setLyricsTopic("");
     } catch (error) {
-      log.error("generate:failed", error);
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate prompt"}.` },
-      ]);
+      handleGenerationError(error, "generate prompt", setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }
@@ -341,11 +334,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
         currentSession.lyricsTopic
       );
     } catch (error) {
-      log.error("remix:failed", error);
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix prompt"}.` },
-      ]);
+      handleGenerationError(error, "remix prompt", setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }

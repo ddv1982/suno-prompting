@@ -1,10 +1,17 @@
 import { useCallback } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion, type DebugInfo, type CreativeBoostInput } from '@shared/types';
-import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
-import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import { type PromptSession, type DebugInfo, type CreativeBoostInput } from '@shared/types';
+import { type ValidationResult } from '@shared/validation';
+import { type ChatMessage } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
+import { getErrorMessage } from '@shared/errors';
 import type { GeneratingAction } from '@/hooks/use-generation-state';
+import {
+  completeSessionUpdate,
+  handleGenerationError,
+  addUserMessage,
+  type SessionDeps,
+} from '@/lib/session-helpers';
 
 const log = createLogger('CreativeBoost');
 
@@ -59,6 +66,17 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
     lyricsMode,
   } = config;
 
+  const sessionDeps: SessionDeps = {
+    currentSession,
+    generateId,
+    saveSession,
+    setDebugInfo,
+    setChatMessages,
+    setValidation,
+    setGeneratingAction,
+    log,
+  };
+
   const handleGenerateCreativeBoost = useCallback(async () => {
     if (isGenerating) return;
 
@@ -79,59 +97,20 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
         throw new Error("Invalid result received from Creative Boost generation");
       }
 
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
       const originalInput = buildCreativeBoostOriginalInput(creativeBoostInput);
 
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        title: result.title,
-        lyrics: result.lyrics,
-        timestamp: now,
-      };
-
-      const isNewSession = !currentSession;
-      const updatedSession: PromptSession = isNewSession
-        ? {
-            id: generateId(),
-            originalInput,
-            currentPrompt: result.prompt,
-            currentTitle: result.title,
-            currentLyrics: result.lyrics,
-            versionHistory: [newVersion],
-            createdAt: now,
-            updatedAt: now,
-            promptMode: 'creativeBoost',
-            creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
-          }
-        : {
-            ...currentSession,
-            currentPrompt: result.prompt,
-            currentTitle: result.title,
-            currentLyrics: result.lyrics,
-            versionHistory: [...currentSession.versionHistory, newVersion],
-            updatedAt: now,
-            promptMode: 'creativeBoost',
-            creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
-          };
-
-      if (isNewSession) {
-        setChatMessages(buildChatMessages(updatedSession));
-      } else {
-        setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt generated." }]);
-      }
-
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
+      await completeSessionUpdate(
+        sessionDeps,
+        result,
+        originalInput,
+        'creativeBoost',
+        { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+        "Creative Boost prompt generated."
+      );
       showToast('Creative Boost generated!', 'success');
     } catch (error) {
-      log.error("generateCreativeBoost:failed", error);
-      showToast(error instanceof Error ? error.message : "Failed to generate Creative Boost", 'error');
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to generate Creative Boost"}.` },
-      ]);
+      handleGenerationError(error, "generate Creative Boost", setChatMessages, log);
+      showToast(getErrorMessage(error, "Failed to generate Creative Boost"), 'error');
     } finally {
       setGeneratingAction('none');
     }
@@ -143,7 +122,7 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
 
     try {
       setGeneratingAction('creativeBoost');
-      setChatMessages(prev => [...prev, { role: "user", content: feedback }]);
+      addUserMessage(setChatMessages, feedback);
 
       const result = await api.refineCreativeBoost({
         currentPrompt: currentSession.currentPrompt,
@@ -162,39 +141,20 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
         throw new Error("Invalid result received from Creative Boost refinement");
       }
 
-      setDebugInfo(result.debugInfo);
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: result.versionId,
-        content: result.prompt,
-        title: result.title,
-        lyrics: result.lyrics,
-        feedback,
-        timestamp: now,
-      };
-
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        currentPrompt: result.prompt,
-        currentTitle: result.title,
-        currentLyrics: result.lyrics,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
-        creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput),
-      };
-
-      setChatMessages(prev => [...prev, { role: "ai", content: "Creative Boost prompt refined." }]);
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
+      await completeSessionUpdate(
+        sessionDeps,
+        result,
+        currentSession.originalInput,
+        'creativeBoost',
+        { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+        "Creative Boost prompt refined.",
+        feedback
+      );
       setPendingInput("");
       showToast('Creative Boost refined!', 'success');
     } catch (error) {
-      log.error("refineCreativeBoost:failed", error);
-      showToast(error instanceof Error ? error.message : "Failed to refine Creative Boost", 'error');
-      setChatMessages(prev => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to refine Creative Boost"}.` },
-      ]);
+      handleGenerationError(error, "refine Creative Boost", setChatMessages, log);
+      showToast(getErrorMessage(error, "Failed to refine Creative Boost"), 'error');
     } finally {
       setGeneratingAction('none');
     }

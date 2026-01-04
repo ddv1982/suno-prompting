@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
+import { useRef } from 'react';
 import { 
   type EditorMode, 
   type AdvancedSelection, 
@@ -36,6 +37,7 @@ interface EditorContextType {
   lyricsTopic: string;
   computedMusicPhrase: string;
   quickVibesInput: QuickVibesInput;
+  getQuickVibesInput: () => QuickVibesInput;
   withWordlessVocals: boolean;
   creativeBoostInput: CreativeBoostInput;
   setEditorMode: (mode: EditorMode) => void;
@@ -71,9 +73,17 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
   const [lockedPhrase, setLockedPhrase] = useState("");
   const [pendingInput, setPendingInput] = useState("");
   const [lyricsTopic, setLyricsTopic] = useState("");
-  const [quickVibesInput, setQuickVibesInput] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
+  const [quickVibesInput, setQuickVibesInputState] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
+  const quickVibesInputRef = useRef<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
   const [withWordlessVocals, setWithWordlessVocals] = useState(false);
   const [creativeBoostInput, setCreativeBoostInput] = useState<CreativeBoostInput>(EMPTY_CREATIVE_BOOST_INPUT);
+
+  const setQuickVibesInput = useCallback((input: QuickVibesInput) => {
+    quickVibesInputRef.current = input;
+    setQuickVibesInputState(input);
+  }, []);
+
+  const getQuickVibesInput = useCallback(() => quickVibesInputRef.current, []);
 
   // Load promptMode once on mount - no reload, no race conditions
   useEffect(() => {
@@ -149,6 +159,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
       lyricsTopic,
       computedMusicPhrase,
       quickVibesInput,
+      getQuickVibesInput,
       withWordlessVocals,
       creativeBoostInput,
       setEditorMode,

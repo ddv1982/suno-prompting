@@ -29,15 +29,23 @@ export function QuickVibesOutput({
   onCopy,
   onDebugOpen,
 }: QuickVibesOutputProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
+  const [copiedTitle, setCopiedTitle] = useState(false);
   const contentOnly = stripMaxModeHeader(prompt);
   const charCount = contentOnly.length;
   const isOverLimit = charCount > APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 
-  const handleCopy = () => {
+  const handleCopyPrompt = () => {
     onCopy();
-    setCopied(true);
-    setTimeout(() => setCopied(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    setCopiedPrompt(true);
+    setTimeout(() => setCopiedPrompt(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+  };
+
+  const handleCopyTitle = () => {
+    if (!title) return;
+    navigator.clipboard.writeText(title);
+    setCopiedTitle(true);
+    setTimeout(() => setCopiedTitle(false), APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
   return (
@@ -78,6 +86,21 @@ export function QuickVibesOutput({
               DEBUG
             </Button>
           )}
+          {title && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyTitle}
+              disabled={isGenerating}
+              className={cn(
+                "font-bold",
+                copiedTitle && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
+              )}
+            >
+              {copiedTitle ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedTitle ? "COPIED TITLE" : "COPY TITLE"}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -91,14 +114,14 @@ export function QuickVibesOutput({
           <Button
             variant="outline"
             size="sm"
-            onClick={handleCopy}
+            onClick={handleCopyPrompt}
             className={cn(
               "font-bold",
-              copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
+              copiedPrompt && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
             )}
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? "COPIED" : "COPY"}
+            {copiedPrompt ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copiedPrompt ? "COPIED PROMPT" : "COPY PROMPT"}
           </Button>
           </div>
         </Card>

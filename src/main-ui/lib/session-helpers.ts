@@ -1,6 +1,9 @@
 import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
+import { getErrorMessage } from '@shared/errors';
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import type { GeneratingAction } from '@/hooks/use-generation-state';
+import type { Logger } from '@/lib/logger';
 
 export type GenerationResultBase = {
   prompt: string;
@@ -10,18 +13,20 @@ export type GenerationResultBase = {
   debugInfo?: Partial<DebugInfo>;
 };
 
-export type SessionUpdateParams = {
-  currentSession: PromptSession | null;
-  result: GenerationResultBase;
-  originalInput: string;
-  promptMode: PromptMode;
-  generateId: () => string;
-  feedback?: string;
-};
-
 export type ModeInputUpdate = {
   quickVibesInput?: QuickVibesInput;
   creativeBoostInput?: CreativeBoostInput;
+};
+
+export type SessionDeps = {
+  currentSession: PromptSession | null;
+  generateId: () => string;
+  saveSession: (session: PromptSession) => Promise<void>;
+  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
+  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  setValidation: (v: ValidationResult) => void;
+  setGeneratingAction: (action: GeneratingAction) => void;
+  log: Logger;
 };
 
 /**
@@ -42,13 +47,18 @@ export function createVersion(
 }
 
 /**
- * Creates or updates a session with new generation result
+ * Creates or updates a session with new generation result.
+ * Handles both new session creation and existing session updates.
  */
 export function createOrUpdateSession(
-  params: SessionUpdateParams,
-  modeInput: ModeInputUpdate
+  currentSession: PromptSession | null,
+  result: GenerationResultBase,
+  originalInput: string,
+  promptMode: PromptMode,
+  generateId: () => string,
+  modeInput: ModeInputUpdate,
+  feedback?: string
 ): { session: PromptSession; isNew: boolean } {
-  const { currentSession, result, originalInput, promptMode, generateId, feedback } = params;
   const now = new Date().toISOString();
   const newVersion = createVersion(result, feedback);
   const isNew = !currentSession;
@@ -97,30 +107,74 @@ export function updateChatMessagesAfterGeneration(
 }
 
 /**
- * Handles errors in generation/refine actions
+ * Handles errors in generation/refine actions.
+ * Logs the error and updates chat with error message.
  */
 export function handleGenerationError(
   error: unknown,
   actionName: string,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  log: { error: (msg: string, err: unknown) => void }
-): string {
-  const errorMessage = error instanceof Error ? error.message : `Failed to ${actionName}`;
+  log: Logger
+): void {
+  const errorMessage = getErrorMessage(error, `Failed to ${actionName}`);
   log.error(`${actionName}:failed`, error);
   setChatMessages(prev => [
     ...prev,
     { role: "ai", content: `Error: ${errorMessage}.` },
   ]);
-  return errorMessage;
 }
 
 /**
- * Common post-generation cleanup
+ * Common post-generation cleanup (finally block)
  */
 export function postGenerationCleanup(
   setValidation: (v: ValidationResult) => void,
-  setGeneratingAction: (action: 'none') => void
+  setGeneratingAction: (action: GeneratingAction) => void
 ): void {
   setValidation({ ...EMPTY_VALIDATION });
   setGeneratingAction('none');
+}
+
+/**
+ * Adds a user message to chat history
+ */
+export function addUserMessage(
+  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
+  content: string
+): void {
+  setChatMessages(prev => [...prev, { role: "user", content }]);
+}
+
+/**
+ * Complete session update flow after successful generation.
+ * Combines: debugInfo update, session create/update, chat update, validation reset, save.
+ */
+export async function completeSessionUpdate(
+  deps: SessionDeps,
+  result: GenerationResultBase,
+  originalInput: string,
+  promptMode: PromptMode,
+  modeInput: ModeInputUpdate,
+  successMessage: string,
+  feedback?: string
+): Promise<PromptSession> {
+  const { currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation } = deps;
+  
+  setDebugInfo(result.debugInfo);
+  
+  const { session, isNew } = createOrUpdateSession(
+    currentSession,
+    result,
+    originalInput,
+    promptMode,
+    generateId,
+    modeInput,
+    feedback
+  );
+  
+  updateChatMessagesAfterGeneration(setChatMessages, session, isNew, successMessage);
+  setValidation({ ...EMPTY_VALIDATION });
+  await saveSession(session);
+  
+  return session;
 }

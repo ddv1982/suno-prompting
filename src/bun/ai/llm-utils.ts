@@ -51,12 +51,17 @@ export async function generateDirectModeTitle(
   styles: string[],
   getModel: () => LanguageModel
 ): Promise<string> {
-  const { generateTitle } = await import('./content-generator');
-  
   try {
-    const titleSource = description || styles.join(', ');
+    const { generateTitle } = await import('./content-generator');
+
+    const cleanDescription = description.trim();
+    const styleText = styles.join(', ');
+    const titleDescription = cleanDescription
+      ? `${cleanDescription}\nSuno V5 styles: ${styleText}`
+      : `Suno V5 styles: ${styleText}`;
+
     const genre = styles[0] || 'music';
-    const result = await generateTitle(titleSource, genre, 'creative', getModel);
+    const result = await generateTitle(titleDescription, genre, 'creative', getModel);
     return result.title;
   } catch (error) {
     log.warn('generateDirectModeTitle:failed', {

@@ -13,7 +13,6 @@ import {
   COMBINATIONS_END,
   replaceCountMarker,
   validateAllMarkers,
-  COUNT_MARKERS,
 } from '../scripts/generate-readme-genre-table';
 
 function extractBetween(readme: string, startMarker: string, endMarker: string): string {

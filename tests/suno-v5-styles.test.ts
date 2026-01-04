@@ -22,7 +22,7 @@ describe('SUNO_V5_STYLES', () => {
   it('all styles are lowercase strings', () => {
     SUNO_V5_STYLES.forEach((style) => {
       expect(typeof style).toBe('string');
-      expect(style).toBe(style.toLowerCase());
+      expect(style as string).toBe(style.toLowerCase());
     });
   });
 
@@ -222,7 +222,7 @@ describe('edge cases', () => {
 
   it('no styles contain leading/trailing whitespace', () => {
     SUNO_V5_STYLES.forEach((style) => {
-      expect(style).toBe(style.trim());
+      expect(style as string).toBe(style.trim());
     });
   });
 

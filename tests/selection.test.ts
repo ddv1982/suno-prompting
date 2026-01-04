@@ -1,7 +1,7 @@
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
 import { z } from 'zod';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import { selectModes, selectModesWithLLM } from '@bun/instruments/selection';
+import { selectModes } from '@bun/instruments/selection';
 import type { LanguageModel } from 'ai';
 
 // Test the schema validation logic used in selection.ts
@@ -190,7 +190,7 @@ describe('selection', () => {
       const genres = Object.keys(GENRE_REGISTRY);
       for (const genre of genres.slice(0, 5)) { // Test first 5 to save time
         const result = await selectModes('test', mockModel, genre);
-        expect(result.genre).toBe(genre);
+        expect(result.genre).toBe(genre as typeof result.genre);
       }
     });
   });

@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
 import { api } from '@/services/rpc';
-import { type PromptSession, type PromptVersion } from '@shared/types';
+import { type PromptSession } from '@shared/types';
 import { type ValidationResult } from '@shared/validation';
 import { type ChatMessage } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
 import { type GeneratingAction } from './use-generation-state';
+import { handleGenerationError, createVersion } from '@/lib/session-helpers';
 
 const log = createLogger('RemixActions');
 
@@ -48,32 +49,23 @@ export function useRemixActions(deps: RemixActionDeps) {
         throw new Error(`Invalid result received from ${feedbackLabel}`);
       }
 
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: generateId(),
-        content: result.prompt,
-        title: currentSession.currentTitle,
-        lyrics: currentSession.currentLyrics,
-        feedback: `[${feedbackLabel}]`,
-        timestamp: now,
-      };
+      const newVersion = createVersion(
+        { ...result, title: currentSession.currentTitle, lyrics: currentSession.currentLyrics },
+        `[${feedbackLabel}]`
+      );
 
       const updatedSession: PromptSession = {
         ...currentSession,
         currentPrompt: result.prompt,
         versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
+        updatedAt: new Date().toISOString(),
       };
 
       setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
       setValidation(result.validation);
       await saveSession(updatedSession);
     } catch (error) {
-      log.error(`${feedbackLabel}:failed`, error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : `Failed to ${feedbackLabel}`}.` },
-      ]);
+      handleGenerationError(error, feedbackLabel, setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }
@@ -137,31 +129,22 @@ export function useRemixActions(deps: RemixActionDeps) {
       setGeneratingAction('remixTitle');
       const result = await api.remixTitle(currentSession.currentPrompt, currentSession.originalInput);
 
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: generateId(),
-        content: currentSession.currentPrompt,
-        title: result.title,
-        lyrics: currentSession.currentLyrics,
-        feedback: '[title remix]',
-        timestamp: now,
-      };
+      const newVersion = createVersion(
+        { prompt: currentSession.currentPrompt, versionId: generateId(), title: result.title, lyrics: currentSession.currentLyrics },
+        '[title remix]'
+      );
 
       const updatedSession: PromptSession = {
         ...currentSession,
         currentTitle: result.title,
         versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
+        updatedAt: new Date().toISOString(),
       };
 
       setChatMessages((prev) => [...prev, { role: "ai", content: "Title remixed." }]);
       await saveSession(updatedSession);
     } catch (error) {
-      log.error("remixTitle:failed", error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix title"}.` },
-      ]);
+      handleGenerationError(error, "remix title", setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }
@@ -175,31 +158,22 @@ export function useRemixActions(deps: RemixActionDeps) {
       setGeneratingAction('remixLyrics');
       const result = await api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput, currentSession.lyricsTopic);
 
-      const now = new Date().toISOString();
-      const newVersion: PromptVersion = {
-        id: generateId(),
-        content: currentSession.currentPrompt,
-        title: currentSession.currentTitle,
-        lyrics: result.lyrics,
-        feedback: '[lyrics remix]',
-        timestamp: now,
-      };
+      const newVersion = createVersion(
+        { prompt: currentSession.currentPrompt, versionId: generateId(), title: currentSession.currentTitle, lyrics: result.lyrics },
+        '[lyrics remix]'
+      );
 
       const updatedSession: PromptSession = {
         ...currentSession,
         currentLyrics: result.lyrics,
         versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: now,
+        updatedAt: new Date().toISOString(),
       };
 
       setChatMessages((prev) => [...prev, { role: "ai", content: "Lyrics remixed." }]);
       await saveSession(updatedSession);
     } catch (error) {
-      log.error("remixLyrics:failed", error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "ai", content: `Error: ${error instanceof Error ? error.message : "Failed to remix lyrics"}.` },
-      ]);
+      handleGenerationError(error, "remix lyrics", setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }

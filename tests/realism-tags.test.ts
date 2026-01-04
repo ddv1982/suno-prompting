@@ -26,7 +26,7 @@ describe('realism-tags', () => {
     });
 
     it('has non-empty arrays for each category', () => {
-      for (const [category, tags] of Object.entries(REALISM_TAGS)) {
+      for (const [, tags] of Object.entries(REALISM_TAGS)) {
         expect(Array.isArray(tags)).toBe(true);
         expect(tags.length).toBeGreaterThan(0);
       }
@@ -52,7 +52,7 @@ describe('realism-tags', () => {
     });
 
     it('has non-empty arrays for each category', () => {
-      for (const [category, tags] of Object.entries(ELECTRONIC_CLARITY_TAGS)) {
+      for (const [, tags] of Object.entries(ELECTRONIC_CLARITY_TAGS)) {
         expect(Array.isArray(tags)).toBe(true);
         expect(tags.length).toBeGreaterThan(0);
       }
@@ -141,7 +141,7 @@ describe('realism-tags', () => {
 
     it('returns valid tags from REALISM_TAGS', () => {
       const tags = selectRealismTags('blues', 10);
-      const allRealismTags = Object.values(REALISM_TAGS).flat();
+      const allRealismTags = Object.values(REALISM_TAGS).flat() as string[];
       for (const tag of tags) {
         expect(allRealismTags).toContain(tag);
       }
@@ -162,7 +162,7 @@ describe('realism-tags', () => {
 
     it('returns valid tags from ELECTRONIC_CLARITY_TAGS', () => {
       const tags = selectElectronicTags(10);
-      const allElectronicTags = Object.values(ELECTRONIC_CLARITY_TAGS).flat();
+      const allElectronicTags = Object.values(ELECTRONIC_CLARITY_TAGS).flat() as string[];
       for (const tag of tags) {
         expect(allElectronicTags).toContain(tag);
       }
@@ -221,8 +221,9 @@ describe('realism-tags', () => {
 
     it('returns valid descriptors from RECORDING_DESCRIPTORS', () => {
       const descriptors = selectRecordingDescriptors(10);
+      const allDescriptors = RECORDING_DESCRIPTORS as readonly string[];
       for (const descriptor of descriptors) {
-        expect(RECORDING_DESCRIPTORS).toContain(descriptor);
+        expect(allDescriptors).toContain(descriptor);
       }
     });
   });
@@ -241,8 +242,9 @@ describe('realism-tags', () => {
 
     it('returns valid tags from GENERIC_STYLE_TAGS', () => {
       const tags = selectGenericTags(10);
+      const allTags = GENERIC_STYLE_TAGS as readonly string[];
       for (const tag of tags) {
-        expect(GENERIC_STYLE_TAGS).toContain(tag);
+        expect(allTags).toContain(tag);
       }
     });
   });

@@ -95,7 +95,7 @@ export async function refineQuickVibes(
   // ============ DIRECT MODE REFINE ============
   if (sunoStyles.length > 0) {
     log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description });
-    const titleSource = description || feedback;
+    const titleSource = (description?.trim() || feedback.trim() || '').trim();
     const title = await generateDirectModeTitle(titleSource, sunoStyles, config.getModel);
     return buildDirectModeResult(sunoStyles, title, description, 'DIRECT_MODE_REFINE: Styles updated, title regenerated.', config);
   }
