@@ -346,7 +346,7 @@ export async function refineCreativeBoost(
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
-  const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback, lyricsTopic);
+  const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres);
 
   const rawResponse = await callLLM({
     getModel: config.getModel,

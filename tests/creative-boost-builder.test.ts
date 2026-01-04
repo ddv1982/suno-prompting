@@ -492,4 +492,55 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
     expect(prompt).toContain('"spaced topic"');
     expect(prompt).not.toContain('"  spaced topic  "');
   });
+
+  describe('performance guidance', () => {
+    it('includes performance guidance when seedGenres provided', () => {
+      // ARRANGE
+      const seedGenres = ['jazz'];
+
+      // ACT
+      const prompt = buildCreativeBoostRefineUserPrompt(
+        'lo-fi jazz', 'Midnight Vibes', 'make it darker', undefined, seedGenres
+      );
+
+      // ASSERT
+      expect(prompt).toContain('PERFORMANCE GUIDANCE');
+      expect(prompt).toContain('Vocal style:');
+      expect(prompt).toContain('Production:');
+    });
+
+    it('includes performance guidance for compound genres', () => {
+      // ARRANGE
+      const seedGenres = ['ambient symphonic rock'];
+
+      // ACT
+      const prompt = buildCreativeBoostRefineUserPrompt(
+        'ambient rock', 'Ethereal', 'more energy', undefined, seedGenres
+      );
+
+      // ASSERT
+      expect(prompt).toContain('PERFORMANCE GUIDANCE');
+      expect(prompt).toContain('Vocal style:');
+    });
+
+    it('omits performance guidance when seedGenres empty', () => {
+      // ACT
+      const prompt = buildCreativeBoostRefineUserPrompt(
+        'ambient', 'Floating', 'add texture', undefined, []
+      );
+
+      // ASSERT
+      expect(prompt).not.toContain('PERFORMANCE GUIDANCE');
+    });
+
+    it('omits performance guidance when seedGenres undefined', () => {
+      // ACT
+      const prompt = buildCreativeBoostRefineUserPrompt(
+        'ambient', 'Floating', 'add texture'
+      );
+
+      // ASSERT
+      expect(prompt).not.toContain('PERFORMANCE GUIDANCE');
+    });
+  });
 });

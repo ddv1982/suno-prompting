@@ -202,18 +202,42 @@ RULES:
 
 /**
  * Builds the user prompt for Creative Boost refinement.
- * Always includes lyricsTopic when provided (gives context for refining).
+ * Includes performance guidance when seed genres are provided.
+ *
+ * @param currentPrompt - The current style/prompt being refined
+ * @param currentTitle - The current title
+ * @param feedback - User's refinement feedback
+ * @param lyricsTopic - Optional lyrics topic for context
+ * @param seedGenres - Optional seed genres for performance guidance
  */
 export function buildCreativeBoostRefineUserPrompt(
   currentPrompt: string,
   currentTitle: string,
   feedback: string,
-  lyricsTopic?: string
+  lyricsTopic?: string,
+  seedGenres?: string[]
 ): string {
   const parts = [
     `Current title: "${currentTitle}"`,
     `Current style: "${currentPrompt}"`,
   ];
+
+  // Performance guidance for refinement (matches initial generation)
+  if (seedGenres && seedGenres.length > 0) {
+    const primaryGenre = seedGenres[0];
+    if (primaryGenre) {
+      const guidance = buildPerformanceGuidance(primaryGenre);
+      if (guidance) {
+        parts.push('');
+        parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
+        parts.push(`Vocal style: ${guidance.vocal}`);
+        parts.push(`Production: ${guidance.production}`);
+        if (guidance.instruments.length > 0) {
+          parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+        }
+      }
+    }
+  }
 
   if (lyricsTopic?.trim()) {
     parts.push(`Lyrics topic: "${lyricsTopic.trim()}"`);
