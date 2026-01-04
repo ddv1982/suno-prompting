@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { parseVocalStyleDescriptorToTags } from '@bun/prompt/vocal-style-tags';
 
 describe('parseVocalStyleDescriptorToTags', () => {
-  it('parses range, delivery, and technique into deterministic tags', () => {
+  test('parses range, delivery, and technique into deterministic tags', () => {
     expect(parseVocalStyleDescriptorToTags('Soprano, Soft Delivery, Shouted Hooks')).toEqual([
       'soprano vocals',
       'soft vocals',
@@ -11,7 +11,7 @@ describe('parseVocalStyleDescriptorToTags', () => {
     ]);
   });
 
-  it('accepts an explicit "Vocal style:" prefix', () => {
+  test('accepts an explicit "Vocal style:" prefix', () => {
     expect(parseVocalStyleDescriptorToTags('Vocal style: Alto, Breathy Delivery, Shouted Hooks')).toEqual([
       'alto vocals',
       'breathy vocals',
@@ -19,7 +19,7 @@ describe('parseVocalStyleDescriptorToTags', () => {
     ]);
   });
 
-  it('drops unknown range and delivery values', () => {
+  test('drops unknown range and delivery values', () => {
     expect(parseVocalStyleDescriptorToTags('Contralto, Spooky Delivery, Shouted Hooks')).toEqual(['shouted hooks']);
   });
 });

@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { injectInstrumentTags } from '@bun/prompt/instruments-injection';
 
 describe('injectInstrumentTags', () => {
-  it('injects tags into max format instruments line and strips existing vocal items', () => {
+  test('injects tags into max format instruments line and strips existing vocal items', () => {
     const input = `[Is_MAX_MODE: MAX](MAX)
 [QUALITY: MAX](MAX)
 [REALISM: MAX](MAX)
@@ -28,7 +28,7 @@ recording: "studio"`;
     expect(lower).not.toContain('instruments: "baritone guitar, vocals');
   });
 
-  it('inserts Instruments line in non-max format when missing', () => {
+  test('inserts Instruments line in non-max format when missing', () => {
     const input = `[warm, smooth, groovy, jazz]
 
 Genre: jazz
