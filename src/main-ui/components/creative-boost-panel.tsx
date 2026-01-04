@@ -10,7 +10,7 @@ import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { cn } from "@/lib/utils";
-import { APP_CONSTANTS } from "@shared/constants";
+import { APP_CONSTANTS, getMaxModeHelperText } from "@shared/constants";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
@@ -260,11 +260,7 @@ export function CreativeBoostPanel({
           disabled={isGenerating || isDirectMode}
           showNaBadge={isDirectMode}
         />
-        {isDirectMode && (
-          <p className="ui-helper pl-6 -mt-1">
-            Max Mode not applicable with Suno V5 Styles
-          </p>
-        )}
+        <p className="ui-helper pl-6">{getMaxModeHelperText(isDirectMode, maxMode)}</p>
         <ToggleRow
           id="cb-lyrics"
           icon={<FileText className="w-3.5 h-3.5" />}

@@ -6,6 +6,17 @@ export const CREATIVITY_LEVEL_HELPER_TEXT = {
     high: 'Experimental - may invent new genre fusions!',
 } as const;
 
+export const MAX_MODE_HELPER_TEXT = {
+    enabled: 'Creates a slightly different flavour with real instruments and subtle realism tags. Can be really nice!',
+    disabled: 'Keeps genres more pure and focused.',
+    directMode: 'Not applicable with Suno V5 Styles',
+} as const;
+
+export function getMaxModeHelperText(isDirectMode: boolean, maxMode: boolean): string {
+    if (isDirectMode) return MAX_MODE_HELPER_TEXT.directMode;
+    return maxMode ? MAX_MODE_HELPER_TEXT.enabled : MAX_MODE_HELPER_TEXT.disabled;
+}
+
 export const CREATIVITY_LEVEL_DISPLAY_NAMES = {
     low: 'Low',
     safe: 'Safe',

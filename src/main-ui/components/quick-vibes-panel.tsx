@@ -9,7 +9,7 @@ import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { cn } from "@/lib/utils";
-import { APP_CONSTANTS } from "@shared/constants";
+import { APP_CONSTANTS, getMaxModeHelperText } from "@shared/constants";
 import { QUICK_VIBES_CATEGORIES } from "@shared/quick-vibes-categories";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
@@ -211,14 +211,7 @@ export function QuickVibesPanel({
           disabled={isGenerating || isDirectMode}
           showNaBadge={isDirectMode}
         />
-        <p className="ui-helper pl-6">
-          {isDirectMode
-            ? "Not applicable with Suno V5 Styles"
-            : maxMode 
-              ? "Creates a slightly different flavour with real instruments and subtle realism tags. Can be really nice!"
-              : "Keeps quick vibe genres more pure and focused."
-          }
-        </p>
+        <p className="ui-helper pl-6">{getMaxModeHelperText(isDirectMode, maxMode)}</p>
       </div>
 
       {/* Generate / Refine Button */}
