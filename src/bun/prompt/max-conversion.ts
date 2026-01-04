@@ -295,12 +295,15 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
  * 2. seedGenres (if provided) - format using display names
  * 3. Detected from text (fallback)
+ *
+ * @param performanceInstruments - Optional instruments from performance guidance to use instead of genre fallback
  */
 export async function convertToMaxFormat(
   text: string,
   getModel: () => LanguageModel,
   seedGenres?: string[],
-  sunoStyles?: string[]
+  sunoStyles?: string[],
+  performanceInstruments?: string[]
 ): Promise<MaxConversionResult> {
   // Check if already in max format
   if (isMaxFormat(text)) {
@@ -320,7 +323,7 @@ export async function convertToMaxFormat(
   const aiResult = await enhanceWithAI(parsed, getModel);
 
   // Build instruments string with articulations (genre-aware defaults)
-  const instruments = enhanceInstruments(parsed.instruments, genre.forLookup);
+  const instruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildMaxFormatPrompt({

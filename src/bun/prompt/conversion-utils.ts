@@ -125,16 +125,21 @@ export function inferBpm(genre: string | null, useAliases = true): number {
  * Enhance instruments list with articulations.
  * If no instruments provided, selects genre-appropriate defaults.
  * Handles comma-separated multi-genre strings by using the first genre.
+ *
+ * Priority: parsed instruments > performance guidance > genre fallback
  */
 export function enhanceInstruments(
   instruments: string[],
   genre: string | null,
-  fallback = DEFAULT_INSTRUMENTS_FALLBACK
+  fallback = DEFAULT_INSTRUMENTS_FALLBACK,
+  performanceInstruments?: string[]
 ): string {
   let instrumentList = instruments;
   
-  // If no instruments provided, select genre-appropriate defaults
-  if (instrumentList.length === 0) {
+  // Priority: parsed > performance guidance > genre fallback
+  if (instrumentList.length === 0 && performanceInstruments?.length) {
+    instrumentList = performanceInstruments;
+  } else if (instrumentList.length === 0) {
     const firstGenre = genre ? extractFirstGenre(genre) : null;
     const normalizedGenre = firstGenre ? normalizeGenre(firstGenre) : null;
     

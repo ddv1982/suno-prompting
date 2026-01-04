@@ -1,6 +1,7 @@
-import { describe, it, expect, mock, beforeEach } from 'bun:test';
+import { describe, test, it, expect, mock, beforeEach } from 'bun:test';
 
 import { GENRE_REGISTRY } from '../src/bun/instruments/genres';
+import { enhanceInstruments } from '../src/bun/prompt/conversion-utils';
 import {
   isMaxFormat,
   parseNonMaxPrompt,
@@ -320,6 +321,74 @@ Verse content`;
     const prompt = 'Mood:   happy  ,  sad  ,  nostalgic  ';
     const parsed = parseNonMaxPrompt(prompt);
     expect(parsed.moods).toEqual(['happy', 'sad', 'nostalgic']);
+  });
+});
+
+// ============================================================================
+// enhanceInstruments with performanceInstruments
+// ============================================================================
+
+describe('enhanceInstruments priority', () => {
+  test('uses parsed instruments when provided', () => {
+    // Arrange
+    const parsedInstruments = ['piano', 'guitar'];
+    const performanceInstruments = ['synth strings', 'sidechain pad'];
+
+    // Act
+    const result = enhanceInstruments(parsedInstruments, 'jazz', undefined, performanceInstruments);
+
+    // Assert - parsed instruments should be used, not performance ones
+    expect(result).toContain('piano');
+    expect(result).toContain('guitar');
+    expect(result).not.toContain('synth strings');
+  });
+
+  test('uses performanceInstruments when parsed is empty', () => {
+    // Arrange
+    const parsedInstruments: string[] = [];
+    const performanceInstruments = ['synth strings', 'sidechain pad'];
+
+    // Act
+    const result = enhanceInstruments(parsedInstruments, 'jazz', undefined, performanceInstruments);
+
+    // Assert - performance instruments should be used
+    expect(result).toContain('synth strings');
+    expect(result).toContain('sidechain pad');
+  });
+
+  test('falls back to genre selection when both are empty', () => {
+    // Arrange
+    const parsedInstruments: string[] = [];
+    const performanceInstruments: string[] = [];
+
+    // Act
+    const result = enhanceInstruments(parsedInstruments, 'jazz', undefined, performanceInstruments);
+
+    // Assert - should have some instruments (from genre fallback)
+    expect(result.length).toBeGreaterThan(0);
+    expect(result).not.toBe('ambient pad, subtle textures'); // not the default fallback
+  });
+
+  test('uses default fallback for unknown genre when both are empty', () => {
+    // Arrange
+    const parsedInstruments: string[] = [];
+
+    // Act
+    const result = enhanceInstruments(parsedInstruments, 'unknowngenre', 'my fallback');
+
+    // Assert - uses custom fallback
+    expect(result).toBe('my fallback');
+  });
+
+  test('handles undefined performanceInstruments', () => {
+    // Arrange
+    const parsedInstruments: string[] = [];
+
+    // Act
+    const result = enhanceInstruments(parsedInstruments, 'jazz', undefined, undefined);
+
+    // Assert - should use genre fallback
+    expect(result.length).toBeGreaterThan(0);
   });
 });
 
@@ -669,5 +738,78 @@ Genre: Rock`;
 
     expect(result.wasConverted).toBe(true);
     expect(result.convertedPrompt).toContain('genre: "afro trap r&b, hawaiian r&b"');
+  });
+});
+
+// ============================================================================
+// convertToMaxFormat with performanceInstruments
+// ============================================================================
+
+describe('convertToMaxFormat with performanceInstruments', () => {
+  const mockGetModel = () => ({} as any);
+
+  beforeEach(() => {
+    mockGenerateText.mockClear();
+    mockGenerateText.mockImplementation(async () => ({
+      text: '{"styleTags": "studio polish, warm analog", "recording": "intimate studio session"}',
+    }));
+  });
+
+  test('uses performanceInstruments in output when no instruments parsed', async () => {
+    // Arrange - free-form style text with no explicit Instruments: line
+    const prompt = 'A dreamy soundscape with lush textures';
+
+    // Act
+    const result = await convertToMaxFormat(
+      prompt,
+      mockGetModel,
+      ['afrobeat'],  // seedGenres
+      [],            // no sunoStyles
+      ['synth strings', 'sidechain pad']  // performanceInstruments
+    );
+
+    // Assert
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('synth strings');
+    expect(result.convertedPrompt).toContain('sidechain pad');
+  });
+
+  test('uses parsed instruments over performanceInstruments', async () => {
+    // Arrange - prompt with explicit Instruments: line
+    const prompt = `A rock anthem
+Instruments: electric guitar, drums`;
+
+    // Act
+    const result = await convertToMaxFormat(
+      prompt,
+      mockGetModel,
+      ['rock'],
+      [],
+      ['synth strings', 'sidechain pad']  // should be ignored
+    );
+
+    // Assert - parsed instruments should be used
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('guitar');
+    expect(result.convertedPrompt).toContain('drums');
+    expect(result.convertedPrompt).not.toContain('synth strings');
+  });
+
+  test('handles undefined performanceInstruments', async () => {
+    // Arrange
+    const prompt = 'A free-form style';
+
+    // Act
+    const result = await convertToMaxFormat(
+      prompt,
+      mockGetModel,
+      ['jazz'],
+      [],
+      undefined  // no performance instruments
+    );
+
+    // Assert - should use genre fallback (jazz instruments)
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('instruments:');
   });
 });

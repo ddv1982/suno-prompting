@@ -11,6 +11,7 @@ import {
   buildCreativeBoostRefineSystemPrompt,
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
+import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
@@ -34,13 +35,14 @@ async function applyMaxModeConversion(
   maxMode: boolean,
   getModel: () => LanguageModel,
   seedGenres?: string[],
-  sunoStyles?: string[]
+  sunoStyles?: string[],
+  performanceInstruments?: string[]
 ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
   if (maxMode) {
-    const result = await convertToMaxFormat(style, getModel, seedGenres, sunoStyles);
+    const result = await convertToMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments);
     return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   } else {
-    const result = await convertToNonMaxFormat(style, getModel, seedGenres, sunoStyles);
+    const result = await convertToNonMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments);
     return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   }
 }
@@ -90,16 +92,17 @@ type PostProcessParams = {
   userPrompt: string;
   rawResponse: string;
   config: CreativeBoostEngineConfig;
+  performanceInstruments?: string[];
 };
 
 async function postProcessCreativeBoostResponse(
   parsed: { style: string; title: string },
   params: PostProcessParams
 ): Promise<GenerationResult> {
-  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config } = params;
+  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments } = params;
 
   const { styleResult, debugInfo: maxConversionDebugInfo } = await applyMaxModeConversion(
-    parsed.style, maxMode, config.getModel, seedGenres, sunoStyles
+    parsed.style, maxMode, config.getModel, seedGenres, sunoStyles, performanceInstruments
   );
 
   const processedStyle = await enforceMaxLength(styleResult, config.getModel);
@@ -295,6 +298,11 @@ export async function generateCreativeBoost(
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description, lyricsTopic);
 
+  // Compute performance instruments from primary seed genre
+  const primaryGenre = seedGenres[0];
+  const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
+  const performanceInstruments = guidance?.instruments;
+
   const rawResponse = await callLLM({
     getModel: config.getModel,
     systemPrompt,
@@ -316,6 +324,7 @@ export async function generateCreativeBoost(
     userPrompt,
     rawResponse,
     config,
+    performanceInstruments,
   });
 }
 
@@ -348,6 +357,11 @@ export async function refineCreativeBoost(
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres);
 
+  // Compute performance instruments from primary seed genre
+  const primaryGenre = seedGenres[0];
+  const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
+  const performanceInstruments = guidance?.instruments;
+
   const rawResponse = await callLLM({
     getModel: config.getModel,
     systemPrompt,
@@ -369,5 +383,6 @@ export async function refineCreativeBoost(
     userPrompt,
     rawResponse,
     config,
+    performanceInstruments,
   });
 }

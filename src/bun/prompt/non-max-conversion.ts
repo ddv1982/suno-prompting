@@ -309,12 +309,15 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
  * 2. seedGenres (if provided) - format using display names
  * 3. Detected from text (fallback)
+ *
+ * @param performanceInstruments - Optional instruments from performance guidance to use instead of genre fallback
  */
 export async function convertToNonMaxFormat(
   styleDescription: string,
   getModel: () => LanguageModel,
   seedGenres?: string[],
-  sunoStyles?: string[]
+  sunoStyles?: string[],
+  performanceInstruments?: string[]
 ): Promise<NonMaxConversionResult> {
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
@@ -332,7 +335,8 @@ export async function convertToNonMaxFormat(
   const instruments = enhanceInstruments(
     parsed.detectedInstruments, 
     genre.forLookup, 
-    'ambient textures, subtle pads'
+    'ambient textures, subtle pads',
+    performanceInstruments
   );
 
   // Build mood line
