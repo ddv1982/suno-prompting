@@ -317,7 +317,7 @@ export async function generateCreativeBoost(
   // ============ END DIRECT MODE BYPASS ============
 
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
-  const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description);
+  const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description, lyricsTopic);
 
   const rawResponse = await callLLM({
     getModel: config.getModel,
@@ -370,7 +370,7 @@ export async function refineCreativeBoost(
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
-  const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback);
+  const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback, lyricsTopic);
 
   const rawResponse = await callLLM({
     getModel: config.getModel,

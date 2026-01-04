@@ -84,12 +84,13 @@ RULES:
 
 /**
  * Builds the user prompt for Creative Boost generation.
- * Note: Lyrics topic is handled separately by generateLyrics().
+ * Uses lyricsTopic for title context only when description is empty.
  */
 export function buildCreativeBoostUserPrompt(
   creativityLevel: number,
   seedGenres: string[],
-  description: string
+  description: string,
+  lyricsTopic?: string
 ): string {
   const parts: string[] = [];
 
@@ -103,6 +104,9 @@ export function buildCreativeBoostUserPrompt(
 
   if (description.trim()) {
     parts.push(`User's description: "${description.trim()}"`);
+  } else if (lyricsTopic?.trim()) {
+    // Use lyrics topic for title context only when no description provided
+    parts.push(`Lyrics topic: "${lyricsTopic.trim()}"`);
   }
 
   parts.push('\nGenerate the creative prompt:');
@@ -181,19 +185,26 @@ RULES:
 
 /**
  * Builds the user prompt for Creative Boost refinement.
- * Note: Lyrics are generated separately, not refined inline.
+ * Always includes lyricsTopic when provided (gives context for refining).
  */
 export function buildCreativeBoostRefineUserPrompt(
   currentPrompt: string,
   currentTitle: string,
-  feedback: string
+  feedback: string,
+  lyricsTopic?: string
 ): string {
-  return `Current title: "${currentTitle}"
-Current style: "${currentPrompt}"
+  const parts = [
+    `Current title: "${currentTitle}"`,
+    `Current style: "${currentPrompt}"`,
+  ];
 
-User feedback: ${feedback}
+  if (lyricsTopic?.trim()) {
+    parts.push(`Lyrics topic: "${lyricsTopic.trim()}"`);
+  }
 
-Generate the refined prompt:`;
+  parts.push('', `User feedback: ${feedback}`, '', 'Generate the refined prompt:');
+
+  return parts.join('\n');
 }
 
 

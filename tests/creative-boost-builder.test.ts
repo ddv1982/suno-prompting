@@ -196,20 +196,50 @@ describe('buildCreativeBoostUserPrompt', () => {
     expect(prompt).not.toContain('User\'s description:');
   });
 
-  it('does not include lyrics topic (handled separately)', () => {
+  it('does not include lyrics topic when not provided', () => {
     const prompt = buildCreativeBoostUserPrompt(50, [], '');
     expect(prompt).not.toContain('Lyrics topic');
   });
 
-  it('includes all parts when fully populated', () => {
+  it('includes lyrics topic when no description provided', () => {
+    const prompt = buildCreativeBoostUserPrompt(50, ['jazz'], '', 'summer beach party');
+    expect(prompt).toContain('Lyrics topic: "summer beach party"');
+  });
+
+  it('omits lyrics topic when description is provided (description takes priority)', () => {
+    const prompt = buildCreativeBoostUserPrompt(50, ['jazz'], 'chill vibes', 'summer beach party');
+    expect(prompt).toContain('User\'s description: "chill vibes"');
+    expect(prompt).not.toContain('Lyrics topic');
+  });
+
+  it('trims whitespace from lyrics topic', () => {
+    const prompt = buildCreativeBoostUserPrompt(50, [], '', '  spaced topic  ');
+    expect(prompt).toContain('"spaced topic"');
+    expect(prompt).not.toContain('"  spaced topic  "');
+  });
+
+  it('omits lyrics topic when empty string', () => {
+    const prompt = buildCreativeBoostUserPrompt(50, [], '', '');
+    expect(prompt).not.toContain('Lyrics topic');
+  });
+
+  it('omits lyrics topic when whitespace only', () => {
+    const prompt = buildCreativeBoostUserPrompt(50, [], '', '   ');
+    expect(prompt).not.toContain('Lyrics topic');
+  });
+
+  it('includes all parts when description provided', () => {
     const prompt = buildCreativeBoostUserPrompt(
       80,
       ['rock', 'electronic'],
-      'energetic and dark'
+      'energetic and dark',
+      'epic battle scene'
     );
     expect(prompt).toContain('Creativity level: 80%');
     expect(prompt).toContain('rock, electronic');
     expect(prompt).toContain('energetic and dark');
+    // Lyrics topic NOT included because description takes priority
+    expect(prompt).not.toContain('Lyrics topic');
     expect(prompt).toContain('Generate the creative prompt');
   });
 
@@ -432,5 +462,34 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
     expect(prompt).toContain('Current title: "Night Rider"');
     expect(prompt).toContain('Current style: "electronic dance music"');
     expect(prompt).toContain('User feedback: darker and more intense');
+  });
+
+  it('includes lyrics topic when provided', () => {
+    const prompt = buildCreativeBoostRefineUserPrompt(
+      'lo-fi jazz', 'Midnight Vibes', 'make it darker', 'heartbreak in the city'
+    );
+    expect(prompt).toContain('Lyrics topic: "heartbreak in the city"');
+  });
+
+  it('omits lyrics topic when not provided', () => {
+    const prompt = buildCreativeBoostRefineUserPrompt(
+      'ambient', 'Floating', 'add more texture'
+    );
+    expect(prompt).not.toContain('Lyrics topic');
+  });
+
+  it('omits lyrics topic when empty string', () => {
+    const prompt = buildCreativeBoostRefineUserPrompt(
+      'ambient', 'Floating', 'add more texture', ''
+    );
+    expect(prompt).not.toContain('Lyrics topic');
+  });
+
+  it('trims whitespace from lyrics topic', () => {
+    const prompt = buildCreativeBoostRefineUserPrompt(
+      'jazz', 'Test', 'feedback', '  spaced topic  '
+    );
+    expect(prompt).toContain('"spaced topic"');
+    expect(prompt).not.toContain('"  spaced topic  "');
   });
 });
