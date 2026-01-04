@@ -8,10 +8,24 @@ import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
 
-// Set up application menu for macOS keyboard shortcuts (Cmd+C, Cmd+V, etc.)
+// Set up application menu for keyboard shortcuts (Cmd+C/Ctrl+C, Cmd+V/Ctrl+V, etc.)
+// Explicit menu definition ensures keyboard shortcuts are properly bound on all platforms
 ApplicationMenu.setApplicationMenu([
     { role: process.platform === 'darwin' ? 'appMenu' : 'fileMenu' },
-    { role: 'editMenu' },
+    {
+        label: "Edit",
+        submenu: [
+            { role: "undo" },
+            { role: "redo" },
+            { type: "separator" },
+            { role: "cut" },
+            { role: "copy" },
+            { role: "paste" },
+            { role: "pasteAndMatchStyle" },
+            { role: "delete" },
+            { role: "selectAll" },
+        ],
+    },
 ]);
 
 const aiEngine = new AIEngine();
