@@ -16,6 +16,7 @@ type SettingsHandlers = Pick<
   | 'getMaxMode' | 'setMaxMode'
   | 'getLyricsMode' | 'setLyricsMode'
   | 'getPromptMode' | 'setPromptMode'
+  | 'getCreativeBoostMode' | 'setCreativeBoostMode'
 >;
 
 export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManager): SettingsHandlers {
@@ -125,6 +126,16 @@ export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManag
     setPromptMode: async ({ promptMode }) => {
       log.info('setPromptMode', { promptMode });
       await storage.saveConfig({ promptMode });
+      return { success: true };
+    },
+    getCreativeBoostMode: async () => {
+      log.info('getCreativeBoostMode');
+      const config = await storage.getConfig();
+      return { creativeBoostMode: config.creativeBoostMode ?? 'simple' };
+    },
+    setCreativeBoostMode: async ({ creativeBoostMode }) => {
+      log.info('setCreativeBoostMode', { creativeBoostMode });
+      await storage.saveConfig({ creativeBoostMode });
       return { success: true };
     },
   };

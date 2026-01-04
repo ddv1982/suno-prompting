@@ -52,6 +52,7 @@ function createMockStorage() {
     maxMode: false,
     lyricsMode: false,
     promptMode: "full",
+    creativeBoostMode: "simple",
   };
 
   return {
@@ -253,6 +254,82 @@ describe("RPC Handlers", () => {
       expect(aiEngine.setDebugMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setMaxMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setLyricsMode).toHaveBeenCalledWith(true);
+    });
+  });
+
+  // ============================================================================
+  // Task 5.2: Creative Boost Mode Persistence Integration Tests
+  // ============================================================================
+
+  describe("creative boost mode handlers", () => {
+    test("getCreativeBoostMode returns default 'simple' when no persisted value", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.getCreativeBoostMode({});
+
+      expect(result.creativeBoostMode).toBe("simple");
+    });
+
+    test("setCreativeBoostMode persists value to storage", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.setCreativeBoostMode({ creativeBoostMode: "advanced" });
+
+      expect(result.success).toBe(true);
+      expect(storage.saveConfig).toHaveBeenCalledWith({ creativeBoostMode: "advanced" });
+    });
+
+    test("getCreativeBoostMode returns persisted value after set", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Set the mode
+      await handlers.setCreativeBoostMode({ creativeBoostMode: "advanced" });
+
+      // Get the mode
+      const result = await handlers.getCreativeBoostMode({});
+
+      expect(result.creativeBoostMode).toBe("advanced");
+    });
+
+    test("setCreativeBoostMode to 'simple' persists correctly", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // First set to advanced
+      await handlers.setCreativeBoostMode({ creativeBoostMode: "advanced" });
+      
+      // Then set back to simple
+      const result = await handlers.setCreativeBoostMode({ creativeBoostMode: "simple" });
+
+      expect(result.success).toBe(true);
+      expect(storage.saveConfig).toHaveBeenLastCalledWith({ creativeBoostMode: "simple" });
+    });
+
+    test("creativeBoostMode persists independently of promptMode", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Set creative boost mode to advanced
+      await handlers.setCreativeBoostMode({ creativeBoostMode: "advanced" });
+
+      // Set prompt mode (this should not affect creative boost mode)
+      await handlers.setPromptMode({ promptMode: "quickVibes" });
+
+      // Get creative boost mode - should still be advanced
+      const result = await handlers.getCreativeBoostMode({});
+      expect(result.creativeBoostMode).toBe("advanced");
+
+      // Get prompt mode - should be quickVibes
+      const promptModeResult = await handlers.getPromptMode({});
+      expect(promptModeResult.promptMode).toBe("quickVibes");
     });
   });
 

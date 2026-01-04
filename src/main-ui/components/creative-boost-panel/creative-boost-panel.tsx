@@ -5,13 +5,14 @@ import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
+import { CreativeBoostModeToggle } from "./creative-boost-mode-toggle";
 import { DescriptionInput } from "./description-input";
 import { DirectModeIndicator } from "./direct-mode-indicator";
 import { LyricsTopicInput } from "./lyrics-topic-input";
 import { SubmitButton } from "./submit-button";
 import { TogglesSection } from "./toggles-section";
 
-import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
+import type { CreativeBoostInput, CreativeBoostMode, CreativitySliderValue } from "@shared/types";
 
 type CreativeBoostPanelProps = {
   input: CreativeBoostInput;
@@ -19,6 +20,8 @@ type CreativeBoostPanelProps = {
   lyricsMode: boolean;
   isGenerating: boolean;
   hasCurrentPrompt: boolean;
+  creativeBoostMode: CreativeBoostMode;
+  onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
   onInputChange: (input: CreativeBoostInput) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
@@ -32,6 +35,8 @@ export function CreativeBoostPanel({
   lyricsMode,
   isGenerating,
   hasCurrentPrompt,
+  creativeBoostMode,
+  onCreativeBoostModeChange,
   onInputChange,
   onMaxModeChange,
   onLyricsModeChange,
@@ -40,6 +45,7 @@ export function CreativeBoostPanel({
 }: CreativeBoostPanelProps): ReactNode {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
+  const isSimpleMode = creativeBoostMode === 'simple';
 
   const handleCreativityChange = useCallback((value: CreativitySliderValue): void => {
     onInputChange({ ...input, creativityLevel: value });
@@ -105,7 +111,14 @@ export function CreativeBoostPanel({
 
   return (
     <div className="space-y-[var(--space-5)]">
-      <DirectModeIndicator isDirectMode={isDirectMode} />
+      <CreativeBoostModeToggle
+        mode={creativeBoostMode}
+        isDirectMode={isDirectMode}
+        isGenerating={isGenerating}
+        onModeChange={onCreativeBoostModeChange}
+      />
+
+      {!isSimpleMode && <DirectModeIndicator isDirectMode={isDirectMode} />}
 
       <CreativitySlider
         value={input.creativityLevel}
@@ -118,33 +131,37 @@ export function CreativeBoostPanel({
         </p>
       )}
 
-      <GenreMultiSelect
-        selected={input.seedGenres}
-        onChange={handleGenresChange}
-        maxSelections={4}
-        disabled={isGenerating || input.sunoStyles.length > 0}
-        helperText={
-          input.sunoStyles.length > 0
-            ? "Disabled when Suno styles are selected"
-            : undefined
-        }
-        badgeText={input.sunoStyles.length > 0 ? "disabled" : "optional"}
-      />
-
-      <SunoStylesMultiSelect
-        selected={input.sunoStyles}
-        onChange={handleSunoStylesChange}
-        maxSelections={4}
-        disabled={isGenerating || input.seedGenres.length > 0}
-        helperText={
-          input.seedGenres.length > 0
-            ? "Disabled when Seed Genres are selected"
-            : isDirectMode
-              ? "Selected styles will be used exactly as-is"
+      {!isSimpleMode && (
+        <GenreMultiSelect
+          selected={input.seedGenres}
+          onChange={handleGenresChange}
+          maxSelections={4}
+          disabled={isGenerating || input.sunoStyles.length > 0}
+          helperText={
+            input.sunoStyles.length > 0
+              ? "Disabled when Suno styles are selected"
               : undefined
-        }
-        badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
-      />
+          }
+          badgeText={input.sunoStyles.length > 0 ? "disabled" : "optional"}
+        />
+      )}
+
+      {!isSimpleMode && (
+        <SunoStylesMultiSelect
+          selected={input.sunoStyles}
+          onChange={handleSunoStylesChange}
+          maxSelections={4}
+          disabled={isGenerating || input.seedGenres.length > 0}
+          helperText={
+            input.seedGenres.length > 0
+              ? "Disabled when Seed Genres are selected"
+              : isDirectMode
+                ? "Selected styles will be used exactly as-is"
+                : undefined
+          }
+          badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
+        />
+      )}
 
       <DescriptionInput
         value={input.description}
@@ -154,6 +171,12 @@ export function CreativeBoostPanel({
         onChange={handleDescriptionChange}
         onKeyDown={handleKeyDown}
       />
+
+      {isSimpleMode && (
+        <p className="ui-helper">
+          AI will automatically select genres and vocal style based on your description
+        </p>
+      )}
 
       {lyricsMode && (
         <LyricsTopicInput

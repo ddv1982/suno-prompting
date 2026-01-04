@@ -1,7 +1,7 @@
 import { Electroview } from 'electrobun/view';
 
 import { APP_CONSTANTS } from '@shared/constants';
-import { type SunoRPCSchema, type PromptSession, type PromptMode, type QuickVibesCategory } from '@shared/types';
+import { type SunoRPCSchema, type PromptSession, type PromptMode, type QuickVibesCategory, type CreativeBoostMode } from '@shared/types';
 
 const rpc = Electroview.defineRPC<SunoRPCSchema>({
     maxRequestTime: APP_CONSTANTS.AI.TIMEOUT_MS,
@@ -134,6 +134,15 @@ export const api = {
 
     async setPromptMode(promptMode: PromptMode): Promise<void> {
         await rpc.request.setPromptMode({ promptMode });
+    },
+
+    async getCreativeBoostMode(): Promise<CreativeBoostMode> {
+        const { creativeBoostMode } = await rpc.request.getCreativeBoostMode({});
+        return creativeBoostMode;
+    },
+
+    async setCreativeBoostMode(creativeBoostMode: CreativeBoostMode): Promise<void> {
+        await rpc.request.setCreativeBoostMode({ creativeBoostMode });
     },
 
     async generateQuickVibes(

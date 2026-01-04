@@ -65,6 +65,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             saveAllSettings: handlers.saveAllSettings,
             getPromptMode: handlers.getPromptMode,
             setPromptMode: handlers.setPromptMode,
+            getCreativeBoostMode: handlers.getCreativeBoostMode,
+            setCreativeBoostMode: handlers.setCreativeBoostMode,
             generateQuickVibes: handlers.generateQuickVibes,
             refineQuickVibes: handlers.refineQuickVibes,
             convertToMaxFormat: handlers.convertToMaxFormat,

@@ -53,6 +53,9 @@ export const EMPTY_CREATIVE_BOOST_INPUT: CreativeBoostInput = {
 // Editor mode types
 export type EditorMode = 'simple' | 'advanced';
 
+// Creative Boost panel mode (Simple shows fewer options)
+export type CreativeBoostMode = 'simple' | 'advanced';
+
 export type AdvancedSelection = {
   harmonicStyle: string | null;
   harmonicCombination: string | null;

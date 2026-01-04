@@ -1,7 +1,7 @@
 // API Request/Response types
 
 import type { AIProvider, APIKeys } from '@shared/types/config';
-import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory } from '@shared/types/domain';
+import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory, CreativeBoostMode } from '@shared/types/domain';
 import type { ValidationResult } from '@shared/validation';
 
 // Generation endpoints
@@ -99,6 +99,11 @@ export type SetLyricsModeParams = { lyricsMode: boolean };
 export type GetPromptModeResponse = { promptMode: PromptMode };
 export type SetPromptModeParams = { promptMode: PromptMode };
 export type SetPromptModeResponse = { success: boolean };
+
+// Creative Boost Mode endpoints
+export type GetCreativeBoostModeResponse = { creativeBoostMode: CreativeBoostMode };
+export type SetCreativeBoostModeParams = { creativeBoostMode: CreativeBoostMode };
+export type SetCreativeBoostModeResponse = { success: boolean };
 
 export type GenerateQuickVibesParams = {
   category: QuickVibesCategory | null;

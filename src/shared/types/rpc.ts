@@ -33,6 +33,7 @@ import type {
   SetMaxModeParams,
   SetLyricsModeParams,
   SetPromptModeParams,
+  SetCreativeBoostModeParams,
   GenerateQuickVibesParams,
   GenerateQuickVibesResponse,
   RefineQuickVibesParams,
@@ -44,7 +45,7 @@ import type {
   RefineCreativeBoostParams,
   RefineCreativeBoostResponse,
 } from '@shared/types/api';
-import type { PromptMode } from '@shared/types/domain';
+import type { PromptMode, CreativeBoostMode } from '@shared/types/domain';
 
 // Handler function types for backend implementation
 export type RPCHandlers = {
@@ -76,6 +77,8 @@ export type RPCHandlers = {
   saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
   getPromptMode: (params: Record<string, never>) => Promise<{ promptMode: PromptMode }>;
   setPromptMode: (params: SetPromptModeParams) => Promise<{ success: boolean }>;
+  getCreativeBoostMode: (params: Record<string, never>) => Promise<{ creativeBoostMode: CreativeBoostMode }>;
+  setCreativeBoostMode: (params: SetCreativeBoostModeParams) => Promise<{ success: boolean }>;
   generateQuickVibes: (params: GenerateQuickVibesParams) => Promise<GenerateQuickVibesResponse>;
   refineQuickVibes: (params: RefineQuickVibesParams) => Promise<RefineQuickVibesResponse>;
   convertToMaxFormat: (params: ConvertToMaxFormatParams) => Promise<ConvertToMaxFormatResponse>;
@@ -196,6 +199,14 @@ export type SunoRPCSchema = {
       };
       setPromptMode: {
         params: SetPromptModeParams;
+        response: { success: boolean };
+      };
+      getCreativeBoostMode: {
+        params: Record<string, never>;
+        response: { creativeBoostMode: CreativeBoostMode };
+      };
+      setCreativeBoostMode: {
+        params: SetCreativeBoostModeParams;
         response: { success: boolean };
       };
       generateQuickVibes: {

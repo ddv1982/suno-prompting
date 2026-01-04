@@ -16,7 +16,7 @@ export { AppProvider } from '@/context/app-provider';
 type AppContextType = 
   & Pick<SessionContextType, 'sessions' | 'currentSession' | 'loadHistory' | 'saveSession' | 'deleteSession'>
   & Pick<SettingsContextType, 'currentModel' | 'maxMode' | 'lyricsMode' | 'settingsOpen' | 'setSettingsOpen' | 'setMaxMode' | 'setLyricsMode'>
-  & Pick<EditorContextType, 'editorMode' | 'promptMode' | 'advancedSelection' | 'lockedPhrase' | 'pendingInput' | 'lyricsTopic' | 'computedMusicPhrase' | 'setEditorMode' | 'setPromptMode' | 'setAdvancedSelection' | 'updateAdvancedSelection' | 'clearAdvancedSelection' | 'setLockedPhrase' | 'setPendingInput' | 'setLyricsTopic' | 'quickVibesInput' | 'withWordlessVocals' | 'setQuickVibesInput' | 'setWithWordlessVocals' | 'creativeBoostInput' | 'setCreativeBoostInput'>
+  & Pick<EditorContextType, 'editorMode' | 'promptMode' | 'creativeBoostMode' | 'advancedSelection' | 'lockedPhrase' | 'pendingInput' | 'lyricsTopic' | 'computedMusicPhrase' | 'setEditorMode' | 'setPromptMode' | 'setCreativeBoostMode' | 'setAdvancedSelection' | 'updateAdvancedSelection' | 'clearAdvancedSelection' | 'setLockedPhrase' | 'setPendingInput' | 'setLyricsTopic' | 'quickVibesInput' | 'withWordlessVocals' | 'setQuickVibesInput' | 'setWithWordlessVocals' | 'creativeBoostInput' | 'setCreativeBoostInput'>
   & Pick<GenerationContextType, 'isGenerating' | 'generatingAction' | 'chatMessages' | 'validation' | 'debugInfo' | 'setValidation' | 'selectSession' | 'newProject' | 'handleGenerate' | 'handleCopy' | 'handleRemix' | 'handleRemixInstruments' | 'handleRemixGenre' | 'handleRemixMood' | 'handleRemixStyleTags' | 'handleRemixRecording' | 'handleRemixTitle' | 'handleRemixLyrics' | 'handleGenerateQuickVibes' | 'handleRemixQuickVibes' | 'handleConversionComplete' | 'handleGenerateCreativeBoost' | 'handleRefineCreativeBoost'>;
 
 // Backwards-compatible hook that combines all contexts
@@ -46,6 +46,7 @@ export const useAppContext = (): AppContextType => {
     // Editor
     editorMode: editor.editorMode,
     promptMode: editor.promptMode,
+    creativeBoostMode: editor.creativeBoostMode,
     advancedSelection: editor.advancedSelection,
     lockedPhrase: editor.lockedPhrase,
     pendingInput: editor.pendingInput,
@@ -53,6 +54,7 @@ export const useAppContext = (): AppContextType => {
     computedMusicPhrase: editor.computedMusicPhrase,
     setEditorMode: editor.setEditorMode,
     setPromptMode: editor.setPromptMode,
+    setCreativeBoostMode: editor.setCreativeBoostMode,
     setAdvancedSelection: editor.setAdvancedSelection,
     updateAdvancedSelection: editor.updateAdvancedSelection,
     clearAdvancedSelection: editor.clearAdvancedSelection,

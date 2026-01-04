@@ -7,7 +7,7 @@ import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { StorageError } from '@shared/errors';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
-import { type PromptSession, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode } from '@shared/types';
+import { type PromptSession, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode, type CreativeBoostMode } from '@shared/types';
 
 // Type for the stored config (with encrypted API keys)
 type StoredConfig = Partial<{
@@ -19,6 +19,7 @@ type StoredConfig = Partial<{
     maxMode: boolean;
     lyricsMode: boolean;
     promptMode: PromptMode;
+    creativeBoostMode: CreativeBoostMode;
 }>;
 
 const log = createLogger('Storage');
@@ -32,6 +33,7 @@ const DEFAULT_CONFIG: AppConfig = {
     maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
     lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
     promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
+    creativeBoostMode: 'simple',
 };
 
 export class StorageManager {
@@ -129,6 +131,7 @@ export class StorageManager {
                 maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
                 lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
                 promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
+                creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);

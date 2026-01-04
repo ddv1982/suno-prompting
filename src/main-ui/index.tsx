@@ -37,6 +37,8 @@ function App() {
     quickVibesInput,
     withWordlessVocals,
     creativeBoostInput,
+    creativeBoostMode,
+    setCreativeBoostMode,
     setPendingInput,
     setSettingsOpen,
     setLockedPhrase,
@@ -107,6 +109,8 @@ function App() {
               quickVibesInput={quickVibesInput}
               withWordlessVocals={withWordlessVocals}
               creativeBoostInput={creativeBoostInput}
+              creativeBoostMode={creativeBoostMode}
+              onCreativeBoostModeChange={setCreativeBoostMode}
               onPendingInputChange={setPendingInput}
               onLockedPhraseChange={setLockedPhrase}
               onLyricsTopicChange={setLyricsTopic}

@@ -10,6 +10,7 @@ import {
   type QuickVibesInput, 
   type PromptMode, 
   type CreativeBoostInput,
+  type CreativeBoostMode,
   EMPTY_ADVANCED_SELECTION,
   EMPTY_CREATIVE_BOOST_INPUT,
 } from '@shared/types';
@@ -32,6 +33,7 @@ const MUTUALLY_EXCLUSIVE_FIELDS: [NullableAdvancedField, NullableAdvancedField][
 export interface EditorContextType {
   editorMode: EditorMode;
   promptMode: PromptMode;
+  creativeBoostMode: CreativeBoostMode;
   advancedSelection: AdvancedSelection;
   lockedPhrase: string;
   pendingInput: string;
@@ -43,6 +45,7 @@ export interface EditorContextType {
   creativeBoostInput: CreativeBoostInput;
   setEditorMode: (mode: EditorMode) => void;
   setPromptMode: (mode: PromptMode) => void;
+  setCreativeBoostMode: (mode: CreativeBoostMode) => void;
   setAdvancedSelection: (selection: AdvancedSelection) => void;
   updateAdvancedSelection: (updates: Partial<AdvancedSelection>) => void;
   clearAdvancedSelection: () => void;
@@ -70,6 +73,7 @@ export const useEditorContext = (): EditorContextType => {
 export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const [editorMode, setEditorMode] = useState<EditorMode>('simple');
   const [promptMode, setPromptModeState] = useState<PromptMode>('full');
+  const [creativeBoostMode, setCreativeBoostModeState] = useState<CreativeBoostMode>('simple');
   const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
   const [lockedPhrase, setLockedPhrase] = useState("");
   const [pendingInput, setPendingInput] = useState("");
@@ -105,6 +109,27 @@ export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode
     setPromptModeState(mode);
     void api.setPromptMode(mode).catch((err: unknown) => {
       log.error("setPromptMode:failed", err);
+    });
+  }, []);
+
+  // Load creativeBoostMode once on mount - no reload, no race conditions
+  useEffect(() => {
+    const loadCreativeBoostMode = async () => {
+      try {
+        const mode = await api.getCreativeBoostMode();
+        setCreativeBoostModeState(mode);
+      } catch (err) {
+        log.error("loadCreativeBoostMode:failed", err);
+      }
+    };
+    void loadCreativeBoostMode();
+  }, []);
+
+  // Fire-and-forget save - no rollback needed for UI preference
+  const setCreativeBoostMode = useCallback((mode: CreativeBoostMode) => {
+    setCreativeBoostModeState(mode);
+    void api.setCreativeBoostMode(mode).catch((err: unknown) => {
+      log.error("setCreativeBoostMode:failed", err);
     });
   }, []);
 
@@ -162,6 +187,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode
     <EditorContext.Provider value={{
       editorMode,
       promptMode,
+      creativeBoostMode,
       advancedSelection,
       lockedPhrase,
       pendingInput,
@@ -173,6 +199,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode
       creativeBoostInput,
       setEditorMode,
       setPromptMode,
+      setCreativeBoostMode,
       setAdvancedSelection,
       updateAdvancedSelection,
       clearAdvancedSelection,

@@ -16,7 +16,7 @@ import { type GeneratingAction } from "@/context/app-context";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { APP_CONSTANTS } from "@shared/constants";
 import { hasAdvancedSelection } from "@shared/music-phrase";
-import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput } from "@shared/types";
+import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 
 type PromptEditorProps = {
@@ -37,6 +37,8 @@ type PromptEditorProps = {
   quickVibesInput: QuickVibesInput;
   withWordlessVocals: boolean;
   creativeBoostInput: CreativeBoostInput;
+  creativeBoostMode: CreativeBoostMode;
+  onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onLyricsTopicChange: (topic: string) => void;
@@ -89,6 +91,8 @@ export function PromptEditor({
   quickVibesInput,
   withWordlessVocals,
   creativeBoostInput,
+  creativeBoostMode,
+  onCreativeBoostModeChange,
   onPendingInputChange,
   onLockedPhraseChange,
   onLyricsTopicChange,
@@ -227,6 +231,8 @@ export function PromptEditor({
               lyricsMode={lyricsMode}
               isGenerating={isGenerating}
               hasCurrentPrompt={!!currentPrompt}
+              creativeBoostMode={creativeBoostMode}
+              onCreativeBoostModeChange={onCreativeBoostModeChange}
               onInputChange={onCreativeBoostInputChange}
               onMaxModeChange={onMaxModeChange}
               onLyricsModeChange={onLyricsModeChange}
