@@ -124,6 +124,9 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     if (isGenerating) return;
     if (!currentSession?.currentPrompt) return;
 
+    // Get stored input from session (not current UI state which may be reset)
+    const storedInput = currentSession.quickVibesInput;
+
     try {
       setGeneratingAction('quickVibes');
       setChatMessages(prev => [...prev, { role: "user", content: input }]);
@@ -134,8 +137,8 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         description: quickVibesInput.customDescription,
         feedback: input,
         withWordlessVocals,
-        category: quickVibesInput.category,
-        sunoStyles: quickVibesInput.sunoStyles,
+        category: storedInput?.category ?? null,
+        sunoStyles: storedInput?.sunoStyles ?? [],
       });
 
       if (!result?.prompt) {
@@ -173,7 +176,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, withWordlessVocals, quickVibesInput.category, quickVibesInput.sunoStyles, saveSession, resetQuickVibesInput, setPendingInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [isGenerating, currentSession, withWordlessVocals, quickVibesInput.customDescription, saveSession, resetQuickVibesInput, setPendingInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
 
   return {
     handleGenerateQuickVibes,
