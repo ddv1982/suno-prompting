@@ -89,13 +89,15 @@ RULES:
  * Uses lyricsTopic for title context only when description is empty.
  *
  * @param performanceInstruments - Pre-computed instruments to use (ensures same instruments used in conversion)
+ * @param performanceGuidance - Pre-computed performance guidance (ensures vocal style matches conversion)
  */
 export function buildCreativeBoostUserPrompt(
   creativityLevel: number,
   seedGenres: string[],
   description: string,
   lyricsTopic?: string,
-  performanceInstruments?: string[]
+  performanceInstruments?: string[],
+  performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
 ): string {
   const parts: string[] = [];
 
@@ -107,7 +109,7 @@ export function buildCreativeBoostUserPrompt(
     // Add performance guidance from primary genre (supports compound genres)
     const primaryGenre = seedGenres[0];
     if (primaryGenre) {
-      const guidance = buildPerformanceGuidance(primaryGenre);
+      const guidance = performanceGuidance ?? buildPerformanceGuidance(primaryGenre);
       if (guidance) {
         parts.push('');
         parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
@@ -215,6 +217,7 @@ RULES:
  * @param lyricsTopic - Optional lyrics topic for context
  * @param seedGenres - Optional seed genres for performance guidance
  * @param performanceInstruments - Pre-computed instruments to use (ensures same instruments used in conversion)
+ * @param performanceGuidance - Pre-computed performance guidance (ensures vocal style matches conversion)
  */
 export function buildCreativeBoostRefineUserPrompt(
   currentPrompt: string,
@@ -222,7 +225,8 @@ export function buildCreativeBoostRefineUserPrompt(
   feedback: string,
   lyricsTopic?: string,
   seedGenres?: string[],
-  performanceInstruments?: string[]
+  performanceInstruments?: string[],
+  performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
 ): string {
   const parts = [
     `Current title: "${currentTitle}"`,
@@ -233,7 +237,7 @@ export function buildCreativeBoostRefineUserPrompt(
   if (seedGenres && seedGenres.length > 0) {
     const primaryGenre = seedGenres[0];
     if (primaryGenre) {
-      const guidance = buildPerformanceGuidance(primaryGenre);
+      const guidance = performanceGuidance ?? buildPerformanceGuidance(primaryGenre);
       if (guidance) {
         parts.push('');
         parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');

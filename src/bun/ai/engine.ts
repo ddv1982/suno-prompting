@@ -27,7 +27,10 @@ import { selectModes } from '@bun/instruments/selection';
 import { createLogger } from '@bun/logger';
 import { injectBpm } from '@bun/prompt/bpm';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
+import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
+import { injectInstrumentTags } from '@bun/prompt/instruments-injection';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
+import { parseVocalStyleDescriptorToTags } from '@bun/prompt/vocal-style-tags';
 import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError } from '@shared/errors';
 import { cleanJsonResponse } from '@shared/prompt-utils';
@@ -168,9 +171,11 @@ export class AIEngine {
 
   async generateInitial(description: string, lockedPhrase?: string, lyricsTopic?: string, genreOverride?: string): Promise<GenerationResult> {
     const selection = await selectModes(description, this.getModel(), genreOverride);
+    const performanceGuidance = selection.genre ? buildPerformanceGuidance(selection.genre) : null;
+
     const userPrompt = this.config.isMaxMode()
-      ? buildMaxModeContextualPrompt(description, selection, lyricsTopic)
-      : buildContextualPrompt(description, selection, lyricsTopic);
+      ? buildMaxModeContextualPrompt(description, selection, lyricsTopic, performanceGuidance)
+      : buildContextualPrompt(description, selection, lyricsTopic, performanceGuidance);
 
     const systemPrompt = this.config.isLyricsMode()
       ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, this.config.getUseSunoTags(), this.config.isMaxMode())
@@ -186,7 +191,7 @@ export class AIEngine {
 
     const parsed = this.parseJsonResponse(rawResponse, 'generateInitial');
     if (!parsed) {
-      return this.generateInitialFallback(description, lockedPhrase, userPrompt, lyricsTopic);
+      return this.generateInitialFallback(description, lockedPhrase, userPrompt, lyricsTopic, performanceGuidance);
     }
 
     let promptText = await this.postProcess(parsed.prompt);
@@ -196,6 +201,11 @@ export class AIEngine {
 
     if (this.config.isMaxMode()) {
       promptText = injectStyleTags(promptText, genre);
+    }
+
+    if (performanceGuidance?.vocal) {
+      const tags = parseVocalStyleDescriptorToTags(performanceGuidance.vocal);
+      promptText = injectInstrumentTags(promptText, tags, this.config.isMaxMode());
     }
 
     if (lockedPhrase) {
@@ -216,7 +226,8 @@ export class AIEngine {
     description: string,
     lockedPhrase: string | undefined,
     userPrompt: string,
-    lyricsTopic?: string
+    lyricsTopic?: string,
+    performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
   ): Promise<GenerationResult> {
     const systemPrompt = this.systemPrompt;
 
@@ -235,6 +246,11 @@ export class AIEngine {
 
     if (this.config.isMaxMode()) {
       result.text = injectStyleTags(result.text, genre);
+    }
+
+    if (performanceGuidance?.vocal) {
+      const tags = parseVocalStyleDescriptorToTags(performanceGuidance.vocal);
+      result.text = injectInstrumentTags(result.text, tags, this.config.isMaxMode());
     }
 
     if (lockedPhrase) {

@@ -229,24 +229,26 @@ describe('convertToNonMaxFormat', () => {
     expect(result.convertedPrompt).toContain('[OUTRO]');
   });
 
-  it('uses a specific vocal tag when style text includes a vocal range', async () => {
+  it('injects vocal style tags into instruments from performance guidance (not style text)', async () => {
     const result = await convertToNonMaxFormat(
-      'ambient metal with baritone guitar and crystalline synth pads. Alto vocals glide in a breathy, haunting tone while the chorus erupts in powerful shouted hooks.',
+      'ambient metal with baritone guitar and crystalline synth pads.',
       mockGetModel,
-      ['ambient metal']
+      ['ambient metal'],
+      [],
+      undefined,
+      'Alto, Breathy Delivery, Shouted Hooks'
     );
 
     const lower = result.convertedPrompt.toLowerCase();
     expect(lower).toContain('instruments:');
     expect(lower).toContain('alto vocals');
     expect(lower).toContain('breathy vocals');
-    expect(lower).toContain('haunting vocals');
     expect(lower).toContain('shouted hooks');
   });
 
-  it('caps instruments list while preserving vocal tags', async () => {
+  it('caps instruments list while preserving injected vocal style tags', async () => {
     const result = await convertToNonMaxFormat(
-      'ambient metal with many layers. Alto vocals glide in a breathy, haunting tone while the chorus erupts in powerful shouted hooks.',
+      'ambient metal with many layers.',
       mockGetModel,
       ['ambient metal'],
       [],
@@ -258,7 +260,8 @@ describe('convertToNonMaxFormat', () => {
         'granular textures',
         'cinematic drums',
         'reverse guitar swells',
-      ]
+      ],
+      'Alto, Breathy Delivery, Shouted Hooks'
     );
 
     const instrumentsLine = result.convertedPrompt
@@ -276,7 +279,6 @@ describe('convertToNonMaxFormat', () => {
     const lower = result.convertedPrompt.toLowerCase();
     expect(lower).toContain('alto vocals');
     expect(lower).toContain('breathy vocals');
-    expect(lower).toContain('haunting vocals');
     expect(lower).toContain('shouted hooks');
   });
 

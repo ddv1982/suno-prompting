@@ -9,9 +9,7 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
-import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
-import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { ModeSelection } from '@bun/instruments/selection';
@@ -75,7 +73,8 @@ STRICT CONSTRAINTS:
 export function buildContextualPrompt(
   description: string,
   selection: ModeSelection,
-  lyricsTopic?: string
+  lyricsTopic?: string,
+  performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
 ): string {
   const rhythmic = detectRhythmic(description);
   const { found: userInstruments } = extractInstruments(description);
@@ -105,11 +104,11 @@ export function buildContextualPrompt(
 
     // Add performance guidance for detected genre
     if (selection.genre) {
-      const guidance = buildPerformanceGuidance(selection.genre);
+      const guidance = performanceGuidance ?? buildPerformanceGuidance(selection.genre);
       if (guidance) {
         parts.push('');
         parts.push('PERFORMANCE GUIDANCE:');
-        parts.push(`Vocal: ${guidance.vocal}`);
+        parts.push(`Vocal style: ${guidance.vocal}`);
         parts.push(`Production: ${guidance.production}`);
         if (guidance.instruments.length > 0) {
           parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
@@ -131,7 +130,7 @@ ${MAX_MODE_HEADER}
 
 genre: "<specific genre(s), comma separated>"
 bpm: "<tempo from guidance>"
-instruments: "<instruments with character adjectives, vocal style descriptors>"
+instruments: "<instruments with character adjectives>"
 style tags: "<recording style, texture, atmosphere descriptors>"
 recording: "<performance context, source description>"
 
@@ -140,8 +139,7 @@ CRITICAL RULES:
 2. Use metadata-style formatting with quoted values after colons
 3. NO section tags like [VERSE] or [CHORUS] - these cause lyric bleed-through in max mode
 4. Keep each field on its own line
-5. Instruments should include vocal character (e.g., "BARITONE singer, vocal grit, emotional phrasing")
-6. Style tags describe recording character, NOT music style
+5. Style tags describe recording character, NOT music style
 
 STYLE TAGS EXAMPLES (use these types of descriptors):
 - Recording: "tape recorder, close-up, raw performance texture, handheld device realism"
@@ -158,7 +156,8 @@ STRICT CONSTRAINTS:
 export function buildMaxModeContextualPrompt(
   description: string,
   selection: ModeSelection,
-  lyricsTopic?: string
+  lyricsTopic?: string,
+  performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
 ): string {
   const { found: userInstruments } = extractInstruments(description);
   const detectedGenre = selection.genre || 'acoustic';
@@ -174,6 +173,7 @@ export function buildMaxModeContextualPrompt(
   // Add enhanced guidance if genre is detected
   if (selection.genre) {
     const genreDef = GENRE_REGISTRY[selection.genre];
+    const guidance = performanceGuidance ?? buildPerformanceGuidance(selection.genre);
     
     // BPM
     if (genreDef?.bpm) {
@@ -186,11 +186,10 @@ export function buildMaxModeContextualPrompt(
       parts.push(`Mood suggestions: ${selectedMoods.join(', ')}`);
     }
     
-    // Vocal style
-    parts.push(`Vocal style: ${buildVocalDescriptor(selection.genre)}`);
-    
-    // Production
-    parts.push(`Production: ${buildProductionDescriptor(selection.genre)}`);
+    if (guidance) {
+      parts.push(`Vocal style: ${guidance.vocal}`);
+      parts.push(`Production: ${guidance.production}`);
+    }
     
     // Chord progression
     parts.push(`Chord progression: ${buildProgressionDescriptor(selection.genre)}`);

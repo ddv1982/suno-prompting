@@ -3,7 +3,8 @@
 
 import { generateText } from 'ai';
 
-import { inferBpm, enhanceInstruments, applyVocalTagToInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
@@ -297,13 +298,15 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
  * 3. Detected from text (fallback)
  *
  * @param performanceInstruments - Optional instruments from performance guidance to use instead of genre fallback
+ * @param performanceVocalStyle - Optional vocal style from performance guidance to deterministically inject
  */
 export async function convertToMaxFormat(
   text: string,
   getModel: () => LanguageModel,
   seedGenres?: string[],
   sunoStyles?: string[],
-  performanceInstruments?: string[]
+  performanceInstruments?: string[],
+  performanceVocalStyle?: string
 ): Promise<MaxConversionResult> {
   // Check if already in max format
   if (isMaxFormat(text)) {
@@ -324,7 +327,7 @@ export async function convertToMaxFormat(
 
   // Build instruments string with articulations (genre-aware defaults)
   const baseInstruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
-  const instruments = applyVocalTagToInstruments(baseInstruments, text);
+  const instruments = injectVocalStyleIntoInstrumentsCsv(baseInstruments, performanceVocalStyle);
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildMaxFormatPrompt({

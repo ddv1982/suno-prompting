@@ -39,6 +39,7 @@ export type CreativeBoostEngineConfig = EngineConfig;
  * @param seedGenres - Seed genres for genre resolution
  * @param sunoStyles - Suno V5 styles (takes priority over seedGenres)
  * @param performanceInstruments - Instruments from performance guidance to preserve through conversion
+ * @param performanceVocalStyle - Vocal style from performance guidance to deterministically inject
  */
 async function applyMaxModeConversion(
   style: string,
@@ -46,13 +47,14 @@ async function applyMaxModeConversion(
   getModel: () => LanguageModel,
   seedGenres?: string[],
   sunoStyles?: string[],
-  performanceInstruments?: string[]
+  performanceInstruments?: string[],
+  performanceVocalStyle?: string
 ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
   if (maxMode) {
-    const result = await convertToMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments);
+    const result = await convertToMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle);
     return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   } else {
-    const result = await convertToNonMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments);
+    const result = await convertToNonMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle);
     return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   }
 }
@@ -104,16 +106,17 @@ type PostProcessParams = {
   rawResponse: string;
   config: CreativeBoostEngineConfig;
   performanceInstruments?: string[];
+  performanceVocalStyle?: string;
 };
 
 async function postProcessCreativeBoostResponse(
   parsed: { style: string; title: string },
   params: PostProcessParams
 ): Promise<GenerationResult> {
-  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments } = params;
+  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle } = params;
 
   const { styleResult, debugInfo: maxConversionDebugInfo } = await applyMaxModeConversion(
-    parsed.style, maxMode, config.getModel, seedGenres, sunoStyles, performanceInstruments
+    parsed.style, maxMode, config.getModel, seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle
   );
 
   const processedStyle = await enforceMaxLength(styleResult, config.getModel);
@@ -325,10 +328,11 @@ export async function generateCreativeBoost(
   const primaryGenre = seedGenres[0];
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
+  const performanceVocalStyle = guidance?.vocal;
 
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(
-    creativityLevel, seedGenres, description, lyricsTopic, performanceInstruments
+    creativityLevel, seedGenres, description, lyricsTopic, performanceInstruments, guidance
   );
 
   const rawResponse = await callLLM({
@@ -353,6 +357,7 @@ export async function generateCreativeBoost(
     rawResponse,
     config,
     performanceInstruments,
+    performanceVocalStyle,
   });
 }
 
@@ -387,10 +392,11 @@ export async function refineCreativeBoost(
   const primaryGenre = seedGenres[0];
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
+  const performanceVocalStyle = guidance?.vocal;
 
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
-    cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, performanceInstruments
+    cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, performanceInstruments, guidance
   );
 
   const rawResponse = await callLLM({
@@ -415,5 +421,6 @@ export async function refineCreativeBoost(
     rawResponse,
     config,
     performanceInstruments,
+    performanceVocalStyle,
   });
 }

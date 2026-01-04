@@ -3,7 +3,8 @@
 
 import { generateText } from 'ai';
 
-import { extractFirstGenre, inferBpm, enhanceInstruments, applyVocalTagToInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
 import { APP_CONSTANTS } from '@shared/constants';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
@@ -311,13 +312,15 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
  * 3. Detected from text (fallback)
  *
  * @param performanceInstruments - Optional instruments from performance guidance to use instead of genre fallback
+ * @param performanceVocalStyle - Optional vocal style from performance guidance to deterministically inject
  */
 export async function convertToNonMaxFormat(
   styleDescription: string,
   getModel: () => LanguageModel,
   seedGenres?: string[],
   sunoStyles?: string[],
-  performanceInstruments?: string[]
+  performanceInstruments?: string[],
+  performanceVocalStyle?: string
 ): Promise<NonMaxConversionResult> {
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
@@ -338,7 +341,7 @@ export async function convertToNonMaxFormat(
     'ambient textures, subtle pads',
     performanceInstruments
   );
-  const instruments = applyVocalTagToInstruments(baseInstruments, styleDescription);
+  const instruments = injectVocalStyleIntoInstrumentsCsv(baseInstruments, performanceVocalStyle);
 
   // Build mood line
   const mood = buildMoodLine(parsed.detectedMoods, genre.forLookup);

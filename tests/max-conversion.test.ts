@@ -450,29 +450,27 @@ Instruments: electric guitar, drums, bass`;
     expect(result.convertedPrompt).toContain('recording:');
   });
 
-  it('adds vocal descriptor to instruments when style text mentions vocals', async () => {
-    const style = `A brooding ambient-metal soundscape where a resonant baritone guitar drifts beneath crystalline synth pads.
-Alto vocals glide in a breathy, haunting tone, singing verses of yearning love, while the chorus erupts in powerful shouted hooks.`;
+  it('injects vocal style tags into instruments from performance guidance (not style text)', async () => {
+    const style = `A brooding ambient-metal soundscape where a resonant baritone guitar drifts beneath crystalline synth pads.`;
 
     const result = await convertToMaxFormat(
       style,
       mockGetModel,
       ['ambient metal'],
       [],
-      ['baritone guitar', 'ambient pad', 'crystalline synth pads']
+      ['baritone guitar', 'ambient pad', 'crystalline synth pads'],
+      'Alto, Breathy Delivery, Shouted Hooks'
     );
 
     const lower = result.convertedPrompt.toLowerCase();
     expect(lower).toContain('instruments:');
     expect(lower).toContain('alto vocals');
     expect(lower).toContain('breathy vocals');
-    expect(lower).toContain('haunting vocals');
     expect(lower).toContain('shouted hooks');
   });
 
-  it('caps instruments list while preserving vocal tags', async () => {
-    const style = `A brooding ambient-metal soundscape with many layers.
-Alto vocals glide in a breathy, haunting tone, while the chorus erupts in powerful shouted hooks.`;
+  it('caps instruments list while preserving injected vocal style tags', async () => {
+    const style = `A brooding ambient-metal soundscape with many layers.`;
 
     const result = await convertToMaxFormat(
       style,
@@ -487,7 +485,8 @@ Alto vocals glide in a breathy, haunting tone, while the chorus erupts in powerf
         'granular textures',
         'cinematic drums',
         'reverse guitar swells',
-      ]
+      ],
+      'Alto, Breathy Delivery, Shouted Hooks'
     );
 
     const instrumentsLine = result.convertedPrompt
@@ -508,11 +507,10 @@ Alto vocals glide in a breathy, haunting tone, while the chorus erupts in powerf
     const lower = result.convertedPrompt.toLowerCase();
     expect(lower).toContain('alto vocals');
     expect(lower).toContain('breathy vocals');
-    expect(lower).toContain('haunting vocals');
     expect(lower).toContain('shouted hooks');
   });
 
-  it('does not add vocals to instruments when style text is instrumental', async () => {
+  it('does not inject vocals when no performance vocal style is provided', async () => {
     const style = `Instrumental ambient-metal soundscape with baritone guitar and crystalline synth pads. No vocals.`;
 
     const result = await convertToMaxFormat(
