@@ -98,6 +98,8 @@ describe('replaceCountMarker', () => {
 describe('validateAllMarkers', () => {
   const createValidReadme = () => {
     const markers = [
+      '<!-- GENRE_PRIORITY_START -->',
+      '<!-- GENRE_PRIORITY_END -->',
       '<!-- GENRE_TABLE_START -->',
       '<!-- GENRE_TABLE_END -->',
       '<!-- INSTRUMENT_CLASSES_START -->',

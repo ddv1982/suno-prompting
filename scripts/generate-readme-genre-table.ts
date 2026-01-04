@@ -5,12 +5,16 @@ import {
   MULTIGENRE_INSTRUMENTS,
   ORCHESTRAL_COLOR_INSTRUMENTS,
 } from '@bun/instruments/datasets/instrument-classes';
+import { GENRE_PRIORITY } from '@bun/instruments/detection';
 import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres';
 
 import type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 
 export const GENRE_TABLE_START = '<!-- GENRE_TABLE_START -->';
 export const GENRE_TABLE_END = '<!-- GENRE_TABLE_END -->';
+
+export const GENRE_PRIORITY_START = '<!-- GENRE_PRIORITY_START -->';
+export const GENRE_PRIORITY_END = '<!-- GENRE_PRIORITY_END -->';
 
 export const INSTRUMENT_CLASSES_START = '<!-- INSTRUMENT_CLASSES_START -->';
 export const INSTRUMENT_CLASSES_END = '<!-- INSTRUMENT_CLASSES_END -->';
@@ -84,6 +88,8 @@ export function replaceCountMarker(readme: string, marker: string, value: number
  */
 export function validateAllMarkers(readme: string): void {
   const tableMarkers = [
+    'GENRE_PRIORITY_START',
+    'GENRE_PRIORITY_END',
     'GENRE_TABLE_START',
     'GENRE_TABLE_END',
     'INSTRUMENT_CLASSES_START',
@@ -108,6 +114,37 @@ export function validateAllMarkers(readme: string): void {
       throw new Error(`Missing closing tag for marker: <!-- /${marker} -->`);
     }
   }
+}
+
+function buildArrowChain(items: readonly string[], chunkSize: number): string {
+  const lines: string[] = [];
+  for (let i = 0; i < items.length; i += chunkSize) {
+    const chunk = items.slice(i, i + chunkSize);
+    const isLast = i + chunkSize >= items.length;
+    lines.push(`${chunk.join(' → ')}${isLast ? '' : ' →'}`);
+  }
+  return lines.join('\n');
+}
+
+export function buildGenrePriorityMarkdown(): string {
+  const chain = buildArrowChain(GENRE_PRIORITY, 8);
+  return `\`\`\`\n${chain}\n\`\`\``;
+}
+
+export function replaceGenrePrioritySection(readme: string, markdown: string): string {
+  const start = readme.indexOf(GENRE_PRIORITY_START);
+  const end = readme.indexOf(GENRE_PRIORITY_END);
+
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error(
+      `README is missing genre priority markers. Expected ${GENRE_PRIORITY_START} ... ${GENRE_PRIORITY_END}`,
+    );
+  }
+
+  const before = readme.slice(0, start + GENRE_PRIORITY_START.length);
+  const after = readme.slice(end);
+
+  return `${before}\n\n${markdown}\n\n${after}`;
 }
 
 function isRequiredPool(pool: InstrumentPool): boolean {
@@ -237,12 +274,14 @@ async function main() {
   validateAllMarkers(readme);
 
   // Build dynamic content for table sections
+  const genrePriority = buildGenrePriorityMarkdown();
   const table = buildGenreTableMarkdown();
   const classes = buildInstrumentClassesMarkdown();
   const combinations = buildCombinationsMarkdown();
 
   // Apply table section replacements
-  let updated = replaceGenreTableSection(readme, table);
+  let updated = replaceGenrePrioritySection(readme, genrePriority);
+  updated = replaceGenreTableSection(updated, table);
   updated = replaceInstrumentClassesSection(updated, classes);
   updated = replaceCombinationsSection(updated, combinations);
 

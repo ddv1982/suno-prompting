@@ -174,7 +174,7 @@ Alternatively, select up to 4 official Suno V5 styles (~900+ available):
 
 | Selector | Source | Format | Example Output |
 |----------|--------|--------|----------------|
-| Seed Genres | App registry (35 + 110 combos) | Title Case | "Jazz, Lo-Fi, Electronic" |
+| Seed Genres | App registry (<!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> + <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos) | Title Case | "Jazz, Lo-Fi, Electronic" |
 | Suno V5 Styles | Official Suno V5 (~900+) | lowercase as-is | "lo-fi, k-pop, dream pop" |
 
 ### Creative Boost Features
@@ -277,13 +277,21 @@ The app uses a 3-tier detection system to identify genre and select harmonic/rhy
 
 Direct match against genre names and keywords. Genres are checked in priority order (first match wins):
 
+<!-- GENRE_PRIORITY_START -->
+
 ```
 videogame → synthwave → lofi → cinematic → jazz → classical → folk → rnb →
-country → soul → blues → punk → latin → symphonic → metal → trap → retro →
-electronic → rock → pop → ambient
+country → soul → blues → punk → latin → symphonic → metal → trap →
+retro → disco → funk → reggae → afrobeat → house → trance → downtempo →
+dreampop → chillwave → newage → hyperpop → drill → melodictechno → indie → electronic →
+rock → pop → ambient
 ```
 
+<!-- GENRE_PRIORITY_END -->
+
 Example: "symphonic rock retro ballad" matches `symphonic` first (higher priority than `retro`).
+
+Note: For multi-genre phrases, only recognized base-genre tokens contribute to performance guidance (e.g. "psy trance" contributes `trance`, but not `psy`).
 
 ### Tier 2: Spelling Correction
 
@@ -327,10 +335,12 @@ When enabled, prompts are generated with special header tags:
 
 genre: "acoustic, country singer-songwriter"
 bpm: "95"
-instruments: "single acoustic guitar, vocal grit, emotional phrasing"
+instruments: "single acoustic guitar, baritone vocals, raspy vocals, shouted hooks"
 style tags: "tape recorder, raw performance texture, narrow mono image"
 recording: "one person, one guitar, natural dynamics"
 ```
+
+Note: vocal tags in `instruments:` are injected deterministically from Performance Guidance (the `Vocal style:` line), not invented by the LLM.
 
 ### Best for
 

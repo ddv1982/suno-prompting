@@ -67,7 +67,7 @@ export function detectRhythmic(description: string): RhythmicStyle | null {
   );
 }
 
-const GENRE_PRIORITY: GenreType[] = [
+export const GENRE_PRIORITY: GenreType[] = [
   'videogame', 'synthwave', 'lofi', 'cinematic',
   'jazz', 'classical', 'folk', 'rnb',
   'country', 'soul', 'blues', 'punk', 'latin', 'symphonic', 'metal', 'trap', 'retro',
