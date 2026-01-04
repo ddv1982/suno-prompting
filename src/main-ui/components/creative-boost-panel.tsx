@@ -43,6 +43,7 @@ export function CreativeBoostPanel({
 }: CreativeBoostPanelProps) {
   const descriptionCharCount = input.description.length;
   const isRefineMode = hasCurrentPrompt;
+  const isDirectMode = input.sunoStyles.length > 0;
 
   const handleCreativityChange = useCallback((value: CreativitySliderValue) => {
     onInputChange({ ...input, creativityLevel: value });
@@ -111,12 +112,27 @@ export function CreativeBoostPanel({
 
   return (
     <div className="space-y-[var(--space-5)]">
+      {/* Direct Mode indicator */}
+      {isDirectMode && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-accent/30 rounded-lg border border-accent/50">
+          <Zap className="w-4 h-4 text-accent-foreground" />
+          <span className="text-[length:var(--text-footnote)] text-accent-foreground">
+            Direct Mode: Styles will be used exactly as selected
+          </span>
+        </div>
+      )}
+
       {/* Creativity Slider */}
       <CreativitySlider
         value={input.creativityLevel}
         onChange={handleCreativityChange}
-        disabled={isGenerating}
+        disabled={isGenerating || isDirectMode}
       />
+      {isDirectMode && (
+        <p className="ui-helper -mt-3">
+          Creativity slider disabled when using Suno V5 Styles
+        </p>
+      )}
 
       {/* Seed Genres Multi-Select */}
       <GenreMultiSelect
@@ -141,7 +157,9 @@ export function CreativeBoostPanel({
         helperText={
           input.seedGenres.length > 0
             ? "Disabled when Seed Genres are selected"
-            : undefined
+            : isDirectMode
+              ? "Selected styles will be used exactly as-is"
+              : undefined
         }
         badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
       />
@@ -151,7 +169,7 @@ export function CreativeBoostPanel({
         <div className="flex items-center justify-between">
           <FormLabel
             icon={<MessageSquare className="w-3 h-3" />}
-            badge={isRefineMode ? undefined : "optional"}
+            badge={isRefineMode ? undefined : isDirectMode ? "disabled" : "optional"}
           >
             {isRefineMode ? "Refine feedback" : "Description"}
           </FormLabel>
@@ -163,22 +181,26 @@ export function CreativeBoostPanel({
           value={input.description}
           onChange={(e) => handleDescriptionChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={isGenerating}
+          disabled={isGenerating || (isDirectMode && !isRefineMode)}
           maxLength={MAX_DESCRIPTION_CHARS}
           className={cn(
             "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-            isGenerating && "opacity-70"
+            (isGenerating || (isDirectMode && !isRefineMode)) && "opacity-70"
           )}
           placeholder={
             isRefineMode
               ? "How should the creative boost change? (e.g., 'more upbeat', 'add ethnic elements', 'darker mood')"
-              : "I want something that sounds like..."
+              : isDirectMode
+                ? "Description not used with Suno V5 Styles"
+                : "I want something that sounds like..."
           }
         />
         <p className="ui-helper">
           {isRefineMode
             ? "Describe how you'd like to adjust the current output."
-            : "Optionally describe the mood, style, or direction for your music."
+            : isDirectMode
+              ? "Description is not used when Suno V5 Styles are selected."
+              : "Optionally describe the mood, style, or direction for your music."
           }
         </p>
       </div>
@@ -232,17 +254,33 @@ export function CreativeBoostPanel({
         </label>
 
         {/* Max Mode Toggle */}
-        <label htmlFor="cb-max-mode" className="flex items-center gap-3 py-2 cursor-pointer">
+        <label
+          htmlFor="cb-max-mode"
+          className={cn(
+            "flex items-center gap-3 py-2",
+            isDirectMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+          )}
+        >
           <Zap className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[length:var(--text-footnote)]">Max Mode</span>
+          {isDirectMode && (
+            <Badge variant="secondary" className="ui-badge h-4 text-[10px]">
+              N/A
+            </Badge>
+          )}
           <Switch
             id="cb-max-mode"
-            checked={maxMode}
+            checked={isDirectMode ? false : maxMode}
             onCheckedChange={onMaxModeChange}
-            disabled={isGenerating}
+            disabled={isGenerating || isDirectMode}
             size="sm"
           />
         </label>
+        {isDirectMode && (
+          <p className="ui-helper pl-6 -mt-1">
+            Max Mode not applicable with Suno V5 Styles
+          </p>
+        )}
 
         {/* Lyrics Toggle */}
         <label htmlFor="cb-lyrics" className="flex items-center gap-3 py-2 cursor-pointer">
@@ -258,7 +296,9 @@ export function CreativeBoostPanel({
         </label>
         <p className="ui-helper pl-6">
           {lyricsMode
-            ? "Will generate lyrics based on genre and topic."
+            ? isDirectMode
+              ? "Will generate lyrics based on selected styles (no Max Mode header)."
+              : "Will generate lyrics based on genre and topic."
             : input.withWordlessVocals
               ? "Wordless vocals enabled - no lyrics will be generated."
               : "Instrumental output - no vocals."
@@ -280,7 +320,12 @@ export function CreativeBoostPanel({
         ) : isRefineMode ? (
           <>
             <RefreshCw className="w-4 h-4" />
-            REFINE
+            {isDirectMode ? "REFINE TITLE & LYRICS" : "REFINE"}
+          </>
+        ) : isDirectMode ? (
+          <>
+            <Zap className="w-4 h-4" />
+            USE SELECTED STYLES
           </>
         ) : (
           <>

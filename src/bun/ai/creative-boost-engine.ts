@@ -15,7 +15,7 @@ import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
 import { condense } from '@bun/ai/llm-rewriter';
-import { generateLyrics } from '@bun/ai/content-generator';
+import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
 import type { GenerationResult, DebugInfoBuilder } from './types';
@@ -127,6 +127,174 @@ async function postProcessCreativeBoostResponse(
   };
 }
 
+/**
+ * Direct Mode generation - bypasses LLM for styles
+ * Used when Suno V5 Styles are selected
+ * Styles are returned exactly as-is (joined with ', ')
+ */
+async function generateDirectMode(
+  sunoStyles: string[],
+  lyricsTopic: string,
+  description: string,
+  withLyrics: boolean,
+  config: CreativeBoostEngineConfig
+): Promise<GenerationResult> {
+  // Style is exactly the selected styles, joined with comma
+  const styleResult = sunoStyles.join(', ');
+
+  log.info('generateDirectMode:start', {
+    stylesCount: sunoStyles.length,
+    withLyrics,
+  });
+
+  // Generate title based on styles (uses existing title generation)
+  let title = 'Untitled';
+  try {
+    const genre = sunoStyles[0] || 'music'; // Use first style as genre hint
+    const mood = extractMoodFromPrompt(styleResult) || 'creative';
+    const titleResult = await generateTitle(
+      styleResult,
+      genre,
+      mood,
+      config.getModel
+    );
+    title = titleResult.title;
+  } catch (error) {
+    log.warn('generateDirectMode:title:failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    // Continue with fallback title
+  }
+
+  // Generate lyrics without max mode header (maxMode: false always in direct mode)
+  const lyricsResult = await generateLyricsForCreativeBoost(
+    styleResult,
+    lyricsTopic,
+    description,
+    false, // maxMode = false (always, for direct mode)
+    withLyrics,
+    config.getModel
+  );
+
+  // Build debug info if enabled
+  let debugInfo: DebugInfo | undefined;
+  if (config.isDebugMode()) {
+    debugInfo = config.buildDebugInfo(
+      'DIRECT_MODE: No system prompt - styles passed through as-is',
+      `Suno V5 Styles: ${sunoStyles.join(', ')}`,
+      styleResult
+    );
+    if (lyricsResult.debugInfo) {
+      debugInfo.lyricsGeneration = lyricsResult.debugInfo;
+    }
+  }
+
+  log.info('generateDirectMode:complete', {
+    styleLength: styleResult.length,
+    hasLyrics: !!lyricsResult.lyrics,
+  });
+
+  return {
+    text: styleResult,
+    title,
+    lyrics: lyricsResult.lyrics,
+    debugInfo,
+  };
+}
+
+/**
+ * Direct Mode refinement - only refines title and lyrics
+ * Styles remain unchanged (not refinable in direct mode)
+ */
+async function refineDirectMode(
+  currentPrompt: string, // Styles - kept unchanged
+  currentTitle: string,
+  feedback: string,
+  lyricsTopic: string,
+  description: string,
+  withLyrics: boolean,
+  config: CreativeBoostEngineConfig
+): Promise<GenerationResult> {
+  log.info('refineDirectMode:start', {
+    currentPromptLength: currentPrompt.length,
+    feedbackLength: feedback.length,
+    withLyrics,
+  });
+
+  // Refine title based on feedback
+  let newTitle = currentTitle;
+  try {
+    const titleSystemPrompt = `You are refining a song title based on user feedback.
+Current title: "${currentTitle}"
+Musical style: ${currentPrompt}
+
+User feedback: ${feedback}
+
+Generate a new title that addresses the feedback while maintaining relevance to the style.
+Output ONLY the new title, nothing else. Do not include quotes around the title.`;
+
+    const { text: refinedTitle } = await generateText({
+      model: config.getModel(),
+      system: titleSystemPrompt,
+      prompt: feedback,
+      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+    });
+
+    newTitle = refinedTitle.trim().replace(/^["']|["']$/g, '');
+  } catch (error) {
+    log.warn('refineDirectMode:title:failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    // Continue with existing title on error
+  }
+
+  // Refine lyrics if enabled (always with maxMode: false for direct mode)
+  let lyrics: string | undefined;
+  if (withLyrics) {
+    try {
+      const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+      const lyricsResult = await generateLyricsForCreativeBoost(
+        currentPrompt,
+        topicForLyrics,
+        feedback, // Use feedback as additional context for lyrics
+        false, // maxMode = false (always, for direct mode)
+        true, // withLyrics = true
+        config.getModel
+      );
+      lyrics = lyricsResult.lyrics;
+    } catch (error) {
+      log.warn('refineDirectMode:lyrics:failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      // Continue without lyrics on error
+    }
+  }
+
+  // Build debug info if enabled
+  let debugInfo: DebugInfo | undefined;
+  if (config.isDebugMode()) {
+    debugInfo = config.buildDebugInfo(
+      'DIRECT_MODE_REFINE: Styles unchanged, title and lyrics refined',
+      `Feedback: ${feedback}`,
+      currentPrompt
+    );
+  }
+
+  log.info('refineDirectMode:complete', {
+    styleLength: currentPrompt.length,
+    titleChanged: newTitle !== currentTitle,
+    hasLyrics: !!lyrics,
+  });
+
+  return {
+    text: currentPrompt, // Styles unchanged
+    title: newTitle,
+    lyrics,
+    debugInfo,
+  };
+}
+
 export async function generateCreativeBoost(
   creativityLevel: number,
   seedGenres: string[],
@@ -138,6 +306,20 @@ export async function generateCreativeBoost(
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
+  // ============ DIRECT MODE BYPASS ============
+  // When Suno V5 Styles are selected, bypass all LLM style generation
+  // Output is exactly the selected styles, no transformation
+  if (sunoStyles.length > 0) {
+    return generateDirectMode(
+      sunoStyles,
+      lyricsTopic,
+      description,
+      withLyrics,
+      config
+    );
+  }
+  // ============ END DIRECT MODE BYPASS ============
+
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description);
 
@@ -191,6 +373,22 @@ export async function refineCreativeBoost(
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
+  // ============ DIRECT MODE REFINE ============
+  // When Suno V5 Styles are selected, only refine title and lyrics
+  // Styles remain unchanged (not refinable)
+  if (sunoStyles.length > 0) {
+    return refineDirectMode(
+      currentPrompt, // Keep styles unchanged
+      currentTitle,
+      feedback,
+      lyricsTopic,
+      description,
+      withLyrics,
+      config
+    );
+  }
+  // ============ END DIRECT MODE REFINE ============
+
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback);
