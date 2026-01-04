@@ -141,7 +141,9 @@ async function generateDirectMode(
   const styleResult = sunoStyles.join(', ');
   log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics });
 
-  const title = await generateDirectModeTitle(description, sunoStyles, config.getModel);
+  // Use lyricsTopic as fallback context for title generation
+  const titleContext = description?.trim() || lyricsTopic?.trim() || '';
+  const title = await generateDirectModeTitle(titleContext, sunoStyles, config.getModel);
 
   // Generate lyrics without max mode header (maxMode: false always in direct mode)
   const lyricsResult = await generateLyricsForCreativeBoost(
@@ -179,64 +181,82 @@ async function generateDirectMode(
   };
 }
 
+/** Options for Direct Mode refinement */
+interface RefineDirectModeOptions {
+  currentTitle: string;
+  feedback: string;
+  lyricsTopic: string;
+  description: string;
+  sunoStyles: string[];
+  withLyrics: boolean;
+}
+
 /**
- * Direct Mode refinement - only refines title and lyrics
- * Styles remain unchanged (not refinable in direct mode)
+ * Direct Mode refinement - applies new styles and optionally refines title/lyrics.
+ * 
+ * Per requirements:
+ * - Styles are always updated from sunoStyles array
+ * - Title/lyrics only change when feedback is provided
  */
 async function refineDirectMode(
-  currentPrompt: string, // Styles - kept unchanged
-  currentTitle: string,
-  feedback: string,
-  lyricsTopic: string,
-  description: string,
-  withLyrics: boolean,
+  options: RefineDirectModeOptions,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
+  const { currentTitle, feedback, lyricsTopic, description, sunoStyles, withLyrics } = options;
+  const hasFeedback = Boolean(feedback?.trim());
+  
+  // Apply new styles
+  const styleResult = sunoStyles.join(', ');
+
   log.info('refineDirectMode:start', {
-    currentPromptLength: currentPrompt.length,
-    feedbackLength: feedback.length,
+    stylesCount: sunoStyles.length,
+    hasFeedback,
     withLyrics,
   });
 
-  // Refine title based on feedback
+  // Per requirements: Title/lyrics only regenerate when feedback is provided
   let newTitle = currentTitle;
-  try {
-    const titleSystemPrompt = `You are refining a song title based on user feedback.
+  let lyrics: string | undefined;
+
+  // Only refine title if feedback provided
+  if (hasFeedback) {
+    try {
+      const titleSystemPrompt = `You are refining a song title based on user input.
 Current title: "${currentTitle}"
-Musical style: ${currentPrompt}
+Musical style: ${styleResult}
+${lyricsTopic?.trim() ? `Topic/Theme: ${lyricsTopic}` : ''}
 
 User feedback: ${feedback}
 
 Generate a new title that addresses the feedback while maintaining relevance to the style.
 Output ONLY the new title, nothing else. Do not include quotes around the title.`;
 
-    const { text: refinedTitle } = await generateText({
-      model: config.getModel(),
-      system: titleSystemPrompt,
-      prompt: feedback,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-    });
+      const { text: refinedTitle } = await generateText({
+        model: config.getModel(),
+        system: titleSystemPrompt,
+        prompt: feedback,
+        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
 
-    newTitle = refinedTitle.trim().replace(/^["']|["']$/g, '');
-  } catch (error) {
-    log.warn('refineDirectMode:title:failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-    // Continue with existing title on error
+      newTitle = refinedTitle.trim().replace(/^["']|["']$/g, '');
+    } catch (error) {
+      log.warn('refineDirectMode:title:failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   }
 
-  // Refine lyrics if enabled (always with maxMode: false for direct mode)
-  let lyrics: string | undefined;
-  if (withLyrics) {
+  // Only generate lyrics if feedback provided AND withLyrics enabled
+  if (hasFeedback && withLyrics) {
     try {
       const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
       const lyricsResult = await generateLyricsForCreativeBoost(
-        currentPrompt,
+        styleResult,
         topicForLyrics,
-        feedback, // Use feedback as additional context for lyrics
-        false, // maxMode = false (always, for direct mode)
-        true, // withLyrics = true
+        feedback,
+        false, // maxMode = false for direct mode
+        true,
         config.getModel
       );
       lyrics = lyricsResult.lyrics;
@@ -244,7 +264,6 @@ Output ONLY the new title, nothing else. Do not include quotes around the title.
       log.warn('refineDirectMode:lyrics:failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
-      // Continue without lyrics on error
     }
   }
 
@@ -252,20 +271,20 @@ Output ONLY the new title, nothing else. Do not include quotes around the title.
   let debugInfo: DebugInfo | undefined;
   if (config.isDebugMode()) {
     debugInfo = config.buildDebugInfo(
-      'DIRECT_MODE_REFINE: Styles unchanged, title and lyrics refined',
-      `Feedback: ${feedback}`,
-      currentPrompt
+      `DIRECT_MODE_REFINE${hasFeedback ? ' (with feedback)' : ''}`,
+      `Feedback: ${feedback || '(none)'}\nStyles: ${styleResult}`,
+      styleResult
     );
   }
 
   log.info('refineDirectMode:complete', {
-    styleLength: currentPrompt.length,
+    styleLength: styleResult.length,
     titleChanged: newTitle !== currentTitle,
-    hasLyrics: !!lyrics,
+    hasLyrics: Boolean(lyrics),
   });
 
   return {
-    text: currentPrompt, // Styles unchanged
+    text: styleResult,
     title: newTitle,
     lyrics,
     debugInfo,
@@ -337,21 +356,17 @@ export async function refineCreativeBoost(
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  // ============ DIRECT MODE REFINE ============
-  // When Suno V5 Styles are selected, only refine title and lyrics
-  // Styles remain unchanged (not refinable)
+  // Direct Mode: Apply new styles and optionally refine title/lyrics
   if (sunoStyles.length > 0) {
-    return refineDirectMode(
-      currentPrompt, // Keep styles unchanged
+    return refineDirectMode({
       currentTitle,
       feedback,
       lyricsTopic,
       description,
+      sunoStyles,
       withLyrics,
-      config
-    );
+    }, config);
   }
-  // ============ END DIRECT MODE REFINE ============
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);

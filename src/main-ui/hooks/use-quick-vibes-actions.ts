@@ -108,10 +108,10 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     const quickVibesInput = getQuickVibesInput();
     const storedInput = currentSession.quickVibesInput;
     
-    // Calculate effective values (UI state if changed, otherwise stored session)
-    const effectiveSunoStyles = quickVibesInput.sunoStyles.length > 0
-      ? quickVibesInput.sunoStyles
-      : storedInput?.sunoStyles ?? [];
+    // Fix: Respect UI state for styles - empty array means user cleared them
+    // Do NOT fall back to stored styles when UI is explicitly empty
+    // This enables category-only refinements when user clears Suno V5 styles
+    const effectiveSunoStyles = quickVibesInput.sunoStyles;
     const effectiveDescription = quickVibesInput.customDescription || storedInput?.customDescription || '';
 
     try {

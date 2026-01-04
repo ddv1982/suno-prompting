@@ -443,7 +443,12 @@ export function createHandlers(
             // Validate all inputs upfront
             validateRequiredField(currentPrompt, 'currentPrompt', 'Current prompt is required for refinement');
             validateRequiredField(currentTitle, 'currentTitle', 'Current title is required for refinement');
-            validateRequiredField(feedback, 'feedback', 'Feedback is required for refinement');
+            // In Direct Mode (sunoStyles selected), feedback is optional
+            // Styles themselves serve as the refinement input
+            const isDirectMode = sunoStyles.length > 0;
+            if (!isDirectMode) {
+                validateRequiredField(feedback, 'feedback', 'Feedback is required for refinement');
+            }
             validateSunoStylesLimit(sunoStyles);
             validateGenreStylesMutualExclusivity(seedGenres, sunoStyles);
             

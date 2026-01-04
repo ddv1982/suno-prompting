@@ -594,3 +594,310 @@ This is how we thrive`,
     expect(generateTextCalls).toBe(1);
   });
 });
+
+// =============================================================================
+// BUG 4: TITLE CONTEXT FALLBACK TESTS
+// Tests for using lyricsTopic as fallback context for title generation
+// =============================================================================
+
+describe("generateDirectMode title context priority (Bug 4)", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+
+    // Mock for direct mode title generation
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      return { text: "Generated Title" };
+    });
+  });
+
+  it("uses description when provided for title context", async () => {
+    // When description is provided, title should be generated (1 LLM call)
+    // The description "love song about summer" should be used over lyricsTopic
+    const result = await engine.generateCreativeBoost(
+      50, // creativityLevel
+      [], // seedGenres
+      ["dream-pop"], // sunoStyles - triggers direct mode
+      "love song about summer", // description - should be used
+      "heartbreak theme", // lyricsTopic - should be ignored when description exists
+      false, false, false
+    );
+
+    // Should make 1 LLM call for title generation
+    expect(generateTextCalls).toBe(1);
+    expect(result.title).toBe("Generated Title");
+  });
+
+  it("falls back to lyricsTopic when description is empty", async () => {
+    // When description is empty, should fall back to lyricsTopic for context
+    const result = await engine.generateCreativeBoost(
+      50, // creativityLevel
+      [], // seedGenres
+      ["synthwave"], // sunoStyles - triggers direct mode
+      "", // description - empty
+      "space adventure", // lyricsTopic - should be used as fallback
+      false, false, false
+    );
+
+    // Should make 1 LLM call for title generation
+    expect(generateTextCalls).toBe(1);
+    expect(result.title).toBe("Generated Title");
+  });
+
+  it("uses empty string when both description and lyricsTopic are empty", async () => {
+    const result = await engine.generateCreativeBoost(
+      50, [], ["ambient"], "", "", false, false, false
+    );
+
+    // Should still generate a title (falls back to styles-only context)
+    expect(result.title).toBeDefined();
+    expect(result.title!.length).toBeGreaterThan(0);
+  });
+});
+
+describe("refineDirectMode title context priority (Bug 4)", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+
+    // Mock for direct mode title refinement
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      return { text: "Refined Title" };
+    });
+  });
+
+  it("uses feedback first for title refinement context", async () => {
+    // When feedback is provided, it should be used for title refinement
+    const result = await engine.refineCreativeBoost(
+      "lo-fi, chill", // currentPrompt
+      "Old Title", // currentTitle
+      "make it more epic", // feedback - should be used
+      "peaceful journey", // lyricsTopic - included but feedback takes priority
+      "", [], ["lo-fi", "chill"],
+      false, false, false
+    );
+
+    // Should make 1 LLM call for title refinement
+    expect(generateTextCalls).toBe(1);
+    expect(result.title).toBe("Refined Title");
+  });
+
+  it("keeps title unchanged when lyricsTopic provided but feedback empty", async () => {
+    // Per Bug 3 requirements: title only changes when feedback is provided
+    // lyricsTopic alone does NOT trigger title refinement in refine mode
+    const result = await engine.refineCreativeBoost(
+      "jazz, smooth", // currentPrompt
+      "Old Title", // currentTitle
+      "", // feedback - empty
+      "ocean voyage", // lyricsTopic - should NOT trigger title refinement
+      "", [], ["jazz", "smooth"],
+      false, false, false
+    );
+
+    // Should make 0 LLM calls (no title refinement without feedback)
+    expect(generateTextCalls).toBe(0);
+    // Title should remain unchanged
+    expect(result.title).toBe("Old Title");
+  });
+
+  it("skips title refinement when both feedback and lyricsTopic are empty", async () => {
+    const result = await engine.refineCreativeBoost(
+      "rock, alternative", // currentPrompt
+      "Original Title", // currentTitle
+      "", // feedback - empty
+      "", // lyricsTopic - empty
+      "", [], ["rock", "alternative"],
+      false, false,
+      false // withLyrics = false
+    );
+
+    // Should keep the original title unchanged (no LLM call for title)
+    expect(result.title).toBe("Original Title");
+    // Should make 0 LLM calls (no title refinement, no lyrics)
+    expect(generateTextCalls).toBe(0);
+  });
+
+  it("keeps title unchanged when lyricsTopic provided but no feedback", async () => {
+    // Per Bug 3 requirements: title only changes when feedback is provided
+    // lyricsTopic alone does NOT trigger title refinement
+    const result = await engine.refineCreativeBoost(
+      "electronic, dance", // currentPrompt
+      "Old Title", // currentTitle
+      "", // feedback - empty
+      "night city vibes", // lyricsTopic - should NOT trigger title refinement
+      "", [], ["electronic", "dance"],
+      false, false, false
+    );
+
+    // Should make 0 LLM calls (no title refinement without feedback)
+    expect(generateTextCalls).toBe(0);
+    expect(result.title).toBe("Old Title");
+  });
+});
+
+// =============================================================================
+// BUG 3: STYLE APPLICATION TESTS
+// Tests for applying new styles during Direct Mode refinement
+// =============================================================================
+
+describe("refineDirectMode style updates (Bug 3)", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+
+    // Mock for direct mode refine
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      if (generateTextCalls === 1) {
+        // Title refinement response
+        return {
+          text: "Refined Title",
+        };
+      } else {
+        // Lyrics generation response
+        return {
+          text: `[VERSE]
+New lyrics for refined song
+
+[CHORUS]
+This is the chorus`,
+        };
+      }
+    });
+  });
+
+  it("applies new styles when changed", async () => {
+    // When sunoStyles array differs from currentPrompt, new styles should be applied
+    const result = await engine.refineCreativeBoost(
+      "old-style, chillwave", // currentPrompt (old styles)
+      "Old Title",
+      "", // no feedback
+      "", "", [],
+      ["dream-pop", "shoegaze"], // NEW styles
+      false, false, false
+    );
+
+    // New styles should be returned
+    expect(result.text).toBe("dream-pop, shoegaze");
+    expect(result.text).not.toBe("old-style, chillwave");
+  });
+
+  it("keeps title unchanged when only styles change (no feedback)", async () => {
+    // Per requirements: title not regenerated without feedback
+    const result = await engine.refineCreativeBoost(
+      "lo-fi, chill", // currentPrompt
+      "Original Title", // currentTitle - should remain unchanged
+      "", // no feedback
+      "", "", [],
+      ["dream-pop", "shoegaze"], // Different styles
+      false, false, false
+    );
+
+    // Title should remain unchanged
+    expect(result.title).toBe("Original Title");
+    // No LLM calls should be made (no title refinement, no lyrics)
+    expect(generateTextCalls).toBe(0);
+    // But styles should be updated
+    expect(result.text).toBe("dream-pop, shoegaze");
+  });
+
+  it("keeps lyrics undefined when only styles change (no feedback)", async () => {
+    // Per requirements: lyrics not regenerated without feedback
+    const result = await engine.refineCreativeBoost(
+      "rock, metal", // currentPrompt
+      "Rock Title",
+      "", // no feedback
+      "some topic", "", [],
+      ["jazz", "smooth"], // Different styles
+      false, false,
+      true // withLyrics = true, but no feedback so no lyrics generated
+    );
+
+    // Lyrics should be undefined (not generated without feedback)
+    expect(result.lyrics).toBeUndefined();
+    // No LLM calls should be made
+    expect(generateTextCalls).toBe(0);
+    // Styles should still be updated
+    expect(result.text).toBe("jazz, smooth");
+  });
+
+  it("regenerates title when feedback provided with style change", async () => {
+    // Both style change AND feedback → title regenerated
+    const result = await engine.refineCreativeBoost(
+      "old-style, ambient", // currentPrompt
+      "Old Title",
+      "make it more energetic", // feedback provided
+      "", "", [],
+      ["rock", "punk"], // NEW styles
+      false, false, false
+    );
+
+    // Styles should be updated
+    expect(result.text).toBe("rock, punk");
+    // Title should be refined (LLM called)
+    expect(result.title).toBe("Refined Title");
+    expect(generateTextCalls).toBe(1);
+  });
+
+  it("generates lyrics when feedback provided with style change", async () => {
+    // Feedback + withLyrics → lyrics generated
+    const result = await engine.refineCreativeBoost(
+      "chill, lo-fi", // currentPrompt
+      "Old Title",
+      "add more feeling", // feedback provided
+      "love theme", "", [],
+      ["dream-pop", "ethereal"], // NEW styles
+      false, false,
+      true // withLyrics = true
+    );
+
+    // Styles should be updated
+    expect(result.text).toBe("dream-pop, ethereal");
+    // Lyrics should be generated (feedback provided)
+    expect(result.lyrics).toBeDefined();
+    expect(result.lyrics).toContain("[VERSE]");
+    // Should make 2 LLM calls: 1 for title, 1 for lyrics
+    expect(generateTextCalls).toBe(2);
+  });
+
+  it("keeps same styles when sunoStyles matches currentPrompt", async () => {
+    // When styles haven't actually changed, result should still match
+    const result = await engine.refineCreativeBoost(
+      "dream-pop, shoegaze", // currentPrompt
+      "Title",
+      "", // no feedback
+      "", "", [],
+      ["dream-pop", "shoegaze"], // Same styles
+      false, false, false
+    );
+
+    // Styles should remain the same
+    expect(result.text).toBe("dream-pop, shoegaze");
+    // No LLM calls (no feedback)
+    expect(generateTextCalls).toBe(0);
+  });
+
+  it("handles single style in sunoStyles array", async () => {
+    const result = await engine.refineCreativeBoost(
+      "old-style, old-style-2", // currentPrompt
+      "Title",
+      "", // no feedback
+      "", "", [],
+      ["single-new-style"], // Single new style
+      false, false, false
+    );
+
+    expect(result.text).toBe("single-new-style");
+  });
+});

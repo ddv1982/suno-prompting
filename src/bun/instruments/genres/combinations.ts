@@ -2,7 +2,7 @@ export const MULTI_GENRE_COMBINATIONS = [
   // Jazz blends
   'jazz fusion', 'jazz funk', 'jazz hip-hop', 'nu jazz', 'acid jazz', 'smooth jazz', 'jazz swing', 'electro swing',
   // Electronic blends
-  'electronic rock', 'electro pop', 'synth pop', 'future bass', 'chillwave', 'vaporwave',
+  'electronic rock', 'electro pop', 'synth pop', 'future bass', 'vaporwave',
   // Electronic dance blends
   'bass house', 'future house', 'tropical house', 'minimal techno', 'hard techno', 'psy trance', 'vocal trance', 'liquid drum and bass', 'liquid funk', 'neurofunk', 'jersey club',
   // Folk blends
@@ -21,7 +21,7 @@ export const MULTI_GENRE_COMBINATIONS = [
   // Jazz-soul blends
   'soul jazz', 'spiritual jazz',
   // World/Latin blends
-  'latin jazz', 'bossa nova', 'afrobeat', 'reggae fusion', 'reggaeton', 'dancehall', 'amapiano',
+  'latin jazz', 'bossa nova', 'reggae fusion', 'reggaeton', 'dancehall', 'amapiano',
   // Country blends
   'country rock', 'country pop',
   // Metal blends

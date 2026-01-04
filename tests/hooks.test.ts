@@ -232,6 +232,181 @@ describe('useDebounce integration patterns', () => {
   });
 });
 
+// ============================================================================
+// Task 2.2: Unit Tests for Bug 1 - Quick Vibes Style Fallback
+// ============================================================================
+
+describe('handleRefineQuickVibes style fallback pattern', () => {
+  /**
+   * These tests verify the pattern used in useQuickVibesActions.handleRefineQuickVibes
+   * for calculating effectiveSunoStyles.
+   * 
+   * Bug 1 Fix: UI state should be respected for styles - empty array means user cleared them.
+   * The code should NOT fall back to stored styles when UI is explicitly empty.
+   */
+
+  type QuickVibesInput = {
+    sunoStyles: string[];
+    customDescription: string;
+    category: string | null;
+    withWordlessVocals: boolean;
+  };
+
+  type StoredInput = {
+    sunoStyles?: string[];
+    customDescription?: string;
+    category: string | null;
+    withWordlessVocals?: boolean;
+  } | undefined;
+
+  // This simulates the FIXED pattern (Bug 1 Fix)
+  function calculateEffectiveSunoStyles(
+    uiInput: QuickVibesInput,
+    _storedInput: StoredInput // Intentionally unused - we respect UI state
+  ): string[] {
+    // Fix: Respect UI state for styles - empty array means user cleared them
+    // Do NOT fall back to stored styles when UI is explicitly empty
+    return uiInput.sunoStyles;
+  }
+
+  // This simulates the OLD buggy pattern (for comparison/documentation)
+  function calculateEffectiveSunoStylesBuggy(
+    uiInput: QuickVibesInput,
+    storedInput: StoredInput
+  ): string[] {
+    // Bug: Falls back to stored styles when UI is empty
+    return uiInput.sunoStyles.length > 0
+      ? uiInput.sunoStyles
+      : storedInput?.sunoStyles ?? [];
+  }
+
+  test('uses UI styles when populated', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['dream-pop'],
+      customDescription: '',
+      category: null,
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: ['lo-fi'],
+      customDescription: '',
+      category: null,
+    };
+
+    const result = calculateEffectiveSunoStyles(uiInput, storedInput);
+    
+    expect(result).toEqual(['dream-pop']);
+    expect(result).not.toEqual(['lo-fi']);
+  });
+
+  test('uses empty array when UI cleared styles (category-only mode)', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: [], // User cleared styles
+      customDescription: '',
+      category: 'lofi-study',
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: ['lo-fi', 'chillwave'], // Previous generation had styles
+      customDescription: '',
+      category: 'lofi-study',
+    };
+
+    const result = calculateEffectiveSunoStyles(uiInput, storedInput);
+    
+    // Fix: Empty array should be respected (category-only mode)
+    expect(result).toEqual([]);
+    expect(result).not.toEqual(['lo-fi', 'chillwave']);
+  });
+
+  test('demonstrates the bug in old pattern', () => {
+    // This test documents the buggy behavior that was fixed
+    const uiInput: QuickVibesInput = {
+      sunoStyles: [], // User cleared styles
+      customDescription: '',
+      category: 'lofi-study',
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: ['lo-fi', 'chillwave'],
+      customDescription: '',
+      category: 'lofi-study',
+    };
+
+    // Old buggy behavior would fall back to stored styles
+    const buggyResult = calculateEffectiveSunoStylesBuggy(uiInput, storedInput);
+    expect(buggyResult).toEqual(['lo-fi', 'chillwave']); // Bug: falls back
+    
+    // Fixed behavior respects UI state
+    const fixedResult = calculateEffectiveSunoStyles(uiInput, storedInput);
+    expect(fixedResult).toEqual([]); // Fix: respects empty UI state
+  });
+
+  test('handles undefined stored input gracefully', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: [],
+      customDescription: '',
+      category: 'lofi-study',
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = undefined;
+
+    const result = calculateEffectiveSunoStyles(uiInput, storedInput);
+    
+    expect(result).toEqual([]);
+  });
+
+  test('handles multiple UI styles correctly', () => {
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['dream-pop', 'shoegaze', 'ambient'],
+      customDescription: '',
+      category: null,
+      withWordlessVocals: false,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: ['lo-fi'],
+      customDescription: '',
+      category: null,
+    };
+
+    const result = calculateEffectiveSunoStyles(uiInput, storedInput);
+    
+    expect(result).toEqual(['dream-pop', 'shoegaze', 'ambient']);
+    expect(result.length).toBe(3);
+  });
+
+  test('correct effectiveSunoStyles passed to api.refineQuickVibes conceptually', () => {
+    // Simulate what happens in the actual hook
+    const uiInput: QuickVibesInput = {
+      sunoStyles: ['indie-rock'],
+      customDescription: 'energetic',
+      category: null,
+      withWordlessVocals: true,
+    };
+    const storedInput: StoredInput = {
+      sunoStyles: ['lo-fi'],
+      customDescription: 'chill',
+      category: 'lofi-study',
+    };
+
+    const effectiveSunoStyles = calculateEffectiveSunoStyles(uiInput, storedInput);
+    
+    // Simulate API call parameters
+    const apiCallParams = {
+      currentPrompt: 'existing prompt',
+      currentTitle: 'Existing Title',
+      description: uiInput.customDescription || storedInput?.customDescription || '',
+      feedback: 'make it better',
+      withWordlessVocals: true,
+      category: storedInput?.category ?? null,
+      sunoStyles: effectiveSunoStyles, // This should be ['indie-rock']
+    };
+
+    expect(apiCallParams.sunoStyles).toEqual(['indie-rock']);
+    expect(apiCallParams.description).toBe('energetic');
+  });
+});
+
 describe('Context memoization patterns', () => {
   test('useMemo dependency array pattern', () => {
     // Verify the memoization pattern works correctly

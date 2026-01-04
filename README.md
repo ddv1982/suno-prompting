@@ -95,7 +95,7 @@ Each provider's API key is stored separately and encrypted independently.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
 - **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
 - **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%), up to 4 seed genres or 4 Suno V5 styles (~900+) with direct injection.
-- **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> genre combinations.
+- **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ## Quick Vibes
 
@@ -237,7 +237,7 @@ Instruments: Rhodes, warm synth pad, vinyl crackle, brushed drums
 
 ## Advanced Mode
 
-Advanced Mode provides precise control over genre selection with searchable dropdowns exposing all <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres and <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> genre combinations.
+Advanced Mode provides precise control over genre selection with searchable dropdowns exposing all <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres and <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ### Genre Selection
 
@@ -246,7 +246,7 @@ Two searchable dropdown selectors allow you to specify exact genres:
 | Selector | Options | Behavior |
 |----------|---------|----------|
 | **Single Genre** | <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres | Direct genre selection (e.g., "Jazz", "Synthwave") |
-| **Genre Combination** | <!-- MULTI_GENRE_COUNT -->110<!-- /MULTI_GENRE_COUNT --> combinations | Fusion/hybrid genres (e.g., "Jazz Fusion", "Folk Rock") |
+| **Genre Combination** | <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combinations | Fusion/hybrid genres (e.g., "Jazz Fusion", "Folk Rock") |
 
 **Note**: Single Genre and Genre Combination are mutually exclusive - selecting one clears the other.
 
@@ -621,7 +621,7 @@ This prevents "genre drift" while ensuring prompts have enough variety to produc
 ### Genre combinations
 <!-- COMBINATIONS_START -->
 
-jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swing, electro swing, electronic rock, electro pop, synth pop, future bass, chillwave, vaporwave, bass house, future house, tropical house, minimal techno, hard techno, psy trance, vocal trance, liquid drum and bass, liquid funk, neurofunk, jersey club, folk rock, folk pop, indie folk, chamber folk, bluegrass, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, post-rock, shoegaze, grunge, stoner rock, post-punk, goth rock, industrial rock, ambient rock, ambient metal, ambient symphonic rock, ambient symphonic metal, neo soul, psychedelic soul, funk soul, country soul, ambient soul, downtempo soul, ambient soul downtempo, chill soul, indie soul, bedroom soul, alternative soul, future soul, alternative r&b, soulful house, gospel house, vocal house, soul jazz, spiritual jazz, latin jazz, bossa nova, afrobeat, reggae fusion, reggaeton, dancehall, amapiano, country rock, country pop, progressive metal, symphonic metal, symphonic rock, doom metal, thrash metal, death metal, black metal, power metal, metalcore, post-metal, trip hop, lo-fi hip hop, g-funk, boom bap, conscious hip-hop, phonk, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
+jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swing, electro swing, electronic rock, electro pop, synth pop, future bass, vaporwave, bass house, future house, tropical house, minimal techno, hard techno, psy trance, vocal trance, liquid drum and bass, liquid funk, neurofunk, jersey club, folk rock, folk pop, indie folk, chamber folk, bluegrass, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, post-rock, shoegaze, grunge, stoner rock, post-punk, goth rock, industrial rock, ambient rock, ambient metal, ambient symphonic rock, ambient symphonic metal, neo soul, psychedelic soul, funk soul, country soul, ambient soul, downtempo soul, ambient soul downtempo, chill soul, indie soul, bedroom soul, alternative soul, future soul, alternative r&b, soulful house, gospel house, vocal house, soul jazz, spiritual jazz, latin jazz, bossa nova, reggae fusion, reggaeton, dancehall, amapiano, country rock, country pop, progressive metal, symphonic metal, symphonic rock, doom metal, thrash metal, death metal, black metal, power metal, metalcore, post-metal, trip hop, lo-fi hip hop, g-funk, boom bap, conscious hip-hop, phonk, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
 
 <!-- COMBINATIONS_END -->
 

@@ -27,6 +27,8 @@ function createMockAIEngine() {
     remixLyrics: mock(() => Promise.resolve({ lyrics: "New Lyrics" })),
     generateQuickVibes: mock(() => Promise.resolve({ text: "Quick vibes prompt" })),
     refineQuickVibes: mock(() => Promise.resolve({ text: "Refined quick vibes" })),
+    generateCreativeBoost: mock(() => Promise.resolve({ text: "Creative boost prompt", title: "Creative Title", lyrics: "Creative lyrics" })),
+    refineCreativeBoost: mock(() => Promise.resolve({ text: "Refined creative boost", title: "Refined Title", lyrics: "Refined lyrics" })),
     setProvider: mock(() => {}),
     setApiKey: mock(() => {}),
     setModel: mock(() => {}),
@@ -480,7 +482,7 @@ bpm: "110"`;
       })).rejects.toThrow("Current prompt is required for refinement");
     });
 
-    test("refineCreativeBoost throws ValidationError for missing feedback", async () => {
+    test("refineCreativeBoost throws ValidationError for missing feedback in normal mode", async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
       const handlers = createHandlers(aiEngine as any, storage as any);
@@ -492,11 +494,61 @@ bpm: "110"`;
         lyricsTopic: "",
         description: "",
         seedGenres: [],
-        sunoStyles: [],
+        sunoStyles: [],  // Normal mode - empty sunoStyles
         withWordlessVocals: false,
         maxMode: false,
         withLyrics: false,
       })).rejects.toThrow("Feedback is required for refinement");
+    });
+
+    test("refineCreativeBoost allows empty feedback in Direct Mode", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Should NOT throw - Direct Mode (sunoStyles has items)
+      const result = await handlers.refineCreativeBoost({
+        currentPrompt: "dream-pop, shoegaze",
+        currentTitle: "Dreamy Title",
+        feedback: "",  // Empty feedback
+        lyricsTopic: "",
+        description: "",
+        seedGenres: [],
+        sunoStyles: ["dream-pop", "shoegaze"],  // Direct Mode
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      });
+
+      expect(result.prompt).toBe("Refined creative boost");
+      expect(result.title).toBe("Refined Title");
+      expect(result.versionId).toBeDefined();
+      expect(aiEngine.refineCreativeBoost).toHaveBeenCalled();
+    });
+
+    test("refineCreativeBoost allows feedback to be provided in Direct Mode", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Should work normally with feedback in Direct Mode
+      const result = await handlers.refineCreativeBoost({
+        currentPrompt: "dream-pop, shoegaze",
+        currentTitle: "Dreamy Title",
+        feedback: "make it darker",  // With feedback
+        lyricsTopic: "",
+        description: "",
+        seedGenres: [],
+        sunoStyles: ["dream-pop", "shoegaze"],  // Direct Mode
+        withWordlessVocals: false,
+        maxMode: false,
+        withLyrics: false,
+      });
+
+      expect(result.prompt).toBe("Refined creative boost");
+      expect(result.title).toBe("Refined Title");
+      expect(result.versionId).toBeDefined();
+      expect(aiEngine.refineCreativeBoost).toHaveBeenCalled();
     });
   });
 });
