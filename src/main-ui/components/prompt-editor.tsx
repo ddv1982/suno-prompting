@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { type GeneratingAction } from "@/context/app-context";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { APP_CONSTANTS } from "@shared/constants";
-import { hasAdvancedSelection as checkAdvancedSelection } from "@shared/music-phrase";
+import { hasAdvancedSelection } from "@shared/music-phrase";
 import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput } from "@shared/types";
 import { type ValidationResult, validateLockedPhrase } from "@shared/validation";
 
@@ -134,7 +134,7 @@ export function PromptEditor({
     lyricsTopicOverLimit: lyricsTopic.length > APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS,
   }), [currentPrompt, pendingInput, maxChars, lockedPhrase, lyricsTopic]);
 
-  const hasAdvancedSelection = editorMode === 'advanced' && checkAdvancedSelection(advancedSelection);
+  const isAdvancedModeActive = editorMode === 'advanced' && hasAdvancedSelection(advancedSelection);
 
   const handleCopy = () => {
     if (promptOverLimit) return;
@@ -249,7 +249,7 @@ export function PromptEditor({
               lockedPhraseValidation={lockedPhraseValidation}
               inputOverLimit={inputOverLimit}
               lyricsTopicOverLimit={lyricsTopicOverLimit}
-              hasAdvancedSelection={hasAdvancedSelection}
+              hasAdvancedSelection={isAdvancedModeActive}
               onPendingInputChange={onPendingInputChange}
               onLockedPhraseChange={onLockedPhraseChange}
               onLyricsTopicChange={onLyricsTopicChange}

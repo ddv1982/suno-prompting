@@ -17,26 +17,19 @@ import type { ModeSelection } from '@bun/instruments/selection';
 
 /**
  * Builds song concept parts for LLM prompts.
- * Uses lyricsTopic as title context when description is empty.
+ * Includes user description and optional lyrics topic section.
  */
 function buildSongConceptParts(
   header: string,
   description: string,
   lyricsTopic?: string
 ): string[] {
-  const trimmedDescription = description.trim();
   const trimmedTopic = lyricsTopic?.trim();
   
-  const parts = [header];
-  
-  if (trimmedDescription) {
-    parts.push(trimmedDescription);
-  } else if (trimmedTopic) {
-    parts.push(`(Based on lyrics topic: ${trimmedTopic})`);
-  }
+  const parts = [header, description];
   
   if (trimmedTopic) {
-    parts.push('', `LYRICS TOPIC (use this topic for lyrics content):`, trimmedTopic);
+    parts.push('', `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`, trimmedTopic);
   }
   
   return parts;
