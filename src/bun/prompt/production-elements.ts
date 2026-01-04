@@ -187,7 +187,7 @@ export const GENRE_PRODUCTION_STYLES: Record<string, {
 };
 
 // Default production style for unknown genres
-const DEFAULT_PRODUCTION_STYLE = {
+export const DEFAULT_PRODUCTION_STYLE = {
   reverbs: ['Studio Reverb', 'Plate Reverb'],
   textures: ['Polished Production', 'Analog Warmth'],
   dynamics: ['Natural Dynamics'],

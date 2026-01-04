@@ -171,7 +171,7 @@ export const GENRE_VOCAL_STYLES: Record<string, {
 };
 
 // Default vocal style for unknown genres
-const DEFAULT_VOCAL_STYLE = {
+export const DEFAULT_VOCAL_STYLE = {
   ranges: ['Tenor', 'Alto', 'Mezzo Soprano'] as VocalRange[],
   deliveries: ['Smooth', 'Emotional', 'Warm'],
   techniques: ['Stacked Harmonies', 'Ad Libs'],

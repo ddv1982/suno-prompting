@@ -8,6 +8,7 @@ import {
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
+import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
@@ -101,6 +102,20 @@ export function buildContextualPrompt(
     if (modeGuidance) parts.push(modeGuidance);
 
     if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
+
+    // Add performance guidance for detected genre
+    if (selection.genre) {
+      const guidance = buildPerformanceGuidance(selection.genre);
+      if (guidance) {
+        parts.push('');
+        parts.push('PERFORMANCE GUIDANCE:');
+        parts.push(`Vocal: ${guidance.vocal}`);
+        parts.push(`Production: ${guidance.production}`);
+        if (guidance.instruments.length > 0) {
+          parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+        }
+      }
+    }
   }
 
   return parts.join('\n\n');

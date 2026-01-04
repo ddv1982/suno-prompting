@@ -1,16 +1,6 @@
-import { selectInstrumentsForGenre } from '@bun/instruments';
-import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import { articulateInstrument } from '@bun/prompt/articulations';
-import { buildProductionDescriptor } from '@bun/prompt/production-elements';
-import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
+import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
-
-import type { GenreType } from '@bun/instruments/genres';
-
-function isValidGenre(genre: string): genre is GenreType {
-  return genre in GENRE_REGISTRY;
-}
 
 export { getCreativityLevel };
 
@@ -111,20 +101,18 @@ export function buildCreativeBoostUserPrompt(
   if (seedGenres.length > 0) {
     parts.push(`Seed genres to explore: ${seedGenres.join(', ')}`);
 
-    // Add performance guidance from primary genre (if it's a known genre)
+    // Add performance guidance from primary genre (supports compound genres)
     const primaryGenre = seedGenres[0];
-    if (primaryGenre && isValidGenre(primaryGenre)) {
-      parts.push('');
-      parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
-      parts.push(`Vocal style: ${buildVocalDescriptor(primaryGenre)}`);
-      parts.push(`Production: ${buildProductionDescriptor(primaryGenre)}`);
-
-      const instruments = selectInstrumentsForGenre(primaryGenre, {});
-      const articulated = instruments
-        .slice(0, 3)
-        .map((i) => articulateInstrument(i, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE));
-      if (articulated.length > 0) {
-        parts.push(`Suggested instruments: ${articulated.join(', ')}`);
+    if (primaryGenre) {
+      const guidance = buildPerformanceGuidance(primaryGenre);
+      if (guidance) {
+        parts.push('');
+        parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
+        parts.push(`Vocal style: ${guidance.vocal}`);
+        parts.push(`Production: ${guidance.production}`);
+        if (guidance.instruments.length > 0) {
+          parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+        }
       }
     }
   } else {
