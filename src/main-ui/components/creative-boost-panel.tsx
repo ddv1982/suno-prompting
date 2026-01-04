@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
-import { Switch } from "@/components/ui/switch";
+import { ToggleRow } from "@/components/ui/toggle-row";
 import { Dice3, Loader2, MessageSquare, Mic, RefreshCw, Zap, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
@@ -239,61 +239,37 @@ export function CreativeBoostPanel({
 
       {/* Toggles Section */}
       <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
-        {/* Wordless Vocals Toggle */}
-        <label htmlFor="cb-wordless-vocals" className="flex items-center gap-3 py-2 cursor-pointer">
-          <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[length:var(--text-footnote)]">Wordless vocals</span>
-          <span className="ui-helper">(humming, oohs)</span>
-          <Switch
-            id="cb-wordless-vocals"
-            checked={input.withWordlessVocals}
-            onCheckedChange={handleWordlessVocalsChange}
-            disabled={isGenerating || lyricsMode}
-            size="sm"
-          />
-        </label>
-
-        {/* Max Mode Toggle */}
-        <label
-          htmlFor="cb-max-mode"
-          className={cn(
-            "flex items-center gap-3 py-2",
-            isDirectMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-          )}
-        >
-          <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[length:var(--text-footnote)]">Max Mode</span>
-          {isDirectMode && (
-            <Badge variant="secondary" className="ui-badge h-4 text-[10px]">
-              N/A
-            </Badge>
-          )}
-          <Switch
-            id="cb-max-mode"
-            checked={isDirectMode ? false : maxMode}
-            onCheckedChange={onMaxModeChange}
-            disabled={isGenerating || isDirectMode}
-            size="sm"
-          />
-        </label>
+        <ToggleRow
+          id="cb-wordless-vocals"
+          icon={<Mic className="w-3.5 h-3.5" />}
+          label="Wordless vocals"
+          helperText="(humming, oohs)"
+          checked={input.withWordlessVocals}
+          onChange={handleWordlessVocalsChange}
+          disabled={isGenerating || lyricsMode}
+        />
+        <ToggleRow
+          id="cb-max-mode"
+          icon={<Zap className="w-3.5 h-3.5" />}
+          label="Max Mode"
+          checked={isDirectMode ? false : maxMode}
+          onChange={onMaxModeChange}
+          disabled={isGenerating || isDirectMode}
+          showNaBadge={isDirectMode}
+        />
         {isDirectMode && (
           <p className="ui-helper pl-6 -mt-1">
             Max Mode not applicable with Suno V5 Styles
           </p>
         )}
-
-        {/* Lyrics Toggle */}
-        <label htmlFor="cb-lyrics" className="flex items-center gap-3 py-2 cursor-pointer">
-          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[length:var(--text-footnote)]">Lyrics</span>
-          <Switch
-            id="cb-lyrics"
-            checked={lyricsMode}
-            onCheckedChange={handleLyricsToggleChange}
-            disabled={isGenerating || input.withWordlessVocals}
-            size="sm"
-          />
-        </label>
+        <ToggleRow
+          id="cb-lyrics"
+          icon={<FileText className="w-3.5 h-3.5" />}
+          label="Lyrics"
+          checked={lyricsMode}
+          onChange={handleLyricsToggleChange}
+          disabled={isGenerating || input.withWordlessVocals}
+        />
         <p className="ui-helper pl-6">
           {lyricsMode
             ? isDirectMode

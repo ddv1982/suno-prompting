@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
-import { Switch } from "@/components/ui/switch";
+import { ToggleRow } from "@/components/ui/toggle-row";
 import { Sparkles, Loader2, MessageSquare, Mic, RefreshCw, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
@@ -190,50 +190,25 @@ export function QuickVibesPanel({
 
       {/* Toggles Section */}
       <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
-        {/* Wordless Vocals Toggle */}
-        <label 
-          className={cn(
-            "flex items-center gap-3 py-2",
-            isDirectMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-          )}
-        >
-          <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[length:var(--text-footnote)]">Wordless vocals</span>
-          <span className="ui-helper">(humming, oohs)</span>
-          {isDirectMode && (
-            <Badge variant="secondary" className="ui-badge h-4 text-[10px]">
-              N/A
-            </Badge>
-          )}
-          <Switch
-            checked={isDirectMode ? false : withWordlessVocals}
-            onCheckedChange={onWordlessVocalsChange}
-            disabled={isGenerating || isDirectMode}
-            size="sm"
-          />
-        </label>
-
-        {/* Max Mode Toggle */}
-        <label
-          className={cn(
-            "flex items-center gap-3 py-2",
-            isDirectMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-          )}
-        >
-          <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[length:var(--text-footnote)]">Max Mode</span>
-          {isDirectMode && (
-            <Badge variant="secondary" className="ui-badge h-4 text-[10px]">
-              N/A
-            </Badge>
-          )}
-          <Switch
-            checked={isDirectMode ? false : maxMode}
-            onCheckedChange={onMaxModeChange}
-            disabled={isGenerating || isDirectMode}
-            size="sm"
-          />
-        </label>
+        <ToggleRow
+          id="qv-wordless-vocals"
+          icon={<Mic className="w-3.5 h-3.5" />}
+          label="Wordless vocals"
+          helperText="(humming, oohs)"
+          checked={isDirectMode ? false : withWordlessVocals}
+          onChange={onWordlessVocalsChange}
+          disabled={isGenerating || isDirectMode}
+          showNaBadge={isDirectMode}
+        />
+        <ToggleRow
+          id="qv-max-mode"
+          icon={<Zap className="w-3.5 h-3.5" />}
+          label="Max Mode"
+          checked={isDirectMode ? false : maxMode}
+          onChange={onMaxModeChange}
+          disabled={isGenerating || isDirectMode}
+          showNaBadge={isDirectMode}
+        />
         <p className="ui-helper pl-6">
           {isDirectMode
             ? "Not applicable with Suno V5 Styles"
