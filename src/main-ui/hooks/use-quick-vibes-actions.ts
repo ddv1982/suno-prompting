@@ -138,7 +138,10 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         feedback: input,
         withWordlessVocals,
         category: storedInput?.category ?? null,
-        sunoStyles: storedInput?.sunoStyles ?? [],
+        // Use current input if user changed styles, otherwise use stored session
+        sunoStyles: quickVibesInput.sunoStyles.length > 0
+          ? quickVibesInput.sunoStyles
+          : storedInput?.sunoStyles ?? [],
       });
 
       if (!result?.prompt) {
@@ -176,7 +179,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, withWordlessVocals, quickVibesInput.customDescription, saveSession, resetQuickVibesInput, setPendingInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [isGenerating, currentSession, withWordlessVocals, quickVibesInput.customDescription, quickVibesInput.sunoStyles, saveSession, resetQuickVibesInput, setPendingInput, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
 
   return {
     handleGenerateQuickVibes,
