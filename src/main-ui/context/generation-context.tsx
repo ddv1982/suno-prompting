@@ -37,7 +37,7 @@ interface GenerationContextType {
   handleRemixRecording: () => Promise<void>;
   handleRemixTitle: () => Promise<void>;
   handleRemixLyrics: () => Promise<void>;
-  handleGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => Promise<void>;
+  handleGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[]) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
   handleConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
   handleGenerateCreativeBoost: () => Promise<void>;

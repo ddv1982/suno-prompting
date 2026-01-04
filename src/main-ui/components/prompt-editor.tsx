@@ -46,7 +46,7 @@ type PromptEditorProps = {
   onWordlessVocalsChange: (value: boolean) => void;
   onCreativeBoostInputChange: (input: CreativeBoostInput) => void;
   onGenerate: (input: string) => void;
-  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean) => void;
+  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[]) => void;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => void;
   onCopy: () => void;
@@ -223,7 +223,7 @@ export function PromptEditor({
               onInputChange={onQuickVibesInputChange}
               onWordlessVocalsChange={onWordlessVocalsChange}
               onMaxModeChange={onMaxModeChange}
-              onGenerate={() => onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals)}
+              onGenerate={() => onGenerateQuickVibes(quickVibesInput.category, quickVibesInput.customDescription, withWordlessVocals, quickVibesInput.sunoStyles)}
               onRefine={(feedback) => onGenerate(feedback)}
             />
           ) : promptMode === 'creativeBoost' ? (
