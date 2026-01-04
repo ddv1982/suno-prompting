@@ -77,9 +77,11 @@ export function FullPromptInputPanel({
 
   const handleSend = () => {
     const trimmed = pendingInput.trim();
-    const canRefineWithoutInput = editorMode === 'advanced' && currentPrompt && hasAdvancedSelection;
+    // Allow generation without description when: advanced mode + selection + (refine OR lyrics topic)
+    const canGenerateWithAdvancedSelection = editorMode === 'advanced' && hasAdvancedSelection &&
+      (currentPrompt || (lyricsMode && lyricsTopic.trim()));
     
-    if (!trimmed && !canRefineWithoutInput) return;
+    if (!trimmed && !canGenerateWithAdvancedSelection) return;
     if (isGenerating) return;
     if (trimmed.length > maxChars) return;
     if (!lockedPhraseValidation.isValid) return;
@@ -250,7 +252,7 @@ export function FullPromptInputPanel({
               inputOverLimit ||
               lyricsTopicOverLimit ||
               !lockedPhraseValidation.isValid ||
-              (!pendingInput.trim() && !(editorMode === 'advanced' && currentPrompt && hasAdvancedSelection))
+              (!pendingInput.trim() && !(editorMode === 'advanced' && hasAdvancedSelection && (currentPrompt || (lyricsMode && lyricsTopic.trim()))))
             }
             size="sm"
             className={cn(
