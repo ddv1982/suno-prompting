@@ -56,6 +56,7 @@ export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
 
 /**
  * Counts how many selections have been made.
+ * @internal Primarily used for testing purposes.
  */
 export function countSelections(selection: AdvancedSelection): number {
     let count = 0;

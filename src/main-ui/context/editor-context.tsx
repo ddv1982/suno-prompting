@@ -87,16 +87,26 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
 
   // Load promptMode once on mount - no reload, no race conditions
   useEffect(() => {
-    api.getPromptMode()
-      .then(mode => setPromptModeState(mode))
-      .catch(err => log.error("loadPromptMode:failed", err));
+    const loadPromptMode = async () => {
+      try {
+        const mode = await api.getPromptMode();
+        setPromptModeState(mode);
+      } catch (err) {
+        log.error("loadPromptMode:failed", err);
+      }
+    };
+    loadPromptMode();
   }, []);
 
   // Fire-and-forget save - no rollback needed for UI preference
   // This pattern avoids race conditions that occur with optimistic update + reload
-  const setPromptMode = useCallback((mode: PromptMode) => {
+  const setPromptMode = useCallback(async (mode: PromptMode) => {
     setPromptModeState(mode);
-    api.setPromptMode(mode).catch(err => log.error("setPromptMode:failed", err));
+    try {
+      await api.setPromptMode(mode);
+    } catch (err) {
+      log.error("setPromptMode:failed", err);
+    }
   }, []);
 
   const computedMusicPhrase = useMemo(() => {

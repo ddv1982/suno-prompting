@@ -45,28 +45,31 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const currentApiKey = apiKeys[provider] || '';
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+    
+    const loadSettings = async () => {
       setError(null);
       setLoading(true);
-      api.getAllSettings()
-        .then((settings) => {
-          setProvider(settings.provider);
-          setApiKeys(settings.apiKeys);
-          // Validate model exists in provider's model list
-          const providerModels = MODELS_BY_PROVIDER[settings.provider];
-          const modelExists = providerModels.some(m => m.id === settings.model);
-          setModel(modelExists ? settings.model : providerModels[0].id);
-          setUseSunoTags(settings.useSunoTags);
-          setDebugMode(settings.debugMode);
-          setMaxMode(settings.maxMode);
-          setLyricsMode(settings.lyricsMode);
-        })
-        .catch((err) => {
-          log.error("fetchSettings:failed", err);
-          setError("Unable to load settings.");
-        })
-        .finally(() => setLoading(false));
-    }
+      try {
+        const settings = await api.getAllSettings();
+        setProvider(settings.provider);
+        setApiKeys(settings.apiKeys);
+        // Validate model exists in provider's model list
+        const providerModels = MODELS_BY_PROVIDER[settings.provider];
+        const modelExists = providerModels.some(m => m.id === settings.model);
+        setModel(modelExists ? settings.model : providerModels[0].id);
+        setUseSunoTags(settings.useSunoTags);
+        setDebugMode(settings.debugMode);
+        setMaxMode(settings.maxMode);
+        setLyricsMode(settings.lyricsMode);
+      } catch (err) {
+        log.error("fetchSettings:failed", err);
+        setError("Unable to load settings.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadSettings();
   }, [isOpen]);
 
   const handleProviderChange = (newProvider: AIProvider) => {

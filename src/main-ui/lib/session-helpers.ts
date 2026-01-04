@@ -49,8 +49,9 @@ export function createVersion(
 /**
  * Creates or updates a session with new generation result.
  * Handles both new session creation and existing session updates.
+ * Internal helper - use completeSessionUpdate for the full flow.
  */
-export function createOrUpdateSession(
+function createOrUpdateSession(
   currentSession: PromptSession | null,
   result: GenerationResultBase,
   originalInput: string,
@@ -122,17 +123,6 @@ export function handleGenerationError(
     ...prev,
     { role: "ai", content: `Error: ${errorMessage}.` },
   ]);
-}
-
-/**
- * Common post-generation cleanup (finally block)
- */
-export function postGenerationCleanup(
-  setValidation: (v: ValidationResult) => void,
-  setGeneratingAction: (action: GeneratingAction) => void
-): void {
-  setValidation({ ...EMPTY_VALIDATION });
-  setGeneratingAction('none');
 }
 
 /**

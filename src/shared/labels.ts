@@ -1,6 +1,7 @@
 // Concise labels for music theory elements - optimized for Suno prompt brevity
+// Internal lookup tables used by getConciseLabel - not exported
 
-export const HARMONIC_LABELS: Record<string, string> = {
+const HARMONIC_LABELS: Record<string, string> = {
   // Lydian modes
   lydian: 'Lydian #11',
   lydian_dominant: 'Lydian b7',
@@ -18,7 +19,7 @@ export const HARMONIC_LABELS: Record<string, string> = {
   locrian: 'Locrian',
 };
 
-export const COMBINATION_LABELS: Record<string, string> = {
+const COMBINATION_LABELS: Record<string, string> = {
   // Cross-mode combinations
   major_minor: 'Major↔Minor bittersweet',
   lydian_minor: 'Lydian→Minor dreamdark',
@@ -33,7 +34,7 @@ export const COMBINATION_LABELS: Record<string, string> = {
   dark_modes: 'Dark descent (Aeol→Phryg→Loc)',
 };
 
-export const POLYRHYTHM_LABELS: Record<string, string> = {
+const POLYRHYTHM_LABELS: Record<string, string> = {
   // Single polyrhythms
   hemiola: '2:3 swing',
   reverse_hemiola: '3:2 triplet',
@@ -53,7 +54,7 @@ export const POLYRHYTHM_LABELS: Record<string, string> = {
   tension_arc: '4:3→5:4→2:3 arc',
 };
 
-export const TIME_SIGNATURE_LABELS: Record<string, string> = {
+const TIME_SIGNATURE_LABELS: Record<string, string> = {
   time_4_4: '4/4',
   time_3_4: '3/4 waltz',
   time_6_8: '6/8 compound',
@@ -67,7 +68,7 @@ export const TIME_SIGNATURE_LABELS: Record<string, string> = {
   time_15_8: '15/8 extended',
 };
 
-export const TIME_JOURNEY_LABELS: Record<string, string> = {
+const TIME_JOURNEY_LABELS: Record<string, string> = {
   prog_odyssey: '4/4→7/8→5/4 prog',
   balkan_fusion: '7/8→9/8→11/8 Balkan',
   jazz_exploration: '4/4→5/4→9/8 jazz',
