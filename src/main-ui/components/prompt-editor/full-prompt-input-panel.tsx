@@ -222,7 +222,7 @@ export function FullPromptInputPanel({
 
       {/* Main Input */}
       <div className="space-y-1">
-        <FormLabel icon={<MessageSquare className="w-3 h-3" />}>
+        <FormLabel icon={<MessageSquare className="w-3 h-3" />} badge={hasAdvancedSelection ? "optional" : undefined}>
           {currentPrompt ? 'Refine Prompt' : (lyricsMode ? 'Musical Style' : 'Describe Your Song')}
         </FormLabel>
         <div className="flex gap-3 items-end">
