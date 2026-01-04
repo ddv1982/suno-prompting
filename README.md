@@ -94,7 +94,7 @@ Each provider's API key is stored separately and encrypted independently.
 - Prompt validation: **1000-character limit** + contradictory tag warnings.
 - **Max Mode**: Community-discovered prompt format for higher quality output (see below).
 - **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
-- **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%), up to 4 seed genres or 4 Suno V5 styles (~900+) with direct injection.
+- **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%), Simple/Advanced mode toggle, up to 4 seed genres or 4 Suno V5 styles (~900+) with direct injection.
 - **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> genre combinations.
 
 ## Quick Vibes
@@ -139,10 +139,28 @@ Creative Boost is an experimental generation mode that explores creative genre c
 ### How to Use
 
 1. Switch to Creative Boost mode using the mode toggle
-2. Adjust the **Creativity Slider** to control genre exploration intensity
-3. Optionally select up to **4 seed genres** OR **4 Suno V5 styles** to guide the direction
-4. Add an optional description for additional context
-5. Click Generate
+2. Choose **Simple** or **Advanced** mode:
+   - **Simple**: Creativity slider + Description + Toggles only (AI auto-selects genres/styles)
+   - **Advanced**: Full feature set including Seed Genres and Suno V5 Styles
+3. Adjust the **Creativity Slider** to control genre exploration intensity
+4. (Advanced only) Optionally select up to **4 seed genres** OR **4 Suno V5 styles**
+5. Add an optional description for additional context
+6. Click Generate
+
+### Simple vs Advanced Mode
+
+| Aspect | Simple Mode | Advanced Mode |
+|--------|-------------|---------------|
+| **Creativity Slider** | ✅ Visible | ✅ Visible |
+| **Description Input** | ✅ Visible | ✅ Visible |
+| **Toggles** (Lyrics, Wordless, Max) | ✅ Visible | ✅ Visible |
+| **Seed Genres** | ❌ Hidden | ✅ Visible |
+| **Suno V5 Styles** | ❌ Hidden | ✅ Visible |
+| **Direct Mode Indicator** | ❌ Hidden | ✅ Visible |
+| **Genre Selection** | AI auto-selects | Manual selection |
+| **Default** | ✅ Yes | No |
+
+**Note**: Direct Mode (when Suno V5 styles are selected) disables the Simple mode toggle, as exact style selections must remain visible.
 
 ### Creativity Levels
 
@@ -179,13 +197,15 @@ Alternatively, select up to 4 official Suno V5 styles (~900+ available):
 
 ### Creative Boost Features
 
+- **Simple/Advanced Toggle**: Quick switch between streamlined and full-featured interfaces
 - **Creativity Slider**: 5-level control from conservative to experimental
-- **Direct Genre Injection**: Your selected genres/styles appear exactly as chosen
-- **Suno V5 Styles**: Access to 900+ official Suno V5 style tags
+- **Direct Genre Injection**: Your selected genres/styles appear exactly as chosen (Advanced mode)
+- **Suno V5 Styles**: Access to 900+ official Suno V5 style tags (Advanced mode)
 - **Max Mode support**: Works with both Max and standard output formats
 - **Wordless Vocals**: Toggle for instrumental-only output
 - **Lyrics Mode**: Optional AI-generated lyrics
 - **Refinement**: Chat-style refinement to adjust the generated prompt
+- **Mode Persistence**: Your Simple/Advanced preference is saved separately from Full Prompt mode
 
 ### Output Examples
 
