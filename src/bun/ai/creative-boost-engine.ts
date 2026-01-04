@@ -305,13 +305,15 @@ export async function generateCreativeBoost(
     );
   }
 
-  const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
-  const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description, lyricsTopic);
-
-  // Compute performance instruments from primary seed genre
+  // Compute performance instruments ONCE - used for both LLM prompt and conversion
   const primaryGenre = seedGenres[0];
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
+
+  const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
+  const userPrompt = buildCreativeBoostUserPrompt(
+    creativityLevel, seedGenres, description, lyricsTopic, performanceInstruments
+  );
 
   const rawResponse = await callLLM({
     getModel: config.getModel,
@@ -364,13 +366,16 @@ export async function refineCreativeBoost(
   }
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
-  const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
-  const userPrompt = buildCreativeBoostRefineUserPrompt(cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres);
 
-  // Compute performance instruments from primary seed genre
+  // Compute performance instruments ONCE - used for both LLM prompt and conversion
   const primaryGenre = seedGenres[0];
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
+
+  const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
+  const userPrompt = buildCreativeBoostRefineUserPrompt(
+    cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, performanceInstruments
+  );
 
   const rawResponse = await callLLM({
     getModel: config.getModel,

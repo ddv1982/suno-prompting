@@ -248,6 +248,50 @@ describe('buildCreativeBoostUserPrompt', () => {
     expect(prompt).toContain('"spaced text"');
     expect(prompt).not.toContain('"  spaced text  "');
   });
+
+  describe('performanceInstruments parameter', () => {
+    it('uses pre-computed instruments when provided', () => {
+      // Arrange
+      const preComputedInstruments = ['synth strings', 'sidechain pad'];
+
+      // Act
+      const prompt = buildCreativeBoostUserPrompt(
+        50,
+        ['house'],
+        '',
+        undefined,
+        preComputedInstruments
+      );
+
+      // Assert - should use the pre-computed instruments
+      expect(prompt).toContain('Suggested instruments: synth strings, sidechain pad');
+    });
+
+    it('falls back to guidance instruments when performanceInstruments not provided', () => {
+      // Act - no performanceInstruments parameter
+      const prompt = buildCreativeBoostUserPrompt(50, ['jazz'], '');
+
+      // Assert - should still have instruments from guidance
+      expect(prompt).toContain('Suggested instruments:');
+    });
+
+    it('uses pre-computed instruments over generated ones', () => {
+      // Arrange - specific instruments that may not be in jazz pool
+      const preComputedInstruments = ['didgeridoo', 'theremin'];
+
+      // Act
+      const prompt = buildCreativeBoostUserPrompt(
+        50,
+        ['jazz'],
+        '',
+        undefined,
+        preComputedInstruments
+      );
+
+      // Assert - should use pre-computed, not jazz pool instruments
+      expect(prompt).toContain('Suggested instruments: didgeridoo, theremin');
+    });
+  });
 });
 
 // ============================================================================
@@ -541,6 +585,24 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
 
       // ASSERT
       expect(prompt).not.toContain('PERFORMANCE GUIDANCE');
+    });
+
+    it('uses pre-computed instruments when performanceInstruments provided', () => {
+      // Arrange
+      const preComputedInstruments = ['synth strings', 'sidechain pad'];
+
+      // Act
+      const prompt = buildCreativeBoostRefineUserPrompt(
+        'house vibes',
+        'Club Night',
+        'more energy',
+        undefined,
+        ['house'],
+        preComputedInstruments
+      );
+
+      // Assert - should use the pre-computed instruments
+      expect(prompt).toContain('Suggested instruments: synth strings, sidechain pad');
     });
   });
 });

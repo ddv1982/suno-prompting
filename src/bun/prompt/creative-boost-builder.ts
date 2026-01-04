@@ -87,12 +87,15 @@ RULES:
 /**
  * Builds the user prompt for Creative Boost generation.
  * Uses lyricsTopic for title context only when description is empty.
+ *
+ * @param performanceInstruments - Pre-computed instruments to use (ensures same instruments used in conversion)
  */
 export function buildCreativeBoostUserPrompt(
   creativityLevel: number,
   seedGenres: string[],
   description: string,
-  lyricsTopic?: string
+  lyricsTopic?: string,
+  performanceInstruments?: string[]
 ): string {
   const parts: string[] = [];
 
@@ -110,8 +113,10 @@ export function buildCreativeBoostUserPrompt(
         parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
         parts.push(`Vocal style: ${guidance.vocal}`);
         parts.push(`Production: ${guidance.production}`);
-        if (guidance.instruments.length > 0) {
-          parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+        // Use pre-computed instruments if provided, otherwise use guidance instruments
+        const instruments = performanceInstruments ?? guidance.instruments;
+        if (instruments.length > 0) {
+          parts.push(`Suggested instruments: ${instruments.join(', ')}`);
         }
       }
     }
@@ -209,13 +214,15 @@ RULES:
  * @param feedback - User's refinement feedback
  * @param lyricsTopic - Optional lyrics topic for context
  * @param seedGenres - Optional seed genres for performance guidance
+ * @param performanceInstruments - Pre-computed instruments to use (ensures same instruments used in conversion)
  */
 export function buildCreativeBoostRefineUserPrompt(
   currentPrompt: string,
   currentTitle: string,
   feedback: string,
   lyricsTopic?: string,
-  seedGenres?: string[]
+  seedGenres?: string[],
+  performanceInstruments?: string[]
 ): string {
   const parts = [
     `Current title: "${currentTitle}"`,
@@ -232,8 +239,10 @@ export function buildCreativeBoostRefineUserPrompt(
         parts.push('PERFORMANCE GUIDANCE (blend naturally into style):');
         parts.push(`Vocal style: ${guidance.vocal}`);
         parts.push(`Production: ${guidance.production}`);
-        if (guidance.instruments.length > 0) {
-          parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+        // Use pre-computed instruments if provided, otherwise use guidance instruments
+        const instruments = performanceInstruments ?? guidance.instruments;
+        if (instruments.length > 0) {
+          parts.push(`Suggested instruments: ${instruments.join(', ')}`);
         }
       }
     }
