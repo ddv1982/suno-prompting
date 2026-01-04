@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo, t
 import { createLogger } from '@/lib/logger';
 import { api } from '@/services/rpc';
 import { type PromptSession } from '@shared/types';
+import { nowISO } from '@shared/utils';
 
 const log = createLogger('Session');
 
@@ -83,7 +84,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     title?: string, 
     lyrics?: string
   ): PromptSession => {
-    const now = new Date().toISOString();
+    const now = nowISO();
     return {
       id: generateId(),
       originalInput,

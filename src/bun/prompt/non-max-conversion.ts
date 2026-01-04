@@ -6,6 +6,7 @@ import { generateText } from 'ai';
 import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { APP_CONSTANTS } from '@shared/constants';
 import { cleanJsonResponse } from '@shared/prompt-utils';
+import { nowISO } from '@shared/utils';
 
 import type { DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
@@ -233,7 +234,7 @@ async function generateSectionContent(
     debugInfo: {
       systemPrompt,
       userPrompt,
-      timestamp: new Date().toISOString(),
+      timestamp: nowISO(),
     },
   };
 }

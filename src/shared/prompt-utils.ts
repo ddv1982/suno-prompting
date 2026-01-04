@@ -58,3 +58,41 @@ export function isStructuredPrompt(text: string): boolean {
   
   return hasNonMaxFields || hasSectionTags || hasMaxStyleFields;
 }
+
+/**
+ * Clean and normalize a title string.
+ * Removes leading/trailing quotes and whitespace.
+ */
+export function cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
+  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
+}
+
+/**
+ * Clean lyrics string, returning undefined for empty/whitespace.
+ */
+export function cleanLyrics(lyrics: string | undefined): string | undefined {
+  return lyrics?.trim() || undefined;
+}
+
+export type ParsedCombinedResponse = {
+  prompt: string;
+  title?: string;
+  lyrics?: string;
+};
+
+/**
+ * Parse a combined JSON response from LLM (prompt + optional title/lyrics).
+ * Returns null if parsing fails or prompt is missing.
+ */
+export function parseJsonResponse(rawResponse: string): ParsedCombinedResponse | null {
+  try {
+    const cleaned = cleanJsonResponse(rawResponse);
+    const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
+    if (!parsed.prompt) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}

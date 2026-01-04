@@ -1,19 +1,16 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { type ChatMessage } from '@/lib/chat-utils';
 import { createLogger } from '@/lib/logger';
-import {
-  completeSessionUpdate,
-  handleGenerationError,
-  addUserMessage,
-  type SessionDeps,
-} from '@/lib/session-helpers';
+import { handleGenerationError } from '@/lib/session-helpers';
 import { api } from '@/services/rpc';
 import { getErrorMessage } from '@shared/errors';
-import { type PromptSession, type DebugInfo, type CreativeBoostInput } from '@shared/types';
-import { type ValidationResult } from '@shared/validation';
+import { type CreativeBoostInput } from '@shared/types';
 
-import type { GeneratingAction } from '@/hooks/use-generation-state';
+import {
+  useGenerationAction,
+  createSessionDeps,
+  type GenerationActionDeps,
+} from './use-generation-action';
 
 
 const log = createLogger('CreativeBoost');
@@ -36,15 +33,7 @@ const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {
   ].filter(Boolean).join(' ') || 'Creative Boost';
 };
 
-type CreativeBoostActionsConfig = {
-  isGenerating: boolean;
-  currentSession: PromptSession | null;
-  generateId: () => string;
-  saveSession: (session: PromptSession) => Promise<void>;
-  setGeneratingAction: (action: GeneratingAction) => void;
-  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
-  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
-  setValidation: (v: ValidationResult) => void;
+type CreativeBoostActionsConfig = GenerationActionDeps & {
   setPendingInput: (input: string) => void;
   showToast: (message: string, type: 'success' | 'error') => void;
   creativeBoostInput: CreativeBoostInput;
@@ -54,14 +43,8 @@ type CreativeBoostActionsConfig = {
 
 export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
   const {
-    isGenerating,
     currentSession,
-    generateId,
-    saveSession,
-    setGeneratingAction,
-    setDebugInfo,
     setChatMessages,
-    setValidation,
     setPendingInput,
     showToast,
     creativeBoostInput,
@@ -69,99 +52,82 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig) {
     lyricsMode,
   } = config;
 
-  const sessionDeps: SessionDeps = {
-    currentSession,
-    generateId,
-    saveSession,
-    setDebugInfo,
-    setChatMessages,
-    setValidation,
-    setGeneratingAction,
-    log,
-  };
+  const sessionDeps = useMemo(() => createSessionDeps(config, log), [config]);
+  const { execute } = useGenerationAction(config);
 
   const handleGenerateCreativeBoost = useCallback(async () => {
-    if (isGenerating) return;
+    const originalInput = buildCreativeBoostOriginalInput(creativeBoostInput);
 
     try {
-      setGeneratingAction('creativeBoost');
-      const result = await api.generateCreativeBoost({
-        creativityLevel: creativeBoostInput.creativityLevel,
-        seedGenres: creativeBoostInput.seedGenres,
-        sunoStyles: creativeBoostInput.sunoStyles,
-        description: creativeBoostInput.description,
-        lyricsTopic: creativeBoostInput.lyricsTopic,
-        withWordlessVocals: creativeBoostInput.withWordlessVocals,
-        maxMode,
-        withLyrics: lyricsMode,
-      });
-
-      if (!result?.prompt) {
-        throw new Error("Invalid result received from Creative Boost generation");
-      }
-
-      const originalInput = buildCreativeBoostOriginalInput(creativeBoostInput);
-
-      await completeSessionUpdate(
-        sessionDeps,
-        result,
-        originalInput,
-        'creativeBoost',
-        { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
-        "Creative Boost prompt generated."
+      await execute(
+        {
+          action: 'creativeBoost',
+          apiCall: () => api.generateCreativeBoost({
+            creativityLevel: creativeBoostInput.creativityLevel,
+            seedGenres: creativeBoostInput.seedGenres,
+            sunoStyles: creativeBoostInput.sunoStyles,
+            description: creativeBoostInput.description,
+            lyricsTopic: creativeBoostInput.lyricsTopic,
+            withWordlessVocals: creativeBoostInput.withWordlessVocals,
+            maxMode,
+            withLyrics: lyricsMode,
+          }),
+          originalInput,
+          promptMode: 'creativeBoost',
+          modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+          successMessage: "Creative Boost prompt generated.",
+          errorContext: "generate Creative Boost",
+          log,
+          onSuccess: () => { showToast('Creative Boost generated!', 'success'); },
+        },
+        sessionDeps
       );
-      showToast('Creative Boost generated!', 'success');
     } catch (error) {
-      handleGenerationError(error, "generate Creative Boost", setChatMessages, log);
       showToast(getErrorMessage(error, "Failed to generate Creative Boost"), 'error');
-    } finally {
-      setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, generateId, saveSession, creativeBoostInput, maxMode, lyricsMode, showToast, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [execute, sessionDeps, creativeBoostInput, maxMode, lyricsMode, showToast]);
 
   const handleRefineCreativeBoost = useCallback(async (feedback: string) => {
-    if (isGenerating) return;
     if (!currentSession?.currentPrompt || !currentSession?.currentTitle) return;
 
+    // Extract for TypeScript narrowing
+    const { currentPrompt, currentTitle } = currentSession;
+
     try {
-      setGeneratingAction('creativeBoost');
-      addUserMessage(setChatMessages, feedback);
-
-      const result = await api.refineCreativeBoost({
-        currentPrompt: currentSession.currentPrompt,
-        currentTitle: currentSession.currentTitle,
-        feedback,
-        lyricsTopic: creativeBoostInput.lyricsTopic,
-        description: creativeBoostInput.description,
-        seedGenres: creativeBoostInput.seedGenres,
-        sunoStyles: creativeBoostInput.sunoStyles,
-        withWordlessVocals: creativeBoostInput.withWordlessVocals,
-        maxMode,
-        withLyrics: lyricsMode,
-      });
-
-      if (!result?.prompt) {
-        throw new Error("Invalid result received from Creative Boost refinement");
-      }
-
-      await completeSessionUpdate(
-        sessionDeps,
-        result,
-        currentSession.originalInput,
-        'creativeBoost',
-        { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
-        "Creative Boost prompt refined.",
-        feedback
+      await execute(
+        {
+          action: 'creativeBoost',
+          apiCall: () => api.refineCreativeBoost({
+            currentPrompt,
+            currentTitle,
+            feedback,
+            lyricsTopic: creativeBoostInput.lyricsTopic,
+            description: creativeBoostInput.description,
+            seedGenres: creativeBoostInput.seedGenres,
+            sunoStyles: creativeBoostInput.sunoStyles,
+            withWordlessVocals: creativeBoostInput.withWordlessVocals,
+            maxMode,
+            withLyrics: lyricsMode,
+          }),
+          originalInput: currentSession.originalInput || '',
+          promptMode: 'creativeBoost',
+          modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+          successMessage: "Creative Boost prompt refined.",
+          feedback,
+          errorContext: "refine Creative Boost",
+          log,
+          onSuccess: () => {
+            setPendingInput("");
+            showToast('Creative Boost refined!', 'success');
+          },
+        },
+        sessionDeps
       );
-      setPendingInput("");
-      showToast('Creative Boost refined!', 'success');
     } catch (error) {
       handleGenerationError(error, "refine Creative Boost", setChatMessages, log);
       showToast(getErrorMessage(error, "Failed to refine Creative Boost"), 'error');
-    } finally {
-      setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, creativeBoostInput, maxMode, lyricsMode, saveSession, setPendingInput, showToast, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [execute, sessionDeps, currentSession, creativeBoostInput, maxMode, lyricsMode, setPendingInput, showToast, setChatMessages]);
 
   return {
     handleGenerateCreativeBoost,

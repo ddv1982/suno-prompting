@@ -31,6 +31,7 @@ import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
 import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError } from '@shared/errors';
 import { cleanJsonResponse } from '@shared/prompt-utils';
+import { nowISO } from '@shared/utils';
 
 import type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
 import type { DebugInfo, QuickVibesCategory } from '@shared/types';
@@ -42,7 +43,7 @@ const log = createLogger('AIEngine');
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
-export { stripLeakedMetaLines as _testStripLeakedMetaLines } from '@bun/prompt/postprocess';
+
 
 export class AIEngine {
   private config = new AIConfig();
@@ -118,7 +119,7 @@ export class AIEngine {
       userPrompt,
       model: this.config.getModelName(),
       provider: this.config.getProvider(),
-      timestamp: new Date().toISOString(),
+      timestamp: nowISO(),
       requestBody: JSON.stringify(requestBody, null, 2),
       responseBody: rawResponse,
     };
@@ -460,30 +461,5 @@ export class AIEngine {
         buildDebugInfo: this.buildDebugInfo.bind(this),
       }
     );
-  }
-}
-
-export function _testCleanJsonResponse(text: string): string {
-  return cleanJsonResponse(text);
-}
-
-export function _testCleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
-  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
-}
-
-export function _testCleanLyrics(lyrics: string | undefined): string | undefined {
-  return lyrics?.trim() || undefined;
-}
-
-export function _testParseJsonResponse(rawResponse: string): ParsedCombinedResponse | null {
-  try {
-    const cleaned = _testCleanJsonResponse(rawResponse);
-    const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
-    if (!parsed.prompt) {
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
   }
 }

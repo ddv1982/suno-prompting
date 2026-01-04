@@ -1,5 +1,6 @@
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
 import { getErrorMessage } from '@shared/errors';
+import { nowISO } from '@shared/utils';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
@@ -43,7 +44,7 @@ export function createVersion(
     title: result.title,
     lyrics: result.lyrics,
     feedback,
-    timestamp: new Date().toISOString(),
+    timestamp: nowISO(),
   };
 }
 
@@ -61,7 +62,7 @@ function createOrUpdateSession(
   modeInput: ModeInputUpdate,
   feedback?: string
 ): { session: PromptSession; isNew: boolean } {
-  const now = new Date().toISOString();
+  const now = nowISO();
   const newVersion = createVersion(result, feedback);
   const isNew = !currentSession;
 

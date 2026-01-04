@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
 
-import { _testStripLeakedMetaLines } from "@bun/ai/engine";
+import { stripLeakedMetaLines } from "@bun/prompt/postprocess";
 import { validatePrompt } from "@shared/validation";
 
 describe("validatePrompt", () => {
@@ -56,7 +56,7 @@ describe("stripLeakedMetaLines", () => {
             "[VERSE] drifting neon fog over empty streets",
         ].join("\n");
 
-        const out = _testStripLeakedMetaLines(input);
+        const out = stripLeakedMetaLines(input);
         expect(out).not.toContain("Remove word repetition");
         expect(out).toContain("Mood, Genre, Key");
         expect(out).toContain("[VERSE]");
@@ -68,7 +68,7 @@ describe("stripLeakedMetaLines", () => {
             "A minimal ambient piece with soft synth pads.",
         ].join("\n");
 
-        const out = _testStripLeakedMetaLines(input);
+        const out = stripLeakedMetaLines(input);
         expect(out).toBe("A minimal ambient piece with soft synth pads.");
     });
 });

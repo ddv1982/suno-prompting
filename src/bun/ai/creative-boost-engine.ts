@@ -17,8 +17,8 @@ import { enforceLengthLimit } from '@bun/prompt/postprocess';
 import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
 import { APP_CONSTANTS } from '@shared/constants';
 
-
-import { callLLM, generateDirectModeTitle } from './llm-utils';
+import { isDirectMode, generateDirectModeWithLyrics } from './direct-mode';
+import { callLLM } from './llm-utils';
 
 import type { GenerationResult, EngineConfig } from './types';
 import type { DebugInfo } from '@shared/types';
@@ -138,47 +138,26 @@ async function generateDirectMode(
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  const styleResult = sunoStyles.join(', ');
   log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics });
 
-  // Use lyricsTopic as fallback context for title generation
-  const titleContext = description?.trim() || lyricsTopic?.trim() || '';
-  const title = await generateDirectModeTitle(titleContext, sunoStyles, config.getModel);
-
-  // Generate lyrics without max mode header (maxMode: false always in direct mode)
-  const lyricsResult = await generateLyricsForCreativeBoost(
-    styleResult,
-    lyricsTopic,
-    description,
-    false, // maxMode = false (always, for direct mode)
-    withLyrics,
-    config.getModel
+  const result = await generateDirectModeWithLyrics(
+    {
+      sunoStyles,
+      description,
+      lyricsTopic,
+      withLyrics,
+      generateLyrics: (styleResult, topic, desc) =>
+        generateLyricsForCreativeBoost(styleResult, topic, desc, false, true, config.getModel),
+    },
+    config
   );
 
-  // Build debug info if enabled
-  let debugInfo: DebugInfo | undefined;
-  if (config.isDebugMode()) {
-    debugInfo = config.buildDebugInfo(
-      'DIRECT_MODE: No system prompt - styles passed through as-is',
-      `Suno V5 Styles: ${sunoStyles.join(', ')}`,
-      styleResult
-    );
-    if (lyricsResult.debugInfo) {
-      debugInfo.lyricsGeneration = lyricsResult.debugInfo;
-    }
-  }
-
   log.info('generateDirectMode:complete', {
-    styleLength: styleResult.length,
-    hasLyrics: !!lyricsResult.lyrics,
+    styleLength: result.text.length,
+    hasLyrics: !!result.lyrics,
   });
 
-  return {
-    text: styleResult,
-    title,
-    lyrics: lyricsResult.lyrics,
-    debugInfo,
-  };
+  return result;
 }
 
 /** Options for Direct Mode refinement */
@@ -302,10 +281,8 @@ export async function generateCreativeBoost(
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  // ============ DIRECT MODE BYPASS ============
-  // When Suno V5 Styles are selected, bypass all LLM style generation
-  // Output is exactly the selected styles, no transformation
-  if (sunoStyles.length > 0) {
+  // Direct Mode: When Suno V5 Styles are selected, output them exactly as-is
+  if (isDirectMode(sunoStyles)) {
     return generateDirectMode(
       sunoStyles,
       lyricsTopic,
@@ -314,7 +291,6 @@ export async function generateCreativeBoost(
       config
     );
   }
-  // ============ END DIRECT MODE BYPASS ============
 
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(creativityLevel, seedGenres, description, lyricsTopic);
@@ -357,7 +333,7 @@ export async function refineCreativeBoost(
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
   // Direct Mode: Apply new styles and optionally refine title/lyrics
-  if (sunoStyles.length > 0) {
+  if (isDirectMode(sunoStyles)) {
     return refineDirectMode({
       currentTitle,
       feedback,

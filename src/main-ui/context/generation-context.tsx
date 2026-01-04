@@ -19,6 +19,7 @@ import {
 } from '@/lib/session-helpers';
 import { api } from '@/services/rpc';
 import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
+import { nowISO } from '@shared/utils';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 const log = createLogger('Generation');
@@ -150,7 +151,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     sessionLyricsTopic?: string
   ) => {
     setDebugInfo(result.debugInfo);
-    const now = new Date().toISOString();
+    const now = nowISO();
     
     const baseVersion = createVersion(result, feedbackLabel);
     const newVersion: PromptVersion = lockedPhrase 
@@ -195,7 +196,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     feedback?: string
   ): Promise<void> => {
     setDebugInfo(conversionDebugInfo);
-    const now = new Date().toISOString();
+    const now = nowISO();
 
     const newVersion = createVersion(
       { prompt: convertedPrompt, versionId },

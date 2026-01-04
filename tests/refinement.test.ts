@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'bun:test';
 
 import {
-  _testCleanJsonResponse,
-  _testCleanTitle,
-  _testCleanLyrics,
-  _testParseJsonResponse,
-} from '@bun/ai/engine';
-import {
   buildCombinedSystemPrompt,
   buildCombinedWithLyricsSystemPrompt,
   type RefinementContext,
 } from '@bun/prompt/builders';
+import {
+  cleanJsonResponse,
+  cleanTitle,
+  cleanLyrics,
+  parseJsonResponse,
+} from '@shared/prompt-utils';
 
 describe('Prompt Builder Refinement', () => {
   describe('buildCombinedSystemPrompt with refinement', () => {
@@ -134,114 +134,114 @@ describe('AI Engine Helper Methods', () => {
   describe('cleanJsonResponse', () => {
     it('removes markdown code blocks', () => {
       const input = '```json\n{"prompt": "test"}\n```';
-      expect(_testCleanJsonResponse(input)).toBe('{"prompt": "test"}');
+      expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
 
     it('handles json without newline after opener', () => {
       const input = '```json{"prompt": "test"}```';
-      expect(_testCleanJsonResponse(input)).toBe('{"prompt": "test"}');
+      expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
 
     it('trims whitespace', () => {
       const input = '  {"prompt": "test"}  ';
-      expect(_testCleanJsonResponse(input)).toBe('{"prompt": "test"}');
+      expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
 
     it('returns clean json unchanged', () => {
       const input = '{"prompt": "test"}';
-      expect(_testCleanJsonResponse(input)).toBe('{"prompt": "test"}');
+      expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
   });
 
   describe('cleanTitle', () => {
     it('trims whitespace', () => {
-      expect(_testCleanTitle('  Ocean Dreams  ')).toBe('Ocean Dreams');
+      expect(cleanTitle('  Ocean Dreams  ')).toBe('Ocean Dreams');
     });
 
     it('removes surrounding single quotes', () => {
-      expect(_testCleanTitle("'Ocean Dreams'")).toBe('Ocean Dreams');
+      expect(cleanTitle("'Ocean Dreams'")).toBe('Ocean Dreams');
     });
 
     it('removes surrounding double quotes', () => {
-      expect(_testCleanTitle('"Ocean Dreams"')).toBe('Ocean Dreams');
+      expect(cleanTitle('"Ocean Dreams"')).toBe('Ocean Dreams');
     });
 
     it('returns fallback when title is undefined', () => {
-      expect(_testCleanTitle(undefined)).toBe('Untitled');
+      expect(cleanTitle(undefined)).toBe('Untitled');
     });
 
     it('returns fallback when title is empty string', () => {
-      expect(_testCleanTitle('')).toBe('Untitled');
+      expect(cleanTitle('')).toBe('Untitled');
     });
 
     it('returns fallback when title is only whitespace', () => {
-      expect(_testCleanTitle('   ')).toBe('Untitled');
+      expect(cleanTitle('   ')).toBe('Untitled');
     });
 
     it('uses custom fallback when provided', () => {
-      expect(_testCleanTitle(undefined, 'My Default')).toBe('My Default');
+      expect(cleanTitle(undefined, 'My Default')).toBe('My Default');
     });
 
     it('preserves internal quotes', () => {
-      expect(_testCleanTitle("Ocean's Dream")).toBe("Ocean's Dream");
+      expect(cleanTitle("Ocean's Dream")).toBe("Ocean's Dream");
     });
   });
 
   describe('cleanLyrics', () => {
     it('trims whitespace', () => {
-      expect(_testCleanLyrics('  [VERSE]\nHello  ')).toBe('[VERSE]\nHello');
+      expect(cleanLyrics('  [VERSE]\nHello  ')).toBe('[VERSE]\nHello');
     });
 
     it('returns undefined for empty string', () => {
-      expect(_testCleanLyrics('')).toBeUndefined();
+      expect(cleanLyrics('')).toBeUndefined();
     });
 
     it('returns undefined for whitespace only', () => {
-      expect(_testCleanLyrics('   ')).toBeUndefined();
+      expect(cleanLyrics('   ')).toBeUndefined();
     });
 
     it('returns undefined for undefined input', () => {
-      expect(_testCleanLyrics(undefined)).toBeUndefined();
+      expect(cleanLyrics(undefined)).toBeUndefined();
     });
 
     it('preserves valid lyrics', () => {
       const lyrics = '[VERSE]\nLine one\nLine two';
-      expect(_testCleanLyrics(lyrics)).toBe(lyrics);
+      expect(cleanLyrics(lyrics)).toBe(lyrics);
     });
   });
 
   describe('parseJsonResponse', () => {
     it('parses valid JSON response', () => {
       const input = '{"prompt": "test prompt", "title": "Test Title"}';
-      const result = _testParseJsonResponse(input);
+      const result = parseJsonResponse(input);
       expect(result).toEqual({ prompt: 'test prompt', title: 'Test Title' });
     });
 
     it('parses JSON with lyrics', () => {
       const input = '{"prompt": "test", "title": "Title", "lyrics": "[VERSE]\\nHello"}';
-      const result = _testParseJsonResponse(input);
+      const result = parseJsonResponse(input);
       expect(result?.lyrics).toBe('[VERSE]\nHello');
     });
 
     it('removes markdown code blocks before parsing', () => {
       const input = '```json\n{"prompt": "test", "title": "Title"}\n```';
-      const result = _testParseJsonResponse(input);
+      const result = parseJsonResponse(input);
       expect(result).toEqual({ prompt: 'test', title: 'Title' });
     });
 
     it('returns null for invalid JSON', () => {
       const input = 'not valid json';
-      expect(_testParseJsonResponse(input)).toBeNull();
+      expect(parseJsonResponse(input)).toBeNull();
     });
 
     it('returns null when prompt field is missing', () => {
       const input = '{"title": "Title Only"}';
-      expect(_testParseJsonResponse(input)).toBeNull();
+      expect(parseJsonResponse(input)).toBeNull();
     });
 
     it('returns null when prompt is empty string', () => {
       const input = '{"prompt": "", "title": "Title"}';
-      expect(_testParseJsonResponse(input)).toBeNull();
+      expect(parseJsonResponse(input)).toBeNull();
     });
   });
 });

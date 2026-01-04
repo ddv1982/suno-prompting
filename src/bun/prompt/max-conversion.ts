@@ -7,6 +7,7 @@ import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversi
 import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
+import { nowISO } from '@shared/utils';
 
 import type { DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
@@ -257,7 +258,7 @@ export async function enhanceWithAI(
     debugInfo: {
       systemPrompt,
       userPrompt,
-      timestamp: new Date().toISOString(),
+      timestamp: nowISO(),
     },
   };
 }
