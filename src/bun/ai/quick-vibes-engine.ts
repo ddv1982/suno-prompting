@@ -87,19 +87,20 @@ export async function refineQuickVibes(
 
   // ============ DIRECT MODE REFINE ============
   if (sunoStyles.length > 0) {
+    const styleResult = sunoStyles.join(', ');
     log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description });
 
     const titleSource = description || feedback;
     const title = await generateDirectModeTitle(titleSource, sunoStyles, config.getModel);
 
     return {
-      text: currentPrompt,
+      text: styleResult,
       title,
       debugInfo: config.isDebugMode()
         ? config.buildDebugInfo(
-            'DIRECT_MODE_REFINE: Styles unchanged, title regenerated.',
-            `Current styles: ${currentPrompt}\nDescription: ${description || '(none)'}`,
-            currentPrompt
+            'DIRECT_MODE_REFINE: Styles updated, title regenerated.',
+            `New styles: ${styleResult}\nDescription: ${description || '(none)'}`,
+            styleResult
           )
         : undefined,
     };

@@ -157,12 +157,23 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig) {
         timestamp: now,
       };
 
+      // Determine effective styles (user's new selection or stored)
+      const effectiveSunoStyles = quickVibesInput.sunoStyles.length > 0
+        ? quickVibesInput.sunoStyles
+        : storedInput?.sunoStyles ?? [];
+
       const updatedSession: PromptSession = {
         ...currentSession,
         currentPrompt: result.prompt,
         currentTitle: result.title,
         versionHistory: [...currentSession.versionHistory, newVersion],
         updatedAt: now,
+        quickVibesInput: {
+          category: storedInput?.category ?? null,
+          customDescription: quickVibesInput.customDescription || storedInput?.customDescription || '',
+          withWordlessVocals: storedInput?.withWordlessVocals ?? false,
+          sunoStyles: effectiveSunoStyles,
+        },
       };
 
       setChatMessages(prev => [...prev, { role: "ai", content: "Quick Vibes prompt refined." }]);
