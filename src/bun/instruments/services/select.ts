@@ -117,6 +117,129 @@ function pickFromList(
   return pickUniqueTokens(shuffled, selected, count, exclusionRules);
 }
 
+type QuotaConfig = {
+  readonly enabled: boolean;
+  readonly count: { readonly min: number; readonly max: number };
+};
+
+type QuotaTargets = {
+  readonly multi: number;
+  readonly foundational: number;
+  readonly orchestral: number;
+};
+
+function isOrchestralGenre(genre: GenreType): boolean {
+  return genre === 'cinematic' || genre === 'classical' || genre === 'videogame';
+}
+
+function selectFromPools(
+  poolOrder: readonly string[],
+  pools: Record<string, InstrumentPool>,
+  selected: readonly string[],
+  maxTags: number,
+  exclusionRules: readonly [string, string][],
+  allowOrchestralFromPools: boolean,
+  rng: Rng
+): string[] {
+  let result = [...selected];
+  for (const poolName of poolOrder) {
+    if (result.length >= maxTags) break;
+    const pool = pools[poolName];
+    if (!pool) continue;
+
+    const candidatesOverride = allowOrchestralFromPools
+      ? undefined
+      : pool.instruments.filter(i => !isOrchestralColorInstrument(i));
+
+    const picks = pickFromPool(
+      pool,
+      result,
+      maxTags - result.length,
+      exclusionRules,
+      rng,
+      candidatesOverride
+    );
+    result = [...result, ...picks].slice(0, maxTags);
+  }
+  return result;
+}
+
+function calculateQuotaTargets(
+  genre: GenreType,
+  multiGenre: QuotaConfig,
+  foundational: QuotaConfig,
+  orchestralColor: QuotaConfig,
+  userWantsOrchestral: boolean,
+  rng: Rng
+): QuotaTargets {
+  const multiTarget = multiGenre.enabled
+    ? randomIntInclusive(multiGenre.count.min, multiGenre.count.max, rng)
+    : 0;
+  
+  const foundationalTarget = foundational.enabled
+    ? randomIntInclusive(foundational.count.min, foundational.count.max, rng)
+    : 0;
+
+  let orchestralTarget = 0;
+  if (orchestralColor.enabled) {
+    if (isOrchestralGenre(genre) || userWantsOrchestral) {
+      orchestralTarget = randomIntInclusive(
+        orchestralColor.count.min,
+        orchestralColor.count.max,
+        rng
+      );
+    } else if (genre === 'ambient') {
+      orchestralTarget = rollChance(0.15, rng) ? 1 : 0;
+    }
+  }
+
+  return { multi: multiTarget, foundational: foundationalTarget, orchestral: orchestralTarget };
+}
+
+function fillMissingQuotas(
+  selected: readonly string[],
+  targets: QuotaTargets,
+  maxTags: number,
+  exclusionRules: readonly [string, string][],
+  rng: Rng
+): string[] {
+  let result = [...selected];
+  
+  const existingMulti = result.filter(isMultiGenreInstrument).length;
+  const existingFoundational = result.filter(isFoundationalInstrument).length;
+  const existingOrchestral = result.filter(isOrchestralColorInstrument).length;
+
+  const missingMulti = Math.max(0, targets.multi - existingMulti);
+  const missingFoundational = Math.max(0, targets.foundational - existingFoundational);
+  const missingOrchestral = Math.max(0, targets.orchestral - existingOrchestral);
+
+  if (result.length < maxTags && missingMulti > 0) {
+    const picks = pickFromList(
+      MULTIGENRE_INSTRUMENTS, result, maxTags - result.length,
+      { min: missingMulti, max: missingMulti }, exclusionRules, rng
+    );
+    result = [...result, ...picks].slice(0, maxTags);
+  }
+
+  if (result.length < maxTags && missingFoundational > 0) {
+    const picks = pickFromList(
+      FOUNDATIONAL_INSTRUMENTS, result, maxTags - result.length,
+      { min: missingFoundational, max: missingFoundational }, exclusionRules, rng
+    );
+    result = [...result, ...picks].slice(0, maxTags);
+  }
+
+  if (result.length < maxTags && missingOrchestral > 0) {
+    const picks = pickFromList(
+      ORCHESTRAL_COLOR_INSTRUMENTS, result, maxTags - result.length,
+      { min: missingOrchestral, max: missingOrchestral }, exclusionRules, rng
+    );
+    result = [...result, ...picks].slice(0, maxTags);
+  }
+
+  return result;
+}
+
 export function selectInstrumentsForGenre(
   genre: GenreType,
   options?: InstrumentSelectionOptions
@@ -132,102 +255,16 @@ export function selectInstrumentsForGenre(
   const orchestralColor = options?.orchestralColor ?? { enabled: true, count: { min: 0, max: 1 } };
 
   const userSelected = userInstruments.slice(0, maxTags);
-  let selected: string[] = [...userSelected];
+  const userWantsOrchestral = userSelected.some(isOrchestralColorInstrument);
+  const allowOrchestralFromPools = isOrchestralGenre(genre) || userWantsOrchestral;
 
-  const userWantsOrchestralColor = userSelected.some(isOrchestralColorInstrument);
-  const isOrchestralGenre = genre === 'cinematic' || genre === 'classical' || genre === 'videogame';
+  const poolSelected = selectFromPools(
+    def.poolOrder, def.pools, userSelected, maxTags, exclusionRules, allowOrchestralFromPools, rng
+  );
 
-  // We keep orchestral color rare outside orchestral genres.
-  // Ambient is treated as non-orchestral for pool selection (so it stays rare there too).
-  const allowOrchestralFromPools = isOrchestralGenre || userWantsOrchestralColor;
+  const targets = calculateQuotaTargets(
+    genre, multiGenre, foundational, orchestralColor, userWantsOrchestral, rng
+  );
 
-  for (const poolName of def.poolOrder) {
-    if (selected.length >= maxTags) break;
-    const pool = def.pools[poolName];
-    if (!pool) continue;
-
-    // Keep pools as-authored; only filter orchestral color for non-orchestral genres
-    // to prevent constant cinematic drift.
-    const candidatesOverride = allowOrchestralFromPools
-      ? undefined
-      : pool.instruments.filter(i => !isOrchestralColorInstrument(i));
-
-    const picks = pickFromPool(
-      pool,
-      selected,
-      maxTags - selected.length,
-      exclusionRules,
-      rng,
-      candidatesOverride
-    );
-    selected = [...selected, ...picks].slice(0, maxTags);
-  }
-
-  // Quota-based injections: fill missing counts rather than always adding.
-  const existingMulti = selected.filter(isMultiGenreInstrument).length;
-  const existingFoundational = selected.filter(isFoundationalInstrument).length;
-  const existingOrchestral = selected.filter(isOrchestralColorInstrument).length;
-
-  const multiTarget = multiGenre.enabled
-    ? randomIntInclusive(multiGenre.count.min, multiGenre.count.max, rng)
-    : 0;
-  const foundationalTarget = foundational.enabled
-    ? randomIntInclusive(foundational.count.min, foundational.count.max, rng)
-    : 0;
-
-  let orchestralTarget = 0;
-  if (orchestralColor.enabled) {
-    if (isOrchestralGenre || userWantsOrchestralColor) {
-      orchestralTarget = randomIntInclusive(
-        orchestralColor.count.min,
-        orchestralColor.count.max,
-        rng
-      );
-    } else if (genre === 'ambient') {
-      const ambientChance = 0.15;
-      orchestralTarget = rollChance(ambientChance, rng) ? 1 : 0;
-    }
-  }
-
-  const missingMulti = Math.max(0, multiTarget - existingMulti);
-  const missingFoundational = Math.max(0, foundationalTarget - existingFoundational);
-  const missingOrchestral = Math.max(0, orchestralTarget - existingOrchestral);
-
-  if (selected.length < maxTags && missingMulti > 0) {
-    const picks = pickFromList(
-      MULTIGENRE_INSTRUMENTS,
-      selected,
-      maxTags - selected.length,
-      { min: missingMulti, max: missingMulti },
-      exclusionRules,
-      rng
-    );
-    selected = [...selected, ...picks].slice(0, maxTags);
-  }
-
-  if (selected.length < maxTags && missingFoundational > 0) {
-    const picks = pickFromList(
-      FOUNDATIONAL_INSTRUMENTS,
-      selected,
-      maxTags - selected.length,
-      { min: missingFoundational, max: missingFoundational },
-      exclusionRules,
-      rng
-    );
-    selected = [...selected, ...picks].slice(0, maxTags);
-  }
-
-  if (selected.length < maxTags && missingOrchestral > 0) {
-    const picks = pickFromList(
-      ORCHESTRAL_COLOR_INSTRUMENTS,
-      selected,
-      maxTags - selected.length,
-      { min: missingOrchestral, max: missingOrchestral },
-      exclusionRules,
-      rng
-    );
-    selected = [...selected, ...picks].slice(0, maxTags);
-  }
-
-  return selected;
+  return fillMissingQuotas(poolSelected, targets, maxTags, exclusionRules, rng);
 }

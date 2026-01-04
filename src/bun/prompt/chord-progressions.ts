@@ -308,34 +308,30 @@ export function buildProgressionDescriptor(
   return `${progression.name} (${progression.pattern}): ${progression.description}`;
 }
 
+type ProgressionPattern = {
+  readonly keywords: readonly string[];
+  readonly progressionKey: string;
+};
+
+const PROGRESSION_PATTERNS: readonly ProgressionPattern[] = [
+  { keywords: ['2-5-1', 'ii-v-i', 'two five one'], progressionKey: 'the_two_five_one' },
+  { keywords: ['andalusian', 'flamenco'], progressionKey: 'the_andalusian' },
+  { keywords: ['doo-wop', 'doo wop'], progressionKey: 'the_doo_wop' },
+  { keywords: ['i-v-vi-iv', 'four chord'], progressionKey: 'the_standard' },
+  { keywords: ['blues progression', '12 bar', 'twelve bar'], progressionKey: 'the_blues' },
+  { keywords: ['bossa nova', 'bossa'], progressionKey: 'the_bossa' },
+  { keywords: ['lydian'], progressionKey: 'the_lydian' },
+  { keywords: ['phrygian'], progressionKey: 'the_phrygian' },
+] as const;
+
 // Detect if description mentions a specific progression
 export function detectProgression(description: string): ChordProgression | null {
   const lower = description.toLowerCase();
   
-  // Check for explicit progression mentions
-  if (lower.includes('2-5-1') || lower.includes('ii-v-i') || lower.includes('two five one')) {
-    return ALL_PROGRESSIONS.the_two_five_one ?? null;
-  }
-  if (lower.includes('andalusian') || lower.includes('flamenco')) {
-    return ALL_PROGRESSIONS.the_andalusian ?? null;
-  }
-  if (lower.includes('doo-wop') || lower.includes('doo wop')) {
-    return ALL_PROGRESSIONS.the_doo_wop ?? null;
-  }
-  if (lower.includes('i-v-vi-iv') || lower.includes('four chord')) {
-    return ALL_PROGRESSIONS.the_standard ?? null;
-  }
-  if (lower.includes('blues progression') || lower.includes('12 bar') || lower.includes('twelve bar')) {
-    return ALL_PROGRESSIONS.the_blues ?? null;
-  }
-  if (lower.includes('bossa nova') || lower.includes('bossa')) {
-    return ALL_PROGRESSIONS.the_bossa ?? null;
-  }
-  if (lower.includes('lydian')) {
-    return ALL_PROGRESSIONS.the_lydian ?? null;
-  }
-  if (lower.includes('phrygian')) {
-    return ALL_PROGRESSIONS.the_phrygian ?? null;
+  for (const pattern of PROGRESSION_PATTERNS) {
+    if (pattern.keywords.some(keyword => lower.includes(keyword))) {
+      return ALL_PROGRESSIONS[pattern.progressionKey] ?? null;
+    }
   }
   
   return null;
