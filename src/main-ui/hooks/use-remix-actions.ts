@@ -10,11 +10,7 @@ import { type ValidationResult } from '@shared/validation';
 
 import { type GeneratingAction } from './use-generation-state';
 
-
 const log = createLogger('RemixActions');
-
-/** API methods for prompt-only remix actions (no originalInput needed) */
-type PromptRemixMethod = 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording';
 
 type RemixActionDeps = {
   isGenerating: boolean;
@@ -78,91 +74,43 @@ export function useRemixActions(deps: RemixActionDeps) {
     }
   }, [isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
 
-  // Factory for prompt-only remix handlers
-  const createPromptRemixHandler = useCallback((
-    action: GeneratingAction,
-    apiMethod: PromptRemixMethod,
-    label: string,
-    message: string
-  ) => async () => {
+  // Factory for prompt-only remix handlers (prompt → remixed prompt)
+  const makePromptRemix = useCallback((action: GeneratingAction, method: keyof typeof api, label: string, msg: string) => async () => {
     if (!currentSession?.currentPrompt) return;
-    await executeRemixAction(
-      action as Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
-      () => api[apiMethod](currentSession.currentPrompt),
-      label,
-      message
-    );
+    await executeRemixAction(action as Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>, () => (api[method] as (p: string) => Promise<{ prompt: string; versionId: string; validation: ValidationResult }>)(currentSession.currentPrompt), label, msg);
   }, [currentSession, executeRemixAction]);
 
-  // Generate prompt-only remix handlers from config
-  const handleRemixGenre = useMemo(
-    () => createPromptRemixHandler('remixGenre', 'remixGenre', 'genre remix', 'Genre remixed.'),
-    [createPromptRemixHandler]
-  );
-  const handleRemixMood = useMemo(
-    () => createPromptRemixHandler('remixMood', 'remixMood', 'mood remix', 'Mood remixed.'),
-    [createPromptRemixHandler]
-  );
-  const handleRemixStyleTags = useMemo(
-    () => createPromptRemixHandler('remixStyleTags', 'remixStyleTags', 'style tags remix', 'Style tags remixed.'),
-    [createPromptRemixHandler]
-  );
-  const handleRemixRecording = useMemo(
-    () => createPromptRemixHandler('remixRecording', 'remixRecording', 'recording remix', 'Recording remixed.'),
-    [createPromptRemixHandler]
-  );
+  const handleRemixGenre = useMemo(() => makePromptRemix('remixGenre', 'remixGenre', 'genre remix', 'Genre remixed.'), [makePromptRemix]);
+  const handleRemixMood = useMemo(() => makePromptRemix('remixMood', 'remixMood', 'mood remix', 'Mood remixed.'), [makePromptRemix]);
+  const handleRemixStyleTags = useMemo(() => makePromptRemix('remixStyleTags', 'remixStyleTags', 'style tags remix', 'Style tags remixed.'), [makePromptRemix]);
+  const handleRemixRecording = useMemo(() => makePromptRemix('remixRecording', 'remixRecording', 'recording remix', 'Recording remixed.'), [makePromptRemix]);
 
   // Special case: remixInstruments needs originalInput
   const handleRemixInstruments = useCallback(async () => {
     if (!currentSession?.originalInput) return;
-    await executeRemixAction(
-      'remixInstruments',
-      () => api.remixInstruments(currentSession.currentPrompt, currentSession.originalInput),
-      'instruments remix',
-      'Instruments remixed.'
-    );
+    await executeRemixAction('remixInstruments', () => api.remixInstruments(currentSession.currentPrompt, currentSession.originalInput), 'instruments remix', 'Instruments remixed.');
   }, [currentSession, executeRemixAction]);
 
-  /**
-   * Execute a single-field remix action (title or lyrics).
-   * Unlike executeRemixAction, this updates only one field without changing the prompt.
-   */
+  /** Execute a single-field remix action (title or lyrics) - updates field without changing prompt */
   const executeSingleFieldRemix = useCallback(async <T extends { title?: string; lyrics?: string }>(
-    action: 'remixTitle' | 'remixLyrics',
-    apiCall: () => Promise<T>,
-    getSessionUpdate: (result: T) => Partial<PromptSession>,
-    feedbackLabel: string,
-    successMessage: string
+    action: 'remixTitle' | 'remixLyrics', apiCall: () => Promise<T>,
+    getUpdate: (r: T) => Partial<PromptSession>, label: string, msg: string
   ) => {
-    // Guards for currentPrompt/originalInput are in the calling handlers for TypeScript narrowing
     if (isGenerating || !currentSession) return;
-
     try {
       setGeneratingAction(action);
       const result = await apiCall();
-
-      const sessionUpdate = getSessionUpdate(result);
-      const newVersion = createVersion(
-        { 
-          prompt: currentSession.currentPrompt, 
-          versionId: generateId(), 
-          title: sessionUpdate.currentTitle ?? currentSession.currentTitle, 
-          lyrics: sessionUpdate.currentLyrics ?? currentSession.currentLyrics 
-        },
-        `[${feedbackLabel}]`
-      );
-
-      const updatedSession: PromptSession = {
-        ...currentSession,
-        ...sessionUpdate,
-        versionHistory: [...currentSession.versionHistory, newVersion],
-        updatedAt: nowISO(),
-      };
-
-      setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
+      const update = getUpdate(result);
+      const newVersion = createVersion({
+        prompt: currentSession.currentPrompt, versionId: generateId(),
+        title: update.currentTitle ?? currentSession.currentTitle,
+        lyrics: update.currentLyrics ?? currentSession.currentLyrics,
+      }, `[${label}]`);
+      const updatedSession: PromptSession = { ...currentSession, ...update, versionHistory: [...currentSession.versionHistory, newVersion], updatedAt: nowISO() };
+      setChatMessages((prev) => [...prev, { role: "ai", content: msg }]);
       await saveSession(updatedSession);
     } catch (error) {
-      handleGenerationError(error, feedbackLabel, setChatMessages, log);
+      handleGenerationError(error, label, setChatMessages, log);
     } finally {
       setGeneratingAction('none');
     }
@@ -170,24 +118,12 @@ export function useRemixActions(deps: RemixActionDeps) {
 
   const handleRemixTitle = useCallback(async () => {
     if (!currentSession?.currentPrompt || !currentSession?.originalInput) return;
-    await executeSingleFieldRemix(
-      'remixTitle',
-      () => api.remixTitle(currentSession.currentPrompt, currentSession.originalInput),
-      (result) => ({ currentTitle: result.title }),
-      'title remix',
-      'Title remixed.'
-    );
+    await executeSingleFieldRemix('remixTitle', () => api.remixTitle(currentSession.currentPrompt, currentSession.originalInput), (r) => ({ currentTitle: r.title }), 'title remix', 'Title remixed.');
   }, [currentSession, executeSingleFieldRemix]);
 
   const handleRemixLyrics = useCallback(async () => {
     if (!currentSession?.currentPrompt || !currentSession?.originalInput) return;
-    await executeSingleFieldRemix(
-      'remixLyrics',
-      () => api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput, currentSession.lyricsTopic),
-      (result) => ({ currentLyrics: result.lyrics }),
-      'lyrics remix',
-      'Lyrics remixed.'
-    );
+    await executeSingleFieldRemix('remixLyrics', () => api.remixLyrics(currentSession.currentPrompt, currentSession.originalInput, currentSession.lyricsTopic), (r) => ({ currentLyrics: r.lyrics }), 'lyrics remix', 'Lyrics remixed.');
   }, [currentSession, executeSingleFieldRemix]);
 
   return {
