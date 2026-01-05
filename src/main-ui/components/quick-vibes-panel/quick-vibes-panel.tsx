@@ -30,44 +30,28 @@ export function QuickVibesPanel({
     : input.category !== null || input.customDescription.trim().length > 0 || isDirectMode;
 
   const handleCategorySelect = useCallback((categoryId: QuickVibesCategory | null): void => {
-    if (categoryId !== null && input.sunoStyles.length > 0) {
-      onInputChange({ ...input, category: categoryId, sunoStyles: [] });
-    } else {
-      onInputChange({ ...input, category: categoryId });
-    }
+    onInputChange(categoryId !== null && input.sunoStyles.length > 0
+      ? { ...input, category: categoryId, sunoStyles: [] }
+      : { ...input, category: categoryId });
   }, [input, onInputChange]);
 
   const handleSunoStylesChange = useCallback((styles: string[]): void => {
     const validStyles = styles.filter(isSunoV5Style);
-    if (validStyles.length > 0 && input.category !== null) {
-      onInputChange({ ...input, sunoStyles: validStyles, category: null });
-    } else {
-      onInputChange({ ...input, sunoStyles: validStyles });
-    }
+    onInputChange(validStyles.length > 0 && input.category !== null
+      ? { ...input, sunoStyles: validStyles, category: null }
+      : { ...input, sunoStyles: validStyles });
   }, [input, onInputChange]);
 
-  const handleDescriptionChange = useCallback((value: string): void => {
-    onInputChange({ ...input, customDescription: value });
-  }, [input, onInputChange]);
+  const handleDescriptionChange = useCallback((value: string): void => { onInputChange({ ...input, customDescription: value }); }, [input, onInputChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey && canSubmit && !isGenerating) {
       e.preventDefault();
-      if (isRefineMode) {
-        onRefine(input.customDescription);
-      } else {
-        onGenerate();
-      }
+      if (isRefineMode) onRefine(input.customDescription); else onGenerate();
     }
   }, [canSubmit, isGenerating, isRefineMode, input.customDescription, onRefine, onGenerate]);
 
-  const handleSubmit = useCallback((): void => {
-    if (isRefineMode) {
-      onRefine(input.customDescription);
-    } else {
-      onGenerate();
-    }
-  }, [isRefineMode, input.customDescription, onRefine, onGenerate]);
+  const handleSubmit = useCallback((): void => { if (isRefineMode) onRefine(input.customDescription); else onGenerate(); }, [isRefineMode, input.customDescription, onRefine, onGenerate]);
 
   return (
     <div className="space-y-[var(--space-5)]">
