@@ -17,7 +17,6 @@ type OutputPanelProps = {
   isGenerating: boolean;
   generatingAction: GeneratingAction;
   maxMode: boolean;
-  lyricsMode: boolean;
   copied: boolean;
   promptOverLimit: boolean;
   charCount: number;
@@ -44,7 +43,6 @@ export function OutputPanel({
   isGenerating,
   generatingAction,
   maxMode,
-  lyricsMode,
   copied,
   promptOverLimit,
   charCount,
@@ -126,7 +124,7 @@ export function OutputPanel({
         </Card>
       </div>
 
-      {lyricsMode && currentLyrics && (
+      {currentLyrics && (
         <OutputSection
           label="Lyrics"
           content={currentLyrics}

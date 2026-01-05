@@ -158,7 +158,6 @@ export function PromptEditor({
           isGenerating={isGenerating}
           generatingAction={generatingAction}
           maxMode={maxMode}
-          lyricsMode={lyricsMode}
           copied={copied}
           promptOverLimit={promptOverLimit}
           charCount={charCount}
