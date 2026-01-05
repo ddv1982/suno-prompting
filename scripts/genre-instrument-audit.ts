@@ -35,7 +35,7 @@ function listGenreSpecificInstruments(genre: GenreDefinition): string[] {
   );
 }
 
-function main() {
+function main(): void {
   const genres = Object.values(GENRE_REGISTRY);
 
   const instrumentToGenres = new Map<string, Set<string>>();

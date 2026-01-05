@@ -295,7 +295,7 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
 ] as const;
 
 // Build lookup maps at module load time
-function buildLookupMaps() {
+function buildLookupMaps(): { canonicalSet: Set<string>; aliasToCanonical: Map<string, string> } {
   const canonicalSet = new Set<string>();
   const aliasToCanonical = new Map<string, string>();
 

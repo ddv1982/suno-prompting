@@ -266,7 +266,7 @@ export function replaceCombinationsSection(readme: string, markdown: string): st
 const args = process.argv.slice(2);
 const checkMode = args.includes('--check');
 
-async function main() {
+async function main(): Promise<void> {
   const readmePath = new URL('../README.md', import.meta.url);
   const readme = await readFile(readmePath, 'utf8');
 

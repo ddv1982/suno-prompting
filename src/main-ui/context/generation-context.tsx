@@ -88,7 +88,7 @@ interface StandardGenerationParams {
 }
 
 /** Execute the appropriate API call based on whether this is initial or refinement */
-async function executeGenerationApi(params: StandardGenerationParams) {
+async function executeGenerationApi(params: StandardGenerationParams): Promise<{ prompt: string; title?: string; lyrics?: string; versionId: string; validation: ValidationResult; debugInfo?: DebugInfo }> {
   const { input, isInitial, currentPrompt, currentTitle, currentLyrics, lockedPhrase, lyricsTopic, genreOverride } = params;
   
   const result = isInitial
@@ -122,7 +122,7 @@ export const useGenerationContext = (): GenerationContextType => {
   return context;
 };
 
-export const GenerationProvider = ({ children }: { children: ReactNode }): ReactNode => {
+export function GenerationProvider({ children }: { children: ReactNode }): ReactNode {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput, setWithWordlessVocals, promptMode, setPromptMode, withWordlessVocals, advancedSelection, creativeBoostInput, setCreativeBoostInput } = useEditorContext();
   const { maxMode, lyricsMode } = useSettingsContext();
@@ -234,4 +234,4 @@ export const GenerationProvider = ({ children }: { children: ReactNode }): React
   }), [isGenerating, generatingAction, chatMessages, validation, debugInfo, setValidation, selectSession, newProject, handleGenerate, handleCopy, handleRemix, handleConversionComplete, remixActions, quickVibesActions, creativeBoostActions]);
 
   return <GenerationContext.Provider value={contextValue}>{children}</GenerationContext.Provider>;
-};
+}

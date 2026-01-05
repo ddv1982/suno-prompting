@@ -15,7 +15,7 @@ import { APP_CONSTANTS } from "@shared/constants";
 import { hasAdvancedSelection } from "@shared/music-phrase";
 import { validateLockedPhrase } from "@shared/validation";
 
-export function PromptEditor({ output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config }: PromptEditorProps) {
+export function PromptEditor({ output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config }: PromptEditorProps): React.JSX.Element {
   const { currentPrompt, currentTitle, currentLyrics } = output;
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
   const { isGenerating, generatingAction, validation, debugInfo, chatMessages } = generation;
@@ -35,7 +35,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
 
   const isAdvancedModeActive = editorMode === 'advanced' && hasAdvancedSelection(advancedSelection);
 
-  const handleCopy = () => {
+  const handleCopy = (): void => {
     if (promptOverLimit) return;
     handlers.onCopy();
     setCopied(true);

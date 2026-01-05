@@ -8,7 +8,7 @@ const mockGenerateText = mock(async () => ({
   text: "warm lo-fi beats to study to",
 }));
 
-mock.module("ai", () => ({
+void mock.module("ai", () => ({
   generateText: mockGenerateText,
 }));
 

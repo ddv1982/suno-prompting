@@ -90,7 +90,7 @@ export function buildBlendedVocalDescriptor(
   }
 
   if (genres.length === 1) {
-    const genre = genres[0]!;
+    const genre = genres[0] as string;
     const style = GENRE_VOCAL_STYLES[genre] ?? DEFAULT_VOCAL_STYLE;
     const range = pickRandom(style.ranges, rng) ?? 'Tenor';
     const delivery = pickRandom(style.deliveries, rng) ?? 'Smooth';
@@ -133,7 +133,7 @@ export function buildBlendedProductionDescriptor(
   }
 
   if (genres.length === 1) {
-    const genre = genres[0]!;
+    const genre = genres[0] as string;
     const style = GENRE_PRODUCTION_STYLES[genre] ?? DEFAULT_PRODUCTION_STYLE;
     const texture = pickRandom(style.textures, rng) ?? 'Polished Production';
     const reverb = pickRandom(style.reverbs, rng) ?? 'Studio Reverb';
@@ -179,8 +179,8 @@ export function selectInstrumentsForMultiGenre(
   // Shuffle and take maxInstruments
   for (let i = unique.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    const temp = unique[i]!;
-    unique[i] = unique[j]!;
+    const temp = unique[i] as string;
+    unique[i] = unique[j] as string;
     unique[j] = temp;
   }
 

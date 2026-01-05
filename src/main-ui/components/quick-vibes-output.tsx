@@ -1,5 +1,5 @@
 import { RefreshCw, Copy, Check, Bug } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { OutputSection } from "@/components/prompt-editor/output-section";
 import { PromptOutput } from "@/components/prompt-output";
@@ -14,9 +14,9 @@ import { stripMaxModeHeader } from "@shared/prompt-utils";
 /** Reusable copy button with copied state feedback */
 function CopyButton({ label, copiedLabel, onClick, disabled }: {
   label: string; copiedLabel: string; onClick: () => void; disabled?: boolean;
-}) {
+}): React.JSX.Element {
   const [copied, setCopied] = useState(false);
-  const handleClick = () => {
+  const handleClick = (): void => {
     onClick();
     setCopied(true);
     setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
@@ -35,7 +35,7 @@ type QuickVibesOutputProps = {
   onRemix: () => void; onCopy: () => void; onDebugOpen: () => void;
 };
 
-export function QuickVibesOutput({ prompt, title, isGenerating, hasDebugInfo, onRemix, onCopy, onDebugOpen }: QuickVibesOutputProps) {
+export function QuickVibesOutput({ prompt, title, isGenerating, hasDebugInfo, onRemix, onCopy, onDebugOpen }: QuickVibesOutputProps): React.JSX.Element {
   const contentOnly = stripMaxModeHeader(prompt);
   const charCount = contentOnly.length;
   const isOverLimit = charCount > APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;

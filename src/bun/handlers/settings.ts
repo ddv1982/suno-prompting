@@ -20,7 +20,7 @@ type SettingsHandlers = Pick<
 >;
 
 /** API key and model handlers */
-function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager) {
+function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getApiKey' | 'setApiKey' | 'getModel' | 'setModel'> {
   return {
     getApiKey: async () => {
       log.info('getApiKey');
@@ -48,7 +48,7 @@ function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager) {
 }
 
 /** Boolean mode handlers (suno tags, debug, max, lyrics) */
-function createModeHandlers(aiEngine: AIEngine, storage: StorageManager) {
+function createModeHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getSunoTags' | 'setSunoTags' | 'getDebugMode' | 'setDebugMode' | 'getMaxMode' | 'setMaxMode' | 'getLyricsMode' | 'setLyricsMode'> {
   return {
     getSunoTags: async () => ({ useSunoTags: (await storage.getConfig()).useSunoTags }),
     setSunoTags: async ({ useSunoTags }: { useSunoTags: boolean }) => {
@@ -78,7 +78,7 @@ function createModeHandlers(aiEngine: AIEngine, storage: StorageManager) {
 }
 
 /** Prompt mode handlers */
-function createPromptModeHandlers(storage: StorageManager) {
+function createPromptModeHandlers(storage: StorageManager): Pick<SettingsHandlers, 'getPromptMode' | 'setPromptMode' | 'getCreativeBoostMode' | 'setCreativeBoostMode'> {
   return {
     getPromptMode: async () => ({ promptMode: (await storage.getConfig()).promptMode ?? 'full' }),
     setPromptMode: async ({ promptMode }: { promptMode: string }) => {
@@ -94,7 +94,7 @@ function createPromptModeHandlers(storage: StorageManager) {
 }
 
 /** Bulk settings handlers */
-function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager) {
+function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getAllSettings' | 'saveAllSettings'> {
   return {
     getAllSettings: async () => {
       const config = await storage.getConfig();

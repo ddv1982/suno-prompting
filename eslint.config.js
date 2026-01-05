@@ -150,6 +150,14 @@ export default [
     },
   },
 
+  // Logger file - allow all console methods
+  {
+    files: ['src/shared/logger.ts'],
+    rules: {
+      'no-console': 'off', // Logger needs console output
+    },
+  },
+
   // Test files - relaxed rules
   {
     files: ['tests/**/*.ts', '**/*.test.ts', '**/*.test.tsx'],
@@ -164,6 +172,10 @@ export default [
       // Test mock functions return void, not Promise
       '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
+      // Non-null assertions are acceptable in tests where we control test data
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      // Return types on test helpers are not critical
+      '@typescript-eslint/explicit-function-return-type': 'off',
     },
   },
 

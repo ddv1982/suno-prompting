@@ -31,7 +31,7 @@ const mockGenerateText = mock(async (_args?: unknown) => {
   }
 });
 
-mock.module("ai", () => ({
+void mock.module("ai", () => ({
   generateText: mockGenerateText,
 }));
 
