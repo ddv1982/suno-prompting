@@ -12,11 +12,19 @@ import { APP_CONSTANTS } from "@shared/constants";
 import type { ReactNode } from "react";
 
 export function PromptEditorContainer(): ReactNode {
+  // -- Session State --
   const { currentSession } = useSessionContext();
+
+  // -- Settings --
   const { currentModel, maxMode, lyricsMode, setMaxMode, setLyricsMode } = useSettingsContext();
+
+  // -- Editor State & Handlers --
   const { editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic, computedMusicPhrase, quickVibesInput, withWordlessVocals, creativeBoostInput, setEditorMode, setPromptMode, setCreativeBoostMode, updateAdvancedSelection, clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput } = useEditorContext();
+
+  // -- Generation State & Handlers --
   const { isGenerating, generatingAction, chatMessages, validation, debugInfo, handleGenerate, handleCopy, handleRemix, handleRemixInstruments, handleRemixGenre, handleRemixMood, handleRemixStyleTags, handleRemixRecording, handleRemixTitle, handleRemixLyrics, handleGenerateQuickVibes, handleRemixQuickVibes, handleConversionComplete, handleGenerateCreativeBoost, handleRefineCreativeBoost } = useGenerationContext();
 
+  // -- Memoized Prop Groups --
   const output: OutputState = useMemo(() => ({
     currentPrompt: currentSession?.currentPrompt || "",
     currentTitle: currentSession?.currentTitle,

@@ -23,7 +23,7 @@ type CreativeBoostPanelProps = {
   hasCurrentPrompt: boolean;
   creativeBoostMode: CreativeBoostMode;
   onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
-  onInputChange: (input: CreativeBoostInput) => void;
+  onInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
   onGenerate: () => void;

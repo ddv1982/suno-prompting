@@ -8,7 +8,7 @@ type UseCreativeBoostHandlersProps = {
   input: CreativeBoostInput;
   isGenerating: boolean;
   isRefineMode: boolean;
-  onInputChange: (input: CreativeBoostInput) => void;
+  onInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onLyricsModeChange: (mode: boolean) => void;
   onGenerate: () => void;
   onRefine: (feedback: string) => void;
@@ -30,39 +30,39 @@ export function useCreativeBoostHandlers({
   input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine,
 }: UseCreativeBoostHandlersProps): CreativeBoostHandlers {
   const handleCreativityChange = useCallback((value: CreativitySliderValue): void => {
-    onInputChange({ ...input, creativityLevel: value });
-  }, [input, onInputChange]);
+    onInputChange(prev => ({ ...prev, creativityLevel: value }));
+  }, [onInputChange]);
 
   const handleGenresChange = useCallback((genres: string[]): void => {
-    onInputChange(genres.length > 0 && input.sunoStyles.length > 0
-      ? { ...input, seedGenres: genres, sunoStyles: [] }
-      : { ...input, seedGenres: genres });
-  }, [input, onInputChange]);
+    onInputChange(prev => genres.length > 0 && prev.sunoStyles.length > 0
+      ? { ...prev, seedGenres: genres, sunoStyles: [] }
+      : { ...prev, seedGenres: genres });
+  }, [onInputChange]);
 
   const handleSunoStylesChange = useCallback((styles: string[]): void => {
     const validStyles = styles.filter(isSunoV5Style);
-    onInputChange(validStyles.length > 0 && input.seedGenres.length > 0
-      ? { ...input, sunoStyles: validStyles, seedGenres: [] }
-      : { ...input, sunoStyles: validStyles });
-  }, [input, onInputChange]);
+    onInputChange(prev => validStyles.length > 0 && prev.seedGenres.length > 0
+      ? { ...prev, sunoStyles: validStyles, seedGenres: [] }
+      : { ...prev, sunoStyles: validStyles });
+  }, [onInputChange]);
 
   const handleDescriptionChange = useCallback((value: string): void => {
-    onInputChange({ ...input, description: value });
-  }, [input, onInputChange]);
+    onInputChange(prev => ({ ...prev, description: value }));
+  }, [onInputChange]);
 
   const handleLyricsTopicChange = useCallback((value: string): void => {
-    onInputChange({ ...input, lyricsTopic: value });
-  }, [input, onInputChange]);
+    onInputChange(prev => ({ ...prev, lyricsTopic: value }));
+  }, [onInputChange]);
 
   const handleWordlessVocalsChange = useCallback((checked: boolean): void => {
-    onInputChange({ ...input, withWordlessVocals: checked });
+    onInputChange(prev => ({ ...prev, withWordlessVocals: checked }));
     if (checked) onLyricsModeChange(false);
-  }, [input, onInputChange, onLyricsModeChange]);
+  }, [onInputChange, onLyricsModeChange]);
 
   const handleLyricsToggleChange = useCallback((checked: boolean): void => {
     onLyricsModeChange(checked);
-    if (checked) onInputChange({ ...input, withWordlessVocals: false });
-  }, [input, onInputChange, onLyricsModeChange]);
+    if (checked) onInputChange(prev => ({ ...prev, withWordlessVocals: false }));
+  }, [onInputChange, onLyricsModeChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey && !isGenerating) {

@@ -38,7 +38,7 @@ export interface EditorContextType {
   setLyricsTopic: (topic: string) => void;
   setQuickVibesInput: (input: QuickVibesInput) => void;
   setWithWordlessVocals: (value: boolean) => void;
-  setCreativeBoostInput: (input: CreativeBoostInput) => void;
+  setCreativeBoostInput: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   updateCreativeBoostInput: (updates: Partial<CreativeBoostInput>) => void;
   resetCreativeBoostInput: () => void;
   getEffectiveLockedPhrase: () => string | undefined;
