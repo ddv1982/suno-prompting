@@ -5,6 +5,7 @@ import { getCreativityLevel } from '@shared/creative-boost-utils';
 export { getCreativityLevel };
 
 const MAX_STYLE_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
+const DEFAULT_REFINE_FEEDBACK = 'Regenerate with a fresh creative variation while keeping the same style direction';
 
 /**
  * Builds the system prompt for Creative Boost generation.
@@ -256,12 +257,8 @@ export function buildCreativeBoostRefineUserPrompt(
     parts.push(`Lyrics topic: "${lyricsTopic.trim()}"`);
   }
 
-  if (feedback?.trim()) {
-    parts.push('', `User feedback: ${feedback}`);
-  } else {
-    parts.push('', 'User feedback: Regenerate with a fresh creative variation while keeping the same style direction');
-  }
-  parts.push('', 'Generate the refined prompt:');
+  const effectiveFeedback = feedback?.trim() || DEFAULT_REFINE_FEEDBACK;
+  parts.push('', `User feedback: ${effectiveFeedback}`, '', 'Generate the refined prompt:');
 
   return parts.join('\n');
 }

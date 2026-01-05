@@ -537,6 +537,20 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
     expect(prompt).not.toContain('"  spaced topic  "');
   });
 
+  it('uses default regeneration feedback when feedback is empty', () => {
+    const prompt = buildCreativeBoostRefineUserPrompt(
+      'lo-fi jazz', 'Midnight Vibes', ''
+    );
+    expect(prompt).toContain('Regenerate with a fresh creative variation');
+  });
+
+  it('uses default regeneration feedback when feedback is whitespace only', () => {
+    const prompt = buildCreativeBoostRefineUserPrompt(
+      'ambient', 'Floating', '   '
+    );
+    expect(prompt).toContain('Regenerate with a fresh creative variation');
+  });
+
   describe('performance guidance', () => {
     it('includes performance guidance when seedGenres provided', () => {
       // ARRANGE
