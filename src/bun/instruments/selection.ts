@@ -158,72 +158,76 @@ async function correctGenreSpelling(
   return text.trim();
 }
 
+/** Resolve genre from override string */
+function resolveGenreOverride(genreOverride: string): GenreType | null {
+  if (genreOverride in GENRE_REGISTRY) {
+    return genreOverride as GenreType;
+  }
+  const baseGenre = genreOverride.split(' ').at(0);
+  if (baseGenre && baseGenre in GENRE_REGISTRY) {
+    return baseGenre as GenreType;
+  }
+  return null;
+}
+
+/** Build ModeSelection with common detections */
+function buildModeSelection(
+  description: string,
+  genre: GenreType | null,
+  reasoning: string,
+  singleMode: HarmonicStyle | null = null
+): ModeSelection {
+  return {
+    genre,
+    combination: detectCombination(description),
+    singleMode,
+    polyrhythmCombination: detectPolyrhythmCombination(description),
+    timeSignature: detectTimeSignature(description),
+    timeSignatureJourney: detectTimeSignatureJourney(description),
+    reasoning,
+  };
+}
+
+/** Detect genre with optional LLM spelling correction */
+async function detectGenreWithCorrection(
+  description: string,
+  model: LanguageModel
+): Promise<{ genre: GenreType | null; reasoning: string }> {
+  const directMatch = detectGenre(description);
+  if (directMatch) {
+    return { genre: directMatch, reasoning: `Direct match: ${directMatch}` };
+  }
+
+  try {
+    const corrected = await correctGenreSpelling(description, model);
+    const correctedMatch = detectGenre(corrected);
+    if (correctedMatch) {
+      return { genre: correctedMatch, reasoning: `Spelling corrected match: ${correctedMatch}` };
+    }
+  } catch (e) {
+    log.warn('spelling correction failed', { error: e instanceof Error ? e.message : String(e) });
+  }
+
+  return { genre: null, reasoning: '' };
+}
+
 export async function selectModes(
   description: string,
   model: LanguageModel,
   genreOverride?: string
 ): Promise<ModeSelection> {
-  // If user explicitly selected a genre from dropdown, use it
   if (genreOverride) {
-    // Check if it's a valid single genre
-    let effectiveGenre: GenreType | null = null;
-    if (genreOverride in GENRE_REGISTRY) {
-      effectiveGenre = genreOverride as GenreType;
-    } else {
-      // For combinations (e.g., "jazz fusion"), extract base genre for Max Mode features
-      const baseGenre = genreOverride.split(' ').at(0);
-      if (baseGenre && baseGenre in GENRE_REGISTRY) {
-        effectiveGenre = baseGenre as GenreType;
-      }
-    }
-
-    return {
-      genre: effectiveGenre,
-      combination: detectCombination(description),
-      singleMode: null,
-      polyrhythmCombination: detectPolyrhythmCombination(description),
-      timeSignature: detectTimeSignature(description),
-      timeSignatureJourney: detectTimeSignatureJourney(description),
-      reasoning: `User selected: ${genreOverride}`,
-    };
+    return buildModeSelection(description, resolveGenreOverride(genreOverride), `User selected: ${genreOverride}`);
   }
 
-  // Tier 1: Direct match on name + keywords
-  let genre = detectGenre(description);
-  let reasoning = genre ? `Direct match: ${genre}` : '';
+  const { genre, reasoning } = await detectGenreWithCorrection(description, model);
 
-  // Tier 2: LLM spelling correction → re-match
-  if (!genre) {
-    try {
-      const corrected = await correctGenreSpelling(description, model);
-      genre = detectGenre(corrected);
-      if (genre) {
-        reasoning = `Spelling corrected match: ${genre}`;
-      }
-    } catch (e) {
-      log.warn('spelling correction failed', { error: e instanceof Error ? e.message : String(e) });
-    }
-  }
-
-  // Tier 3: LLM decides genre (final fallback)
   try {
     const llmResult = await selectModesWithLLM(description, model);
-    return {
-      ...llmResult,
-      genre: genre ?? llmResult.genre,
-      reasoning: reasoning || llmResult.reasoning,
-    };
+    return { ...llmResult, genre: genre ?? llmResult.genre, reasoning: reasoning || llmResult.reasoning };
   } catch (error) {
     log.warn('LLM selection failed, falling back to keywords', { error: error instanceof Error ? error.message : String(error) });
     const combination = detectCombination(description);
-    return {
-      genre,
-      combination,
-      singleMode: combination ? null : detectHarmonic(description),
-      polyrhythmCombination: detectPolyrhythmCombination(description),
-      timeSignature: detectTimeSignature(description),
-      timeSignatureJourney: detectTimeSignatureJourney(description),
-      reasoning: reasoning || 'Keyword detection (LLM failed)',
-    };
+    return buildModeSelection(description, genre, reasoning || 'Keyword detection (LLM failed)', combination ? null : detectHarmonic(description));
   }
 }

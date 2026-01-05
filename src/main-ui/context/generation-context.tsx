@@ -24,6 +24,54 @@ import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 const log = createLogger('Generation');
 
+// ============================================================================
+// Helper: Max Mode Conversion
+// ============================================================================
+
+interface MaxModeConversionDeps {
+  input: string;
+  createConversionSession: (
+    originalInput: string,
+    convertedPrompt: string,
+    versionId: string,
+    debugInfo?: Partial<DebugInfo>
+  ) => Promise<void>;
+  setPendingInput: (v: string) => void;
+  setLyricsTopic: (v: string) => void;
+  showToast: (message: string, type: 'success' | 'error') => void;
+}
+
+/** Try Max Mode conversion, returns true if conversion was handled */
+async function tryMaxModeConversion(deps: MaxModeConversionDeps): Promise<boolean> {
+  const { input, createConversionSession, setPendingInput, setLyricsTopic, showToast } = deps;
+
+  try {
+    const result = await api.convertToMaxFormat(input);
+
+    if (result?.convertedPrompt && result.wasConverted) {
+      await createConversionSession(input, result.convertedPrompt, result.versionId, result.debugInfo);
+      setPendingInput("");
+      setLyricsTopic("");
+      showToast('Converted to Max Mode format', 'success');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+      log.info('Conversion cancelled, falling through to normal generation');
+    } else {
+      log.error('Max Mode conversion failed:', error);
+      showToast('Conversion failed, using normal generation', 'error');
+    }
+    return false;
+  }
+}
+
+/** Check if Max Mode conversion should be attempted */
+function shouldAttemptMaxConversion(isInitial: boolean, maxMode: boolean, input: string): boolean {
+  return isInitial && maxMode && isStructuredPrompt(input) && !isMaxFormat(input);
+}
+
 export type { GeneratingAction } from '@/hooks/use-generation-state';
 
 export interface GenerationContextType {
@@ -233,12 +281,6 @@ export const GenerationProvider = ({ children }: { children: ReactNode }): React
 
   const handleGenerate = useCallback(async (input: string) => {
     if (isGenerating) return;
-    
-    const currentPrompt = currentSession?.currentPrompt || "";
-    const currentTitle = currentSession?.currentTitle;
-    const currentLyrics = currentSession?.currentLyrics;
-    const isInitial = !currentPrompt;
-    const effectiveLockedPhrase = getEffectiveLockedPhrase();
 
     // Quick Vibes refinement: when in Quick Vibes mode with an existing prompt
     if (promptMode === 'quickVibes' && currentSession?.currentPrompt) {
@@ -246,65 +288,38 @@ export const GenerationProvider = ({ children }: { children: ReactNode }): React
       return;
     }
 
-    // Full prompt generation/refinement
+    const currentPrompt = currentSession?.currentPrompt || "";
+    const isInitial = !currentPrompt;
+
     try {
       setGeneratingAction('generate');
       if (!isInitial) {
         addUserMessage(setChatMessages, input);
       }
 
-      // Max Mode conversion: only if input looks like a structured prompt (not a simple description)
-      // This prevents converting "a sad song about rain" but will convert pasted prompts like "Genre: rock\nBPM: 120..."
-      if (isInitial && maxMode && isStructuredPrompt(input) && !isMaxFormat(input)) {
+      // Max Mode conversion for structured prompts
+      if (shouldAttemptMaxConversion(isInitial, maxMode, input)) {
         log.info('Converting structured prompt to Max Mode format');
-        try {
-          const conversionResult = await api.convertToMaxFormat(input);
-          
-          if (conversionResult?.convertedPrompt && conversionResult.wasConverted) {
-            await createConversionSession(
-              input,
-              conversionResult.convertedPrompt,
-              conversionResult.versionId,
-              conversionResult.debugInfo
-            );
-            setPendingInput("");
-            setLyricsTopic("");
-            showToast('Converted to Max Mode format', 'success');
-            return;
-          }
-          // If conversion didn't happen (already max format), fall through to normal generation
-        } catch (error) {
-          // Don't show error for user cancellations/aborts - fall through to normal generation
-          if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
-            log.info('Conversion cancelled, falling through to normal generation');
-          } else {
-            log.error('Max Mode conversion failed:', error);
-            showToast('Conversion failed, using normal generation', 'error');
-          }
-          // Fall through to normal generation on error
-        }
+        const wasConverted = await tryMaxModeConversion({
+          input, createConversionSession, setPendingInput, setLyricsTopic, showToast,
+        });
+        if (wasConverted) return;
       }
 
+      // Standard generation
+      const effectiveLockedPhrase = getEffectiveLockedPhrase();
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
       const genreOverride = advancedSelection.seedGenres[0] || undefined;
+
       const result = isInitial
         ? await api.generateInitial(input, effectiveLockedPhrase, effectiveLyricsTopic, genreOverride)
-        : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentTitle, currentLyrics, effectiveLyricsTopic, genreOverride);
+        : await api.refinePrompt(currentPrompt, input, effectiveLockedPhrase, currentSession?.currentTitle, currentSession?.currentLyrics, effectiveLyricsTopic, genreOverride);
 
       if (!result?.prompt) {
         throw new Error("Invalid result received from generation");
       }
 
-      await updateSessionWithResult(
-        result,
-        isInitial ? undefined : input,
-        "Updated prompt generated.",
-        isInitial,
-        input,
-        effectiveLockedPhrase,
-        effectiveLyricsTopic
-      );
-      
+      await updateSessionWithResult(result, isInitial ? undefined : input, "Updated prompt generated.", isInitial, input, effectiveLockedPhrase, effectiveLyricsTopic);
       setPendingInput("");
       setLyricsTopic("");
     } catch (error) {

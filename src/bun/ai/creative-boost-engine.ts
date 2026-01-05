@@ -201,37 +201,15 @@ interface RefineDirectModeOptions {
   withLyrics: boolean;
 }
 
-/**
- * Direct Mode refinement - applies new styles and optionally refines title/lyrics.
- * 
- * Per requirements:
- * - Styles are always updated from sunoStyles array
- * - Title/lyrics only change when feedback is provided
- */
-async function refineDirectMode(
-  options: RefineDirectModeOptions,
-  config: CreativeBoostEngineConfig
-): Promise<GenerationResult> {
-  const { currentTitle, feedback, lyricsTopic, description, sunoStyles, withLyrics } = options;
-  const hasFeedback = Boolean(feedback?.trim());
-  
-  // Apply new styles
-  const styleResult = sunoStyles.join(', ');
-
-  log.info('refineDirectMode:start', {
-    stylesCount: sunoStyles.length,
-    hasFeedback,
-    withLyrics,
-  });
-
-  // Per requirements: Title/lyrics only regenerate when feedback is provided
-  let newTitle = currentTitle;
-  let lyrics: string | undefined;
-
-  // Only refine title if feedback provided
-  if (hasFeedback) {
-    try {
-      const titleSystemPrompt = `You are refining a song title based on user input.
+/** Refine title based on feedback */
+async function refineTitleWithFeedback(
+  currentTitle: string,
+  styleResult: string,
+  lyricsTopic: string,
+  feedback: string,
+  getModel: () => LanguageModel
+): Promise<string> {
+  const titleSystemPrompt = `You are refining a song title based on user input.
 Current title: "${currentTitle}"
 Musical style: ${styleResult}
 ${lyricsTopic?.trim() ? `Topic/Theme: ${lyricsTopic}` : ''}
@@ -241,52 +219,69 @@ User feedback: ${feedback}
 Generate a new title that addresses the feedback while maintaining relevance to the style.
 Output ONLY the new title, nothing else. Do not include quotes around the title.`;
 
-      const { text: refinedTitle } = await generateText({
-        model: config.getModel(),
-        system: titleSystemPrompt,
-        prompt: feedback,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      });
+  const { text: refinedTitle } = await generateText({
+    model: getModel(),
+    system: titleSystemPrompt,
+    prompt: feedback,
+    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+    abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+  });
 
-      newTitle = refinedTitle.trim().replace(/^["']|["']$/g, '');
-    } catch (error) {
-      log.warn('refineDirectMode:title:failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  }
+  return refinedTitle.trim().replace(/^["']|["']$/g, '');
+}
 
-  // Only generate lyrics if feedback provided AND withLyrics enabled
-  if (hasFeedback && withLyrics) {
+/** Generate lyrics for Direct Mode refinement */
+async function generateLyricsForDirectMode(
+  styleResult: string,
+  lyricsTopic: string,
+  description: string,
+  feedback: string,
+  getModel: () => LanguageModel,
+  useSunoTags: boolean
+): Promise<string | undefined> {
+  const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+  const result = await generateLyricsForCreativeBoost(
+    styleResult, topicForLyrics, feedback, false, true, getModel, useSunoTags
+  );
+  return result.lyrics;
+}
+
+/**
+ * Direct Mode refinement - applies new styles and optionally refines title/lyrics.
+ * Styles always updated; title/lyrics only change when feedback is provided.
+ */
+async function refineDirectMode(
+  options: RefineDirectModeOptions,
+  config: CreativeBoostEngineConfig
+): Promise<GenerationResult> {
+  const { currentTitle, feedback, lyricsTopic, description, sunoStyles, withLyrics } = options;
+  const hasFeedback = Boolean(feedback?.trim());
+  const styleResult = sunoStyles.join(', ');
+
+  log.info('refineDirectMode:start', { stylesCount: sunoStyles.length, hasFeedback, withLyrics });
+
+  let newTitle = currentTitle;
+  let lyrics: string | undefined;
+
+  if (hasFeedback) {
     try {
-      const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
-      const lyricsResult = await generateLyricsForCreativeBoost(
-        styleResult,
-        topicForLyrics,
-        feedback,
-        false, // maxMode = false for direct mode
-        true,
-        config.getModel,
-        config.getUseSunoTags?.() ?? false
-      );
-      lyrics = lyricsResult.lyrics;
+      newTitle = await refineTitleWithFeedback(currentTitle, styleResult, lyricsTopic, feedback, config.getModel);
     } catch (error) {
-      log.warn('refineDirectMode:lyrics:failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      log.warn('refineDirectMode:title:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+
+    if (withLyrics) {
+      try {
+        lyrics = await generateLyricsForDirectMode(styleResult, lyricsTopic, description, feedback, config.getModel, config.getUseSunoTags?.() ?? false);
+      } catch (error) {
+        log.warn('refineDirectMode:lyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+      }
     }
   }
 
-  // Build debug info if enabled
-  let debugInfo: DebugInfo | undefined;
-  if (config.isDebugMode()) {
-    debugInfo = config.buildDebugInfo(
-      `DIRECT_MODE_REFINE${hasFeedback ? ' (with feedback)' : ''}`,
-      `Feedback: ${feedback || '(none)'}\nStyles: ${styleResult}`,
-      styleResult
-    );
-  }
+  const debugInfo = config.isDebugMode()
+    ? config.buildDebugInfo(`DIRECT_MODE_REFINE${hasFeedback ? ' (with feedback)' : ''}`, `Feedback: ${feedback || '(none)'}\nStyles: ${styleResult}`, styleResult)
+    : undefined;
 
   log.info('refineDirectMode:complete', {
     styleLength: styleResult.length,

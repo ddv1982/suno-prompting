@@ -52,46 +52,60 @@ export async function remixInstruments(
   return { text: replaceFieldLine(currentPrompt, 'Instruments', instruments.join(', ')) };
 }
 
+/** Select a random item from array, with fallback */
+function randomFrom<T>(arr: T[], fallback: T): T {
+  if (arr.length === 0) return fallback;
+  return arr[Math.floor(Math.random() * arr.length)] ?? fallback;
+}
+
+/** Select new single genre (handles both single and multi-genre current values) */
+function selectSingleGenre(currentGenre: string, allSingleGenres: GenreType[]): string | null {
+  if (isMultiGenre(currentGenre)) {
+    const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== currentGenre);
+    return randomFrom(available, currentGenre);
+  }
+  const available = allSingleGenres.filter(g => g !== currentGenre);
+  if (available.length === 0) return null;
+  return randomFrom(available, 'ambient');
+}
+
+/** Select multiple new genres */
+function selectMultipleGenres(currentGenres: string[], count: number, allOptions: string[]): string {
+  const available = allOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
+  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).join(', ');
+}
+
+/** Update BPM based on genre */
+function updateBpmForNewGenre(prompt: string, newGenreValue: string): string {
+  const firstGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
+  const baseGenre = firstGenre.split(' ')[0] || firstGenre;
+  const genreDef = GENRE_REGISTRY[baseGenre as GenreType];
+  if (genreDef?.bpm) {
+    return replaceFieldLine(prompt, 'BPM', `${genreDef.bpm.typical}`);
+  }
+  return prompt;
+}
+
 export function remixGenre(currentPrompt: string): RemixResult {
   const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
   const fullGenreValue = genreMatch?.[1]?.trim() || '';
-
   const currentGenres = fullGenreValue.split(',').map(g => g.trim().toLowerCase()).filter(Boolean);
-  const genreCount = currentGenres.length;
 
   const allSingleGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
   const allGenreOptions = [...allSingleGenres, ...MULTI_GENRE_COMBINATIONS];
 
   let newGenreValue: string;
-
-  if (genreCount <= 1) {
-    const singleGenre = currentGenres[0] || '';
-
-    if (isMultiGenre(singleGenre)) {
-      const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== singleGenre);
-      newGenreValue = available[Math.floor(Math.random() * available.length)] ?? available[0] ?? singleGenre;
-    } else {
-      const availableGenres = allSingleGenres.filter(g => g !== singleGenre);
-      if (availableGenres.length === 0) return { text: currentPrompt };
-      newGenreValue = availableGenres[Math.floor(Math.random() * availableGenres.length)] ?? availableGenres[0] ?? 'ambient';
-    }
+  if (currentGenres.length <= 1) {
+    const selected = selectSingleGenre(currentGenres[0] || '', allSingleGenres);
+    if (selected === null) return { text: currentPrompt };
+    newGenreValue = selected;
   } else {
-    const availableGenres = allGenreOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
-    const shuffled = [...availableGenres].sort(() => Math.random() - 0.5);
-    const selectedGenres = shuffled.slice(0, genreCount);
-    newGenreValue = selectedGenres.join(', ');
+    newGenreValue = selectMultipleGenres(currentGenres, currentGenres.length, allGenreOptions);
   }
 
-  let result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
-
-  const firstGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
-  const baseGenre = firstGenre.split(' ')[0] || firstGenre;
-  const genreDef = GENRE_REGISTRY[baseGenre as GenreType];
-  if (genreDef?.bpm) {
-    result = replaceFieldLine(result, 'BPM', `${genreDef.bpm.typical}`);
-  }
-
-  return { text: result };
+  const result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
+  return { text: updateBpmForNewGenre(result, newGenreValue) };
 }
 
 export function remixMood(): RemixResult & { moodLine: string } {

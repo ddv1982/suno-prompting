@@ -96,6 +96,40 @@ export class StorageManager {
         await this.saveHistory(filtered);
     }
 
+    /** Decrypt API keys from stored config */
+    private async decryptApiKeys(storedKeys: Partial<Record<AIProvider, string | null>> | undefined): Promise<APIKeys> {
+        const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
+        if (!storedKeys) return apiKeys;
+
+        for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
+            const encryptedKey = storedKeys[provider];
+            if (encryptedKey) {
+                try {
+                    apiKeys[provider] = await decrypt(encryptedKey);
+                } catch (e) {
+                    log.error('getConfig:decryptFailed', { provider, error: e instanceof Error ? e.message : String(e) });
+                    apiKeys[provider] = null;
+                }
+            }
+        }
+        return apiKeys;
+    }
+
+    /** Build AppConfig with defaults for missing values */
+    private buildConfigWithDefaults(config: StoredConfig, apiKeys: APIKeys): AppConfig {
+        return {
+            provider: config.provider ?? DEFAULT_CONFIG.provider,
+            apiKeys,
+            model: config.model ?? DEFAULT_CONFIG.model,
+            useSunoTags: config.useSunoTags ?? DEFAULT_CONFIG.useSunoTags,
+            debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
+            maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
+            lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
+            promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
+            creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
+        };
+    }
+
     async getConfig(): Promise<AppConfig> {
         try {
             const file = Bun.file(this.configPath);
@@ -103,40 +137,10 @@ export class StorageManager {
                 return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
             }
             const config = await file.json() as StoredConfig;
-            
-            // Decrypt all API keys
-            const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
-            if (config.apiKeys) {
-                for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
-                    const encryptedKey = config.apiKeys[provider];
-                    if (encryptedKey) {
-                        try {
-                            apiKeys[provider] = await decrypt(encryptedKey);
-                        } catch (e) {
-                            const message = e instanceof Error ? e.message : String(e);
-                            log.error('getConfig:decryptFailed', { provider, error: message });
-                            // Don't throw - allow app to function with null key, user can re-enter
-                            apiKeys[provider] = null;
-                        }
-                    }
-                }
-            }
-            
-            return {
-                provider: config.provider ?? DEFAULT_CONFIG.provider,
-                apiKeys,
-                model: config.model ?? DEFAULT_CONFIG.model,
-                useSunoTags: config.useSunoTags ?? DEFAULT_CONFIG.useSunoTags,
-                debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
-                maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
-                lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
-                promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
-                creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
-            };
+            const apiKeys = await this.decryptApiKeys(config.apiKeys);
+            return this.buildConfigWithDefaults(config, apiKeys);
         } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            log.error('getConfig:failed', { error: message });
-            // Return defaults to allow app to function
+            log.error('getConfig:failed', { error: error instanceof Error ? error.message : String(error) });
             return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
         }
     }
