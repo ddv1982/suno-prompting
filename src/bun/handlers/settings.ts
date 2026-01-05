@@ -19,56 +19,84 @@ type SettingsHandlers = Pick<
   | 'getCreativeBoostMode' | 'setCreativeBoostMode'
 >;
 
-export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManager): SettingsHandlers {
+/** API key and model handlers */
+function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager) {
   return {
     getApiKey: async () => {
       log.info('getApiKey');
       const config = await storage.getConfig();
       return { apiKey: config.apiKeys[config.provider] };
     },
-    setApiKey: async ({ apiKey }) => {
+    setApiKey: async ({ apiKey }: { apiKey: string | null }) => {
       log.info('setApiKey');
       const config = await storage.getConfig();
-      const newApiKeys = { ...config.apiKeys, [config.provider]: apiKey };
-      await storage.saveConfig({ apiKeys: newApiKeys });
-      aiEngine.setApiKey(config.provider, apiKey);
+      await storage.saveConfig({ apiKeys: { ...config.apiKeys, [config.provider]: apiKey } });
+      if (apiKey) aiEngine.setApiKey(config.provider, apiKey);
       return { success: true };
     },
     getModel: async () => {
       log.info('getModel');
-      const config = await storage.getConfig();
-      return { model: config.model };
+      return { model: (await storage.getConfig()).model };
     },
-    setModel: async ({ model }) => {
+    setModel: async ({ model }: { model: string }) => {
       log.info('setModel', { model });
       await storage.saveConfig({ model });
       aiEngine.setModel(model);
       return { success: true };
     },
-    getSunoTags: async () => {
-      log.info('getSunoTags');
-      const config = await storage.getConfig();
-      return { useSunoTags: config.useSunoTags };
-    },
-    setSunoTags: async ({ useSunoTags }) => {
-      log.info('setSunoTags', { useSunoTags });
+  };
+}
+
+/** Boolean mode handlers (suno tags, debug, max, lyrics) */
+function createModeHandlers(aiEngine: AIEngine, storage: StorageManager) {
+  return {
+    getSunoTags: async () => ({ useSunoTags: (await storage.getConfig()).useSunoTags }),
+    setSunoTags: async ({ useSunoTags }: { useSunoTags: boolean }) => {
       await storage.saveConfig({ useSunoTags });
       aiEngine.setUseSunoTags(useSunoTags);
       return { success: true };
     },
-    getDebugMode: async () => {
-      log.info('getDebugMode');
-      const config = await storage.getConfig();
-      return { debugMode: config.debugMode };
-    },
-    setDebugMode: async ({ debugMode }) => {
-      log.info('setDebugMode', { debugMode });
+    getDebugMode: async () => ({ debugMode: (await storage.getConfig()).debugMode }),
+    setDebugMode: async ({ debugMode }: { debugMode: boolean }) => {
       await storage.saveConfig({ debugMode });
       aiEngine.setDebugMode(debugMode);
       return { success: true };
     },
+    getMaxMode: async () => ({ maxMode: (await storage.getConfig()).maxMode }),
+    setMaxMode: async ({ maxMode }: { maxMode: boolean }) => {
+      await storage.saveConfig({ maxMode });
+      aiEngine.setMaxMode(maxMode);
+      return { success: true };
+    },
+    getLyricsMode: async () => ({ lyricsMode: (await storage.getConfig()).lyricsMode }),
+    setLyricsMode: async ({ lyricsMode }: { lyricsMode: boolean }) => {
+      await storage.saveConfig({ lyricsMode });
+      aiEngine.setLyricsMode(lyricsMode);
+      return { success: true };
+    },
+  };
+}
+
+/** Prompt mode handlers */
+function createPromptModeHandlers(storage: StorageManager) {
+  return {
+    getPromptMode: async () => ({ promptMode: (await storage.getConfig()).promptMode ?? 'full' }),
+    setPromptMode: async ({ promptMode }: { promptMode: string }) => {
+      await storage.saveConfig({ promptMode: promptMode as 'full' | 'quickVibes' | 'creativeBoost' });
+      return { success: true };
+    },
+    getCreativeBoostMode: async () => ({ creativeBoostMode: (await storage.getConfig()).creativeBoostMode ?? 'simple' }),
+    setCreativeBoostMode: async ({ creativeBoostMode }: { creativeBoostMode: string }) => {
+      await storage.saveConfig({ creativeBoostMode: creativeBoostMode as 'simple' | 'advanced' });
+      return { success: true };
+    },
+  };
+}
+
+/** Bulk settings handlers */
+function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager) {
+  return {
     getAllSettings: async () => {
-      log.info('getAllSettings');
       const config = await storage.getConfig();
       return {
         provider: config.provider,
@@ -80,14 +108,12 @@ export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManag
         lyricsMode: config.lyricsMode
       };
     },
-    saveAllSettings: async ({ provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode }) => {
+    saveAllSettings: async ({ provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode }: Parameters<RPCHandlers['saveAllSettings']>[0]) => {
       log.info('saveAllSettings', { provider });
       await storage.saveConfig({ provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode });
       aiEngine.setProvider(provider);
       for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
-        if (apiKeys[p]) {
-          aiEngine.setApiKey(p, apiKeys[p]);
-        }
+        if (apiKeys[p]) aiEngine.setApiKey(p, apiKeys[p]);
       }
       aiEngine.setModel(model);
       aiEngine.setUseSunoTags(useSunoTags);
@@ -96,47 +122,14 @@ export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManag
       aiEngine.setLyricsMode(lyricsMode);
       return { success: true };
     },
-    getMaxMode: async () => {
-      log.info('getMaxMode');
-      const config = await storage.getConfig();
-      return { maxMode: config.maxMode };
-    },
-    setMaxMode: async ({ maxMode }) => {
-      log.info('setMaxMode', { maxMode });
-      await storage.saveConfig({ maxMode });
-      aiEngine.setMaxMode(maxMode);
-      return { success: true };
-    },
-    getLyricsMode: async () => {
-      log.info('getLyricsMode');
-      const config = await storage.getConfig();
-      return { lyricsMode: config.lyricsMode };
-    },
-    setLyricsMode: async ({ lyricsMode }) => {
-      log.info('setLyricsMode', { lyricsMode });
-      await storage.saveConfig({ lyricsMode });
-      aiEngine.setLyricsMode(lyricsMode);
-      return { success: true };
-    },
-    getPromptMode: async () => {
-      log.info('getPromptMode');
-      const config = await storage.getConfig();
-      return { promptMode: config.promptMode ?? 'full' };
-    },
-    setPromptMode: async ({ promptMode }) => {
-      log.info('setPromptMode', { promptMode });
-      await storage.saveConfig({ promptMode });
-      return { success: true };
-    },
-    getCreativeBoostMode: async () => {
-      log.info('getCreativeBoostMode');
-      const config = await storage.getConfig();
-      return { creativeBoostMode: config.creativeBoostMode ?? 'simple' };
-    },
-    setCreativeBoostMode: async ({ creativeBoostMode }) => {
-      log.info('setCreativeBoostMode', { creativeBoostMode });
-      await storage.saveConfig({ creativeBoostMode });
-      return { success: true };
-    },
+  };
+}
+
+export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManager): SettingsHandlers {
+  return {
+    ...createCoreHandlers(aiEngine, storage),
+    ...createModeHandlers(aiEngine, storage),
+    ...createPromptModeHandlers(storage),
+    ...createBulkHandlers(aiEngine, storage),
   };
 }
