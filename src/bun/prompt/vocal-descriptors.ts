@@ -211,15 +211,15 @@ export const GENRE_BACKING_VOCALS: Record<string, {
   echoStyle: string;
 }> = {
   pop: {
-    wordless: ['(ooh)', '(yeah)', '(oh-oh)', '(na na na)', '(hey)'],
+    wordless: ['(ooh)', '(oh-oh)', '(na na na)', '(hey)', '(woah)'],
     echoStyle: 'repeat the hook word',
   },
   rock: {
-    wordless: ['(hey!)', '(woah)', '(yeah!)', '(oh)'],
+    wordless: ['(hey!)', '(woah)', '(oh)', '(go!)'],
     echoStyle: 'repeat with intensity',
   },
   rnb: {
-    wordless: ['(ooh)', '(baby)', '(yeah)', '(mmm)', '(oh)'],
+    wordless: ['(ooh)', '(baby)', '(mmm)', '(oh)', '(ahh)'],
     echoStyle: 'smooth echo of key phrase',
   },
   soul: {
@@ -227,15 +227,15 @@ export const GENRE_BACKING_VOCALS: Record<string, {
     echoStyle: 'call and response style',
   },
   hiphop: {
-    wordless: ['(uh)', '(yeah)', '(ayy)', '(what)', '(let\'s go)'],
+    wordless: ['(uh)', '(ayy)', '(what)', '(let\'s go)', '(aye)'],
     echoStyle: 'ad-lib the last word',
   },
   jazz: {
-    wordless: ['(mmm)', '(ooh)', '(da da da)', '(yeah)'],
+    wordless: ['(mmm)', '(ooh)', '(da da da)', '(doo)'],
     echoStyle: 'scat-style echo',
   },
   country: {
-    wordless: ['(ooh)', '(yeah)', '(mm-hmm)', '(whoa)'],
+    wordless: ['(ooh)', '(mm-hmm)', '(whoa)', '(oh)'],
     echoStyle: 'harmony on key words',
   },
   folk: {
@@ -247,11 +247,11 @@ export const GENRE_BACKING_VOCALS: Record<string, {
     echoStyle: 'rhythmic word chop',
   },
   metal: {
-    wordless: ['(hey!)', '(go!)', '(woah)', '(yeah!)'],
+    wordless: ['(hey!)', '(go!)', '(woah)', '(oh!)'],
     echoStyle: 'gang vocal shout',
   },
   punk: {
-    wordless: ['(hey!)', '(oh!)', '(go!)', '(yeah!)'],
+    wordless: ['(hey!)', '(oh!)', '(go!)', '(oi!)'],
     echoStyle: 'crowd singalong',
   },
   latin: {
@@ -263,13 +263,13 @@ export const GENRE_BACKING_VOCALS: Record<string, {
     echoStyle: 'ethereal sustain',
   },
   lofi: {
-    wordless: ['(mmm)', '(ooh)', '(yeah)'],
+    wordless: ['(mmm)', '(ooh)', '(ahh)'],
     echoStyle: 'soft word repeat',
   },
 };
 
 export const DEFAULT_BACKING_VOCALS = {
-  wordless: ['(ooh)', '(ahh)', '(yeah)', '(oh)', '(mmm)'],
+  wordless: ['(ooh)', '(ahh)', '(oh)', '(mmm)', '(woah)'],
   echoStyle: 'repeat key word',
 };
 
