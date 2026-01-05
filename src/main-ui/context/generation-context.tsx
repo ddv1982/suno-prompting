@@ -62,7 +62,7 @@ export const useGenerationContext = (): GenerationContextType => {
 
 export const GenerationProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput, setWithWordlessVocals, promptMode, withWordlessVocals, advancedSelection, creativeBoostInput } = useEditorContext();
+  const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput, setWithWordlessVocals, promptMode, setPromptMode, withWordlessVocals, advancedSelection, creativeBoostInput, setCreativeBoostInput } = useEditorContext();
   const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
 
@@ -125,14 +125,20 @@ export const GenerationProvider = ({ children }: { children: ReactNode }): React
     setValidation({ ...EMPTY_VALIDATION });
     setLyricsTopic(session.lyricsTopic || "");
 
+    // Restore the session's prompt mode (default to 'full' for legacy sessions)
+    setPromptMode(session.promptMode ?? 'full');
+
+    // Restore mode-specific inputs
     if (session.promptMode === 'quickVibes' && session.quickVibesInput) {
       setQuickVibesInput(session.quickVibesInput);
       setWithWordlessVocals(session.quickVibesInput.withWordlessVocals ?? false);
+    } else if (session.promptMode === 'creativeBoost' && session.creativeBoostInput) {
+      setCreativeBoostInput(session.creativeBoostInput);
     } else {
       resetQuickVibesInput();
       setWithWordlessVocals(false);
     }
-  }, [resetQuickVibesInput, setChatMessages, setCurrentSession, setLyricsTopic, setQuickVibesInput, setValidation, setWithWordlessVocals]);
+  }, [resetQuickVibesInput, setChatMessages, setCreativeBoostInput, setCurrentSession, setLyricsTopic, setPromptMode, setQuickVibesInput, setValidation, setWithWordlessVocals]);
 
   const newProject = useCallback(() => {
     setCurrentSession(null);
