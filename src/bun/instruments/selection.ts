@@ -158,7 +158,6 @@ async function correctGenreSpelling(
   return text.trim();
 }
 
-// eslint-disable-next-line complexity -- Multi-tier mode detection (override, direct, spelling correction, LLM)
 export async function selectModes(
   description: string,
   model: LanguageModel,

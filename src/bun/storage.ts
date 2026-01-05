@@ -96,7 +96,6 @@ export class StorageManager {
         await this.saveHistory(filtered);
     }
 
-    // eslint-disable-next-line complexity -- Config loading with file check, decryption, and graceful fallbacks
     async getConfig(): Promise<AppConfig> {
         try {
             const file = Bun.file(this.configPath);

@@ -18,7 +18,6 @@ type RequestInspectorProps = {
   copiedSection: string | null;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Debug inspector with expandable messages and raw JSON view
 export function RequestInspector({
   requestBody,
   responseBody,

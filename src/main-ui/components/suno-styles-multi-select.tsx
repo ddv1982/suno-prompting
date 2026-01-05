@@ -36,7 +36,6 @@ type StyleOption = {
   label: string;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Multi-select with search and Suno V5 styles grouping
 export function SunoStylesMultiSelect({
   selected,
   onChange,

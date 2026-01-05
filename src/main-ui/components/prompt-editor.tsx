@@ -73,7 +73,6 @@ type PromptEditorProps = {
   debugInfo?: Partial<DebugInfo>;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Main editor with three prompt modes and multiple panels
 export function PromptEditor({
   currentPrompt,
   currentTitle,

@@ -29,7 +29,6 @@ type MainInputProps = {
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Main input with advanced options, Max Mode toggle, and validation
 export function MainInput({
   value,
   currentPrompt,

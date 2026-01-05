@@ -27,7 +27,6 @@ type RemixActionDeps = {
   setValidation: (v: ValidationResult) => void;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Hook managing all 4 remix types (genre, mood, instruments, style tags)
 export function useRemixActions(deps: RemixActionDeps) {
   const {
     isGenerating,

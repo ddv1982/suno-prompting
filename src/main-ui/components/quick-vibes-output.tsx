@@ -21,7 +21,6 @@ type QuickVibesOutputProps = {
   onDebugOpen: () => void;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Output display with copy buttons, remix, and debug info
 export function QuickVibesOutput({
   prompt,
   title,

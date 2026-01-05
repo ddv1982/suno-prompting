@@ -21,7 +21,6 @@ type RemixButtonGroupProps = {
   onCopy: () => void;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Remix UI with multiple remix type buttons and copy functionality
 export function RemixButtonGroup({
   isGenerating,
   generatingAction,

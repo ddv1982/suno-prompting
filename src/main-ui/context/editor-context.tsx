@@ -70,7 +70,6 @@ export const useEditorContext = (): EditorContextType => {
   return context;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Context provider managing all editor state (modes, selection, inputs)
 export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const [editorMode, setEditorMode] = useState<EditorMode>('simple');
   const [promptMode, setPromptModeState] = useState<PromptMode>('full');

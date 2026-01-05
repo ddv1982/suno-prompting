@@ -52,7 +52,6 @@ export async function remixInstruments(
   return { text: replaceFieldLine(currentPrompt, 'Instruments', instruments.join(', ')) };
 }
 
-// eslint-disable-next-line complexity -- Genre remix with single/multi-genre detection and BPM adjustment
 export function remixGenre(currentPrompt: string): RemixResult {
   const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
   const fullGenreValue = genreMatch?.[1]?.trim() || '';

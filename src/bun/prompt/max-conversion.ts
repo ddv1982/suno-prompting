@@ -69,70 +69,76 @@ export {
 // Task 1.2: Non-Max Prompt Parser
 // ============================================================================
 
-/** Parse comma-separated values from a field match */
-function parseCommaSeparatedField(match: RegExpMatchArray | null): string[] {
-  if (!match?.[1]) return [];
-  return match[1].split(',').map(v => v.trim()).filter(Boolean);
-}
+/**
+ * Parse a non-max format prompt into structured data
+ */
+export function parseNonMaxPrompt(text: string): ParsedPrompt {
+  const lines = text.split('\n').map((l) => l.trim());
 
-/** Extract structured fields from lines, returning processed indices */
-function extractFields(lines: string[]): { 
-  genre: string | null; 
-  moods: string[]; 
-  instruments: string[]; 
-  processedIndices: Set<number>;
-} {
+  let description = '';
   let genre: string | null = null;
   const moods: string[] = [];
   const instruments: string[] = [];
+  const sections: SectionContent[] = [];
+
+  // Track which lines we've processed as fields
   const processedIndices = new Set<number>();
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
 
+    // Genre: X
     const genreMatch = line.match(/^Genre:\s*(.+)/i);
     if (genreMatch) {
-      genre = genreMatch[1]?.trim().toLowerCase() ?? null;
+      genre = genreMatch[1]?.trim().toLowerCase() || null;
       processedIndices.add(i);
       continue;
     }
 
+    // Mood: X, Y, Z or Moods: X, Y, Z
     const moodMatch = line.match(/^Moods?:\s*(.+)/i);
     if (moodMatch) {
-      moods.push(...parseCommaSeparatedField(moodMatch));
+      const moodValues = moodMatch[1]
+        ?.split(',')
+        .map((m) => m.trim())
+        .filter(Boolean);
+      if (moodValues) moods.push(...moodValues);
       processedIndices.add(i);
       continue;
     }
 
+    // Instrument: X, Y or Instruments: X, Y
     const instrumentMatch = line.match(/^Instruments?:\s*(.+)/i);
     if (instrumentMatch) {
-      instruments.push(...parseCommaSeparatedField(instrumentMatch));
+      const instrumentValues = instrumentMatch[1]
+        ?.split(',')
+        .map((inst) => inst.trim())
+        .filter(Boolean);
+      if (instrumentValues) instruments.push(...instrumentValues);
       processedIndices.add(i);
       continue;
     }
 
+    // Section tag line (e.g., [INTRO]) - mark but don't skip yet
     if (line.match(/^\[[\w\s]+\]$/)) {
       processedIndices.add(i);
+      continue;
     }
   }
 
-  return { genre, moods, instruments, processedIndices };
-}
-
-/** Find the description (first non-field, non-section line) */
-function findDescription(lines: string[], processedIndices: Set<number>): string {
+  // Get description: first non-empty line that's not a field and not a section tag
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line || processedIndices.has(i) || line.match(/^\[[\w\s]+\]/)) continue;
-    return line;
-  }
-  return '';
-}
+    if (!line) continue;
+    if (processedIndices.has(i)) continue;
+    if (line.match(/^\[[\w\s]+\]/)) continue; // Skip section tags and content after them
 
-/** Extract sections with their content */
-function extractSections(text: string): SectionContent[] {
-  const sections: SectionContent[] = [];
+    description = line;
+    break;
+  }
+
+  // Extract sections with content using regex
   const sectionPattern = /\[([^\]]+)\]\s*\n?([\s\S]*?)(?=\[[^\]]+\]|$)/g;
   let match: RegExpExecArray | null;
 
@@ -143,17 +149,6 @@ function extractSections(text: string): SectionContent[] {
       sections.push({ tag, content });
     }
   }
-  return sections;
-}
-
-/**
- * Parse a non-max format prompt into structured data
- */
-export function parseNonMaxPrompt(text: string): ParsedPrompt {
-  const lines = text.split('\n').map(l => l.trim());
-  const { genre, moods, instruments, processedIndices } = extractFields(lines);
-  const description = findDescription(lines, processedIndices);
-  const sections = extractSections(text);
 
   return { description, genre, moods, instruments, sections };
 }

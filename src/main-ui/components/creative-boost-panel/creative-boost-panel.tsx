@@ -29,7 +29,6 @@ type CreativeBoostPanelProps = {
   onRefine: (feedback: string) => void;
 };
 
-// eslint-disable-next-line max-lines-per-function -- Panel with simple/advanced mode toggle and multiple inputs
 export function CreativeBoostPanel({
   input,
   maxMode,
