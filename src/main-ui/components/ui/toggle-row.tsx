@@ -49,6 +49,7 @@ export function ToggleRow({
         onCheckedChange={onChange}
         disabled={disabled}
         size="sm"
+        className="ml-auto"
       />
     </label>
   );
