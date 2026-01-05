@@ -12,6 +12,16 @@ import { type GeneratingAction } from './use-generation-state';
 
 const log = createLogger('RemixActions');
 
+export type RemixActions = {
+  handleRemixInstruments: () => Promise<void>;
+  handleRemixGenre: () => Promise<void>;
+  handleRemixMood: () => Promise<void>;
+  handleRemixStyleTags: () => Promise<void>;
+  handleRemixRecording: () => Promise<void>;
+  handleRemixTitle: () => Promise<void>;
+  handleRemixLyrics: () => Promise<void>;
+};
+
 type RemixActionDeps = {
   isGenerating: boolean;
   currentSession: PromptSession | null;
@@ -23,7 +33,7 @@ type RemixActionDeps = {
   setValidation: (v: ValidationResult) => void;
 };
 
-export function useRemixActions(deps: RemixActionDeps) {
+export function useRemixActions(deps: RemixActionDeps): RemixActions {
   const {
     isGenerating,
     currentSession,
@@ -72,7 +82,7 @@ export function useRemixActions(deps: RemixActionDeps) {
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
+  }, [isGenerating, currentSession, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation]);
 
   // Factory for prompt-only remix handlers (prompt → remixed prompt)
   const makePromptRemix = useCallback((action: GeneratingAction, method: keyof typeof api, label: string, msg: string) => async () => {

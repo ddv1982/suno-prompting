@@ -14,6 +14,7 @@ const SettingsModal = lazy(() => import("./components/settings-modal").then(m =>
 
 function App(): ReactNode {
   useScrollReveal();
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- top-level App needs combined context
   const { sessions, currentSession, settingsOpen, setSettingsOpen, selectSession, newProject, deleteSession } = useAppContext();
 
   return (

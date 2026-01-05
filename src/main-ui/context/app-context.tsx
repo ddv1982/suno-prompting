@@ -19,7 +19,15 @@ type AppContextType =
   & Pick<EditorContextType, 'editorMode' | 'promptMode' | 'creativeBoostMode' | 'advancedSelection' | 'lockedPhrase' | 'pendingInput' | 'lyricsTopic' | 'computedMusicPhrase' | 'setEditorMode' | 'setPromptMode' | 'setCreativeBoostMode' | 'setAdvancedSelection' | 'updateAdvancedSelection' | 'clearAdvancedSelection' | 'setLockedPhrase' | 'setPendingInput' | 'setLyricsTopic' | 'quickVibesInput' | 'withWordlessVocals' | 'setQuickVibesInput' | 'setWithWordlessVocals' | 'creativeBoostInput' | 'setCreativeBoostInput'>
   & Pick<GenerationContextType, 'isGenerating' | 'generatingAction' | 'chatMessages' | 'validation' | 'debugInfo' | 'setValidation' | 'selectSession' | 'newProject' | 'handleGenerate' | 'handleCopy' | 'handleRemix' | 'handleRemixInstruments' | 'handleRemixGenre' | 'handleRemixMood' | 'handleRemixStyleTags' | 'handleRemixRecording' | 'handleRemixTitle' | 'handleRemixLyrics' | 'handleGenerateQuickVibes' | 'handleRemixQuickVibes' | 'handleConversionComplete' | 'handleGenerateCreativeBoost' | 'handleRefineCreativeBoost'>;
 
-// Backwards-compatible hook that combines all contexts
+/**
+ * @deprecated Prefer using domain-specific contexts directly:
+ * - useSessionContext() - sessions, currentSession, saveSession, deleteSession
+ * - useSettingsContext() - maxMode, lyricsMode, currentModel
+ * - useEditorContext() - editorMode, promptMode, advancedSelection, etc.
+ * - useGenerationContext() - isGenerating, handleGenerate, remix handlers
+ *
+ * This hook exists for backwards compatibility.
+ */
 export const useAppContext = (): AppContextType => {
   const session = useSessionContext();
   const settings = useSettingsContext();

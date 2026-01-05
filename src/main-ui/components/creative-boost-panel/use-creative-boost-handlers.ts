@@ -14,9 +14,21 @@ type UseCreativeBoostHandlersProps = {
   onRefine: (feedback: string) => void;
 };
 
+export type CreativeBoostHandlers = {
+  handleCreativityChange: (value: CreativitySliderValue) => void;
+  handleGenresChange: (genres: string[]) => void;
+  handleSunoStylesChange: (styles: string[]) => void;
+  handleDescriptionChange: (value: string) => void;
+  handleLyricsTopicChange: (value: string) => void;
+  handleWordlessVocalsChange: (checked: boolean) => void;
+  handleLyricsToggleChange: (checked: boolean) => void;
+  handleKeyDown: (e: React.KeyboardEvent) => void;
+  handleSubmit: () => void;
+};
+
 export function useCreativeBoostHandlers({
   input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine,
-}: UseCreativeBoostHandlersProps) {
+}: UseCreativeBoostHandlersProps): CreativeBoostHandlers {
   const handleCreativityChange = useCallback((value: CreativitySliderValue): void => {
     onInputChange({ ...input, creativityLevel: value });
   }, [input, onInputChange]);
