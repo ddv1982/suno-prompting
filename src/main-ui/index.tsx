@@ -7,15 +7,19 @@ import { HistorySidebar } from "@/components/history-sidebar";
 import { PromptEditorContainer } from "@/components/prompt-editor-container";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ToastProvider } from "@/components/ui/toast";
-import { AppProvider, useAppContext } from "@/context/app-context";
+import { AppProvider } from "@/context/app-context";
+import { useGenerationContext } from "@/context/generation-context";
+import { useSessionContext } from "@/context/session-context";
+import { useSettingsContext } from "@/context/settings-context";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const SettingsModal = lazy(() => import("./components/settings-modal").then(m => ({ default: m.SettingsModal })));
 
 function App(): ReactNode {
   useScrollReveal();
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- top-level App needs combined context
-  const { sessions, currentSession, settingsOpen, setSettingsOpen, selectSession, newProject, deleteSession } = useAppContext();
+  const { sessions, currentSession, deleteSession } = useSessionContext();
+  const { settingsOpen, setSettingsOpen } = useSettingsContext();
+  const { selectSession, newProject } = useGenerationContext();
 
   return (
     <SidebarProvider>

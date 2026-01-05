@@ -3,63 +3,65 @@ import { useMemo } from "react";
 
 import { PromptEditor } from "@/components/prompt-editor";
 import { type OutputState, type InputState, type GenerationState, type ModeState, type QuickVibesState, type CreativeBoostState, type RemixHandlers, type EditorHandlers, type EditorConfig } from "@/components/prompt-editor/types";
-import { useAppContext } from "@/context/app-context";
+import { useEditorContext } from "@/context/editor-context";
+import { useGenerationContext } from "@/context/generation-context";
+import { useSessionContext } from "@/context/session-context";
+import { useSettingsContext } from "@/context/settings-context";
 import { APP_CONSTANTS } from "@shared/constants";
 
 import type { ReactNode } from "react";
 
 export function PromptEditorContainer(): ReactNode {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional use for prop grouping
-  const ctx = useAppContext();
+  const { currentSession } = useSessionContext();
+  const { currentModel, maxMode, lyricsMode, setMaxMode, setLyricsMode } = useSettingsContext();
+  const { editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic, computedMusicPhrase, quickVibesInput, withWordlessVocals, creativeBoostInput, setEditorMode, setPromptMode, setCreativeBoostMode, updateAdvancedSelection, clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput } = useEditorContext();
+  const { isGenerating, generatingAction, chatMessages, validation, debugInfo, handleGenerate, handleCopy, handleRemix, handleRemixInstruments, handleRemixGenre, handleRemixMood, handleRemixStyleTags, handleRemixRecording, handleRemixTitle, handleRemixLyrics, handleGenerateQuickVibes, handleRemixQuickVibes, handleConversionComplete, handleGenerateCreativeBoost, handleRefineCreativeBoost } = useGenerationContext();
 
   const output: OutputState = useMemo(() => ({
-    currentPrompt: ctx.currentSession?.currentPrompt || "",
-    currentTitle: ctx.currentSession?.currentTitle,
-    currentLyrics: ctx.currentSession?.currentLyrics,
-  }), [ctx.currentSession?.currentPrompt, ctx.currentSession?.currentTitle, ctx.currentSession?.currentLyrics]);
+    currentPrompt: currentSession?.currentPrompt || "",
+    currentTitle: currentSession?.currentTitle,
+    currentLyrics: currentSession?.currentLyrics,
+  }), [currentSession?.currentPrompt, currentSession?.currentTitle, currentSession?.currentLyrics]);
 
   const input: InputState = useMemo(() => ({
-    pendingInput: ctx.pendingInput, lockedPhrase: ctx.lockedPhrase, lyricsTopic: ctx.lyricsTopic,
-    advancedSelection: ctx.advancedSelection, computedMusicPhrase: ctx.computedMusicPhrase,
-  }), [ctx.pendingInput, ctx.lockedPhrase, ctx.lyricsTopic, ctx.advancedSelection, ctx.computedMusicPhrase]);
+    pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase,
+  }), [pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase]);
 
   const generation: GenerationState = useMemo(() => ({
-    isGenerating: ctx.isGenerating, generatingAction: ctx.generatingAction, validation: ctx.validation,
-    debugInfo: ctx.debugInfo, chatMessages: ctx.chatMessages,
-  }), [ctx.isGenerating, ctx.generatingAction, ctx.validation, ctx.debugInfo, ctx.chatMessages]);
+    isGenerating, generatingAction, validation, debugInfo, chatMessages,
+  }), [isGenerating, generatingAction, validation, debugInfo, chatMessages]);
 
   const modes: ModeState = useMemo(() => ({
-    maxMode: ctx.maxMode, lyricsMode: ctx.lyricsMode, editorMode: ctx.editorMode,
-    promptMode: ctx.promptMode, creativeBoostMode: ctx.creativeBoostMode,
-  }), [ctx.maxMode, ctx.lyricsMode, ctx.editorMode, ctx.promptMode, ctx.creativeBoostMode]);
+    maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode,
+  }), [maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode]);
 
   const quickVibes: QuickVibesState = useMemo(() => ({
-    input: ctx.quickVibesInput, withWordlessVocals: ctx.withWordlessVocals,
-  }), [ctx.quickVibesInput, ctx.withWordlessVocals]);
+    input: quickVibesInput, withWordlessVocals,
+  }), [quickVibesInput, withWordlessVocals]);
 
   const creativeBoost: CreativeBoostState = useMemo(() => ({
-    input: ctx.creativeBoostInput,
-  }), [ctx.creativeBoostInput]);
+    input: creativeBoostInput,
+  }), [creativeBoostInput]);
 
   const remix: RemixHandlers = useMemo(() => ({
-    onRemix: ctx.handleRemix, onRemixQuickVibes: ctx.handleRemixQuickVibes, onRemixInstruments: ctx.handleRemixInstruments,
-    onRemixGenre: ctx.handleRemixGenre, onRemixMood: ctx.handleRemixMood, onRemixStyleTags: ctx.handleRemixStyleTags,
-    onRemixRecording: ctx.handleRemixRecording, onRemixTitle: ctx.handleRemixTitle, onRemixLyrics: ctx.handleRemixLyrics,
-  }), [ctx.handleRemix, ctx.handleRemixQuickVibes, ctx.handleRemixInstruments, ctx.handleRemixGenre, ctx.handleRemixMood, ctx.handleRemixStyleTags, ctx.handleRemixRecording, ctx.handleRemixTitle, ctx.handleRemixLyrics]);
+    onRemix: handleRemix, onRemixQuickVibes: handleRemixQuickVibes, onRemixInstruments: handleRemixInstruments,
+    onRemixGenre: handleRemixGenre, onRemixMood: handleRemixMood, onRemixStyleTags: handleRemixStyleTags,
+    onRemixRecording: handleRemixRecording, onRemixTitle: handleRemixTitle, onRemixLyrics: handleRemixLyrics,
+  }), [handleRemix, handleRemixQuickVibes, handleRemixInstruments, handleRemixGenre, handleRemixMood, handleRemixStyleTags, handleRemixRecording, handleRemixTitle, handleRemixLyrics]);
 
   const handlers: EditorHandlers = useMemo(() => ({
-    onPendingInputChange: ctx.setPendingInput, onLockedPhraseChange: ctx.setLockedPhrase, onLyricsTopicChange: ctx.setLyricsTopic,
-    onEditorModeChange: ctx.setEditorMode, onAdvancedSelectionUpdate: ctx.updateAdvancedSelection, onAdvancedSelectionClear: ctx.clearAdvancedSelection,
-    onPromptModeChange: ctx.setPromptMode, onMaxModeChange: ctx.setMaxMode, onLyricsModeChange: ctx.setLyricsMode,
-    onCreativeBoostModeChange: ctx.setCreativeBoostMode, onQuickVibesInputChange: ctx.setQuickVibesInput, onWordlessVocalsChange: ctx.setWithWordlessVocals,
-    onCreativeBoostInputChange: ctx.setCreativeBoostInput, onGenerate: ctx.handleGenerate, onGenerateQuickVibes: ctx.handleGenerateQuickVibes,
-    onGenerateCreativeBoost: ctx.handleGenerateCreativeBoost, onRefineCreativeBoost: ctx.handleRefineCreativeBoost,
-    onCopy: ctx.handleCopy, onConversionComplete: ctx.handleConversionComplete,
-  }), [ctx.setPendingInput, ctx.setLockedPhrase, ctx.setLyricsTopic, ctx.setEditorMode, ctx.updateAdvancedSelection, ctx.clearAdvancedSelection, ctx.setPromptMode, ctx.setMaxMode, ctx.setLyricsMode, ctx.setCreativeBoostMode, ctx.setQuickVibesInput, ctx.setWithWordlessVocals, ctx.setCreativeBoostInput, ctx.handleGenerate, ctx.handleGenerateQuickVibes, ctx.handleGenerateCreativeBoost, ctx.handleRefineCreativeBoost, ctx.handleCopy, ctx.handleConversionComplete]);
+    onPendingInputChange: setPendingInput, onLockedPhraseChange: setLockedPhrase, onLyricsTopicChange: setLyricsTopic,
+    onEditorModeChange: setEditorMode, onAdvancedSelectionUpdate: updateAdvancedSelection, onAdvancedSelectionClear: clearAdvancedSelection,
+    onPromptModeChange: setPromptMode, onMaxModeChange: setMaxMode, onLyricsModeChange: setLyricsMode,
+    onCreativeBoostModeChange: setCreativeBoostMode, onQuickVibesInputChange: setQuickVibesInput, onWordlessVocalsChange: setWithWordlessVocals,
+    onCreativeBoostInputChange: setCreativeBoostInput, onGenerate: handleGenerate, onGenerateQuickVibes: handleGenerateQuickVibes,
+    onGenerateCreativeBoost: handleGenerateCreativeBoost, onRefineCreativeBoost: handleRefineCreativeBoost,
+    onCopy: handleCopy, onConversionComplete: handleConversionComplete,
+  }), [setPendingInput, setLockedPhrase, setLyricsTopic, setEditorMode, updateAdvancedSelection, clearAdvancedSelection, setPromptMode, setMaxMode, setLyricsMode, setCreativeBoostMode, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput, handleGenerate, handleGenerateQuickVibes, handleGenerateCreativeBoost, handleRefineCreativeBoost, handleCopy, handleConversionComplete]);
 
   const config: EditorConfig = useMemo(() => ({
-    maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS, currentModel: ctx.currentModel,
-  }), [ctx.currentModel]);
+    maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS, currentModel,
+  }), [currentModel]);
 
   return (
     <PromptEditor
