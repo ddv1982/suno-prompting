@@ -225,23 +225,13 @@ export const GenerationProvider = ({ children }: { children: ReactNode }): React
     await createConversionSession(originalInput, convertedPrompt, versionId, conversionDebugInfo);
   }, [createConversionSession]);
 
-  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo<GenerationContextType>(() => ({
-    isGenerating, generatingAction, chatMessages, validation, debugInfo, setValidation, selectSession, newProject,
-    handleGenerate, handleCopy, handleRemix, handleConversionComplete,
-    handleRemixInstruments: remixActions.handleRemixInstruments, handleRemixGenre: remixActions.handleRemixGenre,
-    handleRemixMood: remixActions.handleRemixMood, handleRemixStyleTags: remixActions.handleRemixStyleTags,
-    handleRemixRecording: remixActions.handleRemixRecording, handleRemixTitle: remixActions.handleRemixTitle,
-    handleRemixLyrics: remixActions.handleRemixLyrics, handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
-    handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
-    handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
-    handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
-  }), [isGenerating, generatingAction, chatMessages, validation, debugInfo, setValidation, selectSession, newProject,
-    handleGenerate, handleCopy, handleRemix, handleConversionComplete, remixActions, quickVibesActions, creativeBoostActions]);
+    isGenerating, generatingAction, chatMessages, validation, debugInfo, setValidation, selectSession, newProject, handleGenerate, handleCopy, handleRemix, handleConversionComplete,
+    handleRemixInstruments: remixActions.handleRemixInstruments, handleRemixGenre: remixActions.handleRemixGenre, handleRemixMood: remixActions.handleRemixMood,
+    handleRemixStyleTags: remixActions.handleRemixStyleTags, handleRemixRecording: remixActions.handleRemixRecording, handleRemixTitle: remixActions.handleRemixTitle,
+    handleRemixLyrics: remixActions.handleRemixLyrics, handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes, handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
+    handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost, handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
+  }), [isGenerating, generatingAction, chatMessages, validation, debugInfo, setValidation, selectSession, newProject, handleGenerate, handleCopy, handleRemix, handleConversionComplete, remixActions, quickVibesActions, creativeBoostActions]);
 
-  return (
-    <GenerationContext.Provider value={contextValue}>
-      {children}
-    </GenerationContext.Provider>
-  );
+  return <GenerationContext.Provider value={contextValue}>{children}</GenerationContext.Provider>;
 };
