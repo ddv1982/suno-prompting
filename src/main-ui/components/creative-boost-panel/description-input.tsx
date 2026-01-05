@@ -36,7 +36,7 @@ export function DescriptionInput({
       <div className="flex items-center justify-between">
         <FormLabel
           icon={<MessageSquare className="w-3 h-3" />}
-          badge={isRefineMode ? undefined : isDirectMode ? "disabled" : "optional"}
+          badge={isDirectMode ? "disabled" : "optional"}
         >
           {isRefineMode ? "Refine feedback" : "Description"}
         </FormLabel>
@@ -64,7 +64,7 @@ export function DescriptionInput({
       />
       <p className="ui-helper">
         {isRefineMode
-          ? "Describe how you'd like to adjust the current output."
+          ? "Optionally describe how you'd like to adjust the output, or leave blank to regenerate."
           : isDirectMode
             ? "Description is not used when Suno V5 Styles are selected."
             : "Optionally describe the mood, style, or direction for your music."

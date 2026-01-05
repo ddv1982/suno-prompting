@@ -71,11 +71,6 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
     }) => {
       validateRequiredField(currentPrompt, 'currentPrompt', 'Current prompt is required for refinement');
       validateRequiredField(currentTitle, 'currentTitle', 'Current title is required for refinement');
-      
-      const isDirectMode = sunoStyles.length > 0;
-      if (!isDirectMode) {
-        validateRequiredField(feedback, 'feedback', 'Feedback is required for refinement');
-      }
       validateSunoStylesLimit(sunoStyles);
       validateGenreStylesMutualExclusivity(seedGenres, sunoStyles);
 

@@ -256,7 +256,12 @@ export function buildCreativeBoostRefineUserPrompt(
     parts.push(`Lyrics topic: "${lyricsTopic.trim()}"`);
   }
 
-  parts.push('', `User feedback: ${feedback}`, '', 'Generate the refined prompt:');
+  if (feedback?.trim()) {
+    parts.push('', `User feedback: ${feedback}`);
+  } else {
+    parts.push('', 'User feedback: Regenerate with a fresh creative variation while keeping the same style direction');
+  }
+  parts.push('', 'Generate the refined prompt:');
 
   return parts.join('\n');
 }

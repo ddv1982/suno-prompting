@@ -559,39 +559,20 @@ bpm: "110"`;
       })).rejects.toThrow("Current prompt is required for refinement");
     });
 
-    test("refineCreativeBoost throws ValidationError for missing feedback in normal mode", async () => {
+    test("refineCreativeBoost allows empty feedback", async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
       const handlers = createHandlers(aiEngine as any, storage as any);
 
-      await expect(handlers.refineCreativeBoost({
-        currentPrompt: "test prompt",
-        currentTitle: "Title",
-        feedback: "",
-        lyricsTopic: "",
-        description: "",
-        seedGenres: [],
-        sunoStyles: [],  // Normal mode - empty sunoStyles
-        withWordlessVocals: false,
-        maxMode: false,
-        withLyrics: false,
-      })).rejects.toThrow("Feedback is required for refinement");
-    });
-
-    test("refineCreativeBoost allows empty feedback in Direct Mode", async () => {
-      const aiEngine = createMockAIEngine();
-      const storage = createMockStorage();
-      const handlers = createHandlers(aiEngine as any, storage as any);
-
-      // Should NOT throw - Direct Mode (sunoStyles has items)
+      // Empty feedback is allowed - will regenerate with current settings
       const result = await handlers.refineCreativeBoost({
-        currentPrompt: "dream-pop, shoegaze",
-        currentTitle: "Dreamy Title",
-        feedback: "",  // Empty feedback
+        currentPrompt: "test prompt",
+        currentTitle: "Test Title",
+        feedback: "",  // Empty feedback is allowed
         lyricsTopic: "",
         description: "",
         seedGenres: [],
-        sunoStyles: ["dream-pop", "shoegaze"],  // Direct Mode
+        sunoStyles: [],
         withWordlessVocals: false,
         maxMode: false,
         withLyrics: false,
