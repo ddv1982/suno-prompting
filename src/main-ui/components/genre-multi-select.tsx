@@ -37,6 +37,7 @@ type GenreOption = {
   type: "single" | "multi";
 };
 
+// eslint-disable-next-line max-lines-per-function -- Multi-select with search, grouping, and keyboard navigation
 export function GenreMultiSelect({
   selected,
   onChange,

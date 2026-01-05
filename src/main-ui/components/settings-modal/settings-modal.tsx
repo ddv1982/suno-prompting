@@ -27,6 +27,7 @@ type SettingsModalProps = {
 
 const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
 
+// eslint-disable-next-line max-lines-per-function -- Modal with API keys, provider selection, and multiple toggles
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
   const [apiKeys, setApiKeys] = useState<APIKeys>({ ...DEFAULT_API_KEYS });

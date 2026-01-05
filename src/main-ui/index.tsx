@@ -13,7 +13,7 @@ import { APP_CONSTANTS } from "@shared/constants";
 
 const SettingsModal = lazy(() => import("./components/settings-modal").then(m => ({ default: m.SettingsModal })));
 
-// Main App
+// eslint-disable-next-line max-lines-per-function -- Main app component composing all providers and layout
 function App() {
   useScrollReveal();
   

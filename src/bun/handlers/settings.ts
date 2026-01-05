@@ -19,6 +19,7 @@ type SettingsHandlers = Pick<
   | 'getCreativeBoostMode' | 'setCreativeBoostMode'
 >;
 
+// eslint-disable-next-line max-lines-per-function -- Handler factory for all settings operations (API keys, provider, model, modes)
 export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManager): SettingsHandlers {
   return {
     getApiKey: async () => {

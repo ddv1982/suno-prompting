@@ -60,6 +60,7 @@ export const useGenerationContext = (): GenerationContextType => {
   return context;
 };
 
+// eslint-disable-next-line max-lines-per-function -- Context provider with multiple generation modes (Quick Vibes, Creative Boost, Full)
 export const GenerationProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { getEffectiveLockedPhrase, resetEditor, setPendingInput, lyricsTopic, setLyricsTopic, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput, setWithWordlessVocals, promptMode, setPromptMode, withWordlessVocals, advancedSelection, creativeBoostInput, setCreativeBoostInput } = useEditorContext();
@@ -231,6 +232,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }): React
     await saveSession(updatedSession);
   }, [currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation]);
 
+  // eslint-disable-next-line complexity -- Core generation orchestrating Quick Vibes, Max Mode, and standard flow
   const handleGenerate = useCallback(async (input: string) => {
     if (isGenerating) return;
     

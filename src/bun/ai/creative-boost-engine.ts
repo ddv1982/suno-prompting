@@ -208,6 +208,7 @@ interface RefineDirectModeOptions {
  * - Styles are always updated from sunoStyles array
  * - Title/lyrics only change when feedback is provided
  */
+// eslint-disable-next-line complexity -- Orchestrates title/lyrics/style refinement with conditional AI calls
 async function refineDirectMode(
   options: RefineDirectModeOptions,
   config: CreativeBoostEngineConfig

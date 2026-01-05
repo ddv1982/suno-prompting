@@ -25,6 +25,7 @@ type QuickVibesPanelProps = {
   onRefine: (feedback: string) => void;
 };
 
+// eslint-disable-next-line max-lines-per-function -- Panel with genre grid, input, and generation controls
 export function QuickVibesPanel({
   input,
   withWordlessVocals,

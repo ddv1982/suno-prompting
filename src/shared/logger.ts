@@ -40,6 +40,7 @@ export function createLogger(namespace: string): Logger {
 
   const logger: Logger = {
     info(action: string, data?: LogData) {
+      // eslint-disable-next-line no-console -- Logger is the single place for console output
       console.log(formatMessage(namespace, action, data));
     },
     warn(action: string, data?: LogData) {
