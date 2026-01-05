@@ -55,7 +55,7 @@ RULES:
 1. Line 1 bracket tag is MANDATORY - never omit it
 2. Write sections as natural flowing phrases, not word lists
 3. Only use instruments from SUGGESTED INSTRUMENTS in technical guidance
-4. Performance tags available: (breathy), (belt), (whisper), (ad-lib), (hold)` : '';
+4. Backing vocals in (): wordless (ooh, ahh) or lyric echo (repeat key word from line)` : '';
 
   return `You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
 

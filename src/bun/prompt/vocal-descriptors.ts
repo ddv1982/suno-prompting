@@ -203,3 +203,79 @@ export function buildVocalDescriptor(
   const { range, delivery, technique } = getVocalSuggestionsForGenre(genre, rng);
   return `${range}, ${delivery} Delivery, ${technique}`;
 }
+
+// Genre-specific backing vocal suggestions
+// These are actual singable sounds that work well as background harmonies
+export const GENRE_BACKING_VOCALS: Record<string, {
+  wordless: readonly string[];
+  echoStyle: string;
+}> = {
+  pop: {
+    wordless: ['(ooh)', '(yeah)', '(oh-oh)', '(na na na)', '(hey)'],
+    echoStyle: 'repeat the hook word',
+  },
+  rock: {
+    wordless: ['(hey!)', '(woah)', '(yeah!)', '(oh)'],
+    echoStyle: 'repeat with intensity',
+  },
+  rnb: {
+    wordless: ['(ooh)', '(baby)', '(yeah)', '(mmm)', '(oh)'],
+    echoStyle: 'smooth echo of key phrase',
+  },
+  soul: {
+    wordless: ['(oh yeah)', '(mmm-hmm)', '(sing it)', '(ooh)', '(come on)'],
+    echoStyle: 'call and response style',
+  },
+  hiphop: {
+    wordless: ['(uh)', '(yeah)', '(ayy)', '(what)', '(let\'s go)'],
+    echoStyle: 'ad-lib the last word',
+  },
+  jazz: {
+    wordless: ['(mmm)', '(ooh)', '(da da da)', '(yeah)'],
+    echoStyle: 'scat-style echo',
+  },
+  country: {
+    wordless: ['(ooh)', '(yeah)', '(mm-hmm)', '(whoa)'],
+    echoStyle: 'harmony on key words',
+  },
+  folk: {
+    wordless: ['(ooh)', '(ahh)', '(la la la)', '(mm)'],
+    echoStyle: 'gentle word echo',
+  },
+  electronic: {
+    wordless: ['(ooh)', '(ahh)', '(oh)', '(hey)'],
+    echoStyle: 'rhythmic word chop',
+  },
+  metal: {
+    wordless: ['(hey!)', '(go!)', '(woah)', '(yeah!)'],
+    echoStyle: 'gang vocal shout',
+  },
+  punk: {
+    wordless: ['(hey!)', '(oh!)', '(go!)', '(yeah!)'],
+    echoStyle: 'crowd singalong',
+  },
+  latin: {
+    wordless: ['(oye)', '(dale)', '(ooh)', '(ay)'],
+    echoStyle: 'passionate echo',
+  },
+  ambient: {
+    wordless: ['(ooh)', '(ahh)', '(mmm)'],
+    echoStyle: 'ethereal sustain',
+  },
+  lofi: {
+    wordless: ['(mmm)', '(ooh)', '(yeah)'],
+    echoStyle: 'soft word repeat',
+  },
+};
+
+export const DEFAULT_BACKING_VOCALS = {
+  wordless: ['(ooh)', '(ahh)', '(yeah)', '(oh)', '(mmm)'],
+  echoStyle: 'repeat key word',
+};
+
+export function getBackingVocalsForGenre(genre: string): {
+  wordless: readonly string[];
+  echoStyle: string;
+} {
+  return GENRE_BACKING_VOCALS[genre.toLowerCase()] ?? DEFAULT_BACKING_VOCALS;
+}

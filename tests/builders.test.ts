@@ -47,10 +47,10 @@ describe('builders', () => {
       expect(result).not.toContain('[VERSE]');
     });
 
-    it('includes performance tags when useSunoTags is true', () => {
+    it('includes backing vocals guidance when useSunoTags is true', () => {
       const result = buildSystemPrompt(1000, true);
-      expect(result).toContain('(breathy)');
-      expect(result).toContain('(belt)');
+      expect(result).toContain('Backing vocals');
+      expect(result).toContain('(ooh, ahh)');
     });
   });
 

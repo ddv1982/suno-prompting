@@ -60,7 +60,7 @@ export async function generateLyrics(
   useSunoTags: boolean = false
 ): Promise<LyricsResult> {
   const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
-  const userPrompt = buildLyricsUserPrompt(description, genre, mood);
+  const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags);
   const debugInfo = { systemPrompt, userPrompt };
 
   try {

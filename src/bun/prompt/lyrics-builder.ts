@@ -1,3 +1,5 @@
+import { getBackingVocalsForGenre } from '@bun/prompt/vocal-descriptors';
+
 export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags: boolean = false): string {
   const maxModeInstructions = maxMode 
     ? `CRITICAL REQUIREMENT: The VERY FIRST LINE of your output MUST be exactly:
@@ -6,13 +8,20 @@ export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags: boolean =
 Then continue with the lyrics on subsequent lines.` 
     : '';
 
-  const performanceTags = useSunoTags
+  const backingVocals = useSunoTags
     ? `
 
-PERFORMANCE TAGS (optional):
-You may include inline vocal performance tags in parentheses to guide delivery:
-(breathy), (belt), (whisper), (ad-lib), (hold)
-Use them sparingly and only when they enhance the vocal moment.`
+BACKING VOCALS (optional):
+Content in parentheses is sung as backing vocals/harmonies. Two styles work well:
+
+1. WORDLESS: (ooh), (ahh), (mmm), (oh), (la la la), (na na na), (woah)
+2. LYRIC ECHO: Repeat a key word from the line as backing harmony
+   Example: "I'm falling for you tonight (tonight)"
+   Example: "Can't let go of this feeling (feeling, feeling)"
+
+Place at the END of lines, typically in choruses or emotional peaks.
+Use sparingly - 2-4 per song maximum.
+Do NOT use instruction words like (belt), (breathy), (whisper).`
     : '';
 
   return `You are a professional songwriter who crafts meaningful, narrative-driven lyrics.
@@ -43,7 +52,7 @@ STRUCTURE REQUIREMENTS:
 - Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
 - The chorus should be memorable and repeatable
 
-${performanceTags}
+${backingVocals}
 
 ABSTRACT INTERPRETATION:
 - You may interpret the description creatively and abstractly
@@ -76,7 +85,22 @@ ${maxMode ? '///*****///\n' : ''}[INTRO]
 OUTPUT ONLY THE LYRICS. No explanations, no titles, no additional text.`;
 }
 
-export function buildLyricsUserPrompt(description: string, genre: string, mood: string): string {
+export function buildLyricsUserPrompt(
+  description: string, 
+  genre: string, 
+  mood: string,
+  useSunoTags: boolean = false
+): string {
+  let backingVocalGuidance = '';
+  
+  if (useSunoTags) {
+    const backingVocals = getBackingVocalsForGenre(genre);
+    const wordlessExamples = backingVocals.wordless.slice(0, 3).join(', ');
+    backingVocalGuidance = `
+
+Backing vocals for ${genre}: Use ${wordlessExamples} or ${backingVocals.echoStyle}.`;
+  }
+
   return `Write lyrics for a song about:
 
 "${description}"
@@ -87,7 +111,7 @@ Emotional tone: ${mood}
 Use this mood to guide the emotional intensity and authenticity of the lyrics.
 
 Vocabulary style: ${genre}
-Use vocabulary and phrasing natural to this genre, but do NOT replace the story with genre imagery.
+Use vocabulary and phrasing natural to this genre, but do NOT replace the story with genre imagery.${backingVocalGuidance}
 
 Remember: The description tells you WHAT to write about. The genre tells you HOW to phrase it. The mood tells you how it should FEEL.`;
 }

@@ -57,17 +57,18 @@ describe("lyrics-builder", () => {
       expect(prompt).not.toContain("Match the genre's typical lyrical style and vocabulary");
     });
 
-    it("includes performance tags guidance when useSunoTags is true", () => {
+    it("includes backing vocals guidance when useSunoTags is true", () => {
       const prompt = buildLyricsSystemPrompt(false, true);
-      expect(prompt).toContain("(breathy)");
-      expect(prompt).toContain("(belt)");
-      expect(prompt).toContain("(ad-lib)");
+      expect(prompt).toContain("BACKING VOCALS");
+      expect(prompt).toContain("(ooh)");
+      expect(prompt).toContain("LYRIC ECHO");
+      expect(prompt).toContain("Do NOT use instruction words like (belt)");
     });
 
-    it("does not include performance tags guidance when useSunoTags is false", () => {
+    it("does not include backing vocals guidance when useSunoTags is false", () => {
       const prompt = buildLyricsSystemPrompt(false, false);
-      expect(prompt).not.toContain("(breathy)");
-      expect(prompt).not.toContain("(belt)");
+      expect(prompt).not.toContain("BACKING VOCALS");
+      expect(prompt).not.toContain("(ooh)");
     });
   });
 
@@ -95,6 +96,32 @@ describe("lyrics-builder", () => {
     it("should warn against replacing story with genre imagery", () => {
       const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
       expect(prompt).toContain("do NOT replace the story with genre imagery");
+    });
+
+    it("includes genre-specific backing vocals when useSunoTags is true", () => {
+      const prompt = buildLyricsUserPrompt("A song about love", "soul", "emotional", true);
+      expect(prompt).toContain("Backing vocals for soul");
+      expect(prompt).toContain("(oh yeah)");
+      expect(prompt).toContain("call and response style");
+    });
+
+    it("uses genre-specific backing vocals for rock", () => {
+      const prompt = buildLyricsUserPrompt("A song about freedom", "rock", "powerful", true);
+      expect(prompt).toContain("Backing vocals for rock");
+      expect(prompt).toContain("(hey!)");
+      expect(prompt).toContain("repeat with intensity");
+    });
+
+    it("does not include backing vocals when useSunoTags is false", () => {
+      const prompt = buildLyricsUserPrompt("A song about love", "soul", "emotional", false);
+      expect(prompt).not.toContain("Backing vocals for");
+    });
+
+    it("uses default backing vocals for unknown genre", () => {
+      const prompt = buildLyricsUserPrompt("A song", "unknowngenre", "calm", true);
+      expect(prompt).toContain("Backing vocals for unknowngenre");
+      expect(prompt).toContain("(ooh)");
+      expect(prompt).toContain("repeat key word");
     });
   });
 

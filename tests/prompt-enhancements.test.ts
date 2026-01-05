@@ -33,6 +33,9 @@ import {
   GENRE_VOCAL_STYLES,
   getVocalSuggestionsForGenre,
   buildVocalDescriptor,
+  GENRE_BACKING_VOCALS,
+  DEFAULT_BACKING_VOCALS,
+  getBackingVocalsForGenre,
 } from '@bun/prompt/vocal-descriptors';
 
 // Test categories
@@ -232,6 +235,70 @@ describe('Vocal Descriptors', () => {
       const result = buildVocalDescriptor('rock');
       const parts = result.split(', ');
       expect(parts.length).toBe(3);
+    });
+  });
+
+  describe('GENRE_BACKING_VOCALS', () => {
+    const EXPECTED_GENRES = ['pop', 'rock', 'rnb', 'soul', 'hiphop', 'jazz', 'country', 'folk', 'metal', 'punk', 'latin', 'ambient', 'lofi'];
+
+    it('has backing vocals for major genres', () => {
+      for (const genre of EXPECTED_GENRES) {
+        const vocals = GENRE_BACKING_VOCALS[genre];
+        expect(vocals).toBeDefined();
+        expect(vocals!.wordless.length).toBeGreaterThan(0);
+        expect(vocals!.echoStyle).toBeDefined();
+      }
+    });
+
+    it('soul has call and response style', () => {
+      const soul = GENRE_BACKING_VOCALS.soul;
+      expect(soul).toBeDefined();
+      expect(soul!.wordless).toContain('(oh yeah)');
+      expect(soul!.echoStyle).toContain('call and response');
+    });
+
+    it('rock has energetic backing vocals', () => {
+      const rock = GENRE_BACKING_VOCALS.rock;
+      expect(rock).toBeDefined();
+      expect(rock!.wordless).toContain('(hey!)');
+      expect(rock!.wordless).toContain('(woah)');
+    });
+
+    it('latin has culturally appropriate vocals', () => {
+      const latin = GENRE_BACKING_VOCALS.latin;
+      expect(latin).toBeDefined();
+      expect(latin!.wordless).toContain('(oye)');
+      expect(latin!.wordless).toContain('(dale)');
+    });
+  });
+
+  describe('DEFAULT_BACKING_VOCALS', () => {
+    it('has wordless vocals', () => {
+      expect(DEFAULT_BACKING_VOCALS.wordless.length).toBeGreaterThan(0);
+      expect(DEFAULT_BACKING_VOCALS.wordless).toContain('(ooh)');
+    });
+
+    it('has echo style', () => {
+      expect(DEFAULT_BACKING_VOCALS.echoStyle).toBe('repeat key word');
+    });
+  });
+
+  describe('getBackingVocalsForGenre', () => {
+    it('returns genre-specific vocals for known genre', () => {
+      const result = getBackingVocalsForGenre('soul');
+      expect(result.wordless).toContain('(oh yeah)');
+      expect(result.echoStyle).toContain('call and response');
+    });
+
+    it('returns default vocals for unknown genre', () => {
+      const result = getBackingVocalsForGenre('unknowngenre123');
+      expect(result).toEqual(DEFAULT_BACKING_VOCALS);
+    });
+
+    it('is case insensitive', () => {
+      const lower = getBackingVocalsForGenre('rock');
+      const upper = getBackingVocalsForGenre('ROCK');
+      expect(lower).toEqual(upper);
     });
   });
 });
