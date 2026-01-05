@@ -47,7 +47,6 @@ function useSidebar(): SidebarContext {
   return context
 }
 
-// eslint-disable-next-line max-lines-per-function -- shadcn/ui sidebar component with responsive behavior
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
