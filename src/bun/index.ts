@@ -11,7 +11,19 @@ const log = createLogger('Main');
 // Set up application menu for keyboard shortcuts (Cmd+C/Ctrl+C, Cmd+V/Ctrl+V, etc.)
 // Explicit menu definition ensures keyboard shortcuts are properly bound on all platforms
 ApplicationMenu.setApplicationMenu([
-    { role: process.platform === 'darwin' ? 'appMenu' : 'fileMenu' },
+    // App Menu (macOS: first menu is always the app name)
+    {
+        submenu: [
+            { label: "About Suno Prompting", role: "about" },
+            { type: "separator" },
+            { role: "hide" },
+            { role: "hideOthers" },
+            { role: "showAll" },
+            { type: "separator" },
+            { label: "Quit", role: "quit" },
+        ],
+    },
+    // Edit Menu
     {
         label: "Edit",
         submenu: [
@@ -23,7 +35,18 @@ ApplicationMenu.setApplicationMenu([
             { role: "paste" },
             { role: "pasteAndMatchStyle" },
             { role: "delete" },
+            { type: "separator" },
             { role: "selectAll" },
+        ],
+    },
+    // Window Menu
+    {
+        label: "Window",
+        submenu: [
+            { role: "minimize" },
+            { role: "zoom" },
+            { type: "separator" },
+            { role: "bringAllToFront" },
         ],
     },
 ]);
