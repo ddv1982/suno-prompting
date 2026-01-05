@@ -377,7 +377,7 @@ Note: vocal tags in `instruments:` are injected deterministically from Performan
 |--------|-------------|----------|
 | Format | Section tags `[VERSE]`, `[CHORUS]` | Metadata style `genre:`, `instruments:` |
 | Focus | Song structure | Recording quality & realism |
-| Tags | Performance tags `(breathy)`, `(belt)` | Realism tags (tape saturation, room acoustics) |
+| Tags | Backing vocals `(ooh)`, `(hey)` | Realism tags (tape saturation, room acoustics) |
 
 Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
@@ -552,6 +552,23 @@ Genre-appropriate vocal suggestions:
 - **Ranges**: Soprano, Mezzo Soprano, Alto, Tenor, Baritone, Bass
 - **Deliveries**: Belting, Intimate, Breathy, Raspy, Smooth, Falsetto, Crooner Style, Melismatic
 - **Techniques**: Stacked Harmonies, Call And Response, Ad Libs, Gospel Style Backing, Scat Fills
+
+### Backing Vocals
+
+Genre-specific backing vocal suggestions for lyrics mode:
+
+| Genre | Wordless Sounds | Echo Style |
+|-------|----------------|------------|
+| Pop | (ooh), (oh-oh), (na na na), (hey), (woah) | repeat the hook word |
+| Rock | (hey!), (woah), (oh), (go!) | repeat with intensity |
+| Soul | (oh yeah), (mmm-hmm), (sing it), (ooh), (come on) | call and response style |
+| Hip-hop | (uh), (ayy), (what), (let's go), (aye) | ad-lib the last word |
+| Jazz | (mmm), (ooh), (da da da), (doo) | scat-style echo |
+| Country | (ooh), (mm-hmm), (whoa), (oh) | harmony on key words |
+| Metal | (hey!), (go!), (woah), (oh!) | gang vocal shout |
+| Latin | (oye), (dale), (ooh), (ay) | passionate echo |
+
+Note: Backing vocals are injected based on detected genre. Content in parentheses is interpreted by Suno as backing vocals, so these are actual singable sounds rather than performance instructions.
 
 ### Production Elements
 
