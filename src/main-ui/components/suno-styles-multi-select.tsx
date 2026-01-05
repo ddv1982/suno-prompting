@@ -21,62 +21,28 @@ import { cn } from "@/lib/utils";
 import { SUNO_V5_STYLES, SUNO_V5_STYLE_DISPLAY_NAMES } from "@shared/suno-v5-styles";
 
 type SunoStylesMultiSelectProps = {
-  selected: string[];
-  onChange: (styles: string[]) => void;
-  maxSelections?: number;
-  disabled?: boolean;
-  /** Helper text to display below the component */
-  helperText?: string;
-  /** Badge text to show next to the label */
-  badgeText?: "optional" | "disabled";
+  selected: string[]; onChange: (styles: string[]) => void; maxSelections?: number;
+  disabled?: boolean; helperText?: string; badgeText?: "optional" | "disabled";
 };
 
-type StyleOption = {
-  value: string;
-  label: string;
-};
+type StyleOption = { value: string; label: string };
 
 export function SunoStylesMultiSelect({
-  selected,
-  onChange,
-  maxSelections = 4,
-  disabled = false,
-  helperText,
-  badgeText = "optional",
-}: SunoStylesMultiSelectProps) {
+  selected, onChange, maxSelections = 4, disabled = false, helperText, badgeText = "optional",
+}: SunoStylesMultiSelectProps): React.ReactElement {
   const [open, setOpen] = useState(false);
+  const allStyles = useMemo<StyleOption[]>(() => 
+    SUNO_V5_STYLES.map((style) => ({ value: style, label: SUNO_V5_STYLE_DISPLAY_NAMES[style] ?? style }))
+      .sort((a, b) => a.label.localeCompare(b.label)), []);
+  const availableOptions = useMemo(() => allStyles.filter((s) => !selected.includes(s.value)), [allStyles, selected]);
 
-  // Build sorted options list from all Suno V5 styles
-  const allStyles = useMemo<StyleOption[]>(() => {
-    return SUNO_V5_STYLES.map((style) => ({
-      value: style,
-      label: SUNO_V5_STYLE_DISPLAY_NAMES[style] ?? style,
-    })).sort((a, b) => a.label.localeCompare(b.label));
-  }, []);
-
-  // Filter out already-selected styles
-  const availableOptions = useMemo(
-    () => allStyles.filter((s) => !selected.includes(s.value)),
-    [allStyles, selected]
-  );
-
-  const handleSelect = (styleValue: string) => {
-    if (selected.includes(styleValue)) {
-      onChange(selected.filter((s) => s !== styleValue));
-    } else if (selected.length < maxSelections) {
-      onChange([...selected, styleValue]);
-    }
+  const handleSelect = (styleValue: string): void => {
+    if (selected.includes(styleValue)) onChange(selected.filter((s) => s !== styleValue));
+    else if (selected.length < maxSelections) onChange([...selected, styleValue]);
     setOpen(false);
   };
-
-  const handleRemove = (styleValue: string) => {
-    onChange(selected.filter((s) => s !== styleValue));
-  };
-
-  const getDisplayLabel = (value: string): string => {
-    return SUNO_V5_STYLE_DISPLAY_NAMES[value] ?? value;
-  };
-
+  const handleRemove = (styleValue: string): void => { onChange(selected.filter((s) => s !== styleValue)); };
+  const getDisplayLabel = (value: string): string => SUNO_V5_STYLE_DISPLAY_NAMES[value] ?? value;
   const isMaxed = selected.length >= maxSelections;
 
   // Determine helper text to display
