@@ -13,29 +13,15 @@ import { TogglesSection } from "./toggles-section";
 import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 
 type QuickVibesPanelProps = {
-  input: QuickVibesInput;
-  withWordlessVocals: boolean;
-  maxMode: boolean;
-  isGenerating: boolean;
-  hasCurrentPrompt: boolean;
-  onInputChange: (input: QuickVibesInput) => void;
-  onWordlessVocalsChange: (value: boolean) => void;
-  onMaxModeChange: (value: boolean) => void;
-  onGenerate: () => void;
-  onRefine: (feedback: string) => void;
+  input: QuickVibesInput; withWordlessVocals: boolean; maxMode: boolean;
+  isGenerating: boolean; hasCurrentPrompt: boolean; onInputChange: (input: QuickVibesInput) => void;
+  onWordlessVocalsChange: (value: boolean) => void; onMaxModeChange: (value: boolean) => void;
+  onGenerate: () => void; onRefine: (feedback: string) => void;
 };
 
 export function QuickVibesPanel({
-  input,
-  withWordlessVocals,
-  maxMode,
-  isGenerating,
-  hasCurrentPrompt,
-  onInputChange,
-  onWordlessVocalsChange,
-  onMaxModeChange,
-  onGenerate,
-  onRefine,
+  input, withWordlessVocals, maxMode, isGenerating, hasCurrentPrompt,
+  onInputChange, onWordlessVocalsChange, onMaxModeChange, onGenerate, onRefine,
 }: QuickVibesPanelProps): ReactNode {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;

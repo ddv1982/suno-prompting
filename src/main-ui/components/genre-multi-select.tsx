@@ -21,79 +21,30 @@ import { cn } from "@/lib/utils";
 import { GENRE_DISPLAY_NAMES, GENRE_COMBINATION_DISPLAY_NAMES } from "@shared/labels";
 
 type GenreMultiSelectProps = {
-  selected: string[];
-  onChange: (genres: string[]) => void;
-  maxSelections?: number;
-  disabled?: boolean;
-  /** Helper text to display below the component */
-  helperText?: string;
-  /** Badge text to show next to the label */
-  badgeText?: "optional" | "disabled";
+  selected: string[]; onChange: (genres: string[]) => void; maxSelections?: number;
+  disabled?: boolean; helperText?: string; badgeText?: "optional" | "disabled";
 };
 
-type GenreOption = {
-  value: string;
-  label: string;
-  type: "single" | "multi";
-};
+type GenreOption = { value: string; label: string; type: "single" | "multi" };
 
 export function GenreMultiSelect({
-  selected,
-  onChange,
-  maxSelections = 2,
-  disabled = false,
-  helperText,
-  badgeText = "optional",
-}: GenreMultiSelectProps) {
+  selected, onChange, maxSelections = 2, disabled = false, helperText, badgeText = "optional",
+}: GenreMultiSelectProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-
-  // Combine single genres and multi-genre combinations into one sorted list
   const allGenres = useMemo<GenreOption[]>(() => {
-    const singleGenres: GenreOption[] = Object.entries(GENRE_DISPLAY_NAMES).map(
-      ([key, label]) => ({
-        value: key,
-        label,
-        type: "single" as const,
-      })
-    );
-
-    const multiGenres: GenreOption[] = Object.entries(GENRE_COMBINATION_DISPLAY_NAMES).map(
-      ([key, label]) => ({
-        value: key,
-        label,
-        type: "multi" as const,
-      })
-    );
-
-    return [...singleGenres, ...multiGenres].sort((a, b) =>
-      a.label.localeCompare(b.label)
-    );
+    const single = Object.entries(GENRE_DISPLAY_NAMES).map(([key, label]) => ({ value: key, label, type: "single" as const }));
+    const multi = Object.entries(GENRE_COMBINATION_DISPLAY_NAMES).map(([key, label]) => ({ value: key, label, type: "multi" as const }));
+    return [...single, ...multi].sort((a, b) => a.label.localeCompare(b.label));
   }, []);
+  const availableOptions = useMemo(() => allGenres.filter((g) => !selected.includes(g.value)), [allGenres, selected]);
 
-  // Get available options (not already selected)
-  const availableOptions = useMemo(
-    () => allGenres.filter((g) => !selected.includes(g.value)),
-    [allGenres, selected]
-  );
-
-  const handleSelect = (genreValue: string) => {
-    if (selected.includes(genreValue)) {
-      onChange(selected.filter((g) => g !== genreValue));
-    } else if (selected.length < maxSelections) {
-      onChange([...selected, genreValue]);
-    }
+  const handleSelect = (genreValue: string): void => {
+    if (selected.includes(genreValue)) onChange(selected.filter((g) => g !== genreValue));
+    else if (selected.length < maxSelections) onChange([...selected, genreValue]);
     setOpen(false);
   };
-
-  const handleRemove = (genreValue: string) => {
-    onChange(selected.filter((g) => g !== genreValue));
-  };
-
-  // Get display label for a genre value
-  const getDisplayLabel = (value: string): string => {
-    return GENRE_DISPLAY_NAMES[value] ?? GENRE_COMBINATION_DISPLAY_NAMES[value] ?? value;
-  };
-
+  const handleRemove = (genreValue: string): void => { onChange(selected.filter((g) => g !== genreValue)); };
+  const getDisplayLabel = (value: string): string => GENRE_DISPLAY_NAMES[value] ?? GENRE_COMBINATION_DISPLAY_NAMES[value] ?? value;
   const isMaxed = selected.length >= maxSelections;
 
   return (

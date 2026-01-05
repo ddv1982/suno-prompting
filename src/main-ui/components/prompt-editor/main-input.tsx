@@ -15,33 +15,15 @@ import type { DebugInfo } from "@shared/types";
 const log = createLogger('MainInput');
 
 type MainInputProps = {
-  value: string;
-  currentPrompt: string;
-  lyricsMode: boolean;
-  maxMode: boolean;
-  isGenerating: boolean;
-  maxChars: number;
-  inputOverLimit: boolean;
-  canSubmit: boolean;
-  hasAdvancedSelection: boolean;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
+  value: string; currentPrompt: string; lyricsMode: boolean; maxMode: boolean;
+  isGenerating: boolean; maxChars: number; inputOverLimit: boolean; canSubmit: boolean;
+  hasAdvancedSelection: boolean; onChange: (value: string) => void; onSubmit: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
 };
 
 export function MainInput({
-  value,
-  currentPrompt,
-  lyricsMode,
-  maxMode,
-  isGenerating,
-  maxChars,
-  inputOverLimit,
-  canSubmit,
-  hasAdvancedSelection,
-  onChange,
-  onSubmit,
-  onConversionComplete,
+  value, currentPrompt, lyricsMode, maxMode, isGenerating, maxChars, inputOverLimit,
+  canSubmit, hasAdvancedSelection, onChange, onSubmit, onConversionComplete,
 }: MainInputProps): ReactNode {
   const { showToast } = useToast();
 
