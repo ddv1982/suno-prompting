@@ -7,7 +7,7 @@
  * @module ai/creative-boost/types
  */
 
-import type { EngineConfig } from '../types';
+import type { EngineConfig } from '@bun/ai/types';
 
 /**
  * Configuration for the Creative Boost Engine

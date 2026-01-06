@@ -25,8 +25,8 @@ import { APP_CONSTANTS } from '@shared/constants';
 
 import { DEFAULT_LYRICS_TOPIC, generateLyricsForCreativeBoost, postProcessCreativeBoostResponse } from './helpers';
 
-import type { GenerationResult } from '../types';
 import type { RefineCreativeBoostOptions, RefineDirectModeOptions, CreativeBoostEngineConfig } from './types';
+import type { GenerationResult } from '@bun/ai/types';
 import type { LanguageModel } from 'ai';
 
 const log = createLogger('CreativeBoostRefine');
