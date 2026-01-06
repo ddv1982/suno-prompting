@@ -4,9 +4,8 @@ import { z } from 'zod';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { selectModes } from '@bun/instruments/selection';
 
-import type { LanguageModel } from 'ai';
-
-// Test the schema validation logic used in selection.ts
+// Test the schema validation logic that was previously used in selection.ts
+// Kept for backwards compatibility testing
 const ALL_GENRES = Object.keys(GENRE_REGISTRY) as [string, ...string[]];
 
 const LLMResponseSchema = z.object({
@@ -141,59 +140,104 @@ describe('selection', () => {
     });
   });
 
-  describe('selectModes with genreOverride', () => {
-    // Tests for genreOverride path - doesn't need LLM since it short-circuits
-    const mockModel = {} as LanguageModel;
+  describe('selectModes - deterministic keyword detection', () => {
+    // selectModes is now fully deterministic - no LLM calls
+    // Uses keyword matching for genre detection with random fallback
 
-    it('uses override genre when valid single genre provided', async () => {
-      const result = await selectModes('some description', mockModel, 'jazz');
-      expect(result.genre).toBe('jazz');
-      expect(result.reasoning).toContain('User selected: jazz');
+    describe('with genreOverride', () => {
+      it('uses override genre when valid single genre provided', () => {
+        const result = selectModes('some description', 'jazz');
+        expect(result.genre).toBe('jazz');
+        expect(result.reasoning).toContain('User selected: jazz');
+      });
+
+      it('extracts base genre from combination like "jazz fusion"', () => {
+        const result = selectModes('some description', 'jazz fusion');
+        expect(result.genre).toBe('jazz');
+        expect(result.reasoning).toContain('User selected: jazz fusion');
+      });
+
+      it('returns null genre for unrecognized override', () => {
+        const result = selectModes('some description', 'unknowngenre');
+        expect(result.genre).toBeNull();
+        expect(result.reasoning).toContain('User selected: unknowngenre');
+      });
+
+      it('extracts base genre from multi-word override like "rock alternative"', () => {
+        const result = selectModes('description', 'rock alternative');
+        expect(result.genre).toBe('rock');
+      });
+
+      it('returns all ModeSelection fields', () => {
+        const result = selectModes('some description', 'electronic');
+        expect(result).toHaveProperty('genre');
+        expect(result).toHaveProperty('combination');
+        expect(result).toHaveProperty('singleMode');
+        expect(result).toHaveProperty('polyrhythmCombination');
+        expect(result).toHaveProperty('timeSignature');
+        expect(result).toHaveProperty('timeSignatureJourney');
+        expect(result).toHaveProperty('reasoning');
+      });
+
+      it('sets proper defaults for ModeSelection when override used', () => {
+        const result = selectModes('simple description', 'pop');
+        expect(result.genre).toBe('pop');
+        // These may be null depending on description
+        expect(result.combination === null || typeof result.combination === 'string').toBe(true);
+        expect(result.singleMode).toBeNull(); // Always null when using genreOverride path
+        expect(result.polyrhythmCombination === null || typeof result.polyrhythmCombination === 'string').toBe(true);
+      });
+
+      it('works with all valid genres from GENRE_REGISTRY', () => {
+        const genres = Object.keys(GENRE_REGISTRY);
+        for (const genre of genres.slice(0, 5)) { // Test first 5 to save time
+          const result = selectModes('test', genre);
+          expect(result.genre).toBe(genre as typeof result.genre);
+        }
+      });
     });
 
-    it('extracts base genre from combination like "jazz fusion"', async () => {
-      const result = await selectModes('some description', mockModel, 'jazz fusion');
-      expect(result.genre).toBe('jazz');
-      expect(result.reasoning).toContain('User selected: jazz fusion');
-    });
+    describe('without genreOverride - keyword detection', () => {
+      it('detects genre from description keywords', () => {
+        const result = selectModes('smooth jazz night session');
+        expect(result.genre).toBe('jazz');
+        expect(result.reasoning).toContain('Keyword detection');
+      });
 
-    it('returns null genre for unrecognized override', async () => {
-      const result = await selectModes('some description', mockModel, 'unknowngenre');
-      expect(result.genre).toBeNull();
-      expect(result.reasoning).toContain('User selected: unknowngenre');
-    });
+      it('returns null genre when no keywords match', () => {
+        const result = selectModes('something completely gibberish xyz');
+        expect(result.genre).toBeNull();
+        expect(result.reasoning).toBe('No genre keywords matched');
+      });
 
-    it('extracts base genre from multi-word override like "rock alternative"', async () => {
-      const result = await selectModes('description', mockModel, 'rock alternative');
-      expect(result.genre).toBe('rock');
-    });
+      it('detects rock from description', () => {
+        const result = selectModes('heavy rock anthem');
+        expect(result.genre).toBe('rock');
+      });
 
-    it('returns all ModeSelection fields', async () => {
-      const result = await selectModes('some description', mockModel, 'electronic');
-      expect(result).toHaveProperty('genre');
-      expect(result).toHaveProperty('combination');
-      expect(result).toHaveProperty('singleMode');
-      expect(result).toHaveProperty('polyrhythmCombination');
-      expect(result).toHaveProperty('timeSignature');
-      expect(result).toHaveProperty('timeSignatureJourney');
-      expect(result).toHaveProperty('reasoning');
-    });
+      it('detects electronic from description', () => {
+        const result = selectModes('electronic dance beat');
+        expect(result.genre).toBe('electronic');
+      });
 
-    it('sets proper defaults for ModeSelection when override used', async () => {
-      const result = await selectModes('simple description', mockModel, 'pop');
-      expect(result.genre).toBe('pop');
-      // These may be null depending on description
-      expect(result.combination === null || typeof result.combination === 'string').toBe(true);
-      expect(result.singleMode).toBeNull(); // Always null when using genreOverride path
-      expect(result.polyrhythmCombination === null || typeof result.polyrhythmCombination === 'string').toBe(true);
-    });
+      it('detects combination when present in description', () => {
+        const result = selectModes('bittersweet major minor journey');
+        expect(result.combination).toBe('major_minor');
+      });
 
-    it('works with all valid genres from GENRE_REGISTRY', async () => {
-      const genres = Object.keys(GENRE_REGISTRY);
-      for (const genre of genres.slice(0, 5)) { // Test first 5 to save time
-        const result = await selectModes('test', mockModel, genre);
-        expect(result.genre).toBe(genre as typeof result.genre);
-      }
+      it('detects harmonic style when no combination present', () => {
+        const result = selectModes('dreamy lydian floating');
+        expect(result.singleMode).toBe('lydian');
+        expect(result.combination).toBeNull();
+      });
+
+      it('combination and singleMode are mutually exclusive', () => {
+        // When combination is detected, singleMode should be null
+        const result = selectModes('lydian exploration journey');
+        if (result.combination) {
+          expect(result.singleMode).toBeNull();
+        }
+      });
     });
   });
 });

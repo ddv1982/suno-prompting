@@ -8,8 +8,9 @@ import {
   isMultiGenre,
 } from '@bun/instruments';
 import { MOOD_POOL } from '@bun/instruments/datasets';
-import { selectModes } from '@bun/instruments/selection';
+import { detectGenre } from '@bun/instruments/detection';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
+import { selectRandomGenre } from '@bun/prompt/deterministic-builder';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
@@ -43,13 +44,24 @@ export function injectStyleTags(prompt: string, genre: string): string {
   return replaceStyleTagsLine(prompt, styleTags.join(', '));
 }
 
-export async function remixInstruments(
+/**
+ * Remix instruments in a prompt with new genre-appropriate instruments.
+ *
+ * This function is fully deterministic - no LLM calls are made.
+ * Genre is detected via keyword matching, with random fallback.
+ *
+ * @param currentPrompt - The current prompt to modify
+ * @param originalInput - Original user description for genre detection
+ * @returns Updated prompt with new instruments
+ */
+export function remixInstruments(
   currentPrompt: string,
-  originalInput: string,
-  getModel: () => LanguageModel
-): Promise<RemixResult> {
-  const selection = await selectModes(originalInput, getModel());
-  const genre = selection.genre || 'ambient';
+  originalInput: string
+): RemixResult {
+  // Detect genre from original input using keyword matching (no LLM)
+  // Fall back to random genre if no keywords match
+  const detectedGenre = detectGenre(originalInput);
+  const genre = detectedGenre ?? selectRandomGenre();
 
   // 1. New instruments
   const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });

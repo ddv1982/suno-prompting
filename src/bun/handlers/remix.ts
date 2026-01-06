@@ -41,7 +41,8 @@ export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
   return {
     remixInstruments: async (params) => {
       const { currentPrompt, originalInput } = validate(RemixInstrumentsSchema, params);
-      return runRemixAction('remixInstruments', () => aiEngine.remixInstruments(currentPrompt, originalInput));
+      // remixInstruments is now synchronous (deterministic, no LLM)
+      return runRemixAction('remixInstruments', () => Promise.resolve(aiEngine.remixInstruments(currentPrompt, originalInput)));
     },
     remixGenre: async (params) => {
       const { currentPrompt } = validate(RemixGenreSchema, params);

@@ -67,5 +67,5 @@ export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getPo
 export type { InstrumentSelectionOptions, ModeSelectionInput } from '@bun/instruments/guidance';
 
 // Selection exports
-export { selectModes, selectModesWithLLM } from '@bun/instruments/selection';
+export { selectModes } from '@bun/instruments/selection';
 export type { ModeSelection } from '@bun/instruments/selection';
