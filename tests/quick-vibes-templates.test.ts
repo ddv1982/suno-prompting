@@ -7,6 +7,20 @@ import {
   getQuickVibesTemplate,
 } from '@bun/prompt/quick-vibes-templates';
 
+// =============================================================================
+// Test Constants - RNG values for deterministic testing
+// =============================================================================
+
+/** RNG value that triggers "with context" branch (< 0.5) */
+const RNG_WITH_CONTEXT = 0.1;
+
+/** RNG value that triggers "without context" branch (>= 0.5) */
+const RNG_WITHOUT_CONTEXT = 0.9;
+
+/** Fixed RNG values for deterministic comparison tests */
+const RNG_FIXED_LOW = 0.1;
+const RNG_FIXED_HIGH = 0.9;
+
 describe('QUICK_VIBES_TEMPLATES', () => {
   it('has templates for all 6 categories', () => {
     const categories = [
@@ -90,8 +104,8 @@ describe('buildDeterministicQuickVibes', () => {
   });
 
   it('produces different output with different RNG', () => {
-    const result1 = buildDeterministicQuickVibes('latenight-chill', false, true, () => 0.1);
-    const result2 = buildDeterministicQuickVibes('latenight-chill', false, true, () => 0.9);
+    const result1 = buildDeterministicQuickVibes('latenight-chill', false, true, () => RNG_FIXED_LOW);
+    const result2 = buildDeterministicQuickVibes('latenight-chill', false, true, () => RNG_FIXED_HIGH);
 
     // Different RNG values should produce different outputs
     expect(result1.text).not.toBe(result2.text);
@@ -101,7 +115,7 @@ describe('buildDeterministicQuickVibes', () => {
 describe('generateQuickVibesTitle', () => {
   it('generates title from template words', () => {
     const template = QUICK_VIBES_TEMPLATES['lofi-study'];
-    const title = generateQuickVibesTitle(template, () => 0.1);
+    const title = generateQuickVibesTitle(template, () => RNG_FIXED_LOW);
 
     expect(title).toBeDefined();
     expect(title.length).toBeGreaterThan(0);
@@ -109,12 +123,12 @@ describe('generateQuickVibesTitle', () => {
 
   it('sometimes includes context in title', () => {
     const template = QUICK_VIBES_TEMPLATES['cafe-coffeeshop'];
-    // RNG < 0.5 will include context
-    const titleWithContext = generateQuickVibesTitle(template, () => 0.1);
-    // RNG >= 0.5 will not include context
-    const titleWithoutContext = generateQuickVibesTitle(template, () => 0.9);
+    // RNG < 0.5 triggers context suffix
+    const titleWithContext = generateQuickVibesTitle(template, () => RNG_WITH_CONTEXT);
+    // RNG >= 0.5 skips context suffix
+    const titleWithoutContext = generateQuickVibesTitle(template, () => RNG_WITHOUT_CONTEXT);
 
-    // One should be longer than the other (has context)
+    // Title with context should have more words
     expect(titleWithContext.split(' ').length).toBeGreaterThan(titleWithoutContext.split(' ').length);
   });
 });

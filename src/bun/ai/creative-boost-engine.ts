@@ -63,6 +63,29 @@ async function enforceMaxLength(text: string, getModel: () => LanguageModel): Pr
   return result;
 }
 
+/**
+ * Inject wordless vocals into the instruments line of a prompt.
+ * Handles both MAX mode (instruments: "...") and standard mode (Instruments: ...) formats.
+ */
+function injectWordlessVocals(prompt: string): string {
+  // Match instruments line in both formats
+  const maxModePattern = /(instruments:\s*"[^"]+)/i;
+  const standardModePattern = /(Instruments:\s*[^\n]+)/i;
+
+  // Try MAX mode format first
+  if (maxModePattern.test(prompt)) {
+    return prompt.replace(maxModePattern, '$1, wordless vocals');
+  }
+
+  // Try standard mode format
+  if (standardModePattern.test(prompt)) {
+    return prompt.replace(standardModePattern, '$1, wordless vocals');
+  }
+
+  // If no instruments line found, return unchanged
+  return prompt;
+}
+
 async function generateLyricsForCreativeBoost(
   styleResult: string,
   lyricsTopic: string,
@@ -297,7 +320,7 @@ export async function generateCreativeBoost(
   sunoStyles: string[],
   description: string,
   lyricsTopic: string,
-  _withWordlessVocals: boolean,
+  withWordlessVocals: boolean,
   maxMode: boolean,
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
@@ -313,7 +336,7 @@ export async function generateCreativeBoost(
     );
   }
 
-  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode });
+  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals });
 
   // Map creativity slider to level and select genre deterministically
   const level = mapSliderToLevel(creativityLevel);
@@ -335,6 +358,11 @@ export async function generateCreativeBoost(
       genreOverride: selectedGenre,
     });
     styleResult = result.text;
+  }
+
+  // Inject wordless vocals into instruments line if requested
+  if (withWordlessVocals) {
+    styleResult = injectWordlessVocals(styleResult);
   }
 
   // Generate title deterministically

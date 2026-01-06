@@ -262,21 +262,49 @@ export const QUICK_VIBES_TEMPLATES: Record<QuickVibesCategory, QuickVibesTemplat
 };
 
 // =============================================================================
+// Constants
+// =============================================================================
+
+/**
+ * Probability of adding context suffix to title (e.g., "Warm Beats to Study To").
+ * Set to 50% for balanced variety between short and contextual titles.
+ */
+const TITLE_CONTEXT_PROBABILITY = 0.5;
+
+// =============================================================================
 // Generation Functions
 // =============================================================================
 
-/** Select a random item from an array using provided RNG */
+/**
+ * Select a random item from an array using provided RNG.
+ * Safe: All callers pass non-empty constant arrays defined in this module.
+ */
 function selectRandom<T>(items: readonly T[], rng: () => number): T {
+  if (items.length === 0) {
+    throw new Error('selectRandom called with empty array');
+  }
   const idx = Math.floor(rng() * items.length);
-  return items[idx] ?? items[0]!;
+  // idx is always valid since 0 <= rng() < 1 and items.length > 0
+  return items[idx] as T;
 }
 
 /**
  * Generate a deterministic title from template word pools.
  *
- * @param template - The category template
- * @param rng - Random number generator
- * @returns Generated title
+ * Combines adjective + noun, optionally adding context suffix for variety.
+ *
+ * @param template - The category template containing title word pools
+ * @param rng - Random number generator for deterministic selection
+ * @returns Generated title string
+ *
+ * @example
+ * const template = QUICK_VIBES_TEMPLATES['lofi-study'];
+ * generateQuickVibesTitle(template, () => 0.3);
+ * // "Warm Beats to Study To" (with context, since 0.3 < 0.5)
+ *
+ * @example
+ * generateQuickVibesTitle(template, () => 0.8);
+ * // "Mellow Session" (no context, since 0.8 >= 0.5)
  */
 export function generateQuickVibesTitle(
   template: QuickVibesTemplate,
@@ -286,8 +314,8 @@ export function generateQuickVibesTitle(
   const adjective = selectRandom(titleWords.adjectives, rng);
   const noun = selectRandom(titleWords.nouns, rng);
 
-  // 50% chance to add context
-  if (rng() < 0.5) {
+  // Add context suffix for more descriptive titles half the time
+  if (rng() < TITLE_CONTEXT_PROBABILITY) {
     const context = selectRandom(titleWords.contexts, rng);
     return `${adjective} ${noun} ${context}`;
   }
@@ -298,11 +326,25 @@ export function generateQuickVibesTitle(
 /**
  * Build a deterministic Quick Vibes prompt from templates.
  *
- * @param category - Quick Vibes category
- * @param withWordlessVocals - Whether to include wordless vocals
- * @param maxMode - Whether to use MAX mode format
- * @param rng - Random number generator (defaults to Math.random)
- * @returns Generated prompt and title
+ * Selects genre, instruments, and mood from category-specific pools,
+ * then formats as either MAX mode or standard mode prompt.
+ *
+ * @param category - Quick Vibes category (e.g., 'lofi-study', 'cafe-coffeeshop')
+ * @param withWordlessVocals - Whether to include wordless vocals in instruments
+ * @param maxMode - Whether to use MAX mode format (quoted fields) or standard
+ * @param rng - Random number generator for deterministic testing (defaults to Math.random)
+ * @returns Object with generated prompt text and title
+ *
+ * @example
+ * // Generate a lo-fi study prompt in MAX mode
+ * const result = buildDeterministicQuickVibes('lofi-study', false, true);
+ * // result.text: 'Genre: "lo-fi"\nMood: "relaxed"\nInstruments: "Rhodes piano, vinyl crackle, soft drums"'
+ * // result.title: "Warm Beats to Study To"
+ *
+ * @example
+ * // Generate with wordless vocals in standard mode
+ * const result = buildDeterministicQuickVibes('ambient-focus', true, false);
+ * // result.text: 'meditative ambient\nInstruments: synthesizer pad, reverb textures, soft drones, wordless vocals'
  */
 export function buildDeterministicQuickVibes(
   category: QuickVibesCategory,
@@ -351,7 +393,12 @@ export function buildDeterministicQuickVibes(
  * Get template for a category.
  *
  * @param category - Quick Vibes category
- * @returns Template for the category
+ * @returns Template containing genre, instrument, mood, and title word pools
+ *
+ * @example
+ * const template = getQuickVibesTemplate('cafe-coffeeshop');
+ * console.log(template.genres); // ['cafe jazz', 'bossa nova', ...]
+ * console.log(template.moods);  // ['cozy', 'warm', 'intimate', ...]
  */
 export function getQuickVibesTemplate(category: QuickVibesCategory): QuickVibesTemplate {
   return QUICK_VIBES_TEMPLATES[category];

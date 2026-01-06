@@ -15,11 +15,25 @@ import type { CreativityLevel } from '@shared/types';
 // Constants
 // =============================================================================
 
-/** Probability of adding a secondary genre at normal creativity level */
+/**
+ * Probability of blending two genres at "normal" creativity level.
+ * Set to 40% to favor single genres while still providing variety.
+ * Higher values would make blends too common; lower values too rare.
+ */
 const NORMAL_BLEND_PROBABILITY = 0.4;
 
-/** Probability of adding a third genre at adventurous level */
+/**
+ * Probability of using three genres instead of two at "adventurous" level.
+ * Set to 30% to keep triple-genre fusions relatively rare and special.
+ * Most adventurous outputs will be interesting dual-genre blends.
+ */
 const ADVENTUROUS_TRIPLE_PROBABILITY = 0.3;
+
+/**
+ * Probability of using multi-genre combinations from registry at "safe" level.
+ * Set to 70% to strongly prefer established combinations over single genres.
+ */
+const SAFE_MULTI_GENRE_PROBABILITY = 0.7;
 
 // =============================================================================
 // Types
@@ -180,13 +194,23 @@ const CREATIVE_TITLE_WORDS = {
 // Helper Functions
 // =============================================================================
 
-/** Select a random item from an array using provided RNG */
+/**
+ * Select a random item from an array using provided RNG.
+ * Safe: All callers pass non-empty constant arrays defined in this module.
+ */
 function selectRandom<T>(items: readonly T[], rng: () => number): T {
+  if (items.length === 0) {
+    throw new Error('selectRandom called with empty array');
+  }
   const idx = Math.floor(rng() * items.length);
-  return items[idx] ?? items[0]!;
+  // idx is always valid since 0 <= rng() < 1 and items.length > 0
+  return items[idx] as T;
 }
 
-/** Select multiple unique random items from an array */
+/**
+ * Select multiple unique random items from an array.
+ * Uses Fisher-Yates-like shuffle with provided RNG for determinism.
+ */
 function selectMultipleUnique<T>(items: readonly T[], count: number, rng: () => number): T[] {
   const shuffled = [...items].sort(() => rng() - 0.5);
   return shuffled.slice(0, count);
@@ -199,10 +223,29 @@ function selectMultipleUnique<T>(items: readonly T[], count: number, rng: () => 
 /**
  * Select genres appropriate for the creativity level.
  *
- * @param level - Creativity level
- * @param seedGenres - User-provided seed genres (optional)
- * @param rng - Random number generator
- * @returns Selected genre string
+ * Selection strategy varies by level:
+ * - low: Single pure genres only
+ * - safe: Prefer established multi-genre combinations from registry
+ * - normal: Mix of single genres and two-genre blends
+ * - adventurous: Always blends, sometimes three genres
+ * - high: Experimental fusions of unusual genre pairs
+ *
+ * @param level - Creativity level (low, safe, normal, adventurous, high)
+ * @param seedGenres - User-provided seed genres to incorporate
+ * @param rng - Random number generator for deterministic selection
+ * @returns Selected genre string (single or space-separated blend)
+ *
+ * @example
+ * selectGenreForLevel('low', [], () => 0.5);
+ * // "jazz" (single genre)
+ *
+ * @example
+ * selectGenreForLevel('adventurous', [], () => 0.5);
+ * // "ambient electronic rock" (multi-genre blend)
+ *
+ * @example
+ * selectGenreForLevel('normal', ['jazz', 'rock'], () => 0.1);
+ * // "jazz rock" (uses seed genres)
  */
 export function selectGenreForLevel(
   level: CreativityLevel,
@@ -221,8 +264,8 @@ export function selectGenreForLevel(
       return selectRandom(pool.genres, rng);
 
     case 'safe':
-      // Try to use a multi-genre combination from registry
-      if (rng() < 0.7 && MULTI_GENRE_COMBINATIONS.length > 0) {
+      // Prefer established multi-genre combinations from registry
+      if (rng() < SAFE_MULTI_GENRE_PROBABILITY && MULTI_GENRE_COMBINATIONS.length > 0) {
         return selectRandom(MULTI_GENRE_COMBINATIONS, rng);
       }
       return selectRandom(pool.genres, rng);
@@ -277,12 +320,31 @@ function selectFromSeeds(
 // =============================================================================
 
 /**
+ * Probability of adding suffix to "normal" level titles.
+ * Set to 30% to occasionally add variety without overdoing it.
+ */
+const NORMAL_SUFFIX_PROBABILITY = 0.3;
+
+/**
  * Generate a creative title based on creativity level.
  *
- * @param level - Creativity level
- * @param _genre - Selected genre for context (unused, reserved for future enhancement)
- * @param rng - Random number generator
- * @returns Generated title
+ * Title complexity scales with creativity:
+ * - low/safe: Simple "Adjective Noun" format
+ * - normal: Occasionally adds suffix (30% chance)
+ * - adventurous/high: Always includes suffix for dramatic effect
+ *
+ * @param level - Creativity level determining title complexity
+ * @param _genre - Selected genre (reserved for future genre-specific titles)
+ * @param rng - Random number generator for deterministic selection
+ * @returns Generated title string
+ *
+ * @example
+ * generateCreativeBoostTitle('low', 'jazz', () => 0.5);
+ * // "Golden Dreams"
+ *
+ * @example
+ * generateCreativeBoostTitle('high', 'experimental', () => 0.5);
+ * // "Cosmic Echoes Ascending"
  */
 export function generateCreativeBoostTitle(
   level: CreativityLevel,
@@ -292,13 +354,14 @@ export function generateCreativeBoostTitle(
   const adjective = selectRandom(CREATIVE_TITLE_WORDS.adjectives, rng);
   const noun = selectRandom(CREATIVE_TITLE_WORDS.nouns, rng);
 
-  // Higher creativity = more elaborate titles
+  // Higher creativity = more elaborate titles with action suffix
   if (level === 'high' || level === 'adventurous') {
     const suffix = selectRandom(CREATIVE_TITLE_WORDS.suffixes, rng);
     return `${adjective} ${noun} ${suffix}`;
   }
 
-  if (level === 'normal' && rng() < 0.3) {
+  // Normal level occasionally gets suffix for variety
+  if (level === 'normal' && rng() < NORMAL_SUFFIX_PROBABILITY) {
     const suffix = selectRandom(CREATIVE_TITLE_WORDS.suffixes, rng);
     return `${noun} ${suffix}`;
   }
@@ -320,6 +383,25 @@ const MOOD_POOLS: Record<CreativityLevel, readonly string[]> = {
 
 /**
  * Select mood appropriate for creativity level.
+ *
+ * Mood intensity scales with creativity level:
+ * - low: Calm, peaceful moods
+ * - safe: Dreamy, nostalgic moods
+ * - normal: Mixed emotional range
+ * - adventurous: Intense, dramatic moods
+ * - high: Extreme, experimental moods
+ *
+ * @param level - Creativity level to select mood for
+ * @param rng - Random number generator for deterministic selection
+ * @returns Selected mood string
+ *
+ * @example
+ * selectMoodForLevel('low', () => 0.5);
+ * // "mellow"
+ *
+ * @example
+ * selectMoodForLevel('high', () => 0.5);
+ * // "psychedelic"
  */
 export function selectMoodForLevel(
   level: CreativityLevel,
@@ -335,12 +417,27 @@ export function selectMoodForLevel(
 
 /**
  * Get instruments for the selected genre from registry.
+ *
+ * Uses the genre's first word to look up in the GENRE_REGISTRY,
+ * then selects up to 4 instruments using the existing selection system.
+ *
+ * @param genre - Genre string (uses first word for registry lookup)
+ * @param rng - Random number generator for deterministic selection
+ * @returns Array of 4 instrument names, or fallback instruments if genre not found
+ *
+ * @example
+ * getInstrumentsForGenre('jazz', () => 0.5);
+ * // ["Rhodes", "tenor sax", "upright bass", "brushed drums"]
+ *
+ * @example
+ * getInstrumentsForGenre('unknown_genre', () => 0.5);
+ * // ["piano", "guitar", "bass", "drums"] (fallback)
  */
 export function getInstrumentsForGenre(
   genre: string,
   rng: () => number
 ): string[] {
-  // Try to find the genre in registry
+  // Try to find the genre in registry using first word
   const baseGenre = genre.split(' ')[0]?.toLowerCase() as GenreType;
   const genreData = GENRE_REGISTRY[baseGenre];
 
