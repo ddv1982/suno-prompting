@@ -62,7 +62,7 @@ export async function remixInstruments(
   const { range, delivery, technique } = getVocalSuggestionsForGenre(genre);
   const vocalTags = [
     `${range.toLowerCase()} vocals`,
-    `${delivery.toLowerCase()} vocals`,
+    `${delivery.toLowerCase()} delivery`,
     technique.toLowerCase(),
   ];
 

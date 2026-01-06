@@ -348,12 +348,22 @@ export function detectProgression(description: string): ChordProgression | null 
 
 /** Check if prompt already contains a chord progression harmony tag */
 function hasChordProgression(prompt: string): boolean {
+  // Match patterns like "(I-V-vi-IV) harmony", "(ii-V-I) harmony", "(Imaj7-ii7-V7) harmony"
   return /\([IViv\d\-#maj]+\)\s*harmony/i.test(prompt);
 }
 
 /**
  * Inject chord progression into instruments field if not already present.
  * Only applies to max mode format (quoted instruments field).
+ * 
+ * @param prompt - The full prompt text
+ * @param genre - Genre to select progression from
+ * @param rng - Optional random number generator for deterministic testing
+ * @returns Modified prompt with chord progression injected
+ * 
+ * @example
+ * const result = injectChordProgression(prompt, 'jazz');
+ * // instruments: "piano, bass" → instruments: "piano, bass, The 2-5-1 (ii-V-I) harmony"
  */
 export function injectChordProgression(
   prompt: string,
