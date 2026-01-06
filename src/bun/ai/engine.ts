@@ -5,7 +5,7 @@ import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/con
 import {
   generateCreativeBoost as generateCreativeBoostImpl,
   refineCreativeBoost as refineCreativeBoostImpl,
-} from '@bun/ai/creative-boost-engine';
+} from '@bun/ai/creative-boost';
 import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
 import {
   generateQuickVibes as generateQuickVibesImpl,
@@ -25,7 +25,7 @@ import { createLogger } from '@bun/logger';
 import { buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
 import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic-builder';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
-import { generateDeterministicTitle } from '@bun/prompt/title-generator';
+import { generateDeterministicTitle } from '@bun/prompt/title';
 import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError } from '@shared/errors';
 import { cleanJsonResponse } from '@shared/prompt-utils';

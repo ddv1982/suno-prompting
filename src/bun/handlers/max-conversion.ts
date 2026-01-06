@@ -1,5 +1,5 @@
 import { type AIEngine } from '@bun/ai';
-import { convertToMaxFormat } from '@bun/prompt/max-conversion';
+import { convertToMaxFormat } from '@bun/prompt/conversion';
 
 import { withErrorHandling, log } from './utils';
 

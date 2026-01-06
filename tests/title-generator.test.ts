@@ -3,7 +3,7 @@ import { describe, it, expect } from 'bun:test';
 import {
   generateDeterministicTitle,
   generateTitleOptions,
-} from '@bun/prompt/title-generator';
+} from '@bun/prompt/title';
 
 // =============================================================================
 // Test Utilities

@@ -1,5 +1,10 @@
-// Non-Max Format Conversion Service
-// Converts Creative Boost style descriptions to proper non-max Suno format
+/**
+ * Non-Max Format Conversion Service
+ *
+ * Converts Creative Boost style descriptions to proper non-max Suno format.
+ *
+ * @module prompt/conversion/non-max
+ */
 
 import { generateText } from 'ai';
 
@@ -9,41 +14,11 @@ import { APP_CONSTANTS } from '@shared/constants';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
 
+import { parseStyleDescription } from './parser';
+
+import type { ParsedStyleDescription, NonMaxSectionContent, NonMaxFormatFields, NonMaxConversionResult } from './types';
 import type { ConversionOptions, DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface ParsedStyleDescription {
-  description: string;
-  detectedGenre: string | null;
-  detectedMoods: string[];
-  detectedInstruments: string[];
-}
-
-export interface SectionContent {
-  intro: string;
-  verse: string;
-  chorus: string;
-  bridge?: string;
-  outro: string;
-}
-
-export interface NonMaxFormatFields {
-  genre: string;
-  bpm: string | number;
-  mood: string;
-  instruments: string;
-  sections: SectionContent;
-}
-
-export interface NonMaxConversionResult {
-  convertedPrompt: string;
-  wasConverted: boolean;
-  debugInfo?: Partial<DebugInfo>;
-}
 
 // Re-export shared utilities for backwards compatibility
 export { 
@@ -55,91 +30,23 @@ export {
   resolveGenre,
 } from '@bun/prompt/conversion-utils';
 
-// ============================================================================
-// Constants
-// ============================================================================
+// Re-export types for backwards compatibility
+export type {
+  ParsedStyleDescription,
+  NonMaxSectionContent as SectionContent,
+  NonMaxFormatFields,
+  NonMaxConversionResult,
+} from './types';
 
-// Genre keywords for detection
-const GENRE_KEYWORDS: Record<string, string[]> = {
-  jazz: ['jazz', 'swing', 'bebop', 'bossa', 'fusion'],
-  rock: ['rock', 'guitar-driven', 'distorted'],
-  electronic: ['electronic', 'synth', 'digital', 'edm'],
-  ambient: ['ambient', 'atmospheric', 'ethereal', 'dreamy'],
-  folk: ['folk', 'acoustic', 'singer-songwriter'],
-  classical: ['classical', 'orchestral', 'symphonic'],
-  hiphop: ['hip-hop', 'hip hop', 'rap', 'beats'],
-  rnb: ['r&b', 'rnb', 'soul', 'neo-soul'],
-  country: ['country', 'bluegrass', 'americana'],
-  metal: ['metal', 'heavy', 'thrash', 'doom'],
-  pop: ['pop', 'catchy', 'radio-friendly'],
-  blues: ['blues', 'bluesy', 'delta'],
-  funk: ['funk', 'funky', 'groovy', 'groove'],
-  reggae: ['reggae', 'dub', 'ska'],
-  lofi: ['lo-fi', 'lofi', 'lo fi', 'chillhop'],
-};
+// Re-export parsing functions for backwards compatibility
+export { parseStyleDescription } from './parser';
 
-// Mood keywords for detection
-const MOOD_KEYWORDS: string[] = [
-  'warm', 'cold', 'dark', 'bright', 'melancholic', 'uplifting', 'energetic',
-  'calm', 'intense', 'playful', 'serious', 'nostalgic', 'dreamy', 'aggressive',
-  'peaceful', 'chaotic', 'romantic', 'mysterious', 'triumphant', 'somber',
-  'groovy', 'mellow', 'haunting', 'euphoric', 'introspective', 'rebellious',
-];
+// Re-export for backwards compatibility
+export type { ConversionOptions } from '@shared/types';
 
-// Instrument keywords for detection
-const INSTRUMENT_KEYWORDS: string[] = [
-  'piano', 'guitar', 'bass', 'drums', 'violin', 'cello', 'saxophone', 'trumpet',
-  'synthesizer', 'synth', 'organ', 'rhodes', 'wurlitzer', 'flute', 'clarinet',
-  'harp', 'strings', 'brass', 'woodwinds', 'percussion', 'vocals', 'voice',
-  'pad', 'keys', 'horns', 'bells', 'vibes', 'marimba', 'accordion',
-];
-
-// ============================================================================
-// Parsing Functions
-// ============================================================================
-
-/**
- * Parse a style description to extract genre, mood, and instruments
- */
-export function parseStyleDescription(text: string): ParsedStyleDescription {
-  const lowerText = text.toLowerCase();
-  
-  // Detect genre
-  let detectedGenre: string | null = null;
-  for (const [genre, keywords] of Object.entries(GENRE_KEYWORDS)) {
-    if (keywords.some(kw => lowerText.includes(kw))) {
-      detectedGenre = genre;
-      break;
-    }
-  }
-  
-  // Detect moods
-  const detectedMoods: string[] = [];
-  for (const mood of MOOD_KEYWORDS) {
-    if (lowerText.includes(mood)) {
-      detectedMoods.push(mood);
-    }
-  }
-  
-  // Detect instruments
-  const detectedInstruments: string[] = [];
-  for (const instrument of INSTRUMENT_KEYWORDS) {
-    if (lowerText.includes(instrument)) {
-      detectedInstruments.push(instrument);
-    }
-  }
-  
-  return {
-    description: text,
-    detectedGenre,
-    detectedMoods: detectedMoods.slice(0, 3), // Max 3 moods
-    detectedInstruments: detectedInstruments.slice(0, 4), // Max 4 instruments
-  };
-}
-
-// ============================================================================
+// =============================================================================
 // AI Enhancement
-// ============================================================================
+// =============================================================================
 
 /**
  * Build the system prompt for non-max conversion
@@ -188,11 +95,11 @@ function buildNonMaxConversionUserPrompt(parsed: ParsedStyleDescription): string
 /**
  * Parse the AI response for section content
  */
-function parseNonMaxAIResponse(text: string): SectionContent {
+function parseNonMaxAIResponse(text: string): NonMaxSectionContent {
   const cleaned = cleanJsonResponse(text);
 
   try {
-    const parsed = JSON.parse(cleaned) as Partial<SectionContent>;
+    const parsed = JSON.parse(cleaned) as Partial<NonMaxSectionContent>;
     return {
       intro: parsed.intro || 'Gentle introduction',
       verse: parsed.verse || 'Building atmosphere',
@@ -217,7 +124,7 @@ function parseNonMaxAIResponse(text: string): SectionContent {
 async function generateSectionContent(
   parsed: ParsedStyleDescription,
   getModel: () => LanguageModel
-): Promise<{ sections: SectionContent; debugInfo?: Partial<DebugInfo> }> {
+): Promise<{ sections: NonMaxSectionContent; debugInfo?: Partial<DebugInfo> }> {
   const systemPrompt = buildNonMaxConversionSystemPrompt();
   const userPrompt = buildNonMaxConversionUserPrompt(parsed);
 
@@ -240,9 +147,9 @@ async function generateSectionContent(
   };
 }
 
-// ============================================================================
+// =============================================================================
 // Format Building
-// ============================================================================
+// =============================================================================
 
 /**
  * Build the mood line from detected moods or generate default
@@ -299,12 +206,9 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
   return lines.join('\n');
 }
 
-// ============================================================================
+// =============================================================================
 // Main Conversion Function
-// ============================================================================
-
-// Re-export for backwards compatibility
-export type { ConversionOptions } from '@shared/types';
+// =============================================================================
 
 /**
  * Convert a Creative Boost style description to non-max Suno format

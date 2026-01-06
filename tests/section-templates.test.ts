@@ -6,10 +6,10 @@ import {
   buildAllSections,
   getSectionTypes,
   getSectionTemplate,
-} from '@bun/prompt/section-templates';
+} from '@bun/prompt/sections';
 
 import type { GenreType } from '@bun/instruments/genres';
-import type { SectionType } from '@bun/prompt/section-templates';
+import type { SectionType } from '@bun/prompt/sections';
 
 // =============================================================================
 // Test Utilities

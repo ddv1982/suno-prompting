@@ -27,7 +27,7 @@ import {
   selectGenericTags,
   RECORDING_DESCRIPTORS,
 } from '@bun/prompt/realism-tags';
-import { buildAllSections } from '@bun/prompt/section-templates';
+import { buildAllSections } from '@bun/prompt/sections';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
 import { MAX_MODE_HEADER } from '@shared/max-format';

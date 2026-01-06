@@ -1,5 +1,10 @@
-// Max Mode Format Conversion Service
-// Converts non-max format prompts to Max Mode format
+/**
+ * Max Mode Format Conversion Service
+ *
+ * Converts non-max format prompts to Max Mode format.
+ *
+ * @module prompt/conversion/max
+ */
 
 import { generateText } from 'ai';
 
@@ -10,48 +15,14 @@ import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
 
-import type { ConversionOptions, DebugInfo } from '@shared/types';
+import { parseNonMaxPrompt } from './parser';
+
+import type { ParsedMaxPrompt, AIEnhancementResult, MaxFormatFields, MaxConversionResult } from './types';
+import type { ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 // Re-exports for backwards compatibility
 export { isMaxFormat } from '@shared/max-format';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface SectionContent {
-  tag: string;
-  content: string;
-}
-
-export interface ParsedPrompt {
-  description: string;
-  genre: string | null;
-  moods: string[];
-  instruments: string[];
-  sections: SectionContent[];
-}
-
-export interface AIEnhancementResult {
-  styleTags: string;
-  recording: string;
-  debugInfo?: Partial<DebugInfo>;
-}
-
-export interface MaxFormatFields {
-  genre: string;
-  bpm: string | number;
-  instruments: string;
-  styleTags: string;
-  recording: string;
-}
-
-export interface MaxConversionResult {
-  convertedPrompt: string;
-  wasConverted: boolean;
-  debugInfo?: Partial<DebugInfo>;
-}
 
 // Re-export shared utilities for backwards compatibility with existing consumers
 export { 
@@ -65,106 +36,24 @@ export {
   resolveGenre,
 } from '@bun/prompt/conversion-utils';
 
-// ============================================================================
-// Task 1.2: Non-Max Prompt Parser
-// ============================================================================
+// Re-export types for backwards compatibility
+export type { 
+  SectionContent,
+  ParsedMaxPrompt as ParsedPrompt,
+  AIEnhancementResult,
+  MaxFormatFields,
+  MaxConversionResult,
+} from './types';
 
-/** Parse comma-separated values from a regex match group */
-function parseCommaSeparated(match: RegExpMatchArray | null): string[] {
-  if (!match?.[1]) return [];
-  return match[1].split(',').map(v => v.trim()).filter(Boolean);
-}
+// Re-export parsing functions for backwards compatibility
+export { parseNonMaxPrompt } from './parser';
 
-interface ExtractedFields {
-  genre: string | null;
-  moods: string[];
-  instruments: string[];
-  processedIndices: Set<number>;
-}
+// Re-export for backwards compatibility
+export type { ConversionOptions } from '@shared/types';
 
-/** Extract structured fields (genre, moods, instruments) from lines */
-function extractFields(lines: string[]): ExtractedFields {
-  let genre: string | null = null;
-  const moods: string[] = [];
-  const instruments: string[] = [];
-  const processedIndices = new Set<number>();
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line) continue;
-
-    const genreMatch = line.match(/^Genre:\s*(.+)/i);
-    if (genreMatch) {
-      genre = genreMatch[1]?.trim().toLowerCase() ?? null;
-      processedIndices.add(i);
-      continue;
-    }
-
-    const moodMatch = line.match(/^Moods?:\s*(.+)/i);
-    if (moodMatch) {
-      moods.push(...parseCommaSeparated(moodMatch));
-      processedIndices.add(i);
-      continue;
-    }
-
-    const instrumentMatch = line.match(/^Instruments?:\s*(.+)/i);
-    if (instrumentMatch) {
-      instruments.push(...parseCommaSeparated(instrumentMatch));
-      processedIndices.add(i);
-      continue;
-    }
-
-    if (line.match(/^\[[\w\s]+\]$/)) {
-      processedIndices.add(i);
-    }
-  }
-
-  return { genre, moods, instruments, processedIndices };
-}
-
-/** Find description: first non-empty line that's not a field or section tag */
-function findDescription(lines: string[], processedIndices: Set<number>): string {
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line || processedIndices.has(i) || line.match(/^\[[\w\s]+\]/)) continue;
-    return line;
-  }
-  return '';
-}
-
-/** Extract sections with their content from text */
-function extractSections(text: string): SectionContent[] {
-  const sections: SectionContent[] = [];
-  const pattern = /\[([^\]]+)\]\s*\n?([\s\S]*?)(?=\[[^\]]+\]|$)/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = pattern.exec(text)) !== null) {
-    const tag = match[1]?.trim().toUpperCase();
-    const content = match[2]?.trim();
-    if (tag && content) {
-      sections.push({ tag, content });
-    }
-  }
-  return sections;
-}
-
-/**
- * Parse a non-max format prompt into structured data
- */
-export function parseNonMaxPrompt(text: string): ParsedPrompt {
-  const lines = text.split('\n').map(l => l.trim());
-  const { genre, moods, instruments, processedIndices } = extractFields(lines);
-  const description = findDescription(lines, processedIndices);
-  const sections = extractSections(text);
-
-  return { description, genre, moods, instruments, sections };
-}
-
-
-
-// ============================================================================
-// Task 1.4: AI Enhancement
-// ============================================================================
+// =============================================================================
+// AI Enhancement
+// =============================================================================
 
 /**
  * Build the system prompt for AI enhancement
@@ -195,7 +84,7 @@ OUTPUT FORMAT (JSON only, no markdown):
 /**
  * Build the user prompt for AI enhancement
  */
-function buildMaxConversionUserPrompt(parsed: ParsedPrompt): string {
+function buildMaxConversionUserPrompt(parsed: ParsedMaxPrompt): string {
   const parts: string[] = [];
 
   if (parsed.description) {
@@ -246,7 +135,7 @@ function parseAIEnhancementResponse(text: string): AIEnhancementResult {
  * Generate style tags and recording description using AI
  */
 export async function enhanceWithAI(
-  parsed: ParsedPrompt,
+  parsed: ParsedMaxPrompt,
   getModel: () => LanguageModel
 ): Promise<AIEnhancementResult> {
   const systemPrompt = buildMaxConversionSystemPrompt();
@@ -271,9 +160,9 @@ export async function enhanceWithAI(
   };
 }
 
-// ============================================================================
-// Task 1.5: Build Max Format Output
-// ============================================================================
+// =============================================================================
+// Format Building
+// =============================================================================
 
 /**
  * Assemble final max format prompt from all fields
@@ -291,12 +180,9 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
   return lines.join('\n');
 }
 
-// ============================================================================
-// Task 1.6: Main Conversion Function
-// ============================================================================
-
-// Re-export for backwards compatibility
-export type { ConversionOptions } from '@shared/types';
+// =============================================================================
+// Main Conversion Function
+// =============================================================================
 
 /**
  * Convert a non-max format prompt to Max Mode format
