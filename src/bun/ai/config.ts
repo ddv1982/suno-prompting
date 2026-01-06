@@ -1,11 +1,13 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { createOpenAI } from '@ai-sdk/openai';
-import { type LanguageModel } from 'ai';
+import { createProviderRegistry, type LanguageModel } from 'ai';
 
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { AppConfig, AIProvider, APIKeys } from '@shared/types';
+
+type ProviderRegistry = ReturnType<typeof createProviderRegistry>;
 
 export class AIConfig {
   private provider: AIProvider = APP_CONSTANTS.AI.DEFAULT_PROVIDER;
@@ -15,6 +17,20 @@ export class AIConfig {
   private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
   private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
+  private registry: ProviderRegistry | null = null;
+
+  private buildRegistry(): ProviderRegistry {
+    this.registry = createProviderRegistry({
+      openai: createOpenAI({ apiKey: this.apiKeys.openai ?? '' }),
+      anthropic: createAnthropic({ apiKey: this.apiKeys.anthropic ?? '' }),
+      groq: createGroq({ apiKey: this.apiKeys.groq ?? '' }),
+    });
+    return this.registry;
+  }
+
+  private invalidateRegistry(): void {
+    this.registry = null;
+  }
 
   setProvider(provider: AIProvider): void {
     this.provider = provider;
@@ -22,6 +38,7 @@ export class AIConfig {
 
   setApiKey(provider: AIProvider, key: string): void {
     this.apiKeys[provider] = key;
+    this.invalidateRegistry();
   }
 
   setModel(model: string): void {
@@ -46,7 +63,10 @@ export class AIConfig {
 
   initialize(config: Partial<AppConfig>): void {
     if (config.provider) this.provider = config.provider;
-    if (config.apiKeys) this.apiKeys = { ...this.apiKeys, ...config.apiKeys };
+    if (config.apiKeys) {
+      this.apiKeys = { ...this.apiKeys, ...config.apiKeys };
+      this.invalidateRegistry();
+    }
     if (config.model) this.model = config.model;
     if (config.useSunoTags !== undefined) this.useSunoTags = config.useSunoTags;
     if (config.debugMode !== undefined) this.debugMode = config.debugMode;
@@ -59,15 +79,8 @@ export class AIConfig {
   }
 
   getModel(): LanguageModel {
-    switch (this.provider) {
-      case 'openai':
-        return createOpenAI({ apiKey: this.apiKeys.openai ?? '' })(this.model);
-      case 'anthropic':
-        return createAnthropic({ apiKey: this.apiKeys.anthropic ?? '' })(this.model);
-      case 'groq':
-      default:
-        return createGroq({ apiKey: this.apiKeys.groq ?? '' })(this.model);
-    }
+    const registry = this.registry ?? this.buildRegistry();
+    return registry.languageModel(`${this.provider}:${this.model}`);
   }
 
   getModelName(): string {
