@@ -5,6 +5,7 @@ import {
   buildContextualPrompt,
   buildMaxModeSystemPrompt,
   buildMaxModeContextualPrompt,
+  CONTEXT_INTEGRATION_INSTRUCTIONS,
 } from '@bun/prompt/builders';
 
 import type { ModeSelection } from '@bun/instruments/selection';
@@ -51,6 +52,31 @@ describe('builders', () => {
       const result = buildSystemPrompt(1000, true);
       expect(result).toContain('Backing vocals');
       expect(result).toContain('(ooh, ahh)');
+    });
+
+    it('includes context integration instructions', () => {
+      const result = buildSystemPrompt(1000, true);
+      expect(result).toContain('CONTEXT INTEGRATION');
+      expect(result).toContain('BPM');
+      expect(result).toContain('Mood');
+      expect(result).toContain('Production');
+      expect(result).toContain('Chord progression');
+    });
+  });
+
+  describe('CONTEXT_INTEGRATION_INSTRUCTIONS', () => {
+    it('includes all required context types', () => {
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('BPM');
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('Mood');
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('Production');
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('Chord progression');
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('Vocal style');
+    });
+
+    it('includes example formats', () => {
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('between 80 and 160');
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('smooth, groovy, laid back');
+      expect(CONTEXT_INTEGRATION_INSTRUCTIONS).toContain('bossa nova harmony');
     });
   });
 
@@ -115,9 +141,18 @@ describe('builders', () => {
       expect(result).toContain('500 characters');
     });
 
-    it('includes style tag examples', () => {
+    it('includes max mode style tags guidance', () => {
       const result = buildMaxModeSystemPrompt(1000);
-      expect(result).toContain('STYLE TAGS EXAMPLES');
+      expect(result).toContain('MAX MODE STYLE TAGS');
+    });
+
+    it('includes context integration instructions', () => {
+      const result = buildMaxModeSystemPrompt(1000);
+      expect(result).toContain('CONTEXT INTEGRATION');
+      expect(result).toContain('BPM');
+      expect(result).toContain('Mood');
+      expect(result).toContain('Production');
+      expect(result).toContain('Chord progression');
     });
   });
 

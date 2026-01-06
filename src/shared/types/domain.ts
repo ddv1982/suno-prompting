@@ -122,3 +122,17 @@ export type DebugInfo = {
     timestamp?: string;
   };
 };
+
+/** Options for prompt format conversion with performance guidance */
+export type ConversionOptions = {
+  /** Seed genres for style guidance */
+  readonly seedGenres?: string[];
+  /** Suno-specific style tags */
+  readonly sunoStyles?: string[];
+  /** Instruments from performance guidance to use instead of genre fallback */
+  readonly performanceInstruments?: string[];
+  /** Vocal style from performance guidance to deterministically inject */
+  readonly performanceVocalStyle?: string;
+  /** Chord progression to include in instruments */
+  readonly chordProgression?: string;
+};

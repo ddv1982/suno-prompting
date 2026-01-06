@@ -10,7 +10,7 @@ import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
 
-import type { DebugInfo } from '@shared/types';
+import type { ConversionOptions, DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 // Re-exports for backwards compatibility
@@ -295,6 +295,9 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
 // Task 1.6: Main Conversion Function
 // ============================================================================
 
+// Re-export for backwards compatibility
+export type { ConversionOptions } from '@shared/types';
+
 /**
  * Convert a non-max format prompt to Max Mode format
  * Returns unchanged if already in max format
@@ -303,18 +306,13 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
  * 2. seedGenres (if provided) - format using display names
  * 3. Detected from text (fallback)
- *
- * @param performanceInstruments - Optional instruments from performance guidance to use instead of genre fallback
- * @param performanceVocalStyle - Optional vocal style from performance guidance to deterministically inject
  */
 export async function convertToMaxFormat(
   text: string,
   getModel: () => LanguageModel,
-  seedGenres?: string[],
-  sunoStyles?: string[],
-  performanceInstruments?: string[],
-  performanceVocalStyle?: string
+  options: ConversionOptions = {}
 ): Promise<MaxConversionResult> {
+  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression } = options;
   // Check if already in max format
   if (isMaxFormat(text)) {
     return { convertedPrompt: text, wasConverted: false };
@@ -334,7 +332,13 @@ export async function convertToMaxFormat(
 
   // Build instruments string with articulations (genre-aware defaults)
   const baseInstruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
-  const instruments = injectVocalStyleIntoInstrumentsCsv(baseInstruments, performanceVocalStyle);
+
+  // Append chord progression harmony if provided
+  const instrumentsWithProgression = chordProgression
+    ? `${baseInstruments}, ${chordProgression} harmony`
+    : baseInstruments;
+
+  const instruments = injectVocalStyleIntoInstrumentsCsv(instrumentsWithProgression, performanceVocalStyle);
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildMaxFormatPrompt({

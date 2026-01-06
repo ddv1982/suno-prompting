@@ -14,6 +14,18 @@ import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { ModeSelection } from '@bun/instruments/selection';
+import type { PreFormattedMaxOutput, PreFormattedStandardOutput } from '@bun/prompt/context-preservation';
+
+/**
+ * Shared context integration instructions for all prompt modes.
+ * Ensures LLM utilizes all detected context consistently.
+ */
+export const CONTEXT_INTEGRATION_INSTRUCTIONS = `CONTEXT INTEGRATION (use ALL detected context):
+- BPM: Use the tempo RANGE provided (e.g., "between 80 and 160"), not just a single number
+- Mood: Include mood suggestions directly (e.g., "smooth, groovy, laid back")
+- Production: Include production style descriptors (e.g., "organic feel, studio reverb")
+- Chord progression: Include harmony feel (e.g., "bossa nova harmony, ii-V-I movement")
+- Vocal style: Weave vocal descriptors naturally into the output`;
 
 /**
  * Builds song concept parts for LLM prompts.
@@ -35,16 +47,52 @@ function buildSongConceptParts(
   return parts;
 }
 
-export function buildSystemPrompt(maxChars: number, useSunoTags: boolean): string {
+export function buildSystemPrompt(
+  maxChars: number,
+  useSunoTags: boolean,
+  preFormattedOutput?: PreFormattedStandardOutput
+): string {
+  // When pre-formatted output is provided, LLM only generates section content
+  if (preFormattedOutput) {
+    return `You are a creative music prompt writer for Suno V5. You are enhancing a pre-formatted prompt.
+
+PRE-FORMATTED OUTPUT (these fields are ALREADY SET - do NOT modify):
+- Genre: "${preFormattedOutput.genre}"
+- BPM: "${preFormattedOutput.bpm}"
+- Mood: "${preFormattedOutput.mood}"
+- Instruments: "${preFormattedOutput.instruments}"
+
+YOUR TASK: Generate evocative section descriptions using the pre-set context.
+
+OUTPUT FORMAT - Return valid JSON:
+{
+  "intro": "<sparse instrumentation setting the scene>",
+  "verse": "<weave instruments into narrative with emotion>",
+  "chorus": "<peak energy, full arrangement, story climax>",
+  "bridge": "<contrasting texture, optional>",
+  "outro": "<resolution and fade>"
+}
+
+RULES:
+- Use the pre-set genre, mood, and instruments as your creative foundation
+- Write sections as natural flowing phrases, not word lists
+- Reflect the chord progression feel and production style in section descriptions
+- Output ONLY the JSON object - no explanations
+
+STRICT CONSTRAINTS:
+- Output MUST be under ${maxChars} characters
+- Output ONLY the JSON object - no markdown code blocks`;
+  }
+
   const songStructure = useSunoTags ? `
 OUTPUT FORMAT (follow this structure exactly):
 
 Line 1 (MANDATORY): [Mood, Genre/Style, Key: key/mode]
 
 Genre: <specific genre name>
-BPM: <tempo from guidance>
-Mood: <2-3 evocative mood descriptors>
-Instruments: <2-4 items with character adjectives>
+BPM: <tempo RANGE from guidance, e.g., "between 80 and 160">
+Mood: <use the mood suggestions from detected context>
+Instruments: <2-4 items from suggested list with character adjectives>
 
 [INTRO] <sparse instrumentation setting the scene>
 [VERSE] <weave instruments into narrative with emotion>
@@ -56,9 +104,12 @@ RULES:
 1. Line 1 bracket tag is MANDATORY - never omit it
 2. Write sections as natural flowing phrases, not word lists
 3. Only use instruments from SUGGESTED INSTRUMENTS in technical guidance
-4. Backing vocals in (): wordless (ooh, ahh) or lyric echo (repeat key word from line)` : '';
+4. Backing vocals in (): wordless (ooh, ahh) or lyric echo (repeat key word from line)
+5. Reflect chord progression feel and production style in section descriptions` : '';
 
   return `You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
+
+${CONTEXT_INTEGRATION_INSTRUCTIONS}
 
 CRITICAL RULES:
 1. PRESERVE the user's narrative, story, and meaning - this is the soul of the song
@@ -134,30 +185,69 @@ export function buildContextualPrompt(
 }
 
 // Max Mode system prompt - uses metadata-style formatting for higher quality
-export function buildMaxModeSystemPrompt(maxChars: number): string {
+export function buildMaxModeSystemPrompt(
+  maxChars: number,
+  preFormattedOutput?: PreFormattedMaxOutput
+): string {
+  // When pre-formatted output is provided, LLM only generates styleTags and recording
+  if (preFormattedOutput) {
+    return `You are a music prompt writer for Suno V5 MAX MODE. You are enhancing a pre-formatted prompt.
+
+PRE-FORMATTED OUTPUT (these fields are ALREADY SET - do NOT modify):
+- genre: "${preFormattedOutput.genre}"
+- bpm: "${preFormattedOutput.bpm}"
+- instruments: "${preFormattedOutput.instruments}"
+
+YOUR TASK: Generate ONLY these two fields:
+1. styleTags: Blend the detected mood, production style, and chord feel naturally
+2. recording: A session description reflecting the production style and mood
+
+OUTPUT FORMAT - Return valid JSON:
+{
+  "styleTags": "<mood + production + chord feel blended naturally>",
+  "recording": "<session description reflecting production style and mood>"
+}
+
+STYLE TAGS GUIDANCE:
+- Blend detected mood keywords, chord progression feel, production style, and texture
+- Formula: "<mood keywords>, <chord progression feel>, <production style>, <texture descriptors>"
+- Example: "smooth, laid back, bossa nova harmony, organic feel, studio reverb, natural dynamics"
+
+RULES:
+- Do NOT include genre, bpm, or instruments in your output - they are pre-set
+- Focus on creative, evocative style tags and recording descriptions
+- Style tags should feel cohesive and natural, not a list
+- Output ONLY the JSON object - no explanations
+
+STRICT CONSTRAINTS:
+- Output MUST be under ${maxChars} characters
+- Output ONLY the JSON object - no markdown code blocks`;
+  }
+
   return `You are a music prompt writer for Suno V5 MAX MODE. Generate prompts using the specific metadata format that triggers maximum quality output.
 
 OUTPUT FORMAT (follow EXACTLY - this format is critical):
 
 ${MAX_MODE_HEADER}
 
-genre: "<specific genre(s), comma separated>"
-bpm: "<tempo from guidance>"
-instruments: "<instruments with character adjectives>"
-style tags: "<recording style, texture, atmosphere descriptors>"
-recording: "<performance context, source description>"
+genre: "<exact genre(s) from user input, comma separated>"
+bpm: "<tempo RANGE from detected context, e.g., 'between 80 and 160'>"
+instruments: "<instruments from suggested list with character adjectives>"
+style tags: "<MUST include: mood keywords + production style + chord progression feel + texture>"
+recording: "<session description reflecting production style and mood>"
+
+${CONTEXT_INTEGRATION_INSTRUCTIONS}
+
+MAX MODE STYLE TAGS:
+- Style tags MUST blend detected mood, production style, chord feel, AND recording texture
+- Formula: "<mood keywords>, <chord progression feel>, <production style>, <texture descriptors>"
+- Example: "smooth, laid back, bossa nova harmony, organic feel, studio reverb, natural dynamics"
 
 CRITICAL RULES:
 1. ALWAYS start with the exact MAX MODE header tags shown above
 2. Use metadata-style formatting with quoted values after colons
 3. NO section tags like [VERSE] or [CHORUS] - these cause lyric bleed-through in max mode
 4. Keep each field on its own line
-5. Style tags describe recording character, NOT music style
-
-STYLE TAGS EXAMPLES (use these types of descriptors):
-- Recording: "tape recorder, close-up, raw performance texture, handheld device realism"
-- Space: "narrow mono image, small-bedroom acoustics, dry, limited stereo"
-- Character: "unpolished, authentic take, natural dynamics, imperfections kept"
 
 STRICT CONSTRAINTS:
 - Output MUST be under ${maxChars} characters

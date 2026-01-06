@@ -1,4 +1,5 @@
 import { getMultiGenreNuanceGuidance } from '@bun/instruments';
+import { CONTEXT_INTEGRATION_INSTRUCTIONS } from '@bun/prompt/builders';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
@@ -70,6 +71,8 @@ ${creativityGuidance}
 
 ${vocalsGuidance}
 
+${CONTEXT_INTEGRATION_INSTRUCTIONS}
+
 OUTPUT FORMAT:
 Return a JSON object with:
 {
@@ -79,11 +82,10 @@ Return a JSON object with:
 
 RULES:
 1. The "style" should be a rich description of the sound, not just genre names
-2. Include sonic textures, mood, and character in the style
+2. Include sonic textures, mood, chord feel, and character in the style
 3. The title should be evocative and match the vibe
 4. Keep style under ${MAX_STYLE_CHARS} characters
-5. Do NOT wrap the JSON in markdown code blocks
-6. When performance guidance is provided, weave vocal style and production elements naturally into the style`;
+5. Do NOT wrap the JSON in markdown code blocks`;
 }
 
 /**

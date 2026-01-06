@@ -25,7 +25,8 @@ export type {
   AdvancedSelection, 
   PromptVersion, 
   PromptSession, 
-  DebugInfo 
+  DebugInfo,
+  ConversionOptions,
 } from '@shared/types/domain';
 export { EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types/domain';
 

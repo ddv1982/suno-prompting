@@ -381,6 +381,39 @@ Note: vocal tags in `instruments:` are injected deterministically from Performan
 
 Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
 
+### Context Integration
+
+The app instructs the LLM to utilize ALL detected context when generating output:
+
+| Context | How It's Used |
+|---------|---------------|
+| **BPM Range** | Output uses tempo range (e.g., "between 80 and 160") instead of single value |
+| **Mood** | Mood suggestions integrated into `style tags:` field |
+| **Production** | Production style descriptors included in `style tags:` |
+| **Chord Progression** | Harmony feel added to `style tags:` (e.g., "bossa nova harmony") |
+| **Vocal Style** | Vocal descriptors woven into `instruments:` field |
+
+This ensures the rich contextual information from genre detection is reflected in the final output.
+
+### Style Tags Formula
+
+Max Mode style tags follow this formula to incorporate all detected context:
+
+```
+style tags: "<mood keywords>, <chord progression feel>, <production style>, <texture descriptors>"
+```
+
+**Example:**
+```
+style tags: "smooth, laid back, bossa nova harmony, organic feel, studio reverb, natural dynamics"
+```
+
+Components:
+- **Mood keywords**: From detected genre moods (smooth, groovy, laid back)
+- **Chord progression feel**: From detected harmony (bossa nova harmony, ii-V-I movement)
+- **Production style**: From genre production profile (organic feel, studio reverb)
+- **Texture descriptors**: Recording character (natural dynamics, room tone)
+
 ### Auto-conversion from standard format
 
 When Max Mode is enabled and you paste a standard (non-max) format prompt, the app automatically converts it to Max Mode format:

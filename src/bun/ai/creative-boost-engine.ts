@@ -4,6 +4,7 @@ import { generateLyrics } from '@bun/ai/content-generator';
 import { condense } from '@bun/ai/llm-rewriter';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
+import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import {
   buildCreativeBoostSystemPrompt,
   buildCreativeBoostUserPrompt,
@@ -22,7 +23,7 @@ import { isDirectMode, generateDirectModeWithLyrics } from './direct-mode';
 import { callLLM } from './llm-utils';
 
 import type { GenerationResult, EngineConfig } from './types';
-import type { DebugInfo } from '@shared/types';
+import type { ConversionOptions, DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 const log = createLogger('CreativeBoostEngine');
@@ -32,29 +33,18 @@ export type CreativeBoostEngineConfig = EngineConfig;
 
 /**
  * Applies max or non-max mode conversion to style output.
- *
- * @param style - The raw style text from Creative Boost LLM
- * @param maxMode - Whether to use Max Mode format
- * @param getModel - Model factory function
- * @param seedGenres - Seed genres for genre resolution
- * @param sunoStyles - Suno V5 styles (takes priority over seedGenres)
- * @param performanceInstruments - Instruments from performance guidance to preserve through conversion
- * @param performanceVocalStyle - Vocal style from performance guidance to deterministically inject
  */
 async function applyMaxModeConversion(
   style: string,
   maxMode: boolean,
   getModel: () => LanguageModel,
-  seedGenres?: string[],
-  sunoStyles?: string[],
-  performanceInstruments?: string[],
-  performanceVocalStyle?: string
+  options: ConversionOptions = {}
 ): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
   if (maxMode) {
-    const result = await convertToMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle);
+    const result = await convertToMaxFormat(style, getModel, options);
     return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   } else {
-    const result = await convertToNonMaxFormat(style, getModel, seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle);
+    const result = await convertToNonMaxFormat(style, getModel, options);
     return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
   }
 }
@@ -107,16 +97,17 @@ type PostProcessParams = {
   config: CreativeBoostEngineConfig;
   performanceInstruments?: string[];
   performanceVocalStyle?: string;
+  chordProgression?: string;
 };
 
 async function postProcessCreativeBoostResponse(
   parsed: { style: string; title: string },
   params: PostProcessParams
 ): Promise<GenerationResult> {
-  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle } = params;
+  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle, chordProgression } = params;
 
   const { styleResult, debugInfo: maxConversionDebugInfo } = await applyMaxModeConversion(
-    parsed.style, maxMode, config.getModel, seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle
+    parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression }
   );
 
   const processedStyle = await enforceMaxLength(styleResult, config.getModel);
@@ -324,6 +315,7 @@ export async function generateCreativeBoost(
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
   const performanceVocalStyle = guidance?.vocal;
+  const chordProgression = primaryGenre ? buildProgressionDescriptor(primaryGenre) : undefined;
 
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(
@@ -353,6 +345,7 @@ export async function generateCreativeBoost(
     config,
     performanceInstruments,
     performanceVocalStyle,
+    chordProgression,
   });
 }
 
@@ -388,6 +381,7 @@ export async function refineCreativeBoost(
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
   const performanceVocalStyle = guidance?.vocal;
+  const chordProgression = primaryGenre ? buildProgressionDescriptor(primaryGenre) : undefined;
 
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
@@ -417,5 +411,6 @@ export async function refineCreativeBoost(
     config,
     performanceInstruments,
     performanceVocalStyle,
+    chordProgression,
   });
 }

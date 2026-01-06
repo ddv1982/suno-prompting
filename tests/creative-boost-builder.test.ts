@@ -168,6 +168,17 @@ describe('buildCreativeBoostSystemPrompt', () => {
       expect(prompt).toContain('Do NOT wrap the JSON in markdown code blocks');
     });
   });
+
+  describe('context integration', () => {
+    it('includes context integration instructions', () => {
+      const prompt = buildCreativeBoostSystemPrompt(50, false);
+      expect(prompt).toContain('CONTEXT INTEGRATION');
+      expect(prompt).toContain('BPM');
+      expect(prompt).toContain('Mood');
+      expect(prompt).toContain('Production');
+      expect(prompt).toContain('Chord progression');
+    });
+  });
 });
 
 describe('buildCreativeBoostUserPrompt', () => {

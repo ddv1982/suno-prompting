@@ -9,7 +9,7 @@ import { APP_CONSTANTS } from '@shared/constants';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
 
-import type { DebugInfo } from '@shared/types';
+import type { ConversionOptions, DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 // ============================================================================
@@ -303,6 +303,9 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
 // Main Conversion Function
 // ============================================================================
 
+// Re-export for backwards compatibility
+export type { ConversionOptions } from '@shared/types';
+
 /**
  * Convert a Creative Boost style description to non-max Suno format
  * 
@@ -310,18 +313,13 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
  * 2. seedGenres (if provided) - format using display names
  * 3. Detected from text (fallback)
- *
- * @param performanceInstruments - Optional instruments from performance guidance to use instead of genre fallback
- * @param performanceVocalStyle - Optional vocal style from performance guidance to deterministically inject
  */
 export async function convertToNonMaxFormat(
   styleDescription: string,
   getModel: () => LanguageModel,
-  seedGenres?: string[],
-  sunoStyles?: string[],
-  performanceInstruments?: string[],
-  performanceVocalStyle?: string
+  options: ConversionOptions = {}
 ): Promise<NonMaxConversionResult> {
+  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression } = options;
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
 
@@ -341,7 +339,13 @@ export async function convertToNonMaxFormat(
     'ambient textures, subtle pads',
     performanceInstruments
   );
-  const instruments = injectVocalStyleIntoInstrumentsCsv(baseInstruments, performanceVocalStyle);
+
+  // Append chord progression harmony if provided
+  const instrumentsWithProgression = chordProgression
+    ? `${baseInstruments}, ${chordProgression} harmony`
+    : baseInstruments;
+
+  const instruments = injectVocalStyleIntoInstrumentsCsv(instrumentsWithProgression, performanceVocalStyle);
 
   // Build mood line
   const mood = buildMoodLine(parsed.detectedMoods, genre.forLookup);

@@ -456,10 +456,11 @@ Instruments: electric guitar, drums, bass`;
     const result = await convertToMaxFormat(
       style,
       mockGetModel,
-      ['ambient metal'],
-      [],
-      ['baritone guitar', 'ambient pad', 'crystalline synth pads'],
-      'Alto, Breathy Delivery, Shouted Hooks'
+      {
+        seedGenres: ['ambient metal'],
+        performanceInstruments: ['baritone guitar', 'ambient pad', 'crystalline synth pads'],
+        performanceVocalStyle: 'Alto, Breathy Delivery, Shouted Hooks',
+      }
     );
 
     const lower = result.convertedPrompt.toLowerCase();
@@ -475,18 +476,19 @@ Instruments: electric guitar, drums, bass`;
     const result = await convertToMaxFormat(
       style,
       mockGetModel,
-      ['ambient metal'],
-      [],
-      [
-        'baritone guitar',
-        'ambient pad',
-        'crystalline synth pads',
-        'sub bass',
-        'granular textures',
-        'cinematic drums',
-        'reverse guitar swells',
-      ],
-      'Alto, Breathy Delivery, Shouted Hooks'
+      {
+        seedGenres: ['ambient metal'],
+        performanceInstruments: [
+          'baritone guitar',
+          'ambient pad',
+          'crystalline synth pads',
+          'sub bass',
+          'granular textures',
+          'cinematic drums',
+          'reverse guitar swells',
+        ],
+        performanceVocalStyle: 'Alto, Breathy Delivery, Shouted Hooks',
+      }
     );
 
     const instrumentsLine = result.convertedPrompt
@@ -516,9 +518,10 @@ Instruments: electric guitar, drums, bass`;
     const result = await convertToMaxFormat(
       style,
       mockGetModel,
-      ['ambient metal'],
-      [],
-      ['baritone guitar', 'ambient pad', 'crystalline synth pads']
+      {
+        seedGenres: ['ambient metal'],
+        performanceInstruments: ['baritone guitar', 'ambient pad', 'crystalline synth pads'],
+      }
     );
 
     const lower = result.convertedPrompt.toLowerCase();
@@ -643,8 +646,7 @@ describe('convertToMaxFormat with sunoStyles', () => {
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      ['jazz'],           // seedGenres - should be ignored
-      ['cumbia metal']    // sunoStyles - should take priority
+      { seedGenres: ['jazz'], sunoStyles: ['cumbia metal'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -659,8 +661,7 @@ Genre: Jazz`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['dark goa trance']
+      { sunoStyles: ['dark goa trance'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -674,8 +675,7 @@ Genre: Jazz`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['jazz', 'cumbia metal', 'dark goa trance']
+      { sunoStyles: ['jazz', 'cumbia metal', 'dark goa trance'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -688,8 +688,7 @@ Genre: Jazz`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['acoustic chicago blues algorave', 'k-pop', '16-bit celtic']
+      { sunoStyles: ['acoustic chicago blues algorave', 'k-pop', '16-bit celtic'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -703,8 +702,7 @@ Genre: Jazz`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      ['jazz', 'rock'],  // seedGenres - should be used
-      []                 // sunoStyles - empty
+      { seedGenres: ['jazz', 'rock'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -719,23 +717,20 @@ Genre: Electronic`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],  // empty seedGenres
-      []   // empty sunoStyles
+      {}
     );
 
     expect(result.wasConverted).toBe(true);
     expect(result.convertedPrompt).toContain('genre: "electronic"');
   });
 
-  it('falls back to detected genre when sunoStyles is undefined', async () => {
+  it('falls back to detected genre when options is undefined', async () => {
     const prompt = `Ambient soundscape
 Genre: Ambient`;
 
     const result = await convertToMaxFormat(
       prompt,
-      mockGetModel,
-      undefined,  // undefined seedGenres
-      undefined   // undefined sunoStyles
+      mockGetModel
     );
 
     expect(result.wasConverted).toBe(true);
@@ -748,8 +743,7 @@ Genre: Ambient`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['lo-fi afro-cuban jazz']
+      { sunoStyles: ['lo-fi afro-cuban jazz'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -760,11 +754,11 @@ Genre: Ambient`;
     const prompt = `Rock anthem
 Genre: Rock`;
 
-    // Call without sunoStyles parameter (backward compatibility)
+    // Call with only seedGenres
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      ['metal']  // seedGenres only
+      { seedGenres: ['metal'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -778,8 +772,7 @@ Genre: Rock`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['jazz fusion vibes']  // "jazz" should be used for BPM lookup
+      { sunoStyles: ['jazz fusion vibes'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -793,8 +786,7 @@ Genre: Rock`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['urdu shoegaze']  // "urdu" is not a recognized genre for BPM
+      { sunoStyles: ['urdu shoegaze'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -808,8 +800,7 @@ Genre: Rock`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      [],
-      ['afro trap r&b', 'hawaiian r&b']
+      { sunoStyles: ['afro trap r&b', 'hawaiian r&b'] }
     );
 
     expect(result.wasConverted).toBe(true);
@@ -839,9 +830,7 @@ describe('convertToMaxFormat with performanceInstruments', () => {
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      ['afrobeat'],  // seedGenres
-      [],            // no sunoStyles
-      ['synth strings', 'sidechain pad']  // performanceInstruments
+      { seedGenres: ['afrobeat'], performanceInstruments: ['synth strings', 'sidechain pad'] }
     );
 
     // Assert
@@ -859,9 +848,7 @@ Instruments: electric guitar, drums`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      ['rock'],
-      [],
-      ['synth strings', 'sidechain pad']  // should be ignored
+      { seedGenres: ['rock'], performanceInstruments: ['synth strings', 'sidechain pad'] }
     );
 
     // Assert - parsed instruments should be used
@@ -879,9 +866,7 @@ Instruments: electric guitar, drums`;
     const result = await convertToMaxFormat(
       prompt,
       mockGetModel,
-      ['jazz'],
-      [],
-      undefined  // no performance instruments
+      { seedGenres: ['jazz'] }
     );
 
     // Assert - should use genre fallback (jazz instruments)
