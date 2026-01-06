@@ -7,6 +7,7 @@ import {
   buildBlendedProductionDescriptor,
   selectInstrumentsForMultiGenre,
   buildPerformanceGuidance,
+  buildMultiGenreGuidance,
 } from '@bun/prompt/genre-parser';
 
 // Seeded RNG for deterministic tests
@@ -234,5 +235,144 @@ describe('integration: Creative Boost compound genre support', () => {
       // ASSERT
       expect(result).not.toBeNull();
     }
+  });
+});
+
+describe('buildMultiGenreGuidance', () => {
+  const rng = createSeededRng(12345);
+
+  test('returns null for empty/invalid genre string', () => {
+    expect(buildMultiGenreGuidance('', rng)).toBeNull();
+    expect(buildMultiGenreGuidance('   ', rng)).toBeNull();
+    expect(buildMultiGenreGuidance('unknown genre here', rng)).toBeNull();
+  });
+
+  test('returns complete object for single genre', () => {
+    const result = buildMultiGenreGuidance('jazz', rng);
+    
+    expect(result).not.toBeNull();
+    expect(result!.vocal).toBeTruthy();
+    expect(result!.production).toBeTruthy();
+    expect(result!.instruments.length).toBeGreaterThan(0);
+    expect(result!.bpmRange).toBeTruthy();
+    expect(result!.harmonicStyle).toBeTruthy();
+    expect(result!.timeSignature).toBeTruthy();
+  });
+
+  test('returns complete object for multi-genre string', () => {
+    const result = buildMultiGenreGuidance('jazz rock', rng);
+    
+    expect(result).not.toBeNull();
+    expect(result!.vocal).toBeTruthy();
+    expect(result!.production).toBeTruthy();
+    expect(result!.instruments.length).toBeGreaterThan(0);
+    expect(result!.bpmRange).toBeTruthy();
+    expect(result!.harmonicStyle).toBeTruthy();
+    expect(result!.timeSignature).toBeTruthy();
+  });
+
+  test('includes polyrhythm only for applicable genres', () => {
+    // Afrobeat has polyrhythm mappings
+    const afrobeatJazz = buildMultiGenreGuidance('afrobeat jazz', rng);
+    expect(afrobeatJazz).not.toBeNull();
+    expect(afrobeatJazz!.polyrhythm).not.toBeNull();
+
+    // Pop and trap don't have explicit polyrhythm mappings
+    const popTrap = buildMultiGenreGuidance('pop trap', rng);
+    expect(popTrap).not.toBeNull();
+    expect(popTrap!.polyrhythm).toBeNull();
+  });
+
+  test('includes BPM range for genres with BPM data', () => {
+    const result = buildMultiGenreGuidance('jazz rock', rng);
+    expect(result).not.toBeNull();
+    expect(result!.bpmRange).toMatch(/between \d+ and \d+/);
+  });
+
+  test('handles various genre combinations', () => {
+    const testCases = [
+      'jazz rock',
+      'afrobeat jazz',
+      'pop electronic',
+      'ambient metal',
+      'folk country',
+      'latin jazz',
+    ];
+
+    for (const genreString of testCases) {
+      const result = buildMultiGenreGuidance(genreString, rng);
+      expect(result).not.toBeNull();
+      expect(result!.vocal).toBeTruthy();
+      expect(result!.production).toBeTruthy();
+      expect(result!.bpmRange).toBeTruthy();
+    }
+  });
+
+  test('returns harmonic styles from blended pool for multi-genre', () => {
+    // Jazz rock should have modes from both jazz and rock
+    // Jazz includes: dorian, mixolydian, lydian_dominant, melodic_minor
+    // Rock includes: mixolydian, aeolian, ionian, dorian
+    const jazzRockModes = [
+      'dorian', 'mixolydian', 'lydian_dominant', 'melodic_minor',
+      'aeolian', 'ionian',
+    ];
+    
+    // Run multiple times to test randomness
+    const results = new Set<string>();
+    for (let i = 0; i < 20; i++) {
+      const result = buildMultiGenreGuidance('jazz rock', () => Math.random());
+      if (result?.harmonicStyle) {
+        results.add(result.harmonicStyle);
+      }
+    }
+    
+    // All returned modes should be from the combined pool
+    for (const mode of results) {
+      expect(jazzRockModes).toContain(mode);
+    }
+  });
+});
+
+describe('integration: Multi-genre guidance flow', () => {
+  test('complete guidance flow for compound genres', () => {
+    const rng = createSeededRng(42);
+    const genreString = 'ambient symphonic rock';
+    
+    // Get multi-genre guidance
+    const guidance = buildMultiGenreGuidance(genreString, rng);
+    
+    expect(guidance).not.toBeNull();
+    
+    // Verify all expected properties exist
+    expect(guidance).toHaveProperty('vocal');
+    expect(guidance).toHaveProperty('production');
+    expect(guidance).toHaveProperty('instruments');
+    expect(guidance).toHaveProperty('bpmRange');
+    expect(guidance).toHaveProperty('harmonicStyle');
+    expect(guidance).toHaveProperty('timeSignature');
+    expect(guidance).toHaveProperty('polyrhythm');
+    
+    // BPM range should be formatted correctly
+    expect(guidance!.bpmRange).toMatch(/between \d+ and \d+/);
+    
+    // Harmonic style should be a valid mode
+    expect(typeof guidance!.harmonicStyle).toBe('string');
+    
+    // Time signature should be a valid type
+    expect(typeof guidance!.timeSignature).toBe('string');
+    expect(guidance!.timeSignature!.startsWith('time_')).toBe(true);
+  });
+  
+  test('single genre still works (backward compatibility)', () => {
+    const rng = createSeededRng(42);
+    
+    // Single genres should still work
+    const jazz = buildMultiGenreGuidance('jazz', rng);
+    expect(jazz).not.toBeNull();
+    expect(jazz!.bpmRange).toBeTruthy();
+    
+    const rock = buildMultiGenreGuidance('rock', rng);
+    expect(rock).not.toBeNull();
+    expect(rock!.bpmRange).toBeTruthy();
   });
 });

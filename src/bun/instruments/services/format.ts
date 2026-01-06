@@ -1,10 +1,16 @@
 import { RHYTHMIC_STYLES } from '@bun/instruments/datasets/rhythm';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
+import {
+  getBlendedHarmonicStyle,
+  getBlendedTimeSignature,
+  getBlendedPolyrhythm,
+} from '@bun/instruments/genres/mappings';
 import { HARMONIC_STYLES, ALL_COMBINATIONS, selectInstrumentsForMode } from '@bun/instruments/modes';
-import { ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
+import { ALL_POLYRHYTHM_COMBINATIONS, POLYRHYTHMS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
 import { shuffle, pickRandom } from '@bun/instruments/services/random';
 import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun/instruments/services/select';
 import { articulateInstrument } from '@bun/prompt/articulations';
+import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildProductionDescriptor } from '@bun/prompt/production-elements';
 import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
@@ -295,4 +301,54 @@ export function buildGuidanceFromSelection(
   }
 
   return parts.join('\n\n');
+}
+
+/**
+ * Get multi-genre nuance guidance for blended genres.
+ * Formats BPM range, harmonic style, time signature, and polyrhythm suggestions
+ * for compound genre strings.
+ *
+ * Only includes sections for detected nuances - returns null if no guidance generated.
+ *
+ * @param genreString - A genre string like "jazz rock" or "ambient, metal"
+ * @param rng - Optional random number generator (defaults to Math.random)
+ * @returns Formatted guidance string, or null if no nuances detected
+ */
+export function getMultiGenreNuanceGuidance(
+  genreString: string,
+  rng: Rng = Math.random
+): string | null {
+  const bpmRange = getBlendedBpmRange(genreString);
+
+  const parts: string[] = [];
+
+  // BPM Range (always include if available)
+  if (bpmRange) {
+    parts.push(`BPM Range: ${formatBpmRange(bpmRange)}`);
+  }
+
+  // Harmonic style suggestion
+  const harmonicStyle = getBlendedHarmonicStyle(genreString, rng);
+  if (harmonicStyle) {
+    const style = HARMONIC_STYLES[harmonicStyle];
+    parts.push(`Suggested harmonic style: ${style.name} (${style.description})`);
+  }
+
+  // Time signature suggestion
+  const timeSignature = getBlendedTimeSignature(genreString, rng);
+  if (timeSignature) {
+    const sig = TIME_SIGNATURES[timeSignature];
+    parts.push(`Suggested time signature: ${sig.signature} - ${sig.feel}`);
+  }
+
+  // Polyrhythm suggestion (only for applicable genres)
+  const polyrhythm = getBlendedPolyrhythm(genreString, rng);
+  if (polyrhythm) {
+    const poly = POLYRHYTHMS[polyrhythm];
+    parts.push(`Suggested polyrhythm: ${poly.name} (${poly.ratio}) - ${poly.description}`);
+  }
+
+  if (parts.length === 0) return null;
+
+  return ['', 'MULTI-GENRE NUANCE:', ...parts].join('\n');
 }

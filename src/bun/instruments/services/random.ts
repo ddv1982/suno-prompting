@@ -38,3 +38,61 @@ export function rollChance(chance: number | undefined, rng: Rng = Math.random): 
   if (chance === undefined) return true;
   return rng() <= chance;
 }
+
+/**
+ * Collect unique items from a mapping based on genre components, then pick one randomly.
+ * Generic helper to reduce duplication in genre blending functions.
+ *
+ * @param components - Array of genre components to look up
+ * @param mapping - Record mapping genre names to arrays of items
+ * @param defaultItems - Fallback items when genre not found (null = skip unknown genres)
+ * @param rng - Random number generator
+ * @returns Randomly selected item from combined pool, or undefined if empty
+ */
+export function collectAndPickFromGenres<T>(
+  components: readonly string[],
+  mapping: Readonly<Record<string, readonly T[]>>,
+  defaultItems: readonly T[] | null,
+  rng: Rng = Math.random
+): T | undefined {
+  const allItems = new Set<T>();
+
+  for (const genre of components) {
+    const items = mapping[genre] ?? defaultItems;
+    if (items) {
+      for (const item of items) {
+        allItems.add(item);
+      }
+    }
+  }
+
+  return pickRandom([...allItems], rng);
+}
+
+/**
+ * Collect all unique items from a mapping based on genre components.
+ * Generic helper to reduce duplication in genre blending functions.
+ *
+ * @param components - Array of genre components to look up
+ * @param mapping - Record mapping genre names to arrays of items
+ * @param defaultItems - Fallback items when genre not found (null = skip unknown genres)
+ * @returns Array of unique items from all genre components
+ */
+export function collectAllFromGenres<T>(
+  components: readonly string[],
+  mapping: Readonly<Record<string, readonly T[]>>,
+  defaultItems: readonly T[] | null
+): T[] {
+  const allItems = new Set<T>();
+
+  for (const genre of components) {
+    const items = mapping[genre] ?? defaultItems;
+    if (items) {
+      for (const item of items) {
+        allItems.add(item);
+      }
+    }
+  }
+
+  return [...allItems];
+}

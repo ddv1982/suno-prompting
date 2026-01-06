@@ -113,3 +113,6 @@ export {
 };
 export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 export { MULTI_GENRE_COMBINATIONS, isMultiGenre, type MultiGenreCombination } from '@bun/instruments/genres/combinations';
+
+// Note: Genre mappings are NOT re-exported here to avoid circular dependencies.
+// Import directly from '@bun/instruments/genres/mappings' instead.

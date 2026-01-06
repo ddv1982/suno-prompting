@@ -8,6 +8,7 @@ export {
   getGenreInstruments,
   getAmbientInstruments,
   buildGuidanceFromSelection,
+  getMultiGenreNuanceGuidance,
   type ModeSelectionInput,
 } from '@bun/instruments/services/format';
 

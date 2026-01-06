@@ -1,3 +1,4 @@
+import { getMultiGenreNuanceGuidance } from '@bun/instruments';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
@@ -121,6 +122,15 @@ export function buildCreativeBoostUserPrompt(
         if (instruments.length > 0) {
           parts.push(`Suggested instruments: ${instruments.join(', ')}`);
         }
+      }
+    }
+
+    // Add multi-genre nuance guidance when multiple seed genres are selected
+    if (seedGenres.length > 1) {
+      const compoundGenre = seedGenres.join(' ');
+      const nuanceGuidance = getMultiGenreNuanceGuidance(compoundGenre);
+      if (nuanceGuidance) {
+        parts.push(nuanceGuidance);
       }
     }
   } else {
@@ -249,6 +259,15 @@ export function buildCreativeBoostRefineUserPrompt(
         if (instruments.length > 0) {
           parts.push(`Suggested instruments: ${instruments.join(', ')}`);
         }
+      }
+    }
+
+    // Add multi-genre nuance guidance when multiple seed genres are selected
+    if (seedGenres.length > 1) {
+      const compoundGenre = seedGenres.join(' ');
+      const nuanceGuidance = getMultiGenreNuanceGuidance(compoundGenre);
+      if (nuanceGuidance) {
+        parts.push(nuanceGuidance);
       }
     }
   }

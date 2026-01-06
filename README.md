@@ -479,7 +479,7 @@ Each output section (Title, Style Prompt, Lyrics) has consistent button controls
 
 ## Prompt Enhancement System
 
-The app includes a comprehensive prompt enhancement system based on professional prompt patterns. When a genre is detected, the guidance includes:
+The app includes a comprehensive prompt enhancement system based on professional prompt patterns. When a genre is detected (single or compound), the guidance includes genre-appropriate suggestions with **multi-genre blending** for compound genres:
 
 ### Example Output
 
@@ -522,6 +522,27 @@ Each genre has a defined tempo range with a typical BPM (researched from industr
 | Soul | 96 | 80-110 |
 | Synthwave | 115 | 100-130 |
 | Trap | 145 | 130-170 |
+
+### Multi-Genre Nuance Enhancement
+
+When you use compound genres (e.g., "jazz rock", "afrobeat jazz", "ambient metal"), the app provides enhanced guidance that reflects nuances from ALL constituent genres:
+
+| Feature | Behavior | Example |
+|---------|----------|---------|
+| **BPM Range** | Intersection of overlapping ranges, or narrowed union for non-overlapping | "jazz rock" → "between 100 and 160" |
+| **Harmonic Style** | Random selection from combined mode pools | "jazz rock" → dorian, mixolydian, aeolian, etc. |
+| **Time Signature** | Frequency-weighted selection (common signatures preferred) | "jazz rock" → 4/4, 6/8 |
+| **Polyrhythm** | Only suggested for genres with polyrhythmic traditions | "afrobeat jazz" → hemiola, afrobeat |
+
+**Example output for "jazz rock":**
+```
+MULTI-GENRE NUANCE:
+BPM Range: between 100 and 160
+Suggested harmonic style: Dorian (Sophisticated minor with a raised 6th)
+Suggested time signature: 4/4 - Steady, grounded
+```
+
+**Note**: Polyrhythms are only suggested for genres like afrobeat, latin, jazz, funk, and metal. Genres like pop, punk, and trap will not include polyrhythm suggestions.
 
 ### Mood Pools
 

@@ -4,11 +4,12 @@ import {
   extractInstruments,
   buildGuidanceFromSelection,
   selectInstrumentsForGenre,
+  getMultiGenreNuanceGuidance,
 } from '@bun/instruments';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
-import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
+import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genre-parser';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import { APP_CONSTANTS } from '@shared/constants';
 
@@ -104,6 +105,10 @@ export function buildContextualPrompt(
 
     // Add performance guidance for detected genre
     if (selection.genre) {
+      // Parse components once to avoid redundant calls
+      const genreComponents = parseGenreComponents(selection.genre);
+      const isMultiGenre = genreComponents.length > 1;
+
       const guidance = performanceGuidance ?? buildPerformanceGuidance(selection.genre);
       if (guidance) {
         parts.push('');
@@ -112,6 +117,14 @@ export function buildContextualPrompt(
         parts.push(`Production: ${guidance.production}`);
         if (guidance.instruments.length > 0) {
           parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+        }
+      }
+
+      // Add multi-genre nuance guidance for compound genres (2+ components)
+      if (isMultiGenre) {
+        const nuanceGuidance = getMultiGenreNuanceGuidance(selection.genre, Math.random);
+        if (nuanceGuidance) {
+          parts.push(nuanceGuidance);
         }
       }
     }
@@ -172,6 +185,10 @@ export function buildMaxModeContextualPrompt(
 
   // Add enhanced guidance if genre is detected
   if (selection.genre) {
+    // Parse components once to check for multi-genre
+    const genreComponents = parseGenreComponents(selection.genre);
+    const isMultiGenre = genreComponents.length > 1;
+
     const genreDef = GENRE_REGISTRY[selection.genre];
     const guidance = performanceGuidance ?? buildPerformanceGuidance(selection.genre);
     
@@ -201,6 +218,14 @@ export function buildMaxModeContextualPrompt(
       parts.push('');
       parts.push('Suggested instruments:');
       parts.push(...articulatedInstruments.map(i => `- ${i}`));
+    }
+
+    // Add multi-genre nuance guidance for compound genres (2+ components)
+    if (isMultiGenre) {
+      const nuanceGuidance = getMultiGenreNuanceGuidance(selection.genre, Math.random);
+      if (nuanceGuidance) {
+        parts.push(nuanceGuidance);
+      }
     }
   }
 

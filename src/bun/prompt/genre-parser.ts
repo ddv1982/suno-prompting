@@ -1,6 +1,13 @@
 import { selectInstrumentsForGenre } from '@bun/instruments';
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
+import {
+  getBlendedHarmonicStyle,
+  getBlendedTimeSignature,
+  getBlendedPolyrhythm,
+} from '@bun/instruments/genres/mappings';
+import { pickRandom } from '@bun/instruments/services/random';
 import { articulateInstrument } from '@bun/prompt/articulations';
+import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import {
   GENRE_PRODUCTION_STYLES,
   DEFAULT_PRODUCTION_STYLE,
@@ -10,6 +17,10 @@ import {
   DEFAULT_VOCAL_STYLE,
 } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
+
+import type { HarmonicStyle } from '@bun/instruments/modes';
+import type { PolyrhythmType, TimeSignatureType } from '@bun/instruments/rhythms';
+import type { Rng } from '@bun/instruments/services/random';
 
 /**
  * Check if a string is a valid single genre in the registry
@@ -49,14 +60,6 @@ export function parseGenreComponents(genre: string): GenreType[] {
 }
 
 /**
- * Pick a random element from an array using the provided RNG
- */
-function pickRandom<T>(arr: readonly T[], rng: () => number): T | undefined {
-  if (arr.length === 0) return undefined;
-  return arr[Math.floor(rng() * arr.length)];
-}
-
-/**
  * Collect unique items from multiple arrays
  */
 function collectUnique<T>(arrays: readonly (readonly T[])[]): T[] {
@@ -79,7 +82,7 @@ function collectUnique<T>(arrays: readonly (readonly T[])[]): T[] {
  */
 export function buildBlendedVocalDescriptor(
   genres: GenreType[],
-  rng: () => number = Math.random
+  rng: Rng = Math.random
 ): string {
   if (genres.length === 0) {
     const style = DEFAULT_VOCAL_STYLE;
@@ -123,7 +126,7 @@ export function buildBlendedVocalDescriptor(
  */
 export function buildBlendedProductionDescriptor(
   genres: GenreType[],
-  rng: () => number = Math.random
+  rng: Rng = Math.random
 ): string {
   if (genres.length === 0) {
     const style = DEFAULT_PRODUCTION_STYLE;
@@ -160,7 +163,7 @@ export function buildBlendedProductionDescriptor(
  */
 export function selectInstrumentsForMultiGenre(
   genres: GenreType[],
-  rng: () => number = Math.random,
+  rng: Rng = Math.random,
   maxInstruments: number = 3
 ): string[] {
   if (genres.length === 0) return [];
@@ -196,7 +199,7 @@ export function selectInstrumentsForMultiGenre(
  */
 export function buildPerformanceGuidance(
   genreString: string,
-  rng: () => number = Math.random
+  rng: Rng = Math.random
 ): { vocal: string; production: string; instruments: string[] } | null {
   const components = parseGenreComponents(genreString);
   if (components.length === 0) return null;
@@ -205,5 +208,59 @@ export function buildPerformanceGuidance(
     vocal: buildBlendedVocalDescriptor(components, rng),
     production: buildBlendedProductionDescriptor(components, rng),
     instruments: selectInstrumentsForMultiGenre(components, rng),
+  };
+}
+
+/**
+ * Result type for multi-genre guidance including all blended elements.
+ */
+export type MultiGenreGuidance = {
+  readonly vocal: string;
+  readonly production: string;
+  readonly instruments: string[];
+  readonly bpmRange: string | null;
+  readonly harmonicStyle: HarmonicStyle | null;
+  readonly timeSignature: TimeSignatureType | null;
+  readonly polyrhythm: PolyrhythmType | null;
+};
+
+/**
+ * Build complete multi-genre performance guidance including all blended elements.
+ * Combines basic performance guidance with BPM range, harmonic style, time signature, and polyrhythm.
+ *
+ * @param genreString - A genre string like "jazz rock" or "ambient, metal"
+ * @param rng - Optional random number generator (defaults to Math.random)
+ * @returns Complete guidance object with all blended elements, or null if invalid input
+ */
+export function buildMultiGenreGuidance(
+  genreString: string,
+  rng: Rng = Math.random
+): MultiGenreGuidance | null {
+  const components = parseGenreComponents(genreString);
+  if (components.length === 0) return null;
+
+  // Get basic performance guidance
+  const basicGuidance = buildPerformanceGuidance(genreString, rng);
+  if (!basicGuidance) return null;
+
+  // Get blended BPM range
+  const bpmResult = getBlendedBpmRange(genreString);
+  const bpmRange = bpmResult ? formatBpmRange(bpmResult) : null;
+
+  // Get blended harmonic style
+  const harmonicStyle = getBlendedHarmonicStyle(genreString, rng);
+
+  // Get blended time signature
+  const timeSignature = getBlendedTimeSignature(genreString, rng);
+
+  // Get blended polyrhythm (only for applicable genres)
+  const polyrhythm = getBlendedPolyrhythm(genreString, rng);
+
+  return {
+    ...basicGuidance,
+    bpmRange,
+    harmonicStyle,
+    timeSignature,
+    polyrhythm,
   };
 }
