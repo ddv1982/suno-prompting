@@ -19,9 +19,18 @@ export type RemixResult = {
   text: string;
 };
 
-export function extractGenreFromPrompt(prompt: string): string {
+const DEFAULT_GENRE: GenreType = 'pop';
+
+/**
+ * Extract and validate genre from prompt's genre field.
+ * Returns a valid GenreType, falling back to 'pop' if not found or invalid.
+ * This ensures type safety when used with genre-dependent functions.
+ */
+export function extractGenreFromPrompt(prompt: string): GenreType {
   const match = prompt.match(/^genre:\s*"?([^"\n,]+)/mi);
-  return match?.[1]?.trim().toLowerCase() || 'acoustic';
+  const extracted = match?.[1]?.trim().toLowerCase();
+  if (!extracted) return DEFAULT_GENRE;
+  return extracted in GENRE_REGISTRY ? (extracted as GenreType) : DEFAULT_GENRE;
 }
 
 export function extractMoodFromPrompt(prompt: string): string {
@@ -59,10 +68,7 @@ export function remixInstruments(
   currentPrompt: string,
   _originalInput: string
 ): RemixResult {
-  // Extract genre from prompt (like other remix functions)
-  // This is more reliable than keyword detection on originalInput
-  // Cast to GenreType since extractGenreFromPrompt returns 'acoustic' as fallback
-  const genre = extractGenreFromPrompt(currentPrompt) as GenreType;
+  const genre = extractGenreFromPrompt(currentPrompt);
 
   // 1. New instruments
   const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });
