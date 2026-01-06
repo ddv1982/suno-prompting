@@ -20,14 +20,18 @@ export function PromptOutput({ text }: PromptOutputProps): React.JSX.Element {
         const isSection = /^\[.+\]/.test(cleanLine);
         const isField = /^(Genre|Mood|Instruments|Tempo|Key):/i.test(cleanLine);
         const isHeader = /^\[Mood\],.*Key:/.test(cleanLine);
+        // Recognize both MAX mode header formats:
+        // - Standard: [Is_MAX_MODE: MAX](MAX), [QUALITY: MAX](MAX), etc.
+        // - Suno V5 tags: ::tags..., ::quality..., ::style...
+        const isMaxModeHeader = /^\[.+: MAX\]/.test(cleanLine) || /^::.+::$/.test(cleanLine);
 
         return (
           <div
             key={idx}
             className={cn(
-              isHeader && "text-muted-foreground",
+              (isHeader || isMaxModeHeader) && "text-muted-foreground",
               isField && "text-foreground font-medium",
-              isSection && !isHeader && "text-primary font-bold tracking-wide"
+              isSection && !isHeader && !isMaxModeHeader && "text-primary font-bold tracking-wide"
             )}
           >
             {line}
