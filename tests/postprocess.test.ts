@@ -6,6 +6,8 @@ import {
   validateAndFixFormat,
   hasLeakedMeta,
   postProcessPrompt,
+  stripMetaDeterministic,
+  dedupDeterministic,
   LEAKED_META_SUBSTRINGS,
   type PostProcessDeps,
 } from '@bun/prompt/postprocess';
@@ -121,6 +123,101 @@ describe('postprocess', () => {
     it('is case-insensitive', () => {
       expect(hasLeakedMeta('REMOVE WORD REPETITION')).toBe(true);
       expect(hasLeakedMeta('Output Only the prompt')).toBe(true);
+    });
+  });
+
+  describe('stripMetaDeterministic', () => {
+    it('removes [Note: ...] patterns', () => {
+      const text = 'Music [Note: test note] more content';
+      expect(stripMetaDeterministic(text)).toBe('Music  more content');
+    });
+
+    it('removes (Note: ...) patterns', () => {
+      const text = 'Music (Note: test note) more content';
+      expect(stripMetaDeterministic(text)).toBe('Music  more content');
+    });
+
+    it('removes Note: lines', () => {
+      const text = 'Music\nNote: This is a note\nMore content';
+      expect(stripMetaDeterministic(text)).toBe('Music\n\nMore content');
+    });
+
+    it('removes **Note**: patterns', () => {
+      const text = 'Music\n**Note**: Important note\nMore content';
+      expect(stripMetaDeterministic(text)).toBe('Music\n\nMore content');
+    });
+
+    it('removes Instructions: lines', () => {
+      const text = 'Music\nInstructions: Follow these\nMore content';
+      expect(stripMetaDeterministic(text)).toBe('Music\n\nMore content');
+    });
+
+    it('removes Output: lines', () => {
+      const text = 'Output: result\nActual content';
+      expect(stripMetaDeterministic(text)).toBe('Actual content');
+    });
+
+    it('removes Response: lines', () => {
+      const text = 'Response: generated\nActual content';
+      expect(stripMetaDeterministic(text)).toBe('Actual content');
+    });
+
+    it('removes Here is/Here\'s lines', () => {
+      const text = 'Here is the prompt:\nActual content';
+      expect(stripMetaDeterministic(text)).toBe('Actual content');
+    });
+
+    it('normalizes multiple newlines', () => {
+      const text = 'Content\n\n\n\nMore content';
+      expect(stripMetaDeterministic(text)).toBe('Content\n\nMore content');
+    });
+
+    it('is case-insensitive', () => {
+      const text = 'Music\nNOTE: Upper case\nMore content';
+      expect(stripMetaDeterministic(text)).toBe('Music\n\nMore content');
+    });
+
+    it('returns clean text unchanged', () => {
+      const text = 'Clean music prompt with no meta';
+      expect(stripMetaDeterministic(text)).toBe(text);
+    });
+  });
+
+  describe('dedupDeterministic', () => {
+    it('removes exact duplicate lines', () => {
+      const text = 'Line one\nLine two\nLine one\nLine three';
+      expect(dedupDeterministic(text)).toBe('Line one\nLine two\nLine three');
+    });
+
+    it('preserves empty lines for formatting', () => {
+      const text = 'Line one\n\nLine two\n\nLine three';
+      expect(dedupDeterministic(text)).toBe('Line one\n\nLine two\n\nLine three');
+    });
+
+    it('preserves order of first occurrences', () => {
+      const text = 'B\nA\nC\nA\nB';
+      expect(dedupDeterministic(text)).toBe('B\nA\nC');
+    });
+
+    it('returns text unchanged when no duplicates', () => {
+      const text = 'Unique line one\nUnique line two\nUnique line three';
+      expect(dedupDeterministic(text)).toBe(text);
+    });
+
+    it('handles trimmed comparison', () => {
+      const text = 'Line one\n  Line one  \nLine two';
+      // After trimming, "Line one" and "  Line one  " are the same
+      expect(dedupDeterministic(text)).toBe('Line one\nLine two');
+    });
+
+    it('handles single line text', () => {
+      const text = 'Single line';
+      expect(dedupDeterministic(text)).toBe('Single line');
+    });
+
+    it('handles all duplicate lines', () => {
+      const text = 'Same\nSame\nSame';
+      expect(dedupDeterministic(text)).toBe('Same');
     });
   });
 

@@ -60,6 +60,61 @@ export function stripLeakedMetaLines(text: string): string {
   return filtered.join('\n').trim();
 }
 
+/**
+ * Attempt deterministic meta removal first, fall back to LLM if needed.
+ * Removes common meta patterns like [Note: ...], (Note: ...), **Note**: etc.
+ */
+export function stripMetaDeterministic(text: string): string {
+  return text
+    .replace(/\[Note:.*?\]/gi, '')
+    .replace(/\(Note:.*?\)/gi, '')
+    .replace(/^Note:.*$/gim, '')
+    .replace(/\*\*Note\*\*:.*$/gim, '')
+    .replace(/^Instructions?:.*$/gim, '')
+    .replace(/^Output:.*$/gim, '')
+    .replace(/^Response:.*$/gim, '')
+    .replace(/^Here is.*:$/gim, '')
+    .replace(/^Here's.*:$/gim, '')
+    .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
+    .trim();
+}
+
+/**
+ * Attempt deterministic deduplication first.
+ * Removes exact duplicate lines while preserving order.
+ */
+export function dedupDeterministic(text: string): string {
+  const lines = text.split('\n');
+  const seen = new Set<string>();
+  return lines
+    .filter(line => {
+      const trimmed = line.trim();
+      // Keep empty lines for formatting
+      if (!trimmed) return true;
+      if (seen.has(trimmed)) return false;
+      seen.add(trimmed);
+      return true;
+    })
+    .join('\n');
+}
+
+/**
+ * Check if deterministic meta removal was successful.
+ * Returns true if no leaked meta remains.
+ */
+function metaRemovalSuccessful(text: string): boolean {
+  return !hasLeakedMeta(text);
+}
+
+/**
+ * Check if deterministic dedup was sufficient.
+ * Returns true if duplicate word count is below threshold.
+ */
+function dedupSuccessful(text: string, threshold: number = 3): boolean {
+  const repeated = detectRepeatedWords(text);
+  return repeated.length <= threshold;
+}
+
 export function truncateToLimit(text: string, limit: number): string {
   if (text.length <= limit) return text;
 
@@ -126,24 +181,37 @@ export type PostProcessDeps = {
 };
 
 export async function postProcessPrompt(text: string, deps: PostProcessDeps): Promise<string> {
+  // Step 1: Try deterministic meta removal first
   let result = stripLeakedMetaLines(text.trim());
-  if (hasLeakedMeta(result)) {
+  result = stripMetaDeterministic(result);
+
+  // Only use LLM if deterministic removal didn't fully work
+  if (!metaRemovalSuccessful(result)) {
     result = await deps.rewriteWithoutMeta(result);
   }
 
   result = validateAndFixFormat(result);
 
+  // Step 2: Try deterministic dedup first
+  result = dedupDeterministic(result);
+
+  // Only use LLM dedup if deterministic dedup didn't suffice
   const repeated = detectRepeatedWords(result);
-  if (repeated.length > 3) {
+  if (repeated.length > 3 && !dedupSuccessful(result)) {
     result = await deps.condenseWithDedup(result, repeated);
   }
 
+  // Step 3: Handle length limit
   if (result.length > deps.maxChars) {
     result = await enforceLengthLimit(result, deps.maxChars, deps.condense);
   }
 
+  // Step 4: Final cleanup - try deterministic first
   result = stripLeakedMetaLines(result);
-  if (hasLeakedMeta(result)) {
+  result = stripMetaDeterministic(result);
+
+  // Only use LLM if deterministic removal still didn't work
+  if (!metaRemovalSuccessful(result)) {
     result = await deps.rewriteWithoutMeta(result);
     result = stripLeakedMetaLines(result);
   }

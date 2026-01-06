@@ -194,8 +194,32 @@ export function selectInstrumentsForMultiGenre(
 }
 
 /**
+ * Cache for performance guidance results.
+ * Key: normalized genre string (lowercase)
+ * Value: computed guidance object
+ */
+const guidanceCache = new Map<string, { vocal: string; production: string; instruments: string[] }>();
+
+/**
+ * Internal implementation of performance guidance building.
+ */
+function buildPerformanceGuidanceImpl(
+  components: GenreType[],
+  rng: Rng
+): { vocal: string; production: string; instruments: string[] } {
+  return {
+    vocal: buildBlendedVocalDescriptor(components, rng),
+    production: buildBlendedProductionDescriptor(components, rng),
+    instruments: selectInstrumentsForMultiGenre(components, rng),
+  };
+}
+
+/**
  * Build complete performance guidance for a genre string (single or compound).
  * Returns null if no valid genres found.
+ *
+ * Results are memoized per normalized genre string for performance.
+ * When using custom RNG, the cache is bypassed to allow for testing.
  */
 export function buildPerformanceGuidance(
   genreString: string,
@@ -204,11 +228,31 @@ export function buildPerformanceGuidance(
   const components = parseGenreComponents(genreString);
   if (components.length === 0) return null;
 
-  return {
-    vocal: buildBlendedVocalDescriptor(components, rng),
-    production: buildBlendedProductionDescriptor(components, rng),
-    instruments: selectInstrumentsForMultiGenre(components, rng),
-  };
+  const cacheKey = genreString.toLowerCase().trim();
+
+  // Use cache only when using default RNG (Math.random)
+  // This allows tests to pass custom RNG and get fresh results
+  const useCache = rng === Math.random;
+
+  if (useCache && guidanceCache.has(cacheKey)) {
+    return guidanceCache.get(cacheKey)!;
+  }
+
+  const guidance = buildPerformanceGuidanceImpl(components, rng);
+
+  if (useCache) {
+    guidanceCache.set(cacheKey, guidance);
+  }
+
+  return guidance;
+}
+
+/**
+ * Clear the guidance cache. Useful for testing.
+ * @internal
+ */
+export function clearGuidanceCache(): void {
+  guidanceCache.clear();
 }
 
 /**

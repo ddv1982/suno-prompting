@@ -243,12 +243,12 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
     expect(mockGenerateText).toHaveBeenCalled();
   });
 
-  it("uses normal LLM flow when sunoStyles is empty during refine", async () => {
+  it("uses deterministic refinement when category is set (no LLM call)", async () => {
     mockGenerateText.mockImplementation(async () => ({
       text: "refined vibes",
     }));
 
-    await engine.refineQuickVibes({
+    const result = await engine.refineQuickVibes({
       currentPrompt: "original vibes",
       feedback: "make it better",
       withWordlessVocals: false,
@@ -256,7 +256,28 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       sunoStyles: [],
     });
 
-    // Should call generateText when no sunoStyles
+    // Category-based refinement is now deterministic - no LLM call
+    expect(mockGenerateText).not.toHaveBeenCalled();
+    // Should still produce a valid result
+    expect(result.text).toBeDefined();
+    expect(result.text.length).toBeGreaterThan(0);
+    expect(result.title).toBeDefined();
+  });
+
+  it("uses LLM flow when no category and no sunoStyles during refine", async () => {
+    mockGenerateText.mockImplementation(async () => ({
+      text: "refined vibes from LLM",
+    }));
+
+    await engine.refineQuickVibes({
+      currentPrompt: "original vibes",
+      feedback: "make it better",
+      withWordlessVocals: false,
+      category: null,
+      sunoStyles: [],
+    });
+
+    // No category and no sunoStyles - should use LLM
     expect(mockGenerateText).toHaveBeenCalled();
   });
 });

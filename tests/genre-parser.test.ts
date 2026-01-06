@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect, beforeEach } from 'bun:test';
 
 import {
   isValidGenre,
@@ -8,6 +8,7 @@ import {
   selectInstrumentsForMultiGenre,
   buildPerformanceGuidance,
   buildMultiGenreGuidance,
+  clearGuidanceCache,
 } from '@bun/prompt/genre-parser';
 
 // Seeded RNG for deterministic tests
@@ -192,6 +193,70 @@ describe('buildPerformanceGuidance', () => {
   test('handles mixed case input', () => {
     const result = buildPerformanceGuidance('AMBIENT ROCK', rng);
     expect(result).not.toBeNull();
+  });
+});
+
+describe('buildPerformanceGuidance memoization', () => {
+  beforeEach(() => {
+    // Clear cache before each test to ensure isolation
+    clearGuidanceCache();
+  });
+
+  test('returns cached result for same genre (default RNG)', () => {
+    // First call - will compute and cache
+    const result1 = buildPerformanceGuidance('jazz');
+    expect(result1).not.toBeNull();
+
+    // Second call - should return cached result (identical object)
+    const result2 = buildPerformanceGuidance('jazz');
+    expect(result2).toBe(result1); // Same object reference
+  });
+
+  test('cache key is case-insensitive', () => {
+    const result1 = buildPerformanceGuidance('JAZZ');
+    const result2 = buildPerformanceGuidance('jazz');
+    const result3 = buildPerformanceGuidance('Jazz');
+
+    // All should return the same cached result
+    expect(result2).toBe(result1);
+    expect(result3).toBe(result1);
+  });
+
+  test('bypasses cache when custom RNG is provided', () => {
+    const rng1 = createSeededRng(111);
+    const rng2 = createSeededRng(222);
+
+    // Custom RNG calls should bypass cache
+    const result1 = buildPerformanceGuidance('rock', rng1);
+    const result2 = buildPerformanceGuidance('rock', rng2);
+
+    // Results should be different objects (not cached)
+    expect(result1).not.toBe(result2);
+    expect(result1).not.toBeNull();
+    expect(result2).not.toBeNull();
+  });
+
+  test('different genres have different cached results', () => {
+    const jazzResult = buildPerformanceGuidance('jazz');
+    const rockResult = buildPerformanceGuidance('rock');
+
+    expect(jazzResult).not.toBe(rockResult);
+    expect(jazzResult).not.toBeNull();
+    expect(rockResult).not.toBeNull();
+  });
+
+  test('clearGuidanceCache clears the cache', () => {
+    // First call - compute and cache
+    const result1 = buildPerformanceGuidance('electronic');
+    expect(result1).not.toBeNull();
+
+    // Clear cache
+    clearGuidanceCache();
+
+    // After clearing, should compute new result (different object)
+    const result2 = buildPerformanceGuidance('electronic');
+    expect(result2).not.toBe(result1);
+    expect(result2).not.toBeNull();
   });
 });
 
