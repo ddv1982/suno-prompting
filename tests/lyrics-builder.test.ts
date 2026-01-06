@@ -80,46 +80,49 @@ describe("lyrics-builder", () => {
       expect(prompt).toContain("peaceful");
     });
 
-    it("should present description as CORE SUBJECT", () => {
+    it("should present description as the topic to write about", () => {
       const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
-      expect(prompt).toContain("CORE SUBJECT");
+      expect(prompt).toContain("WRITE LYRICS ABOUT THIS TOPIC");
       expect(prompt).toContain('"A song about the ocean"');
+      expect(prompt).toContain("Stay focused on this subject");
     });
 
-    it("should clarify role of each parameter", () => {
+    it("should include style context with genre and mood", () => {
       const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
-      expect(prompt).toContain("WHAT to write about");
-      expect(prompt).toContain("HOW to phrase it");
-      expect(prompt).toContain("how it should FEEL");
+      expect(prompt).toContain("STYLE CONTEXT");
+      expect(prompt).toContain("Genre vocabulary: ambient");
+      expect(prompt).toContain("Emotional tone: peaceful");
     });
 
-    it("should warn against replacing story with genre imagery", () => {
+    it("should include critical rules against meta-lyrics", () => {
       const prompt = buildLyricsUserPrompt("A song about the ocean", "ambient", "peaceful");
-      expect(prompt).toContain("do NOT replace the story with genre imagery");
+      expect(prompt).toContain("CRITICAL RULES");
+      expect(prompt).toContain("Do NOT write meta-lyrics about music, songwriting");
+      expect(prompt).toContain('Do NOT use words like "chord", "melody"');
     });
 
     it("includes genre-specific backing vocals when useSunoTags is true", () => {
       const prompt = buildLyricsUserPrompt("A song about love", "soul", "emotional", true);
-      expect(prompt).toContain("Backing vocals for soul");
+      expect(prompt).toContain("Backing vocals");
       expect(prompt).toContain("(oh yeah)");
       expect(prompt).toContain("call and response style");
     });
 
     it("uses genre-specific backing vocals for rock", () => {
       const prompt = buildLyricsUserPrompt("A song about freedom", "rock", "powerful", true);
-      expect(prompt).toContain("Backing vocals for rock");
+      expect(prompt).toContain("Backing vocals");
       expect(prompt).toContain("(hey!)");
       expect(prompt).toContain("repeat with intensity");
     });
 
     it("does not include backing vocals when useSunoTags is false", () => {
       const prompt = buildLyricsUserPrompt("A song about love", "soul", "emotional", false);
-      expect(prompt).not.toContain("Backing vocals for");
+      expect(prompt).not.toContain("Backing vocals");
     });
 
     it("uses default backing vocals for unknown genre", () => {
       const prompt = buildLyricsUserPrompt("A song", "unknowngenre", "calm", true);
-      expect(prompt).toContain("Backing vocals for unknowngenre");
+      expect(prompt).toContain("Backing vocals");
       expect(prompt).toContain("(ooh)");
       expect(prompt).toContain("repeat key word");
     });

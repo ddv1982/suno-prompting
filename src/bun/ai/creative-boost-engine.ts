@@ -376,16 +376,21 @@ export async function generateCreativeBoost(
 
   // Generate title: LLM when lyrics ON (to match lyrics theme), deterministic otherwise
   let title: string;
+  let titleDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
+
   if (withLyrics) {
     const topicForTitle = lyricsTopic?.trim() || description?.trim() || 'creative expression';
     const titleResult = await generateTitle(topicForTitle, selectedGenre, selectedMood, config.getModel);
     title = titleResult.title;
+    titleDebugInfo = titleResult.debugInfo;
   } else {
     title = generateDeterministicTitle(selectedGenre, selectedMood);
   }
 
   // Generate lyrics if requested (still uses LLM)
   let lyrics: string | undefined;
+  let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
+
   if (withLyrics) {
     const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
     const lyricsResult = await generateLyrics(
@@ -397,14 +402,26 @@ export async function generateCreativeBoost(
       config.getUseSunoTags?.() ?? false
     );
     lyrics = lyricsResult.lyrics;
+    lyricsDebugInfo = lyricsResult.debugInfo;
   }
 
-  const debugInfo = config.isDebugMode()
+  // Build debug info with actual LLM prompts for title and lyrics
+  const topicDisplay = lyricsTopic?.trim() || '(none)';
+  const baseDebugInfo = config.isDebugMode()
     ? config.buildDebugInfo(
         withLyrics ? 'DETERMINISTIC_PROMPT_LLM_TITLE_LYRICS' : 'FULLY_DETERMINISTIC',
-        `Creativity: ${level}, Genre: ${selectedGenre}, Mood: ${selectedMood}`,
+        `Creativity: ${level}, Genre: ${selectedGenre}, Mood: ${selectedMood}, Topic: ${topicDisplay}`,
         styleResult
       )
+    : undefined;
+
+  // Attach actual LLM prompts to debug info
+  const debugInfo = baseDebugInfo
+    ? {
+        ...baseDebugInfo,
+        titleGeneration: titleDebugInfo,
+        lyricsGeneration: lyricsDebugInfo,
+      }
     : undefined;
 
   return {

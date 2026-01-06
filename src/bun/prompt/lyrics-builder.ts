@@ -97,23 +97,26 @@ export function buildLyricsUserPrompt(
     const backingVocals = getBackingVocalsForGenre(genre);
     const wordlessExamples = backingVocals.wordless.slice(0, 3).join(', ');
     backingVocalGuidance = `
-
-Backing vocals for ${genre}: Use ${wordlessExamples} or ${backingVocals.echoStyle}.`;
+- Backing vocals: Use ${wordlessExamples} or ${backingVocals.echoStyle}`;
   }
 
-  return `Write lyrics for a song about:
+  // Topic placed LAST for recency bias - LLMs weight final instructions more heavily
+  return `STYLE CONTEXT (use for vocabulary and phrasing only):
+- Genre vocabulary: ${genre}
+- Emotional tone: ${mood}${backingVocalGuidance}
+
+CRITICAL RULES:
+- Do NOT write meta-lyrics about music, songwriting, instruments, or the creative process
+- Do NOT use words like "chord", "melody", "rhythm", "verse", "chorus" in the lyrics themselves
+- Every line must directly relate to the topic below
+
+═══════════════════════════════════════
+WRITE LYRICS ABOUT THIS TOPIC:
 
 "${description}"
 
-This is the CORE SUBJECT of the song. Your lyrics must tell this story or convey this meaning.
-
-Emotional tone: ${mood}
-Use this mood to guide the emotional intensity and authenticity of the lyrics.
-
-Vocabulary style: ${genre}
-Use vocabulary and phrasing natural to this genre, but do NOT replace the story with genre imagery.${backingVocalGuidance}
-
-Remember: The description tells you WHAT to write about. The genre tells you HOW to phrase it. The mood tells you how it should FEEL.`;
+This is what the song is ABOUT. Stay focused on this subject.
+═══════════════════════════════════════`;
 }
 
 export function buildTitleSystemPrompt(): string {
