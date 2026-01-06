@@ -136,7 +136,7 @@ export const ELECTRONIC_GENRES = new Set([
   'dnb', 'drum and bass', 'synthwave', 'trap', 'future bass',
 ]);
 
-export function selectRealismTags(genre: string, count: number = 4): string[] {
+export function selectRealismTags(genre: string, count: number = 4, rng: () => number = Math.random): string[] {
   const normalizedGenre = genre.toLowerCase().trim();
   const categories = GENRE_REALISM_MAP[normalizedGenre] || [];
   
@@ -150,18 +150,18 @@ export function selectRealismTags(genre: string, count: number = 4): string[] {
     allTags.push(...REALISM_TAGS[category]);
   }
   
-  // Shuffle and select
-  const shuffled = [...allTags].sort(() => Math.random() - 0.5);
+  // Shuffle and select using provided RNG
+  const shuffled = [...allTags].sort(() => rng() - 0.5);
   return shuffled.slice(0, count);
 }
 
-export function selectElectronicTags(count: number = 4): string[] {
+export function selectElectronicTags(count: number = 4, rng: () => number = Math.random): string[] {
   const allTags: string[] = [];
   for (const category of Object.values(ELECTRONIC_CLARITY_TAGS)) {
     allTags.push(...category);
   }
   
-  const shuffled = [...allTags].sort(() => Math.random() - 0.5);
+  const shuffled = [...allTags].sort(() => rng() - 0.5);
   return shuffled.slice(0, count);
 }
 
@@ -196,8 +196,8 @@ export const RECORDING_DESCRIPTORS = [
   'single microphone capture',
 ] as const;
 
-export function selectRecordingDescriptors(count: number = 3): string[] {
-  const shuffled = [...RECORDING_DESCRIPTORS].sort(() => Math.random() - 0.5);
+export function selectRecordingDescriptors(count: number = 3, rng: () => number = Math.random): string[] {
+  const shuffled = [...RECORDING_DESCRIPTORS].sort(() => rng() - 0.5);
   return shuffled.slice(0, count);
 }
 
@@ -217,7 +217,7 @@ export const GENERIC_STYLE_TAGS = [
   'tonal warmth',
 ] as const;
 
-export function selectGenericTags(count: number = 4): string[] {
-  const shuffled = [...GENERIC_STYLE_TAGS].sort(() => Math.random() - 0.5);
+export function selectGenericTags(count: number = 4, rng: () => number = Math.random): string[] {
+  const shuffled = [...GENERIC_STYLE_TAGS].sort(() => rng() - 0.5);
   return shuffled.slice(0, count);
 }

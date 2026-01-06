@@ -39,34 +39,33 @@ async function runSingleFieldRemix<T>(name: string, operation: () => Promise<T>)
 
 export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
   return {
+    // All prompt remix actions are now synchronous (deterministic, no LLM)
     remixInstruments: async (params) => {
       const { currentPrompt, originalInput } = validate(RemixInstrumentsSchema, params);
-      // remixInstruments is now synchronous (deterministic, no LLM)
       return runRemixAction('remixInstruments', () => Promise.resolve(aiEngine.remixInstruments(currentPrompt, originalInput)));
     },
     remixGenre: async (params) => {
       const { currentPrompt } = validate(RemixGenreSchema, params);
-      return runRemixAction('remixGenre', () => aiEngine.remixGenre(currentPrompt));
+      return runRemixAction('remixGenre', () => Promise.resolve(aiEngine.remixGenre(currentPrompt)));
     },
     remixMood: async (params) => {
       const { currentPrompt } = validate(RemixMoodSchema, params);
-      return runRemixAction('remixMood', () => aiEngine.remixMood(currentPrompt));
+      return runRemixAction('remixMood', () => Promise.resolve(aiEngine.remixMood(currentPrompt)));
     },
     remixStyleTags: async (params) => {
       const { currentPrompt } = validate(RemixStyleTagsSchema, params);
-      return runRemixAction('remixStyleTags', () => aiEngine.remixStyleTags(currentPrompt));
+      return runRemixAction('remixStyleTags', () => Promise.resolve(aiEngine.remixStyleTags(currentPrompt)));
     },
     remixRecording: async (params) => {
       const { currentPrompt } = validate(RemixRecordingSchema, params);
-      return runRemixAction('remixRecording', () => aiEngine.remixRecording(currentPrompt));
+      return runRemixAction('remixRecording', () => Promise.resolve(aiEngine.remixRecording(currentPrompt)));
     },
+    // Title is now synchronous (deterministic, no LLM)
     remixTitle: async (params) => {
       const { currentPrompt, originalInput } = validate(RemixTitleSchema, params);
-      return runSingleFieldRemix('remixTitle', async () => {
-        const result = await aiEngine.remixTitle(currentPrompt, originalInput);
-        return { title: result.title };
-      });
+      return runSingleFieldRemix('remixTitle', () => Promise.resolve(aiEngine.remixTitle(currentPrompt, originalInput)));
     },
+    // Lyrics still uses LLM
     remixLyrics: async (params) => {
       const { currentPrompt, originalInput, lyricsTopic } = validate(RemixLyricsSchema, params);
       return runSingleFieldRemix('remixLyrics', async () => {

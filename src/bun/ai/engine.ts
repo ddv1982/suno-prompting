@@ -1,7 +1,7 @@
 import { generateText, type LanguageModel } from 'ai';
 
 import { AIConfig } from '@bun/ai/config';
-import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
+import { generateLyrics } from '@bun/ai/content-generator';
 import {
   generateCreativeBoost as generateCreativeBoostImpl,
   refineCreativeBoost as refineCreativeBoostImpl,
@@ -19,13 +19,13 @@ import {
   remixMoodInPrompt,
   remixStyleTags as remixStyleTagsImpl,
   remixRecording as remixRecordingImpl,
-  remixTitle as remixTitleImpl,
   remixLyrics as remixLyricsImpl,
 } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
 import { buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
 import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic-builder';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
+import { generateDeterministicTitle } from '@bun/prompt/title-generator';
 import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError } from '@shared/errors';
 import { cleanJsonResponse } from '@shared/prompt-utils';
@@ -203,13 +203,12 @@ export class AIEngine {
     const genre = extractGenreFromPrompt(promptText);
     const mood = extractMoodFromPrompt(promptText);
 
-    // 4. Generate title using LLM
-    const titleContext = description.trim() || lyricsTopic?.trim() || '';
-    const titleResult = await generateTitle(titleContext, genre, mood, this.getModel);
+    // 4. Generate title deterministically (no LLM)
+    const title = generateDeterministicTitle(genre, mood);
 
     // 5. Generate lyrics using LLM (if lyrics mode enabled)
     let lyrics: string | undefined;
-    let lyricsDebugInfo: typeof titleResult.debugInfo | undefined;
+    let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
 
     if (this.config.isLyricsMode()) {
       const topicForLyrics = lyricsTopic?.trim() || description;
@@ -228,21 +227,20 @@ export class AIEngine {
     // 6. Build debug info if debug mode enabled
     const debugInfo = this.config.isDebugMode()
       ? {
-          systemPrompt: 'Deterministic generation - no system prompt',
+          systemPrompt: 'Deterministic generation - no system prompt or LLM for prompt/title',
           userPrompt: description,
           model: this.config.getModelName(),
           provider: this.config.getProvider(),
           timestamp: nowISO(),
           requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
           responseBody: promptText,
-          titleGeneration: titleResult.debugInfo,
           lyricsGeneration: lyricsDebugInfo,
         }
       : undefined;
 
     return {
       text: promptText,
-      title: this.cleanTitle(titleResult.title),
+      title: this.cleanTitle(title),
       lyrics: this.cleanLyrics(lyrics),
       debugInfo,
     };
@@ -346,24 +344,41 @@ export class AIEngine {
     return remixInstrumentsImpl(currentPrompt, originalInput);
   }
 
-  async remixGenre(currentPrompt: string): Promise<GenerationResult> {
+  /**
+   * Remix genre - fully deterministic, no LLM.
+   */
+  remixGenre(currentPrompt: string): GenerationResult {
     return remixGenreImpl(currentPrompt);
   }
 
-  async remixMood(currentPrompt: string): Promise<GenerationResult> {
+  /**
+   * Remix mood - fully deterministic, no LLM.
+   */
+  remixMood(currentPrompt: string): GenerationResult {
     return remixMoodInPrompt(currentPrompt);
   }
 
-  async remixStyleTags(currentPrompt: string): Promise<GenerationResult> {
+  /**
+   * Remix style tags - fully deterministic, no LLM.
+   */
+  remixStyleTags(currentPrompt: string): GenerationResult {
     return remixStyleTagsImpl(currentPrompt);
   }
 
-  async remixRecording(currentPrompt: string): Promise<GenerationResult> {
+  /**
+   * Remix recording context - fully deterministic, no LLM.
+   */
+  remixRecording(currentPrompt: string): GenerationResult {
     return remixRecordingImpl(currentPrompt);
   }
 
-  async remixTitle(currentPrompt: string, originalInput: string): Promise<{ title: string }> {
-    return remixTitleImpl(currentPrompt, originalInput, this.getModel);
+  /**
+   * Remix title - fully deterministic, no LLM.
+   */
+  remixTitle(currentPrompt: string, _originalInput: string): { title: string } {
+    const genre = extractGenreFromPrompt(currentPrompt);
+    const mood = extractMoodFromPrompt(currentPrompt);
+    return { title: generateDeterministicTitle(genre, mood) };
   }
 
   async remixLyrics(currentPrompt: string, originalInput: string, lyricsTopic?: string): Promise<{ lyrics: string }> {

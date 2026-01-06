@@ -361,14 +361,14 @@ export function assembleStyleTags(
   // 2. Select realism or electronic tags based on genre
   let styleTags: string[];
   if (isElectronicGenre(genre)) {
-    styleTags = selectElectronicTags(3);
+    styleTags = selectElectronicTags(3, rng);
   } else {
-    styleTags = selectRealismTags(genre, 3);
+    styleTags = selectRealismTags(genre, 3, rng);
   }
 
   // If no genre-specific tags, fall back to generic tags
   if (styleTags.length === 0) {
-    styleTags = selectGenericTags(3);
+    styleTags = selectGenericTags(3, rng);
   }
 
   for (const tag of styleTags) {
@@ -591,12 +591,12 @@ recording: "${recordingContext}"`;
  * // BPM: between 80 and 160
  * // Mood: smooth, warm, sophisticated
  * // Instruments: Arpeggiated Rhodes, breathy tenor sax, walking upright bass
+ * // Style Tags: smooth, warm, natural dynamics, analog warmth
+ * // Recording: late night studio session vibe
  * //
  * // [INTRO] Sparse Rhodes chords with brushed drums
  * // [VERSE] Walking bass enters, saxophone weaves melodic lines
- * // [CHORUS] Full arrangement, layered harmonies, emotional peak
- * // [BRIDGE] Stripped down, intimate piano solo
- * // [OUTRO] Fade with soft saxophone and gentle cymbal swells
+ * // ...
  */
 export function buildDeterministicStandardPrompt(
   options: DeterministicOptions
@@ -638,17 +638,22 @@ export function buildDeterministicStandardPrompt(
     articulateInstrument(i, rng)
   );
 
-  // 10. Format the STANDARD MODE prompt
+  // 10. Get recording context (same as MAX MODE for remix compatibility)
+  const recordingContext = selectRecordingContext(rng);
+
+  // 11. Format the STANDARD MODE prompt (with Style Tags and Recording for remix support)
   const rawPrompt = `[${capitalizedMood}, ${genreDisplayName}, ${keyMode}]
 
 Genre: ${genreDisplayName}
 BPM: ${bpmRange}
 Mood: ${styleResult.tags.slice(0, 3).join(', ')}
 Instruments: ${articulatedForDisplay.join(', ')}
+Style Tags: ${styleResult.formatted}
+Recording: ${recordingContext}
 
 ${sectionsResult.text}`;
 
-  // 11. Enforce MAX_CHARS limit
+  // 12. Enforce MAX_CHARS limit
   const prompt = truncatePrompt(rawPrompt);
 
   return {
@@ -661,7 +666,7 @@ ${sectionsResult.text}`;
       chordProgression: instrumentsResult.chordProgression,
       vocalStyle: instrumentsResult.vocalStyle,
       styleTags: styleResult.tags,
-      recordingContext: '',
+      recordingContext,
     },
   };
 }
