@@ -124,37 +124,44 @@ describe('deterministic-builder', () => {
   describe('assembleInstruments', () => {
     it('returns instruments array for jazz', () => {
       const rng = createSeededRng(12345);
-      const result = assembleInstruments('jazz', rng);
+      const result = assembleInstruments(['jazz'], rng);
       expect(result.instruments).toBeDefined();
       expect(result.instruments.length).toBeGreaterThan(0);
     });
 
     it('includes chord progression in formatted output', () => {
       const rng = createSeededRng(12345);
-      const result = assembleInstruments('jazz', rng);
+      const result = assembleInstruments(['jazz'], rng);
       expect(result.chordProgression).toBeDefined();
       expect(result.formatted).toContain('harmony');
     });
 
     it('includes vocal style in formatted output', () => {
       const rng = createSeededRng(12345);
-      const result = assembleInstruments('jazz', rng);
+      const result = assembleInstruments(['jazz'], rng);
       expect(result.vocalStyle).toBeDefined();
       expect(result.formatted).toContain('vocals');
     });
 
     it('formatted string is comma-separated', () => {
       const rng = createSeededRng(12345);
-      const result = assembleInstruments('rock', rng);
+      const result = assembleInstruments(['rock'], rng);
       expect(result.formatted).toContain(',');
     });
 
     it('produces deterministic output with same seed', () => {
       const rng1 = createSeededRng(42);
       const rng2 = createSeededRng(42);
-      const result1 = assembleInstruments('pop', rng1);
-      const result2 = assembleInstruments('pop', rng2);
+      const result1 = assembleInstruments(['pop'], rng1);
+      const result2 = assembleInstruments(['pop'], rng2);
       expect(result1.formatted).toBe(result2.formatted);
+    });
+
+    it('blends instruments from multiple genres', () => {
+      const rng = createSeededRng(12345);
+      const result = assembleInstruments(['jazz', 'rock'], rng);
+      expect(result.instruments).toBeDefined();
+      expect(result.instruments.length).toBeGreaterThan(0);
     });
   });
 
@@ -165,26 +172,26 @@ describe('deterministic-builder', () => {
   describe('assembleStyleTags', () => {
     it('returns tags array', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags('jazz', rng);
+      const result = assembleStyleTags(['jazz'], rng);
       expect(result.tags).toBeDefined();
       expect(result.tags.length).toBeGreaterThan(0);
     });
 
     it('limits tags to reasonable count', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags('jazz', rng);
+      const result = assembleStyleTags(['jazz'], rng);
       expect(result.tags.length).toBeLessThanOrEqual(6);
     });
 
     it('formatted string is comma-separated', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags('rock', rng);
+      const result = assembleStyleTags(['rock'], rng);
       expect(result.formatted).toContain(',');
     });
 
     it('tags are lowercase', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags('jazz', rng);
+      const result = assembleStyleTags(['jazz'], rng);
       for (const tag of result.tags) {
         expect(tag).toBe(tag.toLowerCase());
       }
@@ -192,8 +199,8 @@ describe('deterministic-builder', () => {
 
     it('includes genre-appropriate tags', () => {
       const rng = createSeededRng(42);
-      const jazzResult = assembleStyleTags('jazz', rng);
-      const electronicResult = assembleStyleTags('electronic', createSeededRng(42));
+      const jazzResult = assembleStyleTags(['jazz'], rng);
+      const electronicResult = assembleStyleTags(['electronic'], createSeededRng(42));
 
       // Jazz and electronic should have different style tags (different sources)
       expect(jazzResult.tags).toBeDefined();
@@ -354,6 +361,59 @@ describe('deterministic-builder', () => {
         expect(result.genre).toBeDefined();
         expect(result.genre).not.toBeNull();
         expect(['jazz', 'rock']).toContain(result.genre as string);
+      });
+
+      it('supports compound genreOverride like "jazz rock"', () => {
+        const result = buildDeterministicMaxPrompt({
+          description: 'some music',
+          genreOverride: 'jazz rock',
+          rng: createSeededRng(12345),
+        });
+        // Should use the full compound genre in output
+        expect(result.text).toContain('genre: "jazz rock"');
+        expect(result.metadata?.usedGenre).toBe('jazz rock');
+      });
+
+      it('supports comma-separated genres like "jazz, metal"', () => {
+        const result = buildDeterministicMaxPrompt({
+          description: 'some music',
+          genreOverride: 'jazz, metal',
+          rng: createSeededRng(12345),
+        });
+        // Should use the full compound genre in output
+        expect(result.text).toContain('genre: "jazz, metal"');
+        expect(result.metadata?.usedGenre).toBe('jazz, metal');
+      });
+
+      it('supports up to 4 genres', () => {
+        const result = buildDeterministicMaxPrompt({
+          description: 'some music',
+          genreOverride: 'jazz rock blues funk',
+          rng: createSeededRng(12345),
+        });
+        // Should use the full compound genre
+        expect(result.text).toContain('genre: "jazz rock blues funk"');
+        expect(result.metadata?.usedGenre).toBe('jazz rock blues funk');
+      });
+
+      it('blends BPM from multiple genres', () => {
+        const result = buildDeterministicMaxPrompt({
+          description: 'some music',
+          genreOverride: 'jazz rock',
+          rng: createSeededRng(12345),
+        });
+        // Should have a BPM range (blended from jazz and rock)
+        expect(result.text).toMatch(/bpm:\s*"between \d+ and \d+"/);
+      });
+
+      it('primaryGenre is first component for multi-genre', () => {
+        const result = buildDeterministicMaxPrompt({
+          description: 'some music',
+          genreOverride: 'jazz rock',
+          rng: createSeededRng(12345),
+        });
+        // Primary genre should be jazz (first component)
+        expect(result.genre).toBe('jazz');
       });
     });
 
