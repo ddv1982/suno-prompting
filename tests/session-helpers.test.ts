@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { buildFullPromptOriginalInput } from "../src/main-ui/lib/session-helpers";
+import { buildFullPromptOriginalInput } from "@/lib/session-helpers";
 
 describe("buildFullPromptOriginalInput", () => {
   test("returns description when only description provided", () => {

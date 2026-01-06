@@ -4,15 +4,17 @@
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
 import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
 import { articulateInstrument } from '@bun/prompt/articulations';
-import { APP_CONSTANTS } from '@shared/constants';
+import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { formatGenreLabels } from '@shared/labels';
+
+// Re-export DEFAULT_GENRE for backwards compatibility
+export { DEFAULT_GENRE } from '@shared/constants';
 
 // ============================================================================
 // Constants
 // ============================================================================
 
 export const DEFAULT_BPM = 90;
-export const DEFAULT_GENRE = 'ambient';
 export const DEFAULT_INSTRUMENTS_FALLBACK = 'ambient pad, subtle textures';
 
 // ============================================================================

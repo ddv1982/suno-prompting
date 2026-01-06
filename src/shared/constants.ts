@@ -28,6 +28,13 @@ export const CREATIVITY_LEVEL_DISPLAY_NAMES = {
 // Valid discrete slider positions for creativity level
 export const VALID_CREATIVITY_LEVELS = [0, 25, 50, 75, 100] as const;
 
+/**
+ * Default genre fallback used across the application.
+ * Pop is chosen because it's the most versatile/neutral genre
+ * that works well with any style or lyrics topic.
+ */
+export const DEFAULT_GENRE = 'pop' as const;
+
 export const APP_CONSTANTS = {
     MAX_PROMPT_CHARS: 1000,
     MIN_PROMPT_CHARS: 20,

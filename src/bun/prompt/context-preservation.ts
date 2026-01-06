@@ -14,7 +14,7 @@ import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genre-parser';
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
-import { APP_CONSTANTS } from '@shared/constants';
+import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { MAX_MODE_HEADER } from '@shared/max-format';
 
 import type { GenreType } from '@bun/instruments/genres';
@@ -42,7 +42,7 @@ export interface PreFormatContext {
  * Pre-formatted output for Max Mode prompts.
  */
 export interface PreFormattedMaxOutput {
-  /** Genre string (exact as detected or 'acoustic' fallback) */
+  /** Genre string (exact as detected or DEFAULT_GENRE fallback) */
   readonly genre: string;
   /** BPM range in format "between X and Y" */
   readonly bpm: string;
@@ -56,7 +56,7 @@ export interface PreFormattedMaxOutput {
  * Pre-formatted output for Standard Mode prompts.
  */
 export interface PreFormattedStandardOutput {
-  /** Genre string (exact as detected or 'acoustic' fallback) */
+  /** Genre string (exact as detected or DEFAULT_GENRE fallback) */
   readonly genre: string;
   /** BPM range in format "between X and Y" */
   readonly bpm: string;
@@ -67,7 +67,6 @@ export interface PreFormattedStandardOutput {
 }
 
 const DEFAULT_BPM_RANGE = 'between 90 and 130';
-const DEFAULT_GENRE = 'acoustic';
 const DEFAULT_MOOD = 'evocative, dynamic';
 
 /**

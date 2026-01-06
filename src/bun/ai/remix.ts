@@ -9,9 +9,11 @@ import {
 } from '@bun/instruments';
 import { MOOD_POOL } from '@bun/instruments/datasets';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
+import { selectInstrumentsForMultiGenre } from '@bun/prompt/genre-parser';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
+import { DEFAULT_GENRE } from '@shared/constants';
 
 import type { GenreType } from '@bun/instruments';
 
@@ -19,18 +21,35 @@ export type RemixResult = {
   text: string;
 };
 
-const DEFAULT_GENRE: GenreType = 'pop';
-
 /**
- * Extract and validate genre from prompt's genre field.
+ * Extract and validate the primary genre from prompt's genre field.
  * Returns a valid GenreType, falling back to 'pop' if not found or invalid.
- * This ensures type safety when used with genre-dependent functions.
+ * For multi-genre prompts, returns only the first genre.
+ * Use extractGenresFromPrompt for full multi-genre support.
  */
 export function extractGenreFromPrompt(prompt: string): GenreType {
   const match = prompt.match(/^genre:\s*"?([^"\n,]+)/mi);
   const extracted = match?.[1]?.trim().toLowerCase();
-  if (!extracted) return DEFAULT_GENRE;
-  return extracted in GENRE_REGISTRY ? (extracted as GenreType) : DEFAULT_GENRE;
+  if (!extracted) return DEFAULT_GENRE as GenreType;
+  return extracted in GENRE_REGISTRY ? (extracted as GenreType) : (DEFAULT_GENRE as GenreType);
+}
+
+/**
+ * Extract and validate all genres from prompt's genre field.
+ * Supports multi-genre prompts (e.g., "jazz, rock, pop, funk").
+ * Each genre is validated against GENRE_REGISTRY.
+ * Falls back to [DEFAULT_GENRE] if no valid genres found.
+ */
+export function extractGenresFromPrompt(prompt: string): GenreType[] {
+  const match = prompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/mi);
+  if (!match?.[1]) return [DEFAULT_GENRE as GenreType];
+  
+  const genres = match[1]
+    .split(',')
+    .map(g => g.trim().toLowerCase())
+    .filter((g): g is GenreType => g in GENRE_REGISTRY);
+  
+  return genres.length > 0 ? genres : [DEFAULT_GENRE as GenreType];
 }
 
 export function extractMoodFromPrompt(prompt: string): string {
@@ -55,10 +74,8 @@ export function injectStyleTags(prompt: string, genre: string): string {
  * Remix instruments in a prompt with new genre-appropriate instruments.
  *
  * This function is fully deterministic - no LLM calls are made.
- * Genre is extracted from the current prompt's genre field for reliability.
- * This aligns with how other remix functions work (remixStyleTags, remixRecording, etc.)
- * and ensures consistent behavior even when originalInput is empty or doesn't contain
- * genre keywords.
+ * Genres are extracted from the current prompt's genre field.
+ * Supports multi-genre prompts - uses blended instrument selection when multiple genres.
  *
  * @param currentPrompt - The current prompt to modify
  * @param _originalInput - Kept for API compatibility, no longer used for genre detection
@@ -68,17 +85,20 @@ export function remixInstruments(
   currentPrompt: string,
   _originalInput: string
 ): RemixResult {
-  const genre = extractGenreFromPrompt(currentPrompt);
+  const genres = extractGenresFromPrompt(currentPrompt);
+  const primaryGenre = genres[0] ?? (DEFAULT_GENRE as GenreType);
 
-  // 1. New instruments
-  const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });
+  // 1. New instruments - blend from multiple genres when present
+  const instruments = genres.length > 1
+    ? selectInstrumentsForMultiGenre(genres, Math.random, 4)
+    : selectInstrumentsForGenre(primaryGenre, { maxTags: 4 });
 
-  // 2. New chord progression for this genre
-  const progression = getRandomProgressionForGenre(genre);
+  // 2. New chord progression for primary genre
+  const progression = getRandomProgressionForGenre(primaryGenre);
   const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
 
-  // 3. New vocal style for this genre
-  const { range, delivery, technique } = getVocalSuggestionsForGenre(genre);
+  // 3. New vocal style for primary genre
+  const { range, delivery, technique } = getVocalSuggestionsForGenre(primaryGenre);
   const vocalTags = [
     `${range.toLowerCase()} vocals`,
     `${delivery.toLowerCase()} delivery`,

@@ -293,7 +293,7 @@ describe('convertToNonMaxFormat', () => {
       'unique experimental sounds',
       mockGetModel
     );
-    expect(result.convertedPrompt).toContain('Genre: ambient');
+    expect(result.convertedPrompt).toContain('Genre: pop');
   });
 
   it('calls AI to generate section content', async () => {

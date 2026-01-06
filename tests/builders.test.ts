@@ -168,9 +168,9 @@ describe('builders', () => {
       expect(result).toContain('DETECTED CONTEXT');
     });
 
-    it('uses acoustic as default genre', () => {
+    it('uses pop as default genre', () => {
       const result = buildMaxModeContextualPrompt('test', createEmptySelection());
-      expect(result).toContain('Genre: acoustic');
+      expect(result).toContain('Genre: pop');
     });
 
     it('includes genre-specific info when genre detected', () => {

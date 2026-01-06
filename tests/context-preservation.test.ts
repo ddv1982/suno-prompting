@@ -23,7 +23,8 @@ describe('buildPreFormattedMaxOutput', () => {
         detectedGenre: '',
         userInstruments: [],
       });
-      expect(result.bpm).toBe('between 90 and 130');
+      // Pop is the default genre, which has BPM range 100-130
+      expect(result.bpm).toBe('between 100 and 130');
     });
   });
 
@@ -95,12 +96,12 @@ describe('buildPreFormattedMaxOutput', () => {
       expect(result.genre).toBe('acid jazz');
     });
 
-    test('uses acoustic as default for empty genre', () => {
+    test('uses pop as default for empty genre', () => {
       const result = buildPreFormattedMaxOutput({
         detectedGenre: '',
         userInstruments: [],
       });
-      expect(result.genre).toBe('acoustic');
+      expect(result.genre).toBe('pop');
     });
 
     test('handles multi-genre string', () => {

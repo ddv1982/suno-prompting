@@ -3,19 +3,13 @@ import { generateText, type LanguageModel } from 'ai';
 import { GENRE_REGISTRY } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
 import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
-import { APP_CONSTANTS } from '@shared/constants';
+import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
 
 const log = createLogger('ContentGenerator');
 
 /** All available genre keys from the registry */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as Array<keyof typeof GENRE_REGISTRY>;
-
-/**
- * Default fallback genre when LLM detection fails or returns invalid result.
- * Pop is chosen because it's genre-neutral and works well with any lyrics topic.
- */
-const DEFAULT_FALLBACK_GENRE = 'pop';
 
 export type ContentDebugInfo = {
   systemPrompt: string;
@@ -154,14 +148,14 @@ Which genre fits best? Return only the genre key.`;
 
     log.warn('detectGenreFromTopic:invalid_genre', { lyricsTopic, returned: genre });
     return {
-      genre: DEFAULT_FALLBACK_GENRE,
-      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_FALLBACK_GENRE} (fallback from invalid: ${genre})` },
+      genre: DEFAULT_GENRE,
+      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_GENRE} (fallback from invalid: ${genre})` },
     };
   } catch (error) {
     log.warn('detectGenreFromTopic:failed', { error: getErrorMessage(error) });
     return {
-      genre: DEFAULT_FALLBACK_GENRE,
-      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_FALLBACK_GENRE} (fallback from error)` },
+      genre: DEFAULT_GENRE,
+      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_GENRE} (fallback from error)` },
     };
   }
 }

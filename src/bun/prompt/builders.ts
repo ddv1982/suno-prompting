@@ -11,7 +11,7 @@ import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genre-parser';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
-import { APP_CONSTANTS } from '@shared/constants';
+import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 
 import type { ModeSelection } from '@bun/instruments/selection';
 import type { PreFormattedMaxOutput, PreFormattedStandardOutput } from '@bun/prompt/context-preservation';
@@ -297,7 +297,7 @@ export function buildMaxModeContextualPrompt(
   performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
 ): string {
   const { found: userInstruments } = extractInstruments(description);
-  const detectedGenre = selection.genre || 'acoustic';
+  const detectedGenre = selection.genre || DEFAULT_GENRE;
 
   const parts = buildSongConceptParts(`USER'S SONG CONCEPT:`, description, lyricsTopic);
 

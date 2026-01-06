@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 
-import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '../src/bun/prompt/remix';
+import { extractGenreFromPrompt, extractGenresFromPrompt } from '@bun/ai/remix';
+import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 
 describe('replaceFieldLine', () => {
   describe('Genre replacement', () => {
@@ -97,5 +98,69 @@ describe('replaceRecordingLine', () => {
     const prompt = 'genre: "jazz"\nmood: "smooth"';
     const result = replaceRecordingLine(prompt, 'live concert');
     expect(result).toBe(prompt);
+  });
+});
+
+describe('extractGenreFromPrompt (single)', () => {
+  it('extracts single genre from max mode format', () => {
+    const prompt = 'genre: "jazz"\nmood: "smooth"';
+    expect(extractGenreFromPrompt(prompt)).toBe('jazz');
+  });
+
+  it('extracts first genre from multi-genre prompt', () => {
+    const prompt = 'genre: "jazz, rock, pop, funk"\nmood: "energetic"';
+    expect(extractGenreFromPrompt(prompt)).toBe('jazz');
+  });
+
+  it('returns default genre when no genre line found', () => {
+    const prompt = 'mood: "smooth"\ninstruments: "piano"';
+    expect(extractGenreFromPrompt(prompt)).toBe('pop');
+  });
+
+  it('returns default genre for invalid genre', () => {
+    const prompt = 'genre: "not-a-real-genre"\nmood: "smooth"';
+    expect(extractGenreFromPrompt(prompt)).toBe('pop');
+  });
+});
+
+describe('extractGenresFromPrompt (multi)', () => {
+  it('extracts single genre as array', () => {
+    const prompt = 'genre: "jazz"\nmood: "smooth"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['jazz']);
+  });
+
+  it('extracts all valid genres from multi-genre prompt', () => {
+    const prompt = 'genre: "jazz, rock, pop, funk"\nmood: "energetic"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['jazz', 'rock', 'pop', 'funk']);
+  });
+
+  it('extracts genres from standard mode format', () => {
+    const prompt = 'Genre: jazz, rock\nMood: smooth';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['jazz', 'rock']);
+  });
+
+  it('filters out invalid genres', () => {
+    const prompt = 'genre: "jazz, invalid-genre, rock"\nmood: "smooth"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['jazz', 'rock']);
+  });
+
+  it('returns default genre array when no valid genres', () => {
+    const prompt = 'genre: "not-valid, also-invalid"\nmood: "smooth"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['pop']);
+  });
+
+  it('returns default genre array when no genre line', () => {
+    const prompt = 'mood: "smooth"\ninstruments: "piano"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['pop']);
+  });
+
+  it('handles whitespace in genre list', () => {
+    const prompt = 'genre: "  jazz  ,  rock  ,  pop  "\nmood: "smooth"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['jazz', 'rock', 'pop']);
+  });
+
+  it('preserves order of genres', () => {
+    const prompt = 'genre: "funk, soul, rnb, jazz"\nmood: "groovy"';
+    expect(extractGenresFromPrompt(prompt)).toEqual(['funk', 'soul', 'rnb', 'jazz']);
   });
 });

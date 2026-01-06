@@ -579,8 +579,8 @@ Instruments: piano, violin`;
     const result = await convertToMaxFormat(noGenrePrompt, mockGetModel);
 
     expect(result.wasConverted).toBe(true);
-    // Should default to "ambient" when no genre detected
-    expect(result.convertedPrompt).toContain('genre: "ambient"');
+    // Should default to "pop" when no genre detected
+    expect(result.convertedPrompt).toContain('genre: "pop"');
   });
 
   it('handles AI returning malformed JSON gracefully', async () => {
