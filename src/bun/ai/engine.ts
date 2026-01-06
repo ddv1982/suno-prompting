@@ -193,11 +193,14 @@ export class AIEngine {
   ): Promise<GenerationResult> {
     const isLyricsMode = this.config.isLyricsMode();
     let resolvedGenreOverride = genreOverride;
+    let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
 
     // 1. Detect genre from lyrics topic if no genre selected and lyrics mode is ON
     if (isLyricsMode && !genreOverride && lyricsTopic?.trim()) {
-      resolvedGenreOverride = await detectGenreFromTopic(lyricsTopic.trim(), this.getModel);
-      log.info('generateInitial:genreFromTopic', { lyricsTopic, detectedGenre: resolvedGenreOverride });
+      const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), this.getModel);
+      resolvedGenreOverride = genreResult.genre;
+      genreDetectionDebugInfo = genreResult.debugInfo;
+      log.info('generateInitial:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre });
     }
 
     // 2. Deterministic prompt generation (no LLM)
@@ -259,6 +262,7 @@ export class AIEngine {
           timestamp: nowISO(),
           requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
           responseBody: promptText,
+          genreDetection: genreDetectionDebugInfo,
           titleGeneration: titleDebugInfo,
           lyricsGeneration: lyricsDebugInfo,
         }

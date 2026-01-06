@@ -32,6 +32,16 @@ export type LyricsResult = {
   debugInfo: ContentDebugInfo;
 };
 
+/**
+ * Result from LLM-based genre detection.
+ * Includes debug info to show the prompts used in the debug drawer,
+ * allowing users to see how genre was inferred from their lyrics topic.
+ */
+export type GenreDetectionResult = {
+  genre: string;
+  debugInfo: ContentDebugInfo & { detectedGenre: string };
+};
+
 export async function generateTitle(
   description: string,
   genre: string,
@@ -95,12 +105,12 @@ export async function generateLyrics(
  *
  * @param lyricsTopic - The user's lyrics topic/theme
  * @param getModel - Function to get the language model
- * @returns A genre key from GENRE_REGISTRY, or DEFAULT_FALLBACK_GENRE on error
+ * @returns Genre key and debug info with prompts used for detection
  */
 export async function detectGenreFromTopic(
   lyricsTopic: string,
   getModel: () => LanguageModel
-): Promise<string> {
+): Promise<GenreDetectionResult> {
   // Build genre list with descriptions for LLM context
   const genreDescriptions = ALL_GENRE_KEYS.map((key) => {
     const genre = GENRE_REGISTRY[key];
@@ -136,13 +146,22 @@ Which genre fits best? Return only the genre key.`;
     // Validate the returned genre exists in registry
     if (ALL_GENRE_KEYS.includes(genre as keyof typeof GENRE_REGISTRY)) {
       log.info('detectGenreFromTopic:success', { lyricsTopic, genre });
-      return genre;
+      return {
+        genre,
+        debugInfo: { systemPrompt, userPrompt, detectedGenre: genre },
+      };
     }
 
     log.warn('detectGenreFromTopic:invalid_genre', { lyricsTopic, returned: genre });
-    return DEFAULT_FALLBACK_GENRE;
+    return {
+      genre: DEFAULT_FALLBACK_GENRE,
+      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_FALLBACK_GENRE} (fallback from invalid: ${genre})` },
+    };
   } catch (error) {
     log.warn('detectGenreFromTopic:failed', { error: getErrorMessage(error) });
-    return DEFAULT_FALLBACK_GENRE;
+    return {
+      genre: DEFAULT_FALLBACK_GENRE,
+      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_FALLBACK_GENRE} (fallback from error)` },
+    };
   }
 }

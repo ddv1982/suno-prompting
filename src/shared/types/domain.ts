@@ -121,6 +121,11 @@ export type DebugInfo = {
     userPrompt?: string;
     timestamp?: string;
   };
+  genreDetection?: {
+    systemPrompt: string;
+    userPrompt: string;
+    detectedGenre: string;
+  };
 };
 
 /** Options for prompt format conversion with performance guidance */

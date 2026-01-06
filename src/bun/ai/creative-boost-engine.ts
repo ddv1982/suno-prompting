@@ -348,12 +348,14 @@ export async function generateCreativeBoost(
   // Map creativity slider to level and select genre deterministically
   const level = mapSliderToLevel(creativityLevel);
   let resolvedSeedGenres = seedGenres;
+  let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
 
   // Detect genre from lyrics topic if no seed genres and lyrics mode is ON
   if (withLyrics && seedGenres.length === 0 && lyricsTopic?.trim()) {
-    const detectedGenre = await detectGenreFromTopic(lyricsTopic.trim(), config.getModel);
-    resolvedSeedGenres = [detectedGenre];
-    log.info('generateCreativeBoost:genreFromTopic', { lyricsTopic, detectedGenre });
+    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), config.getModel);
+    resolvedSeedGenres = [genreResult.genre];
+    genreDetectionDebugInfo = genreResult.debugInfo;
+    log.info('generateCreativeBoost:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre });
   }
 
   const selectedGenre = selectGenreForLevel(level, resolvedSeedGenres, Math.random);
@@ -426,6 +428,7 @@ export async function generateCreativeBoost(
   const debugInfo = baseDebugInfo
     ? {
         ...baseDebugInfo,
+        genreDetection: genreDetectionDebugInfo,
         titleGeneration: titleDebugInfo,
         lyricsGeneration: lyricsDebugInfo,
       }
