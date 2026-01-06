@@ -41,6 +41,28 @@ const log = createLogger('AIEngine');
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
+/**
+ * Options for generating an initial prompt
+ */
+export interface GenerateInitialOptions {
+  description: string;
+  lockedPhrase?: string;
+  lyricsTopic?: string;
+  genreOverride?: string;
+}
+
+/**
+ * Options for refining a prompt
+ */
+export interface RefinePromptOptions {
+  currentPrompt: string;
+  currentTitle: string;
+  feedback: string;
+  currentLyrics?: string;
+  lockedPhrase?: string;
+  lyricsTopic?: string;
+}
+
 
 
 export class AIEngine {
@@ -179,18 +201,16 @@ export class AIEngine {
    * 3. generateTitle() - LLM (lyrics ON) or deterministic (lyrics OFF)
    * 4. generateLyrics() - LLM-based lyrics generation (if lyrics mode enabled)
    *
-   * @param description - User's song description
-   * @param lockedPhrase - Optional phrase to inject into prompt
-   * @param lyricsTopic - Optional topic for lyrics generation
-   * @param genreOverride - Optional genre override from Advanced Mode
+   * @param options - Options for generating initial prompt
+   * @param options.description - User's song description
+   * @param options.lockedPhrase - Optional phrase to inject into prompt
+   * @param options.lyricsTopic - Optional topic for lyrics generation
+   * @param options.genreOverride - Optional genre override from Advanced Mode
    * @returns Generated prompt, title, and optionally lyrics
    */
-  async generateInitial(
-    description: string,
-    lockedPhrase?: string,
-    lyricsTopic?: string,
-    genreOverride?: string
-  ): Promise<GenerationResult> {
+  async generateInitial(options: GenerateInitialOptions): Promise<GenerationResult> {
+    const { description, lockedPhrase, lyricsTopic, genreOverride } = options;
+
     const isLyricsMode = this.config.isLyricsMode();
     let resolvedGenreOverride = genreOverride;
     let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
@@ -276,16 +296,16 @@ export class AIEngine {
     };
   }
 
-  async refinePrompt(
-    currentPrompt: string,
-    feedback: string,
-    lockedPhrase?: string,
-    currentTitle?: string,
-    currentLyrics?: string,
-    lyricsTopic?: string,
-    // genreOverride unused in refinement - genre already embedded in currentPrompt
-    _genreOverride?: string
-  ): Promise<GenerationResult> {
+  async refinePrompt(options: RefinePromptOptions): Promise<GenerationResult> {
+    const {
+      currentPrompt,
+      currentTitle,
+      feedback,
+      currentLyrics,
+      lockedPhrase,
+      lyricsTopic,
+    } = options;
+
     const promptForLLM = lockedPhrase
       ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
       : currentPrompt;
@@ -469,16 +489,22 @@ export class AIEngine {
     maxMode: boolean,
     withLyrics: boolean
   ): Promise<GenerationResult> {
-    return generateCreativeBoostImpl(
-      creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-      withWordlessVocals, maxMode, withLyrics,
-      {
+    return generateCreativeBoostImpl({
+      creativityLevel,
+      seedGenres,
+      sunoStyles,
+      description,
+      lyricsTopic,
+      withWordlessVocals,
+      maxMode,
+      withLyrics,
+      config: {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfo.bind(this),
         getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
-      }
-    );
+      },
+    });
   }
 
   async refineCreativeBoost(
@@ -493,15 +519,23 @@ export class AIEngine {
     maxMode: boolean,
     withLyrics: boolean
   ): Promise<GenerationResult> {
-    return refineCreativeBoostImpl(
-      currentPrompt, currentTitle, feedback, lyricsTopic, description,
-      seedGenres, sunoStyles, withWordlessVocals, maxMode, withLyrics,
-      {
+    return refineCreativeBoostImpl({
+      currentPrompt,
+      currentTitle,
+      feedback,
+      lyricsTopic,
+      description,
+      seedGenres,
+      sunoStyles,
+      withWordlessVocals,
+      maxMode,
+      withLyrics,
+      config: {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfo.bind(this),
         getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
-      }
-    );
+      },
+    });
   }
 }

@@ -33,7 +33,12 @@ describe("RPC Handlers", () => {
         expect(result.versionId).toBeDefined();
         expect(result.validation).toBeDefined();
         expect(result.validation.isValid).toBe(true);
-        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith("Test description", undefined, undefined, undefined);
+        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith({
+            description: "Test description",
+            lockedPhrase: undefined,
+            lyricsTopic: undefined,
+            genreOverride: undefined
+        });
     });
 
     test("refinePrompt should call aiEngine with feedback", async () => {
@@ -56,7 +61,14 @@ describe("RPC Handlers", () => {
         const result = await handlers.refinePrompt({ currentPrompt: "Old prompt", feedback: "Make it louder" });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith("Old prompt", "Make it louder", undefined, undefined, undefined, undefined, undefined);
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith({
+            currentPrompt: "Old prompt",
+            currentTitle: "Untitled",
+            feedback: "Make it louder",
+            currentLyrics: undefined,
+            lockedPhrase: undefined,
+            lyricsTopic: undefined
+        });
     });
 
     test("refinePrompt should pass currentTitle and currentLyrics to aiEngine", async () => {
@@ -91,15 +103,14 @@ describe("RPC Handlers", () => {
         expect(result.prompt).toBe("Refined Prompt");
         expect(result.title).toBe("Refined Title");
         expect(result.lyrics).toBe("[VERSE]\nRefined lyrics");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
-            "Old prompt", 
-            "Make it louder", 
-            undefined, 
-            "Old Title", 
-            "[VERSE]\nOld lyrics",
-            undefined,
-            undefined
-        );
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith({
+            currentPrompt: "Old prompt",
+            currentTitle: "Old Title",
+            feedback: "Make it louder",
+            currentLyrics: "[VERSE]\nOld lyrics",
+            lockedPhrase: undefined,
+            lyricsTopic: undefined
+        });
     });
 
     test("refinePrompt should pass lyricsTopic to aiEngine", async () => {
@@ -143,15 +154,14 @@ describe("RPC Handlers", () => {
         });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
-            "Old prompt", 
-            "Make the lyrics more emotional", 
-            undefined, 
-            "Old Title", 
-            "[VERSE]\nOld lyrics",
-            "A story about lost love",
-            undefined
-        );
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith({
+            currentPrompt: "Old prompt",
+            currentTitle: "Old Title",
+            feedback: "Make the lyrics more emotional",
+            currentLyrics: "[VERSE]\nOld lyrics",
+            lockedPhrase: undefined,
+            lyricsTopic: "A story about lost love"
+        });
     });
 
     test("refinePrompt should return title from aiEngine response", async () => {

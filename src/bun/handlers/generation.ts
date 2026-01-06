@@ -35,13 +35,20 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
     generateInitial: async (params) => {
       const { description, lockedPhrase, lyricsTopic, genreOverride } = validate(GenerateInitialSchema, params);
       return runAndValidate('generateInitial', { description, genreOverride }, () =>
-        aiEngine.generateInitial(description, lockedPhrase, lyricsTopic, genreOverride)
+        aiEngine.generateInitial({ description, lockedPhrase, lyricsTopic, genreOverride })
       );
     },
     refinePrompt: async (params) => {
-      const { currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride } = validate(RefinePromptSchema, params);
-      return runAndValidate('refinePrompt', { feedback, genreOverride }, () =>
-        aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride)
+      const { currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic } = validate(RefinePromptSchema, params);
+      return runAndValidate('refinePrompt', { feedback }, () =>
+        aiEngine.refinePrompt({
+          currentPrompt,
+          currentTitle: currentTitle ?? 'Untitled',
+          feedback,
+          currentLyrics,
+          lockedPhrase,
+          lyricsTopic,
+        })
       );
     },
   };

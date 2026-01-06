@@ -41,6 +41,38 @@ const DEFAULT_LYRICS_TOPIC = 'creative expression';
 export type CreativeBoostEngineConfig = EngineConfig;
 
 /**
+ * Options for generating a creative boost prompt
+ */
+export interface GenerateCreativeBoostOptions {
+  creativityLevel: number;
+  seedGenres: string[];
+  sunoStyles: string[];
+  description: string;
+  lyricsTopic: string;
+  withWordlessVocals: boolean;
+  maxMode: boolean;
+  withLyrics: boolean;
+  config: CreativeBoostEngineConfig;
+}
+
+/**
+ * Options for refining a creative boost prompt
+ */
+export interface RefineCreativeBoostOptions {
+  currentPrompt: string;
+  currentTitle: string;
+  feedback: string;
+  lyricsTopic: string;
+  description: string;
+  seedGenres: string[];
+  sunoStyles: string[];
+  withWordlessVocals: boolean;
+  maxMode: boolean;
+  withLyrics: boolean;
+  config: CreativeBoostEngineConfig;
+}
+
+/**
  * Applies max or non-max mode conversion to style output.
  */
 async function applyMaxModeConversion(
@@ -322,16 +354,20 @@ async function refineDirectMode(
 }
 
 export async function generateCreativeBoost(
-  creativityLevel: number,
-  seedGenres: string[],
-  sunoStyles: string[],
-  description: string,
-  lyricsTopic: string,
-  withWordlessVocals: boolean,
-  maxMode: boolean,
-  withLyrics: boolean,
-  config: CreativeBoostEngineConfig
+  options: GenerateCreativeBoostOptions
 ): Promise<GenerationResult> {
+  const {
+    creativityLevel,
+    seedGenres,
+    sunoStyles,
+    description,
+    lyricsTopic,
+    withWordlessVocals,
+    maxMode,
+    withLyrics,
+    config,
+  } = options;
+
   // Direct Mode: When Suno V5 Styles are selected, output them exactly as-is
   if (isDirectMode(sunoStyles)) {
     return generateDirectMode(
@@ -443,18 +479,22 @@ export async function generateCreativeBoost(
 }
 
 export async function refineCreativeBoost(
-  currentPrompt: string,
-  currentTitle: string,
-  feedback: string,
-  lyricsTopic: string,
-  description: string,
-  seedGenres: string[],
-  sunoStyles: string[],
-  withWordlessVocals: boolean,
-  maxMode: boolean,
-  withLyrics: boolean,
-  config: CreativeBoostEngineConfig
+  options: RefineCreativeBoostOptions
 ): Promise<GenerationResult> {
+  const {
+    currentPrompt,
+    currentTitle,
+    feedback,
+    lyricsTopic,
+    description,
+    seedGenres,
+    sunoStyles,
+    withWordlessVocals,
+    maxMode,
+    withLyrics,
+    config,
+  } = options;
+
   // Direct Mode: Apply new styles and optionally refine title/lyrics
   if (isDirectMode(sunoStyles)) {
     return refineDirectMode({

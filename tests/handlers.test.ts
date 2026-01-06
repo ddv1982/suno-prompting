@@ -113,15 +113,14 @@ describe("RPC Handlers", () => {
         genreOverride: "jazz",
       });
 
-      expect(aiEngine.refinePrompt).toHaveBeenCalledWith(
-        "Current prompt",
-        "Make it happier",
-        "locked",
-        "Old Title",
-        "Old lyrics",
-        "topic",
-        "jazz"
-      );
+      expect(aiEngine.refinePrompt).toHaveBeenCalledWith({
+        currentPrompt: "Current prompt",
+        currentTitle: "Old Title",
+        feedback: "Make it happier",
+        currentLyrics: "Old lyrics",
+        lockedPhrase: "locked",
+        lyricsTopic: "topic",
+      });
     });
   });
 
