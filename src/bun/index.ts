@@ -8,50 +8,6 @@ import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
 
-// Set up application menu for keyboard shortcuts (Cmd+C/Ctrl+C, Cmd+V/Ctrl+V, etc.)
-// Explicit menu definition ensures keyboard shortcuts are properly bound on all platforms
-// Note: accelerator property is required for shortcuts to work (see Electrobun GitHub issue #28)
-ApplicationMenu.setApplicationMenu([
-    // App Menu - label required for packaged builds
-    {
-        label: "Suno Prompting App",
-        submenu: [
-            { role: "hide", accelerator: "h" },
-            { role: "hideOthers" },
-            { role: "showAll" },
-            { type: "separator" },
-            { label: "Quit", role: "quit", accelerator: "q" },
-        ],
-    },
-    // Edit Menu
-    {
-        label: "Edit",
-        submenu: [
-            { role: "undo", accelerator: "z" },
-            { role: "redo", accelerator: "Z" },
-            { type: "separator" },
-            { role: "cut", accelerator: "x" },
-            { role: "copy", accelerator: "c" },
-            { role: "paste", accelerator: "v" },
-            { role: "pasteAndMatchStyle", accelerator: "V" },
-            { role: "delete" },
-            { type: "separator" },
-            { role: "selectAll", accelerator: "a" },
-        ],
-    },
-    // Window Menu
-    {
-        label: "Window",
-        submenu: [
-            { role: "minimize", accelerator: "m" },
-            { role: "zoom" },
-            { type: "separator" },
-            { role: "close", accelerator: "w" },
-            { role: "bringAllToFront" },
-        ],
-    },
-]);
-
 const aiEngine = new AIEngine();
 const storage = new StorageManager();
 
@@ -119,6 +75,49 @@ async function initializeApp(): Promise<void> {
             y: 200,
         }
     });
+
+    // Set up application menu AFTER window creation (required for packaged builds)
+    // Note: accelerator property is required for shortcuts to work (see Electrobun GitHub issue #28)
+    ApplicationMenu.setApplicationMenu([
+        // App Menu - label required for packaged builds
+        {
+            label: "Suno Prompting App",
+            submenu: [
+                { role: "hide", accelerator: "h" },
+                { role: "hideOthers" },
+                { role: "showAll" },
+                { type: "separator" },
+                { label: "Quit", role: "quit", accelerator: "q" },
+            ],
+        },
+        // Edit Menu
+        {
+            label: "Edit",
+            submenu: [
+                { role: "undo", accelerator: "z" },
+                { role: "redo", accelerator: "Z" },
+                { type: "separator" },
+                { role: "cut", accelerator: "x" },
+                { role: "copy", accelerator: "c" },
+                { role: "paste", accelerator: "v" },
+                { role: "pasteAndMatchStyle", accelerator: "V" },
+                { role: "delete" },
+                { type: "separator" },
+                { role: "selectAll", accelerator: "a" },
+            ],
+        },
+        // Window Menu
+        {
+            label: "Window",
+            submenu: [
+                { role: "minimize", accelerator: "m" },
+                { role: "zoom" },
+                { type: "separator" },
+                { role: "close", accelerator: "w" },
+                { role: "bringAllToFront" },
+            ],
+        },
+    ]);
 }
 
 initializeApp().catch((error: unknown) => {
