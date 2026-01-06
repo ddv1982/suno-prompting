@@ -18,9 +18,11 @@ import { selectModes } from '@bun/instruments/selection';
 import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
-  selectRandomGenre,
+  _testHelpers,
 } from '@bun/prompt/deterministic-builder';
 import { APP_CONSTANTS } from '@shared/constants';
+
+const { selectRandomGenre } = _testHelpers;
 
 // =============================================================================
 // Test Utilities

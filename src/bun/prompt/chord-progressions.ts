@@ -11,7 +11,7 @@ export type ChordProgression = {
 };
 
 // Pop Essentials
-export const POP_PROGRESSIONS: Record<string, ChordProgression> = {
+const POP_PROGRESSIONS: Record<string, ChordProgression> = {
   the_standard: {
     name: 'The Standard',
     pattern: 'I-V-vi-IV',
@@ -95,7 +95,7 @@ export const POP_PROGRESSIONS: Record<string, ChordProgression> = {
 };
 
 // Dark & Cinematic
-export const DARK_PROGRESSIONS: Record<string, ChordProgression> = {
+const DARK_PROGRESSIONS: Record<string, ChordProgression> = {
   the_andalusian: {
     name: 'The Andalusian',
     pattern: 'i-VII-VI-V',
@@ -163,7 +163,7 @@ export const DARK_PROGRESSIONS: Record<string, ChordProgression> = {
 };
 
 // Jazz & Soul
-export const JAZZ_PROGRESSIONS: Record<string, ChordProgression> = {
+const JAZZ_PROGRESSIONS: Record<string, ChordProgression> = {
   the_two_five_one: {
     name: 'The 2-5-1',
     pattern: 'ii-V-I',
@@ -386,3 +386,14 @@ export function injectChordProgression(
 
   return prompt;
 }
+
+/**
+ * @internal
+ * Test helpers for unit testing internal constants.
+ * Do not use in production code.
+ */
+export const _testHelpers = {
+  POP_PROGRESSIONS,
+  DARK_PROGRESSIONS,
+  JAZZ_PROGRESSIONS,
+} as const;

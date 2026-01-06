@@ -413,6 +413,9 @@
       max-width: 96rem;
     }
   }
+  .m-0 {
+    margin: calc(var(--spacing) * 0);
+  }
   .container {
     margin-inline: auto;
     padding-inline: var(--grid-margin-sm);
@@ -1368,6 +1371,12 @@
   .bg-muted-foreground {
     background-color: var(--color-muted-foreground);
   }
+  .bg-muted\/10 {
+    background-color: var(--color-muted);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-muted) 10%, transparent);
+    }
+  }
   .bg-muted\/20 {
     background-color: var(--color-muted);
     @supports (color: color-mix(in lab, red, red)) {
@@ -1533,6 +1542,9 @@
   .py-0\.5 {
     padding-block: calc(var(--spacing) * 0.5);
   }
+  .py-1\.5 {
+    padding-block: calc(var(--spacing) * 1.5);
+  }
   .py-2 {
     padding-block: calc(var(--spacing) * 2);
   }
@@ -1586,6 +1598,9 @@
   }
   .pr-\[var\(--space-8\)\] {
     padding-right: var(--space-8);
+  }
+  .pb-3 {
+    padding-bottom: calc(var(--spacing) * 3);
   }
   .pb-\[var\(--space-2\)\] {
     padding-bottom: var(--space-2);
@@ -2346,6 +2361,16 @@
         background-color: var(--color-foreground);
         @supports (color: color-mix(in lab, red, red)) {
           background-color: color-mix(in oklab, var(--color-foreground) 10%, transparent);
+        }
+      }
+    }
+  }
+  .hover\:bg-muted\/20 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-muted);
+        @supports (color: color-mix(in lab, red, red)) {
+          background-color: color-mix(in oklab, var(--color-muted) 20%, transparent);
         }
       }
     }

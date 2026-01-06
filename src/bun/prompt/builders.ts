@@ -122,6 +122,10 @@ STRICT CONSTRAINTS:
 - Output ONLY the prompt itself - no explanations or extra text.`;
 }
 
+/**
+ * @internal
+ * Used for refinement context - not part of public API
+ */
 export function buildContextualPrompt(
   description: string,
   selection: ModeSelection,
@@ -255,7 +259,10 @@ STRICT CONSTRAINTS:
 - Every line must follow the format shown above`;
 }
 
-// Max Mode contextual prompt builder
+/**
+ * @internal
+ * Used for refinement context - not part of public API
+ */
 export function buildMaxModeContextualPrompt(
   description: string,
   selection: ModeSelection,

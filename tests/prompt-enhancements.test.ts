@@ -9,9 +9,6 @@ import {
   type InstrumentCategory,
 } from '@bun/prompt/articulations';
 import {
-  POP_PROGRESSIONS,
-  DARK_PROGRESSIONS,
-  JAZZ_PROGRESSIONS,
   ALL_PROGRESSIONS,
   GENRE_PROGRESSIONS,
   getProgressionsForGenre,
@@ -19,6 +16,7 @@ import {
   buildProgressionDescriptor,
   buildProgressionShort,
   detectProgression,
+  _testHelpers as chordTestHelpers,
 } from '@bun/prompt/chord-progressions';
 import {
   REVERB_TYPES,
@@ -38,6 +36,12 @@ import {
   DEFAULT_BACKING_VOCALS,
   getBackingVocalsForGenre,
 } from '@bun/prompt/vocal-descriptors';
+
+const {
+  POP_PROGRESSIONS,
+  DARK_PROGRESSIONS,
+  JAZZ_PROGRESSIONS,
+} = chordTestHelpers;
 
 // Test categories
 const ARTICULATION_CATEGORIES: InstrumentCategory[] = [

@@ -162,7 +162,7 @@ function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): string {
  * detectGenreKeywordsOnly('smooth jazz night') // returns 'jazz'
  * detectGenreKeywordsOnly('something cool') // returns null
  */
-export function detectGenreKeywordsOnly(description: string): GenreType | null {
+function detectGenreKeywordsOnly(description: string): GenreType | null {
   if (!description || typeof description !== 'string') {
     return null;
   }
@@ -179,7 +179,7 @@ export function detectGenreKeywordsOnly(description: string): GenreType | null {
  * @example
  * selectRandomGenre(Math.random) // returns e.g. 'jazz'
  */
-export function selectRandomGenre(rng: () => number = Math.random): GenreType {
+function selectRandomGenre(rng: () => number = Math.random): GenreType {
   const idx = Math.floor(rng() * ALL_GENRE_KEYS.length);
   return ALL_GENRE_KEYS[idx] ?? 'pop';
 }
@@ -270,7 +270,7 @@ function resolveGenre(
  * @example
  * parseMultiGenre('jazz, rock fusion') // returns 'jazz'
  */
-export function parseMultiGenre(description: string): GenreType | null {
+function parseMultiGenre(description: string): GenreType | null {
   if (!description) return null;
 
   // Split by comma and try each part
@@ -304,7 +304,7 @@ export function parseMultiGenre(description: string): GenreType | null {
  * assembleInstruments(['jazz', 'rock'], Math.random)
  * // Blends instruments from both jazz and rock pools
  */
-export function assembleInstruments(
+function assembleInstruments(
   components: GenreType[],
   rng: () => number = Math.random
 ): { instruments: readonly string[]; formatted: string; chordProgression: string; vocalStyle: string } {
@@ -387,7 +387,7 @@ function selectMoodsForGenre(
  * assembleStyleTags(['jazz', 'rock'], Math.random)
  * // Blends moods and production from both genres
  */
-export function assembleStyleTags(
+function assembleStyleTags(
   components: GenreType[],
   rng: () => number = Math.random
 ): { tags: readonly string[]; formatted: string } {
@@ -467,7 +467,7 @@ export function assembleStyleTags(
  * selectRecordingContext(Math.random)
  * // "late night studio session vibe, analog four-track warmth"
  */
-export function selectRecordingContext(
+function selectRecordingContext(
   rng: () => number = Math.random,
   count: number = 2
 ): string {
@@ -511,7 +511,7 @@ function getBpmRangeForGenre(genreString: string): string {
  * @example
  * selectMusicalKey(Math.random) // returns e.g. "D"
  */
-export function selectMusicalKey(rng: () => number = Math.random): string {
+function selectMusicalKey(rng: () => number = Math.random): string {
   const idx = Math.floor(rng() * MUSICAL_KEYS.length);
   return MUSICAL_KEYS[idx] ?? 'C';
 }
@@ -525,7 +525,7 @@ export function selectMusicalKey(rng: () => number = Math.random): string {
  * @example
  * selectMusicalMode(Math.random) // returns e.g. "minor"
  */
-export function selectMusicalMode(rng: () => number = Math.random): string {
+function selectMusicalMode(rng: () => number = Math.random): string {
   const idx = Math.floor(rng() * MUSICAL_MODES.length);
   return MUSICAL_MODES[idx] ?? 'major';
 }
@@ -539,7 +539,7 @@ export function selectMusicalMode(rng: () => number = Math.random): string {
  * @example
  * selectKeyAndMode(Math.random) // returns e.g. "Key: D minor"
  */
-export function selectKeyAndMode(rng: () => number = Math.random): string {
+function selectKeyAndMode(rng: () => number = Math.random): string {
   const key = selectMusicalKey(rng);
   const mode = selectMusicalMode(rng);
   return `Key: ${key} ${mode}`;
@@ -733,3 +733,24 @@ ${sectionsResult.text}`;
     },
   };
 }
+
+// =============================================================================
+// Test Helpers Export
+// =============================================================================
+
+/**
+ * @internal
+ * Test helpers for unit testing internal functions.
+ * Do not use in production code.
+ */
+export const _testHelpers = {
+  detectGenreKeywordsOnly,
+  selectRandomGenre,
+  parseMultiGenre,
+  assembleInstruments,
+  assembleStyleTags,
+  selectRecordingContext,
+  selectMusicalKey,
+  selectMusicalMode,
+  selectKeyAndMode,
+} as const;

@@ -4,6 +4,11 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
+  _testHelpers,
+} from '@bun/prompt/deterministic-builder';
+import { APP_CONSTANTS } from '@shared/constants';
+
+const {
   detectGenreKeywordsOnly,
   selectRandomGenre,
   parseMultiGenre,
@@ -13,8 +18,7 @@ import {
   selectMusicalKey,
   selectMusicalMode,
   selectKeyAndMode,
-} from '@bun/prompt/deterministic-builder';
-import { APP_CONSTANTS } from '@shared/constants';
+} = _testHelpers;
 
 // =============================================================================
 // Test Utilities

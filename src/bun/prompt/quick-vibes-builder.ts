@@ -7,7 +7,7 @@ export { stripMaxModeHeader } from '@shared/prompt-utils';
 /**
  * Builds the system prompt for Quick Vibes generation
  */
-export function buildQuickVibesSystemPrompt(_maxMode: boolean, withWordlessVocals: boolean): string {
+function buildQuickVibesSystemPrompt(_maxMode: boolean, withWordlessVocals: boolean): string {
   const vocalInstruction = withWordlessVocals 
     ? 'Include WORDLESS vocals only (e.g., "with soft humming", "gentle vocalizations", "ethereal oohs and aahs"). NO actual lyrics or words.'
     : 'This is instrumental music - do NOT mention vocals or singing.';
@@ -28,7 +28,7 @@ OUTPUT: Return ONLY the prompt text, nothing else.`;
 /**
  * Builds the user prompt for Quick Vibes generation
  */
-export function buildQuickVibesUserPrompt(
+function buildQuickVibesUserPrompt(
   category: QuickVibesCategory | null,
   customDescription: string
 ): string {
@@ -139,3 +139,13 @@ export function buildQuickVibesRefineUserPrompt(
   prompt += `\n\nGenerate the refined prompt:`;
   return prompt;
 }
+
+/**
+ * @internal
+ * Test helpers for unit testing internal functions.
+ * Do not use in production code.
+ */
+export const _testHelpers = {
+  buildQuickVibesSystemPrompt,
+  buildQuickVibesUserPrompt,
+} as const;

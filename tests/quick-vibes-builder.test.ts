@@ -1,15 +1,19 @@
 import { describe, it, expect } from "bun:test";
 
 import {
-  buildQuickVibesSystemPrompt,
-  buildQuickVibesUserPrompt,
   postProcessQuickVibes,
   applyQuickVibesMaxMode,
   stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
-  buildQuickVibesRefineUserPrompt
+  buildQuickVibesRefineUserPrompt,
+  _testHelpers
 } from "@bun/prompt/quick-vibes-builder";
 import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS, QUICK_VIBES_GENERATION_LIMIT } from "@bun/prompt/quick-vibes-categories";
+
+const {
+  buildQuickVibesSystemPrompt,
+  buildQuickVibesUserPrompt,
+} = _testHelpers;
 
 describe("Quick Vibes Builder", () => {
   describe("buildQuickVibesSystemPrompt", () => {

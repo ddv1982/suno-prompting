@@ -5,7 +5,7 @@
 export { MAX_MODE_HEADER } from '@shared/max-format';
 
 // Realism descriptors for organic/acoustic genres
-export const REALISM_TAGS = {
+const REALISM_TAGS = {
   // Room and space
   roomAcoustics: [
     'small room acoustics',
@@ -64,7 +64,7 @@ export const REALISM_TAGS = {
 } as const;
 
 // Electronic music clarity tags (opposite of realism - clean and tight)
-export const ELECTRONIC_CLARITY_TAGS = {
+const ELECTRONIC_CLARITY_TAGS = {
   bassControl: [
     'tight sub bass',
     'controlled low end',
@@ -96,7 +96,7 @@ export const ELECTRONIC_CLARITY_TAGS = {
 } as const;
 
 // Genre to tag category mapping
-export const GENRE_REALISM_MAP: Record<string, (keyof typeof REALISM_TAGS)[]> = {
+const GENRE_REALISM_MAP: Record<string, (keyof typeof REALISM_TAGS)[]> = {
   // Acoustic/organic genres get full realism
   country: ['roomAcoustics', 'micCharacter', 'performance', 'humanSounds', 'instrumentNoises', 'analogCharacter', 'mixCharacter'],
   folk: ['roomAcoustics', 'micCharacter', 'performance', 'humanSounds', 'instrumentNoises', 'analogCharacter', 'mixCharacter'],
@@ -131,7 +131,7 @@ export const GENRE_REALISM_MAP: Record<string, (keyof typeof REALISM_TAGS)[]> = 
 };
 
 // Genres that should use electronic clarity tags instead
-export const ELECTRONIC_GENRES = new Set([
+const ELECTRONIC_GENRES = new Set([
   'electronic', 'edm', 'house', 'techno', 'trance', 'dubstep', 
   'dnb', 'drum and bass', 'synthwave', 'trap', 'future bass',
 ]);
@@ -221,3 +221,15 @@ export function selectGenericTags(count: number = 4, rng: () => number = Math.ra
   const shuffled = [...GENERIC_STYLE_TAGS].sort(() => rng() - 0.5);
   return shuffled.slice(0, count);
 }
+
+/**
+ * @internal
+ * Test helpers for unit testing internal constants.
+ * Do not use in production code.
+ */
+export const _testHelpers = {
+  REALISM_TAGS,
+  ELECTRONIC_CLARITY_TAGS,
+  GENRE_REALISM_MAP,
+  ELECTRONIC_GENRES,
+} as const;

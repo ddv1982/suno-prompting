@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 
 import {
-  REALISM_TAGS,
-  ELECTRONIC_CLARITY_TAGS,
-  GENRE_REALISM_MAP,
-  ELECTRONIC_GENRES,
   RECORDING_DESCRIPTORS,
   GENERIC_STYLE_TAGS,
   selectRealismTags,
@@ -12,7 +8,15 @@ import {
   isElectronicGenre,
   selectRecordingDescriptors,
   selectGenericTags,
+  _testHelpers,
 } from '@bun/prompt/realism-tags';
+
+const {
+  REALISM_TAGS,
+  ELECTRONIC_CLARITY_TAGS,
+  GENRE_REALISM_MAP,
+  ELECTRONIC_GENRES,
+} = _testHelpers;
 
 describe('realism-tags', () => {
   describe('REALISM_TAGS constant', () => {
