@@ -122,6 +122,59 @@ STRICT CONSTRAINTS:
 - Output ONLY the prompt itself - no explanations or extra text.`;
 }
 
+// =============================================================================
+// Contextual Prompt Helpers
+// =============================================================================
+
+type RhythmicInfo = ReturnType<typeof detectRhythmic>;
+type PerformanceGuidanceType = NonNullable<ReturnType<typeof buildPerformanceGuidance>>;
+
+/**
+ * Check if any guidance is available for the prompt.
+ */
+function hasAnyGuidance(selection: ModeSelection, rhythmic: RhythmicInfo): boolean {
+  return !!(
+    selection.genre ||
+    selection.combination ||
+    selection.singleMode ||
+    selection.polyrhythmCombination ||
+    selection.timeSignature ||
+    selection.timeSignatureJourney ||
+    rhythmic
+  );
+}
+
+/**
+ * Build performance guidance section for a genre.
+ */
+function buildPerformanceGuidanceSection(
+  genre: string,
+  performanceGuidance: PerformanceGuidanceType | null | undefined
+): string[] {
+  const parts: string[] = [];
+  const guidance = performanceGuidance ?? buildPerformanceGuidance(genre);
+  
+  if (guidance) {
+    parts.push('', 'PERFORMANCE GUIDANCE:');
+    parts.push(`Vocal style: ${guidance.vocal}`);
+    parts.push(`Production: ${guidance.production}`);
+    if (guidance.instruments.length > 0) {
+      parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
+    }
+  }
+
+  // Add multi-genre nuance guidance for compound genres (2+ components)
+  const genreComponents = parseGenreComponents(genre);
+  if (genreComponents.length > 1) {
+    const nuanceGuidance = getMultiGenreNuanceGuidance(genre, Math.random);
+    if (nuanceGuidance) {
+      parts.push(nuanceGuidance);
+    }
+  }
+
+  return parts;
+}
+
 /**
  * @internal
  * Used for refinement context - not part of public API
@@ -130,7 +183,7 @@ export function buildContextualPrompt(
   description: string,
   selection: ModeSelection,
   lyricsTopic?: string,
-  performanceGuidance?: NonNullable<ReturnType<typeof buildPerformanceGuidance>> | null
+  performanceGuidance?: PerformanceGuidanceType | null
 ): string {
   const rhythmic = detectRhythmic(description);
   const { found: userInstruments } = extractInstruments(description);
@@ -141,48 +194,19 @@ export function buildContextualPrompt(
     lyricsTopic
   );
 
-  const hasGuidance =
-    selection.genre ||
-    selection.combination ||
-    selection.singleMode ||
-    selection.polyrhythmCombination ||
-    selection.timeSignature ||
-    selection.timeSignatureJourney ||
-    rhythmic;
+  if (!hasAnyGuidance(selection, rhythmic)) {
+    return parts.join('\n\n');
+  }
 
-  if (hasGuidance) {
-    parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
+  parts.push('', 'TECHNICAL GUIDANCE (use as creative inspiration, blend naturally):');
 
-    const modeGuidance = buildGuidanceFromSelection(selection, { userInstruments });
-    if (modeGuidance) parts.push(modeGuidance);
+  const modeGuidance = buildGuidanceFromSelection(selection, { userInstruments });
+  if (modeGuidance) parts.push(modeGuidance);
 
-    if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
+  if (rhythmic) parts.push(getRhythmicGuidance(rhythmic));
 
-    // Add performance guidance for detected genre
-    if (selection.genre) {
-      // Parse components once to avoid redundant calls
-      const genreComponents = parseGenreComponents(selection.genre);
-      const isMultiGenre = genreComponents.length > 1;
-
-      const guidance = performanceGuidance ?? buildPerformanceGuidance(selection.genre);
-      if (guidance) {
-        parts.push('');
-        parts.push('PERFORMANCE GUIDANCE:');
-        parts.push(`Vocal style: ${guidance.vocal}`);
-        parts.push(`Production: ${guidance.production}`);
-        if (guidance.instruments.length > 0) {
-          parts.push(`Suggested instruments: ${guidance.instruments.join(', ')}`);
-        }
-      }
-
-      // Add multi-genre nuance guidance for compound genres (2+ components)
-      if (isMultiGenre) {
-        const nuanceGuidance = getMultiGenreNuanceGuidance(selection.genre, Math.random);
-        if (nuanceGuidance) {
-          parts.push(nuanceGuidance);
-        }
-      }
-    }
+  if (selection.genre) {
+    parts.push(...buildPerformanceGuidanceSection(selection.genre, performanceGuidance));
   }
 
   return parts.join('\n\n');

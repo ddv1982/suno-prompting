@@ -135,6 +135,100 @@ function LLMCallSection({
   );
 }
 
+// =============================================================================
+// Sub-components for DebugDrawerBody
+// =============================================================================
+
+type DebugMetadataHeaderProps = {
+  debugInfo: Partial<DebugInfo>;
+};
+
+function DebugMetadataHeader({ debugInfo }: DebugMetadataHeaderProps): React.JSX.Element {
+  return (
+    <div className="ui-helper flex items-center gap-3">
+      <span className="font-mono text-foreground">
+        {debugInfo.timestamp ? new Date(debugInfo.timestamp).toLocaleString() : 'N/A'}
+      </span>
+      <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary ui-label">
+        {debugInfo.provider ?? 'unknown'}
+      </span>
+      <span className="font-mono text-foreground/70">
+        {debugInfo.model?.split('/').pop() ?? 'unknown'}
+      </span>
+    </div>
+  );
+}
+
+type LLMCallsSectionProps = {
+  debugInfo: Partial<DebugInfo>;
+  onCopy: (text: string, section: string) => void;
+  copiedSection: string | null;
+};
+
+function LLMCallsSection({ debugInfo, onCopy, copiedSection }: LLMCallsSectionProps): React.JSX.Element | null {
+  const hasLLMCalls = debugInfo.genreDetection || debugInfo.titleGeneration || debugInfo.lyricsGeneration || debugInfo.maxConversion;
+  
+  if (!hasLLMCalls) return null;
+
+  return (
+    <div className="space-y-2">
+      <SectionLabel>LLM Calls</SectionLabel>
+
+      {debugInfo.genreDetection && (
+        <LLMCallSection
+          title="Genre Detection"
+          systemPrompt={debugInfo.genreDetection.systemPrompt}
+          userPrompt={debugInfo.genreDetection.userPrompt}
+          extraInfo={debugInfo.genreDetection.detectedGenre}
+          defaultExpanded={true}
+          onCopy={onCopy}
+          copiedSection={copiedSection}
+          sectionKey="genre"
+        />
+      )}
+
+      {debugInfo.titleGeneration && (
+        <LLMCallSection
+          title="Title Generation"
+          systemPrompt={debugInfo.titleGeneration.systemPrompt}
+          userPrompt={debugInfo.titleGeneration.userPrompt}
+          defaultExpanded={true}
+          onCopy={onCopy}
+          copiedSection={copiedSection}
+          sectionKey="title"
+        />
+      )}
+
+      {debugInfo.lyricsGeneration && (
+        <LLMCallSection
+          title="Lyrics Generation"
+          systemPrompt={debugInfo.lyricsGeneration.systemPrompt}
+          userPrompt={debugInfo.lyricsGeneration.userPrompt}
+          defaultExpanded={true}
+          onCopy={onCopy}
+          copiedSection={copiedSection}
+          sectionKey="lyrics"
+        />
+      )}
+
+      {debugInfo.maxConversion?.systemPrompt && debugInfo.maxConversion?.userPrompt && (
+        <LLMCallSection
+          title="Max Mode Conversion"
+          systemPrompt={debugInfo.maxConversion.systemPrompt}
+          userPrompt={debugInfo.maxConversion.userPrompt}
+          onCopy={onCopy}
+          copiedSection={copiedSection}
+          sectionKey="maxconv"
+        />
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Main Component
+// =============================================================================
+
 export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps): React.JSX.Element {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
@@ -144,78 +238,10 @@ export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps): React.JSX.
     setTimeout(() => { setCopiedSection(null); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
 
-  const hasLLMCalls = debugInfo.genreDetection || debugInfo.titleGeneration || debugInfo.lyricsGeneration || debugInfo.maxConversion;
-
   return (
     <div className="mt-4 space-y-3 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 is-scrolling">
-      <div className="ui-helper flex items-center gap-3">
-        <span className="font-mono text-foreground">
-          {debugInfo.timestamp ? new Date(debugInfo.timestamp).toLocaleString() : 'N/A'}
-        </span>
-        <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary ui-label">
-          {debugInfo.provider ?? 'unknown'}
-        </span>
-        <span className="font-mono text-foreground/70">
-          {debugInfo.model?.split('/').pop() ?? 'unknown'}
-        </span>
-      </div>
-
-      {/* LLM Call Sections */}
-      {hasLLMCalls && (
-        <div className="space-y-2">
-          <SectionLabel>LLM Calls</SectionLabel>
-
-          {debugInfo.genreDetection && (
-            <LLMCallSection
-              title="Genre Detection"
-              systemPrompt={debugInfo.genreDetection.systemPrompt}
-              userPrompt={debugInfo.genreDetection.userPrompt}
-              extraInfo={debugInfo.genreDetection.detectedGenre}
-              defaultExpanded={true}
-              onCopy={copyToClipboard}
-              copiedSection={copiedSection}
-              sectionKey="genre"
-            />
-          )}
-
-          {debugInfo.titleGeneration && (
-            <LLMCallSection
-              title="Title Generation"
-              systemPrompt={debugInfo.titleGeneration.systemPrompt}
-              userPrompt={debugInfo.titleGeneration.userPrompt}
-              defaultExpanded={true}
-              onCopy={copyToClipboard}
-              copiedSection={copiedSection}
-              sectionKey="title"
-            />
-          )}
-
-          {debugInfo.lyricsGeneration && (
-            <LLMCallSection
-              title="Lyrics Generation"
-              systemPrompt={debugInfo.lyricsGeneration.systemPrompt}
-              userPrompt={debugInfo.lyricsGeneration.userPrompt}
-              defaultExpanded={true}
-              onCopy={copyToClipboard}
-              copiedSection={copiedSection}
-              sectionKey="lyrics"
-            />
-          )}
-
-          {debugInfo.maxConversion?.systemPrompt && debugInfo.maxConversion?.userPrompt && (
-            <LLMCallSection
-              title="Max Mode Conversion"
-              systemPrompt={debugInfo.maxConversion.systemPrompt}
-              userPrompt={debugInfo.maxConversion.userPrompt}
-              onCopy={copyToClipboard}
-              copiedSection={copiedSection}
-              sectionKey="maxconv"
-            />
-          )}
-        </div>
-      )}
-
-      {/* Main Request/Response (for non-deterministic paths) */}
+      <DebugMetadataHeader debugInfo={debugInfo} />
+      <LLMCallsSection debugInfo={debugInfo} onCopy={copyToClipboard} copiedSection={copiedSection} />
       <RequestInspector
         requestBody={debugInfo.requestBody ?? ''}
         responseBody={debugInfo.responseBody ?? ''}

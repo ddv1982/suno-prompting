@@ -7,16 +7,18 @@
  * @module ai/creative-boost/helpers
  */
 
-import { generateLyrics } from '@bun/ai/content-generator';
+import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import { condense } from '@bun/ai/llm-rewriter';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
 import { convertToMaxFormat, convertToNonMaxFormat } from '@bun/prompt/conversion';
+import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
+import { generateDeterministicTitle } from '@bun/prompt/title';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { GenerationResult } from '../types';
-import type { PostProcessParams } from './types';
+import type { PostProcessParams, CreativeBoostEngineConfig } from './types';
 import type { DebugInfo, ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
@@ -156,5 +158,147 @@ export async function postProcessCreativeBoostResponse(
     title: parsed.title,
     lyrics: lyricsResult.lyrics,
     debugInfo,
+  };
+}
+
+// =============================================================================
+// Creative Boost Generation Helpers
+// =============================================================================
+
+/**
+ * Debug info for genre detection.
+ */
+export type GenreDetectionDebugInfo = {
+  systemPrompt: string;
+  userPrompt: string;
+  detectedGenre: string;
+};
+
+/**
+ * Debug info for title/lyrics generation.
+ */
+export type GenerationDebugInfo = {
+  systemPrompt: string;
+  userPrompt: string;
+};
+
+/**
+ * Resolve genre for creative boost - detects from lyrics topic if needed.
+ */
+export async function resolveGenreForCreativeBoost(
+  seedGenres: string[],
+  lyricsTopic: string | undefined,
+  withLyrics: boolean,
+  getModel: () => LanguageModel
+): Promise<{ genres: string[]; debugInfo?: GenreDetectionDebugInfo }> {
+  // If we have seed genres, use them
+  if (seedGenres.length > 0) {
+    return { genres: seedGenres };
+  }
+
+  // Detect genre from lyrics topic if lyrics mode is ON and topic provided
+  if (withLyrics && lyricsTopic?.trim()) {
+    const result = await detectGenreFromTopic(lyricsTopic.trim(), getModel);
+    log.info('resolveGenreForCreativeBoost:detected', { topic: lyricsTopic, genre: result.genre });
+    return {
+      genres: [result.genre],
+      debugInfo: result.debugInfo,
+    };
+  }
+
+  return { genres: [] };
+}
+
+/**
+ * Build the style prompt for creative boost using deterministic builders.
+ */
+export function buildCreativeBoostStyle(
+  genre: string,
+  maxMode: boolean,
+  withWordlessVocals: boolean
+): string {
+  const result = maxMode
+    ? buildDeterministicMaxPrompt({ description: genre, genreOverride: genre })
+    : buildDeterministicStandardPrompt({ description: genre, genreOverride: genre });
+
+  let styleResult = result.text;
+
+  if (withWordlessVocals) {
+    styleResult = injectWordlessVocals(styleResult);
+  }
+
+  return styleResult;
+}
+
+/**
+ * Generate title for creative boost - LLM when lyrics ON, deterministic otherwise.
+ */
+export async function generateCreativeBoostTitle(
+  withLyrics: boolean,
+  lyricsTopic: string | undefined,
+  description: string | undefined,
+  genre: string,
+  mood: string,
+  getModel: () => LanguageModel
+): Promise<{ title: string; debugInfo?: GenerationDebugInfo }> {
+  if (withLyrics) {
+    const topic = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
+    const result = await generateTitle(topic, genre, mood, getModel);
+    return { title: result.title, debugInfo: result.debugInfo };
+  }
+
+  return { title: generateDeterministicTitle(genre, mood) };
+}
+
+/**
+ * Generate lyrics for creative boost if requested.
+ */
+export async function generateCreativeBoostLyrics(
+  withLyrics: boolean,
+  lyricsTopic: string | undefined,
+  description: string | undefined,
+  genre: string,
+  mood: string,
+  maxMode: boolean,
+  getModel: () => LanguageModel,
+  useSunoTags: boolean
+): Promise<{ lyrics?: string; debugInfo?: GenerationDebugInfo }> {
+  if (!withLyrics) {
+    return {};
+  }
+
+  const topic = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
+  const result = await generateLyrics(topic, genre, mood, maxMode, getModel, useSunoTags);
+
+  return { lyrics: result.lyrics, debugInfo: result.debugInfo };
+}
+
+/**
+ * Build debug info for creative boost generation.
+ */
+export function buildCreativeBoostDebugInfo(
+  config: CreativeBoostEngineConfig,
+  context: { withLyrics: boolean; level: string; genre: string; mood: string; topic: string },
+  styleResult: string,
+  parts: {
+    genreDetection?: GenreDetectionDebugInfo;
+    titleGeneration?: GenerationDebugInfo;
+    lyricsGeneration?: GenerationDebugInfo;
+  }
+): DebugInfo | undefined {
+  if (!config.isDebugMode()) {
+    return undefined;
+  }
+
+  const label = context.withLyrics ? 'DETERMINISTIC_PROMPT_LLM_TITLE_LYRICS' : 'FULLY_DETERMINISTIC';
+  const userPrompt = `Creativity: ${context.level}, Genre: ${context.genre}, Mood: ${context.mood}, Topic: ${context.topic}`;
+
+  const baseDebugInfo = config.buildDebugInfo(label, userPrompt, styleResult);
+
+  return {
+    ...baseDebugInfo,
+    genreDetection: parts.genreDetection,
+    titleGeneration: parts.titleGeneration,
+    lyricsGeneration: parts.lyricsGeneration,
   };
 }

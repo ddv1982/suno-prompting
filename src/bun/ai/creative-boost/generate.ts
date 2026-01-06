@@ -7,14 +7,18 @@
  * @module ai/creative-boost/generate
  */
 
-import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
 import { createLogger } from '@bun/logger';
 import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
-import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic';
-import { generateDeterministicTitle } from '@bun/prompt/title';
 
-import { DEFAULT_LYRICS_TOPIC, injectWordlessVocals, generateLyricsForCreativeBoost } from './helpers';
+import {
+  generateLyricsForCreativeBoost,
+  resolveGenreForCreativeBoost,
+  buildCreativeBoostStyle,
+  generateCreativeBoostTitle,
+  generateCreativeBoostLyrics,
+  buildCreativeBoostDebugInfo,
+} from './helpers';
 
 import type { GenerationResult } from '../types';
 import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from './types';
@@ -71,124 +75,45 @@ export async function generateDirectMode(
 export async function generateCreativeBoost(
   options: GenerateCreativeBoostOptions
 ): Promise<GenerationResult> {
-  const {
-    creativityLevel,
-    seedGenres,
-    sunoStyles,
-    description,
-    lyricsTopic,
-    withWordlessVocals,
-    maxMode,
-    withLyrics,
-    config,
-  } = options;
+  const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, withWordlessVocals, maxMode, withLyrics, config } = options;
 
-  // Direct Mode: When Suno V5 Styles are selected, output them exactly as-is
+  // Direct Mode: styles passed through as-is
   if (isDirectMode(sunoStyles)) {
-    return generateDirectMode(
-      sunoStyles,
-      lyricsTopic,
-      description,
-      withLyrics,
-      config
-    );
+    return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, config);
   }
 
   log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals, withLyrics });
 
-  // Map creativity slider to level and select genre deterministically
+  // 1. Resolve genre (detect from lyrics topic if needed)
+  const { genres: resolvedGenres, debugInfo: genreDebugInfo } = await resolveGenreForCreativeBoost(
+    seedGenres, lyricsTopic, withLyrics, config.getModel
+  );
+
+  // 2. Select genre and mood based on creativity level
   const level = mapSliderToLevel(creativityLevel);
-  let resolvedSeedGenres = seedGenres;
-  let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
-
-  // Detect genre from lyrics topic if no seed genres and lyrics mode is ON
-  if (withLyrics && seedGenres.length === 0 && lyricsTopic?.trim()) {
-    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), config.getModel);
-    resolvedSeedGenres = [genreResult.genre];
-    genreDetectionDebugInfo = genreResult.debugInfo;
-    log.info('generateCreativeBoost:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre });
-  }
-
-  const selectedGenre = selectGenreForLevel(level, resolvedSeedGenres, Math.random);
+  const selectedGenre = selectGenreForLevel(level, resolvedGenres, Math.random);
   const selectedMood = selectMoodForLevel(level, Math.random);
 
-  // Build the prompt using the existing deterministic builder
-  // Use genre as description since we've already selected it
-  let styleResult: string;
-  if (maxMode) {
-    const result = buildDeterministicMaxPrompt({
-      description: selectedGenre,
-      genreOverride: selectedGenre,
-    });
-    styleResult = result.text;
-  } else {
-    const result = buildDeterministicStandardPrompt({
-      description: selectedGenre,
-      genreOverride: selectedGenre,
-    });
-    styleResult = result.text;
-  }
+  // 3. Build style prompt
+  const styleResult = buildCreativeBoostStyle(selectedGenre, maxMode, withWordlessVocals);
 
-  // Inject wordless vocals into instruments line if requested
-  if (withWordlessVocals) {
-    styleResult = injectWordlessVocals(styleResult);
-  }
+  // 4. Generate title
+  const { title, debugInfo: titleDebugInfo } = await generateCreativeBoostTitle(
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel
+  );
 
-  // Generate title: LLM when lyrics ON (to match lyrics theme), deterministic otherwise
-  let title: string;
-  let titleDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
+  // 5. Generate lyrics if requested
+  const { lyrics, debugInfo: lyricsDebugInfo } = await generateCreativeBoostLyrics(
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, maxMode, config.getModel, config.getUseSunoTags?.() ?? false
+  );
 
-  if (withLyrics) {
-    const topicForTitle = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
-    const titleResult = await generateTitle(topicForTitle, selectedGenre, selectedMood, config.getModel);
-    title = titleResult.title;
-    titleDebugInfo = titleResult.debugInfo;
-  } else {
-    title = generateDeterministicTitle(selectedGenre, selectedMood);
-  }
+  // 6. Build debug info
+  const debugInfo = buildCreativeBoostDebugInfo(
+    config,
+    { withLyrics, level, genre: selectedGenre, mood: selectedMood, topic: lyricsTopic?.trim() || '(none)' },
+    styleResult,
+    { genreDetection: genreDebugInfo, titleGeneration: titleDebugInfo, lyricsGeneration: lyricsDebugInfo }
+  );
 
-  // Generate lyrics if requested (still uses LLM)
-  let lyrics: string | undefined;
-  let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
-
-  if (withLyrics) {
-    const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
-    const lyricsResult = await generateLyrics(
-      topicForLyrics,
-      selectedGenre,
-      selectedMood,
-      maxMode,
-      config.getModel,
-      config.getUseSunoTags?.() ?? false
-    );
-    lyrics = lyricsResult.lyrics;
-    lyricsDebugInfo = lyricsResult.debugInfo;
-  }
-
-  // Build debug info with actual LLM prompts for title and lyrics
-  const topicDisplay = lyricsTopic?.trim() || '(none)';
-  const baseDebugInfo = config.isDebugMode()
-    ? config.buildDebugInfo(
-        withLyrics ? 'DETERMINISTIC_PROMPT_LLM_TITLE_LYRICS' : 'FULLY_DETERMINISTIC',
-        `Creativity: ${level}, Genre: ${selectedGenre}, Mood: ${selectedMood}, Topic: ${topicDisplay}`,
-        styleResult
-      )
-    : undefined;
-
-  // Attach actual LLM prompts to debug info
-  const debugInfo = baseDebugInfo
-    ? {
-        ...baseDebugInfo,
-        genreDetection: genreDetectionDebugInfo,
-        titleGeneration: titleDebugInfo,
-        lyricsGeneration: lyricsDebugInfo,
-      }
-    : undefined;
-
-  return {
-    text: styleResult,
-    title,
-    lyrics,
-    debugInfo,
-  };
+  return { text: styleResult, title, lyrics, debugInfo };
 }
