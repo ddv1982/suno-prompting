@@ -47,8 +47,8 @@ export function PromptOutput({ text }: PromptOutputProps): React.JSX.Element {
         const isSection = SECTION_TAG_PATTERN.test(cleanLine);
         const isField = FIELD_LABEL_PATTERN.test(cleanLine);
         const isHeader = STANDARD_HEADER_PATTERN.test(cleanLine);
-        // MAX mode headers are metadata, not prompt content - style them muted
-        // to visually separate from the actual prompt fields and sections
+        // MAX mode headers signal quality settings - style them prominently in green
+        // to match section styling and indicate special mode is active
         const isMaxModeHeader = MAX_MODE_HEADER_PATTERN.test(cleanLine) || 
                                 SUNO_V5_TAGS_PATTERN.test(cleanLine);
 
@@ -56,9 +56,9 @@ export function PromptOutput({ text }: PromptOutputProps): React.JSX.Element {
           <div
             key={idx}
             className={cn(
-              (isHeader || isMaxModeHeader) && "text-muted-foreground",
+              isHeader && "text-muted-foreground",
               isField && "text-foreground font-medium",
-              isSection && !isHeader && !isMaxModeHeader && "text-primary font-bold tracking-wide"
+              (isSection || isMaxModeHeader) && !isHeader && "text-primary font-bold tracking-wide"
             )}
           >
             {line}
