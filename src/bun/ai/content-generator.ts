@@ -11,6 +11,12 @@ const log = createLogger('ContentGenerator');
 /** All available genre keys from the registry */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as Array<keyof typeof GENRE_REGISTRY>;
 
+/**
+ * Default fallback genre when LLM detection fails or returns invalid result.
+ * Pop is chosen because it's genre-neutral and works well with any lyrics topic.
+ */
+const DEFAULT_FALLBACK_GENRE = 'pop';
+
 export type ContentDebugInfo = {
   systemPrompt: string;
   userPrompt: string;
@@ -89,7 +95,7 @@ export async function generateLyrics(
  *
  * @param lyricsTopic - The user's lyrics topic/theme
  * @param getModel - Function to get the language model
- * @returns A genre key from GENRE_REGISTRY, or 'pop' as fallback
+ * @returns A genre key from GENRE_REGISTRY, or DEFAULT_FALLBACK_GENRE on error
  */
 export async function detectGenreFromTopic(
   lyricsTopic: string,
@@ -134,9 +140,9 @@ Which genre fits best? Return only the genre key.`;
     }
 
     log.warn('detectGenreFromTopic:invalid_genre', { lyricsTopic, returned: genre });
-    return 'pop';
+    return DEFAULT_FALLBACK_GENRE;
   } catch (error) {
     log.warn('detectGenreFromTopic:failed', { error: getErrorMessage(error) });
-    return 'pop';
+    return DEFAULT_FALLBACK_GENRE;
   }
 }
