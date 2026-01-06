@@ -15,11 +15,15 @@ export function cleanJsonResponse(text: string): string {
 
 /**
  * Strips MAX_MODE_HEADER from prompt if present.
- * Handles both standard format ([Is_MAX_MODE:...]) and Suno V5 tags format (::tags...).
+ *
+ * Two formats exist due to evolution of the codebase:
+ * - Standard format ([Is_MAX_MODE:...]) - original header used by most code paths
+ * - Suno V5 tags format (::tags...) - newer format used by deterministic builder
+ *
  * Used for accurate character counting (header is metadata, not content).
  */
 export function stripMaxModeHeader(prompt: string): string {
-  // Handle standard format: [Is_MAX_MODE:...] lines
+  // Standard format used by max-conversion.ts, context-preservation.ts, etc.
   if (prompt.startsWith('[Is_MAX_MODE:')) {
     const lines = prompt.split('\n');
     const contentStart = lines.findIndex((line, i) => i > 0 && !line.startsWith('['));
@@ -28,7 +32,7 @@ export function stripMaxModeHeader(prompt: string): string {
     }
   }
 
-  // Handle Suno V5 tags format: ::tags..., ::quality..., ::style... lines
+  // Suno V5 tags format used by deterministic-builder.ts for faster generation
   if (prompt.startsWith('::tags')) {
     const lines = prompt.split('\n');
     const contentStart = lines.findIndex((line, i) => i > 0 && !line.startsWith('::'));

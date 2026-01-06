@@ -70,15 +70,18 @@ describe('cleanJsonResponse', () => {
 // isMaxFormat Tests
 // ============================================================================
 
+// Two MAX mode header formats exist:
+// - Standard format: Used by max-conversion.ts, context-preservation.ts
+// - Suno V5 tags format: Used by deterministic-builder.ts for faster generation
 describe('isMaxFormat', () => {
-  it('returns true for standard MAX_MODE_HEADER format', () => {
+  it('detects standard MAX_MODE_HEADER format', () => {
     const prompt = `${MAX_MODE_HEADER}
 genre: "jazz"
 bpm: "110"`;
     expect(isMaxFormat(prompt)).toBe(true);
   });
 
-  it('returns true for Suno V5 tags format', () => {
+  it('detects Suno V5 tags format from deterministic builder', () => {
     const prompt = `${MAX_MODE_TAGS_HEADER}
 
 genre: "jazz"
@@ -86,7 +89,7 @@ bpm: "110"`;
     expect(isMaxFormat(prompt)).toBe(true);
   });
 
-  it('returns false for non-max format', () => {
+  it('returns false for non-max structured format', () => {
     expect(isMaxFormat('Genre: jazz\nBPM: 110')).toBe(false);
   });
 
@@ -105,7 +108,7 @@ bpm: "110"`;
 // ============================================================================
 
 describe('stripMaxModeHeader', () => {
-  it('removes standard MAX_MODE_HEADER from prompt', () => {
+  it('strips standard MAX_MODE_HEADER used by most code paths', () => {
     const prompt = `${MAX_MODE_HEADER}
 genre: "jazz"
 bpm: "110"`;
@@ -113,7 +116,7 @@ bpm: "110"`;
     expect(result).toBe('genre: "jazz"\nbpm: "110"');
   });
 
-  it('removes Suno V5 tags header from prompt', () => {
+  it('strips Suno V5 tags header used by deterministic builder', () => {
     const prompt = `${MAX_MODE_TAGS_HEADER}
 
 genre: "jazz"

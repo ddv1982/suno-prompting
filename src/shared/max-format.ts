@@ -20,6 +20,21 @@ export const MAX_MODE_TAGS_SIGNATURE = '::tags realistic music ::';
 /**
  * Check if text is already in Max Mode format.
  * Detects either the standard header or the Suno V5 tags format.
+ *
+ * @param text - The text to check for Max Mode format
+ * @returns true if text contains either Max Mode header format
+ *
+ * @example
+ * isMaxFormat('[Is_MAX_MODE: MAX](MAX)\ngenre: "jazz"')
+ * // true
+ *
+ * @example
+ * isMaxFormat('::tags realistic music ::\ngenre: "jazz"')
+ * // true (Suno V5 tags format)
+ *
+ * @example
+ * isMaxFormat('Genre: jazz\nBPM: 120')
+ * // false (standard mode)
  */
 export function isMaxFormat(text: string): boolean {
   return text.includes(MAX_MODE_SIGNATURE) || text.includes(MAX_MODE_TAGS_SIGNATURE);
