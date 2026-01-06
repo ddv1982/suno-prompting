@@ -31,6 +31,13 @@ import type { LanguageModel } from 'ai';
 const log = createLogger('CreativeBoostEngine');
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
+/**
+ * Default fallback topic when no lyrics topic or description is provided.
+ * "Creative expression" is intentionally generic to give the LLM freedom
+ * to generate thematically open lyrics.
+ */
+const DEFAULT_LYRICS_TOPIC = 'creative expression';
+
 export type CreativeBoostEngineConfig = EngineConfig;
 
 /**
@@ -99,7 +106,7 @@ async function generateLyricsForCreativeBoost(
 
   const genre = extractGenreFromPrompt(styleResult);
   const mood = extractMoodFromPrompt(styleResult);
-  const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+  const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
   const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel, useSunoTags);
 
   return {
@@ -256,7 +263,7 @@ async function generateLyricsForDirectMode(
   getModel: () => LanguageModel,
   useSunoTags: boolean
 ): Promise<string | undefined> {
-  const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+  const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
   const result = await generateLyricsForCreativeBoost(
     styleResult, topicForLyrics, feedback, false, true, getModel, useSunoTags
   );
@@ -379,7 +386,7 @@ export async function generateCreativeBoost(
   let titleDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
 
   if (withLyrics) {
-    const topicForTitle = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+    const topicForTitle = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
     const titleResult = await generateTitle(topicForTitle, selectedGenre, selectedMood, config.getModel);
     title = titleResult.title;
     titleDebugInfo = titleResult.debugInfo;
@@ -392,7 +399,7 @@ export async function generateCreativeBoost(
   let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
 
   if (withLyrics) {
-    const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+    const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
     const lyricsResult = await generateLyrics(
       topicForLyrics,
       selectedGenre,

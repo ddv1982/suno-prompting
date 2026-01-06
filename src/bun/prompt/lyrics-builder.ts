@@ -85,6 +85,18 @@ ${maxMode ? '///*****///\n' : ''}[INTRO]
 OUTPUT ONLY THE LYRICS. No explanations, no titles, no additional text.`;
 }
 
+/**
+ * Build the user prompt for lyrics generation with topic emphasis.
+ *
+ * Topic is placed LAST in the prompt for recency bias - LLMs weight
+ * final instructions more heavily, improving topic adherence.
+ *
+ * @param description - The lyrics topic/theme (what the song is about)
+ * @param genre - Genre for vocabulary style
+ * @param mood - Emotional tone to guide intensity
+ * @param useSunoTags - Whether to include backing vocal guidance
+ * @returns Formatted user prompt string
+ */
 export function buildLyricsUserPrompt(
   description: string, 
   genre: string, 
