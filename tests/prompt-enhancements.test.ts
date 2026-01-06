@@ -17,6 +17,7 @@ import {
   getProgressionsForGenre,
   getRandomProgressionForGenre,
   buildProgressionDescriptor,
+  buildProgressionShort,
   detectProgression,
 } from '@bun/prompt/chord-progressions';
 import {
@@ -508,6 +509,27 @@ describe('Chord Progressions', () => {
     it('includes progression name and pattern', () => {
       const result = buildProgressionDescriptor('pop');
       expect(result).toMatch(/\(.+-/); // Contains (pattern-
+    });
+  });
+
+  describe('buildProgressionShort', () => {
+    it('returns name and pattern without description', () => {
+      const rng = createRng(42);
+      const result = buildProgressionShort('jazz', rng);
+      expect(result).toContain('(');
+      expect(result).not.toContain(':'); // No colon - no description
+    });
+
+    it('is shorter than buildProgressionDescriptor', () => {
+      const rng = createRng(42);
+      const short = buildProgressionShort('jazz', rng);
+      const full = buildProgressionDescriptor('jazz', rng);
+      expect(short.length).toBeLessThan(full.length);
+    });
+
+    it('includes pattern in parentheses', () => {
+      const result = buildProgressionShort('pop');
+      expect(result).toMatch(/\([^)]+\)/); // Contains (pattern)
     });
   });
 

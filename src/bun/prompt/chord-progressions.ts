@@ -299,13 +299,22 @@ export function getRandomProgressionForGenre(
   return progressions[idx] ?? DEFAULT_PROGRESSION;
 }
 
-// Build chord progression descriptor string
+// Build chord progression descriptor string (full format with description)
 export function buildProgressionDescriptor(
   genre: string,
   rng: () => number = Math.random
 ): string {
   const progression = getRandomProgressionForGenre(genre, rng);
   return `${progression.name} (${progression.pattern}): ${progression.description}`;
+}
+
+// Build short chord progression string for instruments field (name + pattern only)
+export function buildProgressionShort(
+  genre: string,
+  rng: () => number = Math.random
+): string {
+  const progression = getRandomProgressionForGenre(genre, rng);
+  return `${progression.name} (${progression.pattern})`;
 }
 
 type ProgressionPattern = {

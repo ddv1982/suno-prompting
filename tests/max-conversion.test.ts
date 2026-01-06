@@ -874,3 +874,60 @@ Instruments: electric guitar, drums`;
     expect(result.convertedPrompt).toContain('instruments:');
   });
 });
+
+// ============================================================================
+// convertToMaxFormat with bpmRange
+// ============================================================================
+
+describe('convertToMaxFormat with bpmRange', () => {
+  const mockGetModel = () => ({} as any);
+
+  beforeEach(() => {
+    mockGenerateText.mockClear();
+    mockGenerateText.mockImplementation(async () => ({
+      text: '{"styleTags": "studio polish, warm analog", "recording": "intimate studio session"}',
+    }));
+  });
+
+  test('uses provided bpmRange instead of genre inference', async () => {
+    const prompt = 'A jazz track';
+
+    const result = await convertToMaxFormat(
+      prompt,
+      mockGetModel,
+      { seedGenres: ['jazz'], bpmRange: 'between 80 and 80' }
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('bpm: "between 80 and 80"');
+    // Should NOT contain the genre-inferred BPM (110 for jazz)
+    expect(result.convertedPrompt).not.toContain('bpm: "110"');
+  });
+
+  test('falls back to genre BPM when bpmRange not provided', async () => {
+    const prompt = 'A jazz track';
+
+    const result = await convertToMaxFormat(
+      prompt,
+      mockGetModel,
+      { seedGenres: ['jazz'] }
+    );
+
+    expect(result.wasConverted).toBe(true);
+    // Should use genre-inferred BPM (110 for jazz)
+    expect(result.convertedPrompt).toContain('bpm: "110"');
+  });
+
+  test('preserves exact bpmRange format', async () => {
+    const prompt = 'Some music';
+
+    const result = await convertToMaxFormat(
+      prompt,
+      mockGetModel,
+      { bpmRange: 'between 120 and 145' }
+    );
+
+    expect(result.wasConverted).toBe(true);
+    expect(result.convertedPrompt).toContain('bpm: "between 120 and 145"');
+  });
+});

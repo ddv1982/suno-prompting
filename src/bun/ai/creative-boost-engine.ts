@@ -4,7 +4,8 @@ import { generateLyrics } from '@bun/ai/content-generator';
 import { condense } from '@bun/ai/llm-rewriter';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
-import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
+import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
+import { buildProgressionShort } from '@bun/prompt/chord-progressions';
 import {
   buildCreativeBoostSystemPrompt,
   buildCreativeBoostUserPrompt,
@@ -98,16 +99,17 @@ type PostProcessParams = {
   performanceInstruments?: string[];
   performanceVocalStyle?: string;
   chordProgression?: string;
+  bpmRange?: string;
 };
 
 async function postProcessCreativeBoostResponse(
   parsed: { style: string; title: string },
   params: PostProcessParams
 ): Promise<GenerationResult> {
-  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle, chordProgression } = params;
+  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = params;
 
   const { styleResult, debugInfo: maxConversionDebugInfo } = await applyMaxModeConversion(
-    parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression }
+    parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange }
   );
 
   const processedStyle = await enforceMaxLength(styleResult, config.getModel);
@@ -310,12 +312,17 @@ export async function generateCreativeBoost(
     );
   }
 
-  // Compute performance instruments ONCE - used for both LLM prompt and conversion
+  // Compute performance context ONCE - used for both LLM prompt and conversion
   const primaryGenre = seedGenres[0];
+  const genreString = seedGenres.join(' ');
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
   const performanceVocalStyle = guidance?.vocal;
-  const chordProgression = primaryGenre ? buildProgressionDescriptor(primaryGenre) : undefined;
+  const chordProgression = primaryGenre ? buildProgressionShort(primaryGenre) : undefined;
+  
+  // Compute BPM range from blended genres
+  const bpmRangeData = genreString ? getBlendedBpmRange(genreString) : null;
+  const bpmRange = bpmRangeData ? formatBpmRange(bpmRangeData) : undefined;
 
   const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
   const userPrompt = buildCreativeBoostUserPrompt(
@@ -346,6 +353,7 @@ export async function generateCreativeBoost(
     performanceInstruments,
     performanceVocalStyle,
     chordProgression,
+    bpmRange,
   });
 }
 
@@ -376,12 +384,17 @@ export async function refineCreativeBoost(
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
 
-  // Compute performance instruments ONCE - used for both LLM prompt and conversion
+  // Compute performance context ONCE - used for both LLM prompt and conversion
   const primaryGenre = seedGenres[0];
+  const genreString = seedGenres.join(' ');
   const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
   const performanceInstruments = guidance?.instruments;
   const performanceVocalStyle = guidance?.vocal;
-  const chordProgression = primaryGenre ? buildProgressionDescriptor(primaryGenre) : undefined;
+  const chordProgression = primaryGenre ? buildProgressionShort(primaryGenre) : undefined;
+  
+  // Compute BPM range from blended genres
+  const bpmRangeData = genreString ? getBlendedBpmRange(genreString) : null;
+  const bpmRange = bpmRangeData ? formatBpmRange(bpmRangeData) : undefined;
 
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
@@ -412,5 +425,6 @@ export async function refineCreativeBoost(
     performanceInstruments,
     performanceVocalStyle,
     chordProgression,
+    bpmRange,
   });
 }

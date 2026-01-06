@@ -33,7 +33,7 @@ export interface SectionContent {
 
 export interface NonMaxFormatFields {
   genre: string;
-  bpm: number;
+  bpm: string | number;
   mood: string;
   instruments: string;
   sections: SectionContent;
@@ -319,15 +319,15 @@ export async function convertToNonMaxFormat(
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
 ): Promise<NonMaxConversionResult> {
-  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression } = options;
+  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = options;
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
 
   // Resolve effective genre using shared utility
   const genre = resolveGenre(parsed.detectedGenre, seedGenres, sunoStyles);
 
-  // Infer BPM from lookup genre
-  const bpm = inferBpm(genre.forLookup);
+  // Use provided bpmRange if available, otherwise infer from genre
+  const bpm = bpmRange ?? inferBpm(genre.forLookup);
 
   // Generate section content using AI
   const { sections, debugInfo } = await generateSectionContent(parsed, getModel);

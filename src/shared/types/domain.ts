@@ -133,6 +133,8 @@ export type ConversionOptions = {
   readonly performanceInstruments?: string[];
   /** Vocal style from performance guidance to deterministically inject */
   readonly performanceVocalStyle?: string;
-  /** Chord progression to include in instruments */
+  /** Chord progression to include in instruments (short format: "Name (pattern)") */
   readonly chordProgression?: string;
+  /** Pre-computed BPM range string (e.g., "between 80 and 160") - takes priority over genre inference */
+  readonly bpmRange?: string;
 };

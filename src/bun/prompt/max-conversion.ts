@@ -41,7 +41,7 @@ export interface AIEnhancementResult {
 
 export interface MaxFormatFields {
   genre: string;
-  bpm: number;
+  bpm: string | number;
   instruments: string;
   styleTags: string;
   recording: string;
@@ -312,7 +312,7 @@ export async function convertToMaxFormat(
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
 ): Promise<MaxConversionResult> {
-  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression } = options;
+  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = options;
   // Check if already in max format
   if (isMaxFormat(text)) {
     return { convertedPrompt: text, wasConverted: false };
@@ -324,8 +324,8 @@ export async function convertToMaxFormat(
   // Resolve effective genre using shared utility
   const genre = resolveGenre(parsed.genre, seedGenres, sunoStyles);
 
-  // Infer BPM from lookup genre
-  const bpm = inferBpm(genre.forLookup);
+  // Use provided bpmRange if available, otherwise infer from genre
+  const bpm = bpmRange ?? inferBpm(genre.forLookup);
 
   // Enhance with AI (generate style tags and recording)
   const aiResult = await enhanceWithAI(parsed, getModel);
