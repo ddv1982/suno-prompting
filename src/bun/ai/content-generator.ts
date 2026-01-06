@@ -1,11 +1,15 @@
 import { generateText, type LanguageModel } from 'ai';
 
+import { GENRE_REGISTRY } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
 import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
 
 const log = createLogger('ContentGenerator');
+
+/** All available genre keys from the registry */
+const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as Array<keyof typeof GENRE_REGISTRY>;
 
 export type ContentDebugInfo = {
   systemPrompt: string;
@@ -76,5 +80,63 @@ export async function generateLyrics(
   } catch (error) {
     log.warn('generateLyrics:failed', { error: getErrorMessage(error) });
     return { lyrics: '[VERSE]\nLyrics generation failed...', debugInfo };
+  }
+}
+
+/**
+ * Detect the best genre from the deterministic builder's registry based on lyrics topic.
+ * Used when lyrics mode is ON but no genre is selected - LLM picks the most fitting genre.
+ *
+ * @param lyricsTopic - The user's lyrics topic/theme
+ * @param getModel - Function to get the language model
+ * @returns A genre key from GENRE_REGISTRY, or 'pop' as fallback
+ */
+export async function detectGenreFromTopic(
+  lyricsTopic: string,
+  getModel: () => LanguageModel
+): Promise<string> {
+  // Build genre list with descriptions for LLM context
+  const genreDescriptions = ALL_GENRE_KEYS.map((key) => {
+    const genre = GENRE_REGISTRY[key];
+    const moods = genre.moods?.slice(0, 3).join(', ') || '';
+    return `- ${key}: ${genre.name}${moods ? ` (${moods})` : ''}`;
+  }).join('\n');
+
+  const systemPrompt = `You are a music genre expert. Given a lyrics topic/theme, select the single most fitting genre from the available list.
+
+AVAILABLE GENRES:
+${genreDescriptions}
+
+RULES:
+- Return ONLY the genre key (lowercase, e.g., "jazz", "rock", "ambient")
+- Choose the genre that best matches the emotional tone and subject matter
+- If uncertain, prefer versatile genres like "pop", "rock", or "indie"
+- Do NOT return anything except the genre key`;
+
+  const userPrompt = `Lyrics topic: "${lyricsTopic}"
+
+Which genre fits best? Return only the genre key.`;
+
+  try {
+    const { text } = await generateText({
+      model: getModel(),
+      system: systemPrompt,
+      prompt: userPrompt,
+      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+    });
+
+    const genre = text.trim().toLowerCase();
+    // Validate the returned genre exists in registry
+    if (ALL_GENRE_KEYS.includes(genre as keyof typeof GENRE_REGISTRY)) {
+      log.info('detectGenreFromTopic:success', { lyricsTopic, genre });
+      return genre;
+    }
+
+    log.warn('detectGenreFromTopic:invalid_genre', { lyricsTopic, returned: genre });
+    return 'pop';
+  } catch (error) {
+    log.warn('detectGenreFromTopic:failed', { error: getErrorMessage(error) });
+    return 'pop';
   }
 }

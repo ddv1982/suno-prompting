@@ -1,7 +1,7 @@
 import { generateText, type LanguageModel } from 'ai';
 
 import { AIConfig } from '@bun/ai/config';
-import { generateLyrics } from '@bun/ai/content-generator';
+import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import {
   generateCreativeBoost as generateCreativeBoostImpl,
   refineCreativeBoost as refineCreativeBoostImpl,
@@ -168,12 +168,16 @@ export class AIEngine {
    * Generate initial prompt using deterministic builder.
    *
    * The prompt is generated deterministically without LLM calls.
-   * Title and lyrics (when enabled) still use LLM generation.
+   * LLM is only used for:
+   * - Genre detection from lyrics topic (when lyrics ON + no genre selected)
+   * - Title generation (when lyrics ON - to match lyrics theme)
+   * - Lyrics generation (when lyrics ON)
    *
    * Flow:
-   * 1. buildDeterministicMaxPrompt/StandardPrompt() - deterministic prompt generation
-   * 2. generateTitle() - LLM-based title generation
-   * 3. generateLyrics() - LLM-based lyrics generation (if lyrics mode enabled)
+   * 1. detectGenreFromTopic() - LLM-based genre selection (if lyrics ON + no genre)
+   * 2. buildDeterministicMaxPrompt/StandardPrompt() - deterministic prompt generation
+   * 3. generateTitle() - LLM (lyrics ON) or deterministic (lyrics OFF)
+   * 4. generateLyrics() - LLM-based lyrics generation (if lyrics mode enabled)
    *
    * @param description - User's song description
    * @param lockedPhrase - Optional phrase to inject into prompt
@@ -187,30 +191,49 @@ export class AIEngine {
     lyricsTopic?: string,
     genreOverride?: string
   ): Promise<GenerationResult> {
-    // 1. Deterministic prompt generation (no LLM)
+    const isLyricsMode = this.config.isLyricsMode();
+    let resolvedGenreOverride = genreOverride;
+
+    // 1. Detect genre from lyrics topic if no genre selected and lyrics mode is ON
+    if (isLyricsMode && !genreOverride && lyricsTopic?.trim()) {
+      resolvedGenreOverride = await detectGenreFromTopic(lyricsTopic.trim(), this.getModel);
+      log.info('generateInitial:genreFromTopic', { lyricsTopic, detectedGenre: resolvedGenreOverride });
+    }
+
+    // 2. Deterministic prompt generation (no LLM)
     const deterministicResult = this.config.isMaxMode()
-      ? buildDeterministicMaxPrompt({ description, genreOverride })
-      : buildDeterministicStandardPrompt({ description, genreOverride });
+      ? buildDeterministicMaxPrompt({ description, genreOverride: resolvedGenreOverride })
+      : buildDeterministicStandardPrompt({ description, genreOverride: resolvedGenreOverride });
 
     let promptText = deterministicResult.text;
 
-    // 2. Inject locked phrase if provided
+    // 3. Inject locked phrase if provided
     if (lockedPhrase) {
       promptText = injectLockedPhrase(promptText, lockedPhrase, this.config.isMaxMode());
     }
 
-    // 3. Extract genre and mood for title/lyrics generation
+    // 4. Extract genre and mood for title/lyrics generation
     const genre = extractGenreFromPrompt(promptText);
     const mood = extractMoodFromPrompt(promptText);
 
-    // 4. Generate title deterministically (no LLM)
-    const title = generateDeterministicTitle(genre, mood);
+    // 5. Generate title: LLM when lyrics ON (to match lyrics theme), deterministic otherwise
+    let title: string;
+    let titleDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
 
-    // 5. Generate lyrics using LLM (if lyrics mode enabled)
+    if (isLyricsMode) {
+      const topicForTitle = lyricsTopic?.trim() || description;
+      const titleResult = await generateTitle(topicForTitle, genre, mood, this.getModel);
+      title = titleResult.title;
+      titleDebugInfo = titleResult.debugInfo;
+    } else {
+      title = generateDeterministicTitle(genre, mood);
+    }
+
+    // 6. Generate lyrics using LLM (if lyrics mode enabled)
     let lyrics: string | undefined;
     let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
 
-    if (this.config.isLyricsMode()) {
+    if (isLyricsMode) {
       const topicForLyrics = lyricsTopic?.trim() || description;
       const lyricsResult = await generateLyrics(
         topicForLyrics,
@@ -224,16 +247,19 @@ export class AIEngine {
       lyricsDebugInfo = lyricsResult.debugInfo;
     }
 
-    // 6. Build debug info if debug mode enabled
+    // 7. Build debug info if debug mode enabled
     const debugInfo = this.config.isDebugMode()
       ? {
-          systemPrompt: 'Deterministic generation - no system prompt or LLM for prompt/title',
+          systemPrompt: isLyricsMode
+            ? 'Deterministic prompt; LLM for genre detection, title, and lyrics'
+            : 'Fully deterministic generation - no LLM calls',
           userPrompt: description,
           model: this.config.getModelName(),
           provider: this.config.getProvider(),
           timestamp: nowISO(),
           requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
           responseBody: promptText,
+          titleGeneration: titleDebugInfo,
           lyricsGeneration: lyricsDebugInfo,
         }
       : undefined;

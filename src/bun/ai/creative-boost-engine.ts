@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 
-import { generateLyrics } from '@bun/ai/content-generator';
+import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import { condense } from '@bun/ai/llm-rewriter';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
@@ -336,11 +336,20 @@ export async function generateCreativeBoost(
     );
   }
 
-  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals });
+  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals, withLyrics });
 
   // Map creativity slider to level and select genre deterministically
   const level = mapSliderToLevel(creativityLevel);
-  const selectedGenre = selectGenreForLevel(level, seedGenres, Math.random);
+  let resolvedSeedGenres = seedGenres;
+
+  // Detect genre from lyrics topic if no seed genres and lyrics mode is ON
+  if (withLyrics && seedGenres.length === 0 && lyricsTopic?.trim()) {
+    const detectedGenre = await detectGenreFromTopic(lyricsTopic.trim(), config.getModel);
+    resolvedSeedGenres = [detectedGenre];
+    log.info('generateCreativeBoost:genreFromTopic', { lyricsTopic, detectedGenre });
+  }
+
+  const selectedGenre = selectGenreForLevel(level, resolvedSeedGenres, Math.random);
   const selectedMood = selectMoodForLevel(level, Math.random);
 
   // Build the prompt using the existing deterministic builder
@@ -365,8 +374,15 @@ export async function generateCreativeBoost(
     styleResult = injectWordlessVocals(styleResult);
   }
 
-  // Generate title deterministically
-  const title = generateDeterministicTitle(selectedGenre, selectedMood);
+  // Generate title: LLM when lyrics ON (to match lyrics theme), deterministic otherwise
+  let title: string;
+  if (withLyrics) {
+    const topicForTitle = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+    const titleResult = await generateTitle(topicForTitle, selectedGenre, selectedMood, config.getModel);
+    title = titleResult.title;
+  } else {
+    title = generateDeterministicTitle(selectedGenre, selectedMood);
+  }
 
   // Generate lyrics if requested (still uses LLM)
   let lyrics: string | undefined;
@@ -385,7 +401,7 @@ export async function generateCreativeBoost(
 
   const debugInfo = config.isDebugMode()
     ? config.buildDebugInfo(
-        'DETERMINISTIC',
+        withLyrics ? 'DETERMINISTIC_PROMPT_LLM_TITLE_LYRICS' : 'FULLY_DETERMINISTIC',
         `Creativity: ${level}, Genre: ${selectedGenre}, Mood: ${selectedMood}`,
         styleResult
       )
