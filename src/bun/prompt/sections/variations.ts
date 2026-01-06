@@ -9,6 +9,7 @@
 
 import { GENRE_REGISTRY, selectInstrumentsForGenre } from '@bun/instruments';
 import { articulateInstrument } from '@bun/prompt/articulations';
+import { InvariantError } from '@shared/errors';
 
 import { GENERIC_MOODS, GENERIC_DESCRIPTORS } from './templates';
 
@@ -40,9 +41,16 @@ export function selectRandom<T>(items: readonly T[], count: number, rng: () => n
  * @returns Single selected item
  */
 export function selectOne<T>(items: readonly T[], rng: () => number): T {
+  if (items.length === 0) {
+    throw new InvariantError('selectOne called with empty array');
+  }
   const idx = Math.floor(rng() * items.length);
-  // Safe: All callers pass non-empty constant arrays (templates, moods, descriptors)
-  return items[idx] ?? items[0]!;
+  const item = items[idx];
+  if (item === undefined) {
+    // Fallback to first item (should never happen with valid index)
+    return items[0] as T;
+  }
+  return item;
 }
 
 /**

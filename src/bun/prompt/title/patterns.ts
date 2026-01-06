@@ -7,6 +7,8 @@
  * @module prompt/title/patterns
  */
 
+import { InvariantError } from '@shared/errors';
+
 import { EMOTION_WORDS, ACTION_WORDS, MOOD_WORD_WEIGHTS } from './datasets/emotions';
 import { TIME_WORDS, NATURE_WORDS, ABSTRACT_WORDS } from './datasets/imagery';
 
@@ -29,9 +31,16 @@ const PREFERRED_MOOD_PROBABILITY = 0.7;
  * @returns Selected item
  */
 export function selectRandom<T>(items: readonly T[], rng: () => number): T {
+  if (items.length === 0) {
+    throw new InvariantError('selectRandom called with empty array');
+  }
   const idx = Math.floor(rng() * items.length);
-  // Safe: All callers pass non-empty constant arrays
-  return items[idx] ?? items[0]!;
+  const item = items[idx];
+  if (item === undefined) {
+    // Fallback to first item (should never happen with valid index)
+    return items[0] as T;
+  }
+  return item;
 }
 
 /**
