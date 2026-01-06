@@ -6,7 +6,11 @@ import { cn } from "@/lib/utils";
 // Line Detection Patterns
 // =============================================================================
 
-/** Section tags like [INTRO], [VERSE], [CHORUS] */
+/**
+ * Section tags - matches lines that are exactly [TAG_NAME].
+ * Matches: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+ * Does NOT match: [Is_MAX_MODE: MAX](MAX) (has trailing content)
+ */
 const SECTION_TAG_PATTERN = /^\[.+\]$/;
 
 /** Field labels like Genre:, Mood:, Instruments: */
@@ -15,10 +19,17 @@ const FIELD_LABEL_PATTERN = /^(Genre|Mood|Instruments|Tempo|Key):/i;
 /** Standard mode header line: [Mood], Genre, Key: */
 const STANDARD_HEADER_PATTERN = /^\[Mood\],.*Key:/;
 
-/** MAX mode header: [Is_MAX_MODE: MAX](MAX), [QUALITY: MAX](MAX), etc. */
+/**
+ * MAX mode header lines - matches [FIELD: MAX] at start of line.
+ * Matches: [Is_MAX_MODE: MAX](MAX), [QUALITY: MAX](MAX)
+ * No end anchor ($) to allow trailing (MAX) content.
+ */
 const MAX_MODE_HEADER_PATTERN = /^\[.+: MAX\]/;
 
-/** Suno V5 tags format: ::tags..., ::quality..., ::style... (legacy support) */
+/**
+ * Legacy Suno V5 tags format (for backward compatibility with saved prompts).
+ * Matches: ::tags realistic music ::, ::quality maximum ::, ::style suno v5 ::
+ */
 const SUNO_V5_TAGS_PATTERN = /^::.+::$/;
 
 // =============================================================================
