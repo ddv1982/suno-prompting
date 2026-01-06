@@ -7,17 +7,18 @@ import { createLogger } from '@bun/logger';
 import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionShort } from '@bun/prompt/chord-progressions';
 import {
-  buildCreativeBoostSystemPrompt,
-  buildCreativeBoostUserPrompt,
   parseCreativeBoostResponse,
   buildCreativeBoostRefineSystemPrompt,
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
+import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
+import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic-builder';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { convertToMaxFormat } from '@bun/prompt/max-conversion';
 import { convertToNonMaxFormat } from '@bun/prompt/non-max-conversion';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
 import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
+import { generateDeterministicTitle } from '@bun/prompt/title-generator';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import { isDirectMode, generateDirectModeWithLyrics } from './direct-mode';
@@ -296,7 +297,7 @@ export async function generateCreativeBoost(
   sunoStyles: string[],
   description: string,
   lyricsTopic: string,
-  withWordlessVocals: boolean,
+  _withWordlessVocals: boolean,
   maxMode: boolean,
   withLyrics: boolean,
   config: CreativeBoostEngineConfig
@@ -312,49 +313,62 @@ export async function generateCreativeBoost(
     );
   }
 
-  // Compute performance context ONCE - used for both LLM prompt and conversion
-  const primaryGenre = seedGenres[0];
-  const genreString = seedGenres.join(' ');
-  const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
-  const performanceInstruments = guidance?.instruments;
-  const performanceVocalStyle = guidance?.vocal;
-  const chordProgression = primaryGenre ? buildProgressionShort(primaryGenre) : undefined;
-  
-  // Compute BPM range from blended genres
-  const bpmRangeData = genreString ? getBlendedBpmRange(genreString) : null;
-  const bpmRange = bpmRangeData ? formatBpmRange(bpmRangeData) : undefined;
+  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode });
 
-  const systemPrompt = buildCreativeBoostSystemPrompt(creativityLevel, withWordlessVocals);
-  const userPrompt = buildCreativeBoostUserPrompt(
-    creativityLevel, seedGenres, description, lyricsTopic, performanceInstruments, guidance
-  );
+  // Map creativity slider to level and select genre deterministically
+  const level = mapSliderToLevel(creativityLevel);
+  const selectedGenre = selectGenreForLevel(level, seedGenres, Math.random);
+  const selectedMood = selectMoodForLevel(level, Math.random);
 
-  const rawResponse = await callLLM({
-    getModel: config.getModel,
-    systemPrompt,
-    userPrompt,
-    errorContext: 'generate Creative Boost',
-  });
+  // Build the prompt using the existing deterministic builder
+  // Use genre as description since we've already selected it
+  let styleResult: string;
+  if (maxMode) {
+    const result = buildDeterministicMaxPrompt({
+      description: selectedGenre,
+      genreOverride: selectedGenre,
+    });
+    styleResult = result.text;
+  } else {
+    const result = buildDeterministicStandardPrompt({
+      description: selectedGenre,
+      genreOverride: selectedGenre,
+    });
+    styleResult = result.text;
+  }
 
-  const parsed = parseCreativeBoostResponse(rawResponse);
+  // Generate title deterministically
+  const title = generateDeterministicTitle(selectedGenre, selectedMood);
 
-  return postProcessCreativeBoostResponse(parsed, {
-    rawStyle: parsed.style,
-    maxMode,
-    seedGenres,
-    sunoStyles,
-    lyricsTopic,
-    description,
-    withLyrics,
-    systemPrompt,
-    userPrompt,
-    rawResponse,
-    config,
-    performanceInstruments,
-    performanceVocalStyle,
-    chordProgression,
-    bpmRange,
-  });
+  // Generate lyrics if requested (still uses LLM)
+  let lyrics: string | undefined;
+  if (withLyrics) {
+    const topicForLyrics = lyricsTopic?.trim() || description?.trim() || 'creative expression';
+    const lyricsResult = await generateLyrics(
+      topicForLyrics,
+      selectedGenre,
+      selectedMood,
+      maxMode,
+      config.getModel,
+      config.getUseSunoTags?.() ?? false
+    );
+    lyrics = lyricsResult.lyrics;
+  }
+
+  const debugInfo = config.isDebugMode()
+    ? config.buildDebugInfo(
+        'DETERMINISTIC',
+        `Creativity: ${level}, Genre: ${selectedGenre}, Mood: ${selectedMood}`,
+        styleResult
+      )
+    : undefined;
+
+  return {
+    text: styleResult,
+    title,
+    lyrics,
+    debugInfo,
+  };
 }
 
 export async function refineCreativeBoost(

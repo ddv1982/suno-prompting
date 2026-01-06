@@ -1,13 +1,12 @@
 import { createLogger } from '@bun/logger';
 import {
-  buildQuickVibesSystemPrompt,
-  buildQuickVibesUserPrompt,
-  postProcessQuickVibes,
   applyQuickVibesMaxMode,
   stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt,
 } from '@bun/prompt/quick-vibes-builder';
+import { postProcessQuickVibes } from '@bun/prompt/quick-vibes-builder';
+import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes-templates';
 
 import { isDirectMode, generateDirectModeResult } from './direct-mode';
 import { callLLM } from './llm-utils';
@@ -46,23 +45,34 @@ export async function generateQuickVibes(
     return generateDirectModeResult({ sunoStyles, description: customDescription }, config);
   }
 
-  const systemPrompt = buildQuickVibesSystemPrompt(config.isMaxMode(), withWordlessVocals);
-  const userPrompt = buildQuickVibesUserPrompt(category, customDescription);
+  // Category-based generation: fully deterministic (no LLM)
+  if (category) {
+    log.info('generateQuickVibes:deterministic', { category, withWordlessVocals });
+    const { text, title } = buildDeterministicQuickVibes(
+      category,
+      withWordlessVocals,
+      config.isMaxMode()
+    );
 
-  const rawResponse = await callLLM({
-    getModel: config.getModel,
-    systemPrompt,
-    userPrompt,
-    errorContext: 'generate Quick Vibes',
-  });
+    const result = applyQuickVibesMaxMode(text, config.isMaxMode());
 
-  let result = postProcessQuickVibes(rawResponse);
-  result = applyQuickVibesMaxMode(result, config.isMaxMode());
+    return {
+      text: result,
+      title,
+      debugInfo: config.isDebugMode()
+        ? config.buildDebugInfo('DETERMINISTIC', `Category: ${category}`, text)
+        : undefined,
+    };
+  }
+
+  // Custom description without category: use custom description as style
+  log.info('generateQuickVibes:customDescription', { description: customDescription });
+  const result = applyQuickVibesMaxMode(customDescription, config.isMaxMode());
 
   return {
     text: result,
     debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
+      ? config.buildDebugInfo('PASSTHROUGH', 'Custom description', customDescription)
       : undefined,
   };
 }

@@ -38,32 +38,38 @@ describe("AIEngine.generateQuickVibes", () => {
     expect(result.text.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
   });
 
-  it("handles category-only input", async () => {
+  it("handles category-only input deterministically (no LLM)", async () => {
     const result = await engine.generateQuickVibes("cafe-coffeeshop", "", false, []);
     
     expect(result.text).toBeDefined();
-    expect(mockGenerateText).toHaveBeenCalled();
+    // Category-based generation is now deterministic - no LLM call
+    expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
-  it("handles description-only input", async () => {
+  it("handles description-only input (passthrough)", async () => {
     const result = await engine.generateQuickVibes(null, "late night coding session", false, []);
     
     expect(result.text).toBeDefined();
-    expect(mockGenerateText).toHaveBeenCalled();
+    expect(result.text).toBe("late night coding session");
+    // Description-only is passthrough - no LLM call
+    expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
-  it("handles combined category and description", async () => {
+  it("handles combined category and description (category takes priority)", async () => {
     const result = await engine.generateQuickVibes("ambient-focus", "deep work session", false, []);
     
     expect(result.text).toBeDefined();
-    expect(mockGenerateText).toHaveBeenCalled();
+    // Category-based generation is deterministic
+    expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
   it("handles wordless vocals option", async () => {
     const result = await engine.generateQuickVibes("lofi-chill", "", true, []);
     
     expect(result.text).toBeDefined();
-    expect(mockGenerateText).toHaveBeenCalled();
+    expect(result.text).toContain("wordless vocals");
+    // Category-based generation is deterministic
+    expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
   it("includes debug info when debug mode enabled", async () => {
@@ -86,25 +92,20 @@ describe("AIEngine.generateQuickVibes", () => {
     expect(result.debugInfo).toBeUndefined();
   });
 
-  it("throws AIGenerationError on empty response", async () => {
-    mockGenerateText.mockImplementation(async () => ({
-      text: "",
-    }));
-
-    await expect(engine.generateQuickVibes("lofi-study", "", false, [])).rejects.toThrow(
-      "Empty response"
-    );
-  });
-
-  it("post-processes response to remove artifacts", async () => {
-    mockGenerateText.mockImplementation(async () => ({
-      text: '  "chill lo-fi beats"  ',
-    }));
-
+  it("returns deterministic output for category (no empty response possible)", async () => {
+    // Category-based generation is deterministic and always produces output
     const result = await engine.generateQuickVibes("lofi-study", "", false, []);
     
-    // Should remove quotes and trim
-    expect(result.text).toBe("chill lo-fi beats");
+    expect(result.text).toBeDefined();
+    expect(result.text.length).toBeGreaterThan(0);
+  });
+
+  it("returns title for category-based generation", async () => {
+    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    
+    // Deterministic generation includes a title
+    expect(result.title).toBeDefined();
+    expect(result.title!.length).toBeGreaterThan(0);
   });
 
   it("truncates response exceeding max chars limit", async () => {
@@ -162,15 +163,13 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
     expect(result.title).toBeDefined();
   });
 
-  it("uses normal LLM flow when sunoStyles is empty", async () => {
-    mockGenerateText.mockImplementation(async () => ({
-      text: "chill vibes",
-    }));
+  it("uses deterministic generation when sunoStyles is empty but category provided", async () => {
+    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
 
-    await engine.generateQuickVibes("lofi-study", "", false, []);
-
-    // Should call generateText when no sunoStyles
-    expect(mockGenerateText).toHaveBeenCalled();
+    // Category-based generation is deterministic - no LLM call
+    expect(mockGenerateText).not.toHaveBeenCalled();
+    expect(result.text).toBeDefined();
+    expect(result.title).toBeDefined();
   });
 
   it("includes debug info in direct mode when debug enabled", async () => {

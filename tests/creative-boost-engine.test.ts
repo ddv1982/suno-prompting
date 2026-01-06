@@ -35,7 +35,7 @@ void mock.module("ai", () => ({
   generateText: mockGenerateText,
 }));
 
-describe("AIEngine.generateCreativeBoost Max Mode", () => {
+describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
   let engine: AIEngine;
 
   beforeEach(() => {
@@ -44,7 +44,7 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     generateTextCalls = 0;
   });
 
-  it("makes AI call for max conversion when maxMode is true", async () => {
+  it("generates deterministically without LLM when maxMode is true (no lyrics)", async () => {
     await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
@@ -56,11 +56,11 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
       false // withLyrics
     );
 
-    // Should make 2 calls: 1 for Creative Boost, 1 for max conversion
-    expect(generateTextCalls).toBe(2);
+    // Deterministic generation - no LLM calls
+    expect(generateTextCalls).toBe(0);
   });
 
-  it("makes AI call for non-max conversion when maxMode is false", async () => {
+  it("generates deterministically without LLM when maxMode is false (no lyrics)", async () => {
     await engine.generateCreativeBoost(
       50, // creativityLevel
       [], // seedGenres
@@ -72,8 +72,8 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
       false // withLyrics
     );
 
-    // Should make 2 calls: 1 for Creative Boost, 1 for non-max conversion
-    expect(generateTextCalls).toBe(2);
+    // Deterministic generation - no LLM calls
+    expect(generateTextCalls).toBe(0);
   });
 
   it("returns Max Format structure when maxMode is true", async () => {
@@ -88,7 +88,8 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
       false // withLyrics
     );
 
-    expect(result.text).toContain(MAX_MODE_SIGNATURE);
+    // Deterministic builder uses Suno V5 format with ::tags syntax
+    expect(result.text).toContain('::tags realistic music ::');
     expect(result.text).toContain('genre:');
     expect(result.text).toContain('bpm:');
     expect(result.text).toContain('instruments:');
@@ -121,15 +122,17 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     expect(result.text).not.toContain(MAX_MODE_SIGNATURE);
   });
 
-  it("returns title from parsed response", async () => {
+  it("returns deterministic title", async () => {
     const result = await engine.generateCreativeBoost(
       50, [], [], "", "", false, false, false
     );
 
-    expect(result.title).toBe("Mystic Journey");
+    // Title is now deterministic (not from LLM response)
+    expect(result.title).toBeDefined();
+    expect(result.title!.length).toBeGreaterThan(0);
   });
 
-  it("includes maxConversion debug info when debug mode enabled and maxMode true", async () => {
+  it("includes debug info when debug mode enabled", async () => {
     engine.setDebugMode(true);
 
     const result = await engine.generateCreativeBoost(
@@ -137,19 +140,18 @@ describe("AIEngine.generateCreativeBoost Max Mode", () => {
     );
 
     expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.maxConversion).toBeDefined();
+    // Debug info shows deterministic generation info
+    expect(result.debugInfo?.systemPrompt).toContain("DETERMINISTIC");
   });
 
-  it("includes maxConversion debug info when maxMode false (non-max conversion)", async () => {
-    engine.setDebugMode(true);
+  it("excludes debug info when debug mode disabled", async () => {
+    engine.setDebugMode(false);
 
     const result = await engine.generateCreativeBoost(
       50, [], [], "", "", false, false, false
     );
 
-    expect(result.debugInfo).toBeDefined();
-    // Non-max conversion also includes debug info for the conversion step
-    expect(result.debugInfo?.maxConversion).toBeDefined();
+    expect(result.debugInfo).toBeUndefined();
   });
 });
 
@@ -397,35 +399,12 @@ Let the rhythm flow`,
     expect(result.lyrics).not.toContain("///*****///");
   });
 
-  // Task 4.6: Test fallback to normal mode when sunoStyles is empty
-  it("uses normal LLM flow when sunoStyles is empty", async () => {
-    // Reset mock to normal mode behavior
-    mockGenerateText.mockImplementation(async () => {
-      generateTextCalls++;
-      if (generateTextCalls === 1) {
-        // Creative Boost response
-        return {
-          text: '{"title": "Rock Anthem", "style": "energetic rock with powerful drums"}',
-        };
-      } else {
-        // Conversion AI enhancement response
-        return {
-          text: JSON.stringify({
-            styleTags: "powerful, energetic",
-            recording: "live stadium recording",
-            intro: "Building guitar riff",
-            verse: "Driving rhythm section",
-            chorus: "Full band explosion",
-            outro: "Epic fadeout",
-          }),
-        };
-      }
-    });
-
+  // Task 4.6: Test fallback to deterministic mode when sunoStyles is empty
+  it("uses deterministic generation when sunoStyles is empty", async () => {
     const result = await engine.generateCreativeBoost(
       50, // creativityLevel
       ["rock"], // seedGenres
-      [], // sunoStyles - empty, triggers normal mode
+      [], // sunoStyles - empty, triggers deterministic mode
       "energetic song", // description
       "", // lyricsTopic
       false, // withWordlessVocals
@@ -433,11 +412,11 @@ Let the rhythm flow`,
       false // withLyrics
     );
 
-    // Normal mode: should have gone through LLM processing
-    // At least 2 calls (generation + conversion)
-    expect(generateTextCalls).toBeGreaterThanOrEqual(2);
-    // Result should be longer (LLM-generated content)
+    // Deterministic mode: no LLM calls
+    expect(generateTextCalls).toBe(0);
+    // Result should still be valid prompt
     expect(result.text.length).toBeGreaterThan(20);
+    expect(result.title).toBeDefined();
   });
 
   it("returns a generated title in direct mode", async () => {
