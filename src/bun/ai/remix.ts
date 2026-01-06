@@ -9,8 +9,10 @@ import {
 } from '@bun/instruments';
 import { MOOD_POOL } from '@bun/instruments/datasets';
 import { selectModes } from '@bun/instruments/selection';
+import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
+import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 
 import type { GenreType } from '@bun/instruments';
 
@@ -48,8 +50,26 @@ export async function remixInstruments(
 ): Promise<RemixResult> {
   const selection = await selectModes(originalInput, getModel());
   const genre = selection.genre || 'ambient';
+
+  // 1. New instruments
   const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });
-  return { text: replaceFieldLine(currentPrompt, 'Instruments', instruments.join(', ')) };
+
+  // 2. New chord progression for this genre
+  const progression = getRandomProgressionForGenre(genre);
+  const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
+
+  // 3. New vocal style for this genre
+  const { range, delivery, technique } = getVocalSuggestionsForGenre(genre);
+  const vocalTags = [
+    `${range.toLowerCase()} vocals`,
+    `${delivery.toLowerCase()} vocals`,
+    technique.toLowerCase(),
+  ];
+
+  // 4. Combine all elements
+  const combined = [...instruments, harmonyTag, ...vocalTags];
+
+  return { text: replaceFieldLine(currentPrompt, 'Instruments', combined.join(', ')) };
 }
 
 /** Select a random item from array, with fallback */

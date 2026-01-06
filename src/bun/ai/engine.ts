@@ -27,6 +27,7 @@ import { selectModes } from '@bun/instruments/selection';
 import { createLogger } from '@bun/logger';
 import { injectBpm } from '@bun/prompt/bpm';
 import { buildContextualPrompt, buildMaxModeContextualPrompt, buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
+import { injectChordProgression } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { injectInstrumentTags } from '@bun/prompt/instruments-injection';
 import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
@@ -208,6 +209,10 @@ export class AIEngine {
       promptText = injectInstrumentTags(promptText, tags, this.config.isMaxMode());
     }
 
+    if (this.config.isMaxMode() && selection.genre) {
+      promptText = injectChordProgression(promptText, selection.genre);
+    }
+
     if (lockedPhrase) {
       promptText = injectLockedPhrase(promptText, lockedPhrase, this.config.isMaxMode());
     }
@@ -251,6 +256,10 @@ export class AIEngine {
     if (performanceGuidance?.vocal) {
       const tags = parseVocalStyleDescriptorToTags(performanceGuidance.vocal);
       result.text = injectInstrumentTags(result.text, tags, this.config.isMaxMode());
+    }
+
+    if (this.config.isMaxMode() && genre) {
+      result.text = injectChordProgression(result.text, genre);
     }
 
     if (lockedPhrase) {

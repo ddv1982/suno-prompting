@@ -345,3 +345,34 @@ export function detectProgression(description: string): ChordProgression | null 
   
   return null;
 }
+
+/** Check if prompt already contains a chord progression harmony tag */
+function hasChordProgression(prompt: string): boolean {
+  return /\([IViv\d\-#maj]+\)\s*harmony/i.test(prompt);
+}
+
+/**
+ * Inject chord progression into instruments field if not already present.
+ * Only applies to max mode format (quoted instruments field).
+ */
+export function injectChordProgression(
+  prompt: string,
+  genre: string,
+  rng: () => number = Math.random
+): string {
+  if (hasChordProgression(prompt)) {
+    return prompt;
+  }
+
+  const progression = getRandomProgressionForGenre(genre, rng);
+  const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
+
+  const quotedMatch = prompt.match(/^(instruments:\s*")([^"]*)"/mi);
+  if (quotedMatch) {
+    const existing = quotedMatch[2]?.trim();
+    const newValue = existing ? `${existing}, ${harmonyTag}` : harmonyTag;
+    return prompt.replace(/^(instruments:\s*")[^"]*"/mi, `$1${newValue}"`);
+  }
+
+  return prompt;
+}
