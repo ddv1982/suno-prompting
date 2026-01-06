@@ -1,8 +1,48 @@
+/**
+ * Post-processing utilities for Suno prompts.
+ *
+ * Provides functions for meta removal, deduplication, length enforcement,
+ * and locked phrase injection.
+ *
+ * @module prompt/postprocess
+ */
+
+/**
+ * Validates that a locked phrase doesn't contain template syntax.
+ *
+ * @param phrase - The phrase to validate
+ * @returns True if the phrase is valid (no {{ or }} syntax)
+ *
+ * @example
+ * isValidLockedPhrase('piano, guitar') // true
+ * isValidLockedPhrase('{{instrument}}') // false
+ */
 export function isValidLockedPhrase(phrase: string): boolean {
   if (!phrase) return true;
   return !phrase.includes('{{') && !phrase.includes('}}');
 }
 
+/**
+ * Injects a locked phrase into the instruments field of a prompt.
+ *
+ * Supports both quoted format (MAX mode) and unquoted format (standard mode).
+ * Falls back to appending at end if no instruments field is found.
+ *
+ * @param prompt - The prompt to inject into
+ * @param lockedPhrase - The phrase to inject (e.g., "acoustic guitar")
+ * @param _maxMode - Whether MAX mode is enabled (currently unused)
+ * @returns The prompt with the locked phrase injected
+ *
+ * @example
+ * // Quoted format (MAX mode)
+ * injectLockedPhrase('instruments: "piano"', 'guitar', true)
+ * // Returns: 'instruments: "piano, guitar"'
+ *
+ * @example
+ * // Unquoted format (standard mode)
+ * injectLockedPhrase('Instruments: piano', 'guitar', false)
+ * // Returns: 'Instruments: piano, guitar'
+ */
 export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMode: boolean): string {
   if (!lockedPhrase) return prompt;
   
@@ -35,6 +75,10 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMod
   return `${prompt}\n${lockedPhrase}`;
 }
 
+/**
+ * Known substrings that indicate leaked meta-instructions in LLM output.
+ * Used to detect and remove LLM meta-commentary from generated prompts.
+ */
 export const LEAKED_META_SUBSTRINGS = [
   'remove word repetition',
   'remove repetition',
@@ -46,11 +90,31 @@ export const LEAKED_META_SUBSTRINGS = [
   'here is the revised prompt',
 ] as const;
 
+/**
+ * Checks if text contains leaked meta-instructions from LLM.
+ *
+ * @param text - The text to check
+ * @returns True if any leaked meta substring is found
+ *
+ * @example
+ * hasLeakedMeta('Great song here is the revised prompt') // true
+ * hasLeakedMeta('Genre: jazz, Mood: smooth') // false
+ */
 export function hasLeakedMeta(text: string): boolean {
   const lower = text.toLowerCase();
   return LEAKED_META_SUBSTRINGS.some(s => lower.includes(s));
 }
 
+/**
+ * Removes lines containing leaked meta-instructions from text.
+ *
+ * @param text - The text to filter
+ * @returns Text with leaked meta lines removed
+ *
+ * @example
+ * stripLeakedMetaLines('Genre: jazz\nHere is the revised prompt:\nMood: smooth')
+ * // Returns: 'Genre: jazz\nMood: smooth'
+ */
 export function stripLeakedMetaLines(text: string): string {
   const lines = text.split('\n');
   const filtered = lines.filter(line => {
@@ -115,6 +179,20 @@ function dedupSuccessful(text: string, threshold: number = 3): boolean {
   return repeated.length <= threshold;
 }
 
+/**
+ * Truncates text to a character limit, preserving clean break points.
+ *
+ * Attempts to break at newlines or commas for cleaner truncation.
+ * Appends "..." to indicate truncation occurred.
+ *
+ * @param text - The text to truncate
+ * @param limit - Maximum character count
+ * @returns Truncated text with "..." suffix if truncated
+ *
+ * @example
+ * truncateToLimit('Line 1\nLine 2\nLine 3', 10)
+ * // Returns: 'Line 1...'
+ */
 export function truncateToLimit(text: string, limit: number): string {
   if (text.length <= limit) return text;
 
@@ -144,6 +222,18 @@ export async function enforceLengthLimit(
     : truncateToLimit(condensed, maxChars);
 }
 
+/**
+ * Detects repeated significant words in text.
+ *
+ * Words under 4 characters are ignored (common articles, prepositions).
+ *
+ * @param text - The text to analyze
+ * @returns Array of repeated word strings
+ *
+ * @example
+ * detectRepeatedWords('jazz jazz smooth smooth cool')
+ * // Returns: ['jazz', 'smooth']
+ */
 export function detectRepeatedWords(text: string): string[] {
   const words = text.toLowerCase().split(/[\s,;.()[\]]+/);
   const seen = new Set<string>();
@@ -158,6 +248,19 @@ export function detectRepeatedWords(text: string): string[] {
   return Array.from(repeated);
 }
 
+/**
+ * Validates and fixes prompt format to ensure proper bracket tag header.
+ *
+ * Standard mode prompts must start with [Mood, Genre, Key: X mode].
+ * If missing, extracts genre/mood from the prompt and adds the header.
+ *
+ * @param text - The prompt text to validate
+ * @returns Prompt with proper format (bracket tag header)
+ *
+ * @example
+ * validateAndFixFormat('Genre: Jazz\nMood: Smooth')
+ * // Returns: '[Smooth, Jazz, Key: C Major]\n\nGenre: Jazz\nMood: Smooth'
+ */
 export function validateAndFixFormat(text: string): string {
   const trimmed = text.trim();
   if (trimmed.startsWith('[')) return trimmed;
@@ -172,14 +275,48 @@ export function validateAndFixFormat(text: string): string {
   return `${bracketTag}\n\n${trimmed}`;
 }
 
+/**
+ * Dependencies for post-processing prompts.
+ * Provides character limits and LLM-based rewriting functions.
+ */
 export type PostProcessDeps = {
+  /** Maximum allowed character count */
   readonly maxChars: number;
+  /** Minimum allowed character count (below this, return original) */
   readonly minChars: number;
+  /** LLM function to remove meta-instructions */
   readonly rewriteWithoutMeta: (text: string) => Promise<string>;
+  /** LLM function to condense text length */
   readonly condense: (text: string) => Promise<string>;
+  /** LLM function to condense and deduplicate repeated words */
   readonly condenseWithDedup: (text: string, repeatedWords: string[]) => Promise<string>;
 };
 
+/**
+ * Post-processes a generated prompt for quality and compliance.
+ *
+ * Processing steps:
+ * 1. Remove leaked meta-instructions (deterministic first, then LLM fallback)
+ * 2. Validate and fix prompt format (add bracket header if missing)
+ * 3. Deduplicate repeated words (deterministic first, then LLM fallback)
+ * 4. Enforce character length limit (condense if over)
+ * 5. Final cleanup pass
+ *
+ * @param text - The raw prompt text to process
+ * @param deps - Processing dependencies (limits and LLM functions)
+ * @returns Cleaned and validated prompt text
+ *
+ * @example
+ * ```typescript
+ * const result = await postProcessPrompt(rawPrompt, {
+ *   maxChars: 1000,
+ *   minChars: 50,
+ *   rewriteWithoutMeta: (t) => rewriteWithoutMeta(t, getModel),
+ *   condense: (t) => condense(t, getModel),
+ *   condenseWithDedup: (t, words) => condenseWithDedup(t, words, getModel),
+ * });
+ * ```
+ */
 export async function postProcessPrompt(text: string, deps: PostProcessDeps): Promise<string> {
   // Step 1: Try deterministic meta removal first
   let result = stripLeakedMetaLines(text.trim());

@@ -6,7 +6,7 @@ export { createSessionId, createVersionId, isSessionId, isVersionId, toSessionId
 
 // Result types
 export type { Result } from '@shared/types/result';
-export { Ok, Err, isOk, isErr, unwrap, unwrapOr, map, mapErr, tryCatch, tryCatchAsync } from '@shared/types/result';
+export { Ok, Err, ok, err, isOk, isErr, unwrap, unwrapOr, map, mapErr, tryCatch, tryCatchAsync } from '@shared/types/result';
 
 // Config types
 export type { AIProvider, APIKeys, AppConfig } from '@shared/types/config';
