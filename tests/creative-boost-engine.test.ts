@@ -88,8 +88,8 @@ describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
       false // withLyrics
     );
 
-    // Deterministic builder uses Suno V5 format with ::tags syntax
-    expect(result.text).toContain('::tags realistic music ::');
+    // Deterministic builder uses standard MAX_MODE_HEADER format
+    expect(result.text).toContain('[Is_MAX_MODE: MAX](MAX)');
     expect(result.text).toContain('genre:');
     expect(result.text).toContain('bpm:');
     expect(result.text).toContain('instruments:');

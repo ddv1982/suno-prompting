@@ -89,10 +89,10 @@ describe('deterministic-integration', () => {
         rng: createSeededRng(12345),
       });
 
-      // Verify MAX MODE header
-      expect(result.text).toContain('::tags realistic music ::');
-      expect(result.text).toContain('::quality maximum ::');
-      expect(result.text).toContain('::style suno v5 ::');
+      // Verify MAX MODE header (standard format)
+      expect(result.text).toContain('[Is_MAX_MODE: MAX](MAX)');
+      expect(result.text).toContain('[QUALITY: MAX](MAX)');
+      expect(result.text).toContain('[REALISM: MAX](MAX)');
 
       // Verify all required fields
       expect(result.text).toMatch(/genre:\s*"[^"]+"/);

@@ -231,9 +231,9 @@ describe('deterministic-builder', () => {
           description: 'smooth jazz',
           rng: createSeededRng(12345),
         });
-        expect(result.text).toContain('::tags realistic music ::');
-        expect(result.text).toContain('::quality maximum ::');
-        expect(result.text).toContain('::style suno v5 ::');
+        expect(result.text).toContain('[Is_MAX_MODE: MAX](MAX)');
+        expect(result.text).toContain('[QUALITY: MAX](MAX)');
+        expect(result.text).toContain('[REALISM: MAX](MAX)');
       });
 
       it('includes genre field', () => {

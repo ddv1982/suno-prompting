@@ -25,7 +25,7 @@ import {
 import { buildAllSections } from '@bun/prompt/section-templates';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
-import { MAX_MODE_TAGS_HEADER } from '@shared/max-format';
+import { MAX_MODE_HEADER } from '@shared/max-format';
 
 const log = createLogger('DeterministicBuilder');
 
@@ -534,8 +534,8 @@ export function buildDeterministicMaxPrompt(
   // 5. Get BPM range
   const bpmRange = getBpmRangeForGenre(genre);
 
-  // 6. Format the prompt
-  const rawPrompt = `${MAX_MODE_TAGS_HEADER}
+  // 6. Format the prompt using standard MAX_MODE_HEADER for consistency
+  const rawPrompt = `${MAX_MODE_HEADER}
 
 genre: "${genre}"
 bpm: "${bpmRange}"
