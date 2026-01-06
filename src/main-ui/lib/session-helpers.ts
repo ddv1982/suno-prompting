@@ -7,6 +7,24 @@ import type { GeneratingAction } from '@/hooks/use-generation-state';
 import type { Logger } from '@/lib/logger';
 import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, DebugInfo } from '@shared/types';
 
+/**
+ * Build originalInput for Full Prompt mode.
+ * Ensures remix actions always work by never returning an empty string.
+ * Without this, empty descriptions with genre/topic would cause remix buttons to silently fail
+ * (they check `if (!currentSession?.originalInput) return;`).
+ */
+export function buildFullPromptOriginalInput(
+  description: string,
+  genreOverride?: string,
+  lyricsTopic?: string
+): string {
+  return [
+    genreOverride ? `[genre: ${genreOverride}]` : null,
+    lyricsTopic?.trim() ? `[topic: ${lyricsTopic.trim()}]` : null,
+    description || null,
+  ].filter(Boolean).join(' ') || 'Full Prompt';
+}
+
 export type GenerationResultBase = {
   prompt: string;
   title?: string;

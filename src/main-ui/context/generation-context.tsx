@@ -16,6 +16,7 @@ import {
   updateChatMessagesAfterGeneration,
   handleGenerationError,
   addUserMessage,
+  buildFullPromptOriginalInput,
 } from '@/lib/session-helpers';
 import { api } from '@/services/rpc';
 import { type PromptSession, type PromptVersion, type QuickVibesCategory, type DebugInfo } from '@shared/types';
@@ -199,7 +200,7 @@ export function GenerationProvider({ children }: { children: ReactNode }): React
       const effectiveLockedPhrase = getEffectiveLockedPhrase();
       const effectiveLyricsTopic = lyricsTopic?.trim() || undefined;
       const result = await executeGenerationApi({ input, isInitial, currentPrompt, currentTitle: currentSession?.currentTitle, currentLyrics: currentSession?.currentLyrics, lockedPhrase: effectiveLockedPhrase, lyricsTopic: effectiveLyricsTopic, genreOverride: advancedSelection.seedGenres[0] });
-      await updateSessionWithResult(result, isInitial ? undefined : input, "Updated prompt generated.", isInitial, input, effectiveLockedPhrase, effectiveLyricsTopic);
+      await updateSessionWithResult(result, isInitial ? undefined : input, "Updated prompt generated.", isInitial, buildFullPromptOriginalInput(input, advancedSelection.seedGenres[0], effectiveLyricsTopic), effectiveLockedPhrase, effectiveLyricsTopic);
       setPendingInput(""); setLyricsTopic("");
     } catch (error) { handleGenerationError(error, "generate prompt", setChatMessages, log); }
     finally { setGeneratingAction('none'); }

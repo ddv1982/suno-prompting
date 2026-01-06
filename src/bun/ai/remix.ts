@@ -8,14 +8,10 @@ import {
   isMultiGenre,
 } from '@bun/instruments';
 import { MOOD_POOL } from '@bun/instruments/datasets';
-import { detectGenre } from '@bun/instruments/detection';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
-import { _testHelpers } from '@bun/prompt/deterministic';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
-
-const { selectRandomGenre } = _testHelpers;
 
 import type { GenreType } from '@bun/instruments';
 
@@ -50,20 +46,23 @@ export function injectStyleTags(prompt: string, genre: string): string {
  * Remix instruments in a prompt with new genre-appropriate instruments.
  *
  * This function is fully deterministic - no LLM calls are made.
- * Genre is detected via keyword matching, with random fallback.
+ * Genre is extracted from the current prompt's genre field for reliability.
+ * This aligns with how other remix functions work (remixStyleTags, remixRecording, etc.)
+ * and ensures consistent behavior even when originalInput is empty or doesn't contain
+ * genre keywords.
  *
  * @param currentPrompt - The current prompt to modify
- * @param originalInput - Original user description for genre detection
+ * @param _originalInput - Kept for API compatibility, no longer used for genre detection
  * @returns Updated prompt with new instruments
  */
 export function remixInstruments(
   currentPrompt: string,
-  originalInput: string
+  _originalInput: string
 ): RemixResult {
-  // Detect genre from original input using keyword matching (no LLM)
-  // Fall back to random genre if no keywords match
-  const detectedGenre = detectGenre(originalInput);
-  const genre = detectedGenre ?? selectRandomGenre();
+  // Extract genre from prompt (like other remix functions)
+  // This is more reliable than keyword detection on originalInput
+  // Cast to GenreType since extractGenreFromPrompt returns 'acoustic' as fallback
+  const genre = extractGenreFromPrompt(currentPrompt) as GenreType;
 
   // 1. New instruments
   const instruments = selectInstrumentsForGenre(genre, { maxTags: 4 });

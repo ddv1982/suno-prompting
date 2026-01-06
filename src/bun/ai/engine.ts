@@ -389,6 +389,7 @@ export class AIEngine {
   /**
    * Remix instruments in a prompt with new genre-appropriate instruments.
    * This operation is fully deterministic - no LLM calls.
+   * Genre is extracted from currentPrompt; originalInput kept for API compatibility.
    */
   remixInstruments(currentPrompt: string, originalInput: string): GenerationResult {
     return remixInstrumentsImpl(currentPrompt, originalInput);
