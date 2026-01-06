@@ -10,41 +10,43 @@ const log = createLogger('Main');
 
 // Set up application menu for keyboard shortcuts (Cmd+C/Ctrl+C, Cmd+V/Ctrl+V, etc.)
 // Explicit menu definition ensures keyboard shortcuts are properly bound on all platforms
+// Note: accelerator property is required for shortcuts to work (see Electrobun GitHub issue #28)
 ApplicationMenu.setApplicationMenu([
-    // App Menu (macOS: first menu is always the app name)
+    // App Menu - label required for packaged builds
     {
+        label: "Suno Prompting App",
         submenu: [
-            { role: "hide" },
+            { role: "hide", accelerator: "h" },
             { role: "hideOthers" },
             { role: "showAll" },
             { type: "separator" },
-            { label: "Quit", role: "quit" },
+            { label: "Quit", role: "quit", accelerator: "q" },
         ],
     },
     // Edit Menu
     {
         label: "Edit",
         submenu: [
-            { role: "undo" },
-            { role: "redo" },
+            { role: "undo", accelerator: "z" },
+            { role: "redo", accelerator: "Z" },
             { type: "separator" },
-            { role: "cut" },
-            { role: "copy" },
-            { role: "paste" },
-            { role: "pasteAndMatchStyle" },
+            { role: "cut", accelerator: "x" },
+            { role: "copy", accelerator: "c" },
+            { role: "paste", accelerator: "v" },
+            { role: "pasteAndMatchStyle", accelerator: "V" },
             { role: "delete" },
             { type: "separator" },
-            { role: "selectAll" },
+            { role: "selectAll", accelerator: "a" },
         ],
     },
     // Window Menu
     {
         label: "Window",
         submenu: [
-            { role: "minimize" },
+            { role: "minimize", accelerator: "m" },
             { role: "zoom" },
             { type: "separator" },
-            { role: "close" },
+            { role: "close", accelerator: "w" },
             { role: "bringAllToFront" },
         ],
     },
