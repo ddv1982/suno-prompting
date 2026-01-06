@@ -8,6 +8,52 @@ import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
 
+// Menu configuration - defined once, used in both module-level and delayed setup
+// Note: accelerator property is required for shortcuts to work (see Electrobun GitHub issue #28)
+const MENU_CONFIG = [
+    // App Menu - label required for packaged builds
+    {
+        label: "Suno Prompting App",
+        submenu: [
+            { role: "hide", accelerator: "h" },
+            { role: "hideOthers" },
+            { role: "showAll" },
+            { type: "separator" },
+            { label: "Quit", role: "quit", accelerator: "q" },
+        ],
+    },
+    // Edit Menu
+    {
+        label: "Edit",
+        submenu: [
+            { role: "undo", accelerator: "z" },
+            { role: "redo", accelerator: "Z" },
+            { type: "separator" },
+            { role: "cut", accelerator: "x" },
+            { role: "copy", accelerator: "c" },
+            { role: "paste", accelerator: "v" },
+            { role: "pasteAndMatchStyle", accelerator: "V" },
+            { role: "delete" },
+            { type: "separator" },
+            { role: "selectAll", accelerator: "a" },
+        ],
+    },
+    // Window Menu
+    {
+        label: "Window",
+        submenu: [
+            { role: "minimize", accelerator: "m" },
+            { role: "zoom" },
+            { type: "separator" },
+            { role: "close", accelerator: "w" },
+            { role: "bringAllToFront" },
+        ],
+    },
+];
+
+// Set menu at module level (works in dev mode)
+ApplicationMenu.setApplicationMenu(MENU_CONFIG);
+
 const aiEngine = new AIEngine();
 const storage = new StorageManager();
 
@@ -76,48 +122,10 @@ async function initializeApp(): Promise<void> {
         }
     });
 
-    // Set up application menu AFTER window creation (required for packaged builds)
-    // Note: accelerator property is required for shortcuts to work (see Electrobun GitHub issue #28)
-    ApplicationMenu.setApplicationMenu([
-        // App Menu - label required for packaged builds
-        {
-            label: "Suno Prompting App",
-            submenu: [
-                { role: "hide", accelerator: "h" },
-                { role: "hideOthers" },
-                { role: "showAll" },
-                { type: "separator" },
-                { label: "Quit", role: "quit", accelerator: "q" },
-            ],
-        },
-        // Edit Menu
-        {
-            label: "Edit",
-            submenu: [
-                { role: "undo", accelerator: "z" },
-                { role: "redo", accelerator: "Z" },
-                { type: "separator" },
-                { role: "cut", accelerator: "x" },
-                { role: "copy", accelerator: "c" },
-                { role: "paste", accelerator: "v" },
-                { role: "pasteAndMatchStyle", accelerator: "V" },
-                { role: "delete" },
-                { type: "separator" },
-                { role: "selectAll", accelerator: "a" },
-            ],
-        },
-        // Window Menu
-        {
-            label: "Window",
-            submenu: [
-                { role: "minimize", accelerator: "m" },
-                { role: "zoom" },
-                { type: "separator" },
-                { role: "close", accelerator: "w" },
-                { role: "bringAllToFront" },
-            ],
-        },
-    ]);
+    // Re-set menu after window creation with delay (for packaged builds)
+    setTimeout(() => {
+        ApplicationMenu.setApplicationMenu(MENU_CONFIG);
+    }, 100);
 }
 
 initializeApp().catch((error: unknown) => {
