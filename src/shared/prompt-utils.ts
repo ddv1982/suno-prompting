@@ -14,10 +14,12 @@ export function cleanJsonResponse(text: string): string {
 }
 
 /**
- * Strips MAX_MODE_HEADER from prompt if present
- * Used for accurate character counting (header is metadata, not content)
+ * Strips MAX_MODE_HEADER from prompt if present.
+ * Handles both standard format ([Is_MAX_MODE:...]) and Suno V5 tags format (::tags...).
+ * Used for accurate character counting (header is metadata, not content).
  */
 export function stripMaxModeHeader(prompt: string): string {
+  // Handle standard format: [Is_MAX_MODE:...] lines
   if (prompt.startsWith('[Is_MAX_MODE:')) {
     const lines = prompt.split('\n');
     const contentStart = lines.findIndex((line, i) => i > 0 && !line.startsWith('['));
@@ -25,6 +27,16 @@ export function stripMaxModeHeader(prompt: string): string {
       return lines.slice(contentStart).join('\n').trim();
     }
   }
+
+  // Handle Suno V5 tags format: ::tags..., ::quality..., ::style... lines
+  if (prompt.startsWith('::tags')) {
+    const lines = prompt.split('\n');
+    const contentStart = lines.findIndex((line, i) => i > 0 && !line.startsWith('::'));
+    if (contentStart > 0) {
+      return lines.slice(contentStart).join('\n').trim();
+    }
+  }
+
   return prompt;
 }
 

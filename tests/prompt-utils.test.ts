@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'bun:test';
 
-import { MAX_MODE_HEADER } from '../src/shared/max-format';
+import { MAX_MODE_HEADER, isMaxFormat } from '../src/shared/max-format';
 import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
+
+// Suno V5 tags format header (used by deterministic builder)
+const MAX_MODE_TAGS_HEADER = `::tags realistic music ::
+::quality maximum ::
+::style suno v5 ::`;
 
 // ============================================================================
 // cleanJsonResponse Tests
@@ -62,12 +67,55 @@ describe('cleanJsonResponse', () => {
 });
 
 // ============================================================================
+// isMaxFormat Tests
+// ============================================================================
+
+describe('isMaxFormat', () => {
+  it('returns true for standard MAX_MODE_HEADER format', () => {
+    const prompt = `${MAX_MODE_HEADER}
+genre: "jazz"
+bpm: "110"`;
+    expect(isMaxFormat(prompt)).toBe(true);
+  });
+
+  it('returns true for Suno V5 tags format', () => {
+    const prompt = `${MAX_MODE_TAGS_HEADER}
+
+genre: "jazz"
+bpm: "110"`;
+    expect(isMaxFormat(prompt)).toBe(true);
+  });
+
+  it('returns false for non-max format', () => {
+    expect(isMaxFormat('Genre: jazz\nBPM: 110')).toBe(false);
+  });
+
+  it('returns false for empty string', () => {
+    expect(isMaxFormat('')).toBe(false);
+  });
+
+  it('detects signature anywhere in text', () => {
+    expect(isMaxFormat('Some text\n[Is_MAX_MODE: MAX](MAX)\nMore text')).toBe(true);
+    expect(isMaxFormat('Some text\n::tags realistic music ::\nMore text')).toBe(true);
+  });
+});
+
+// ============================================================================
 // stripMaxModeHeader Tests
 // ============================================================================
 
 describe('stripMaxModeHeader', () => {
-  it('removes max mode header from prompt', () => {
+  it('removes standard MAX_MODE_HEADER from prompt', () => {
     const prompt = `${MAX_MODE_HEADER}
+genre: "jazz"
+bpm: "110"`;
+    const result = stripMaxModeHeader(prompt);
+    expect(result).toBe('genre: "jazz"\nbpm: "110"');
+  });
+
+  it('removes Suno V5 tags header from prompt', () => {
+    const prompt = `${MAX_MODE_TAGS_HEADER}
+
 genre: "jazz"
 bpm: "110"`;
     const result = stripMaxModeHeader(prompt);
@@ -166,6 +214,14 @@ Instruments: electric guitar, drums
 [QUALITY: MAX](MAX)
 [REALISM: MAX](MAX)
 [REAL_INSTRUMENTS: MAX](MAX)
+genre: "jazz"
+bpm: "110"`;
+      expect(isStructuredPrompt(prompt)).toBe(true);
+    });
+
+    it('returns true for Suno V5 tags format prompt', () => {
+      const prompt = `${MAX_MODE_TAGS_HEADER}
+
 genre: "jazz"
 bpm: "110"`;
       expect(isStructuredPrompt(prompt)).toBe(true);
