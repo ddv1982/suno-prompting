@@ -8,6 +8,16 @@
  */
 
 // =============================================================================
+// Constants
+// =============================================================================
+
+/** Probability of using mood-preferred words when available (0-1) */
+const PREFERRED_MOOD_PROBABILITY = 0.7;
+
+/** Multiplier for max attempts when generating unique title options */
+const MAX_ATTEMPTS_MULTIPLIER = 3;
+
+// =============================================================================
 // Title Word Pools
 // =============================================================================
 
@@ -344,8 +354,8 @@ function filterByMood(words: readonly string[], mood: string, rng: () => number)
   const preferred = words.filter((w) => weights.preferred.includes(w));
   const neutral = words.filter((w) => !weights.avoid.includes(w) && !weights.preferred.includes(w));
 
-  // 70% chance to use preferred words if available
-  if (preferred.length > 0 && rng() < 0.7) {
+  // Use preferred words based on configured probability
+  if (preferred.length > 0 && rng() < PREFERRED_MOOD_PROBABILITY) {
     return preferred;
   }
 
@@ -465,9 +475,10 @@ export function generateTitleOptions(
   const titles: string[] = [];
   const seen = new Set<string>();
 
-  // Generate unique titles
+  // Generate unique titles with bounded attempts to prevent infinite loops
   let attempts = 0;
-  while (titles.length < count && attempts < count * 3) {
+  const maxAttempts = count * MAX_ATTEMPTS_MULTIPLIER;
+  while (titles.length < count && attempts < maxAttempts) {
     const title = generateDeterministicTitle(genre, mood, rng);
     if (!seen.has(title.toLowerCase())) {
       seen.add(title.toLowerCase());
