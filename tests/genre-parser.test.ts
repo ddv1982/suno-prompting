@@ -8,8 +8,10 @@ import {
   selectInstrumentsForMultiGenre,
   buildPerformanceGuidance,
   buildMultiGenreGuidance,
-  clearGuidanceCache,
+  _testHelpers,
 } from '@bun/prompt/genre-parser';
+
+const { clearGuidanceCache } = _testHelpers;
 
 // Seeded RNG for deterministic tests
 const createSeededRng = (seed: number) => {

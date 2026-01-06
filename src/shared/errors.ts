@@ -58,6 +58,22 @@ export class StorageError extends AppError {
 }
 
 /**
+ * Error thrown when an invariant is violated.
+ * Used for impossible states that indicate a bug in the code.
+ *
+ * @example
+ * if (items.length === 0) {
+ *   throw new InvariantError('selectRandom called with empty array');
+ * }
+ */
+export class InvariantError extends AppError {
+    constructor(message: string, cause?: Error) {
+        super(message, 'INVARIANT_VIOLATION', cause);
+        this.name = 'InvariantError';
+    }
+}
+
+/**
  * Extracts error message from unknown error type.
  * Use this instead of repeating `error instanceof Error ? error.message : fallback` pattern.
  */

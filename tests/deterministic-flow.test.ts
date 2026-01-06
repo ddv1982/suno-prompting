@@ -12,7 +12,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
-} from '@bun/prompt/deterministic-builder';
+} from '@bun/prompt/deterministic';
 import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes-templates';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 

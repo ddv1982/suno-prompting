@@ -198,6 +198,9 @@ export function selectInstrumentsForMultiGenre(
  * Key: normalized genre string (lowercase)
  * Value: computed guidance object
  */
+/** Maximum cache size to prevent unbounded memory growth */
+const GUIDANCE_CACHE_MAX_SIZE = 100;
+
 const guidanceCache = new Map<string, { vocal: string; production: string; instruments: string[] }>();
 
 /**
@@ -234,13 +237,23 @@ export function buildPerformanceGuidance(
   // This allows tests to pass custom RNG and get fresh results
   const useCache = rng === Math.random;
 
-  if (useCache && guidanceCache.has(cacheKey)) {
-    return guidanceCache.get(cacheKey)!;
+  if (useCache) {
+    const cached = guidanceCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
 
   const guidance = buildPerformanceGuidanceImpl(components, rng);
 
   if (useCache) {
+    // Evict oldest entries if cache is full (simple LRU approximation)
+    if (guidanceCache.size >= GUIDANCE_CACHE_MAX_SIZE) {
+      const firstKey = guidanceCache.keys().next().value;
+      if (firstKey !== undefined) {
+        guidanceCache.delete(firstKey);
+      }
+    }
     guidanceCache.set(cacheKey, guidance);
   }
 
@@ -251,9 +264,18 @@ export function buildPerformanceGuidance(
  * Clear the guidance cache. Useful for testing.
  * @internal
  */
-export function clearGuidanceCache(): void {
+function clearGuidanceCache(): void {
   guidanceCache.clear();
 }
+
+/**
+ * @internal
+ * Test helpers for unit testing internal functions.
+ * Do not use in production code.
+ */
+export const _testHelpers = {
+  clearGuidanceCache,
+} as const;
 
 /**
  * Result type for multi-genre guidance including all blended elements.

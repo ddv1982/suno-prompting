@@ -12,6 +12,7 @@ import {
   generateQuickVibesTitle,
   type QuickVibesTemplate,
 } from '@bun/prompt/quick-vibes-templates';
+import { InvariantError } from '@shared/errors';
 
 import { isDirectMode, generateDirectModeResult } from './direct-mode';
 import { callLLM } from './llm-utils';
@@ -130,8 +131,13 @@ function refineDeterministicQuickVibes(
 ): GenerationResult {
   const { feedback, withWordlessVocals, category } = options;
 
+  // Category must be set when this function is called
+  if (!category) {
+    throw new InvariantError('refineDeterministicQuickVibes called without category');
+  }
+
   // Get template for the category
-  const template = getQuickVibesTemplate(category!);
+  const template = getQuickVibesTemplate(category);
 
   // Use feedback to seed the RNG for deterministic but varied output
   const feedbackHash = hashFeedback(feedback);
@@ -151,7 +157,7 @@ function refineDeterministicQuickVibes(
     text: result,
     title,
     debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo('DETERMINISTIC_REFINE', `Category: ${String(category)}, Feedback: ${feedback}`, text)
+      ? config.buildDebugInfo('DETERMINISTIC_REFINE', `Category: ${category}, Feedback: ${feedback}`, text)
       : undefined,
   };
 }
@@ -191,7 +197,7 @@ function buildDeterministicQuickVibesFromTemplate(
 ): { text: string; title: string } {
   const selectRandom = <T>(items: readonly T[]): T => {
     if (items.length === 0) {
-      throw new Error('selectRandom called with empty array');
+      throw new InvariantError('selectRandom called with empty array');
     }
     const idx = Math.floor(rng() * items.length);
     return items[idx] as T;

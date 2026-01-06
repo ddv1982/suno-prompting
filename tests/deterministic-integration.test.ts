@@ -19,7 +19,7 @@ import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
   _testHelpers,
-} from '@bun/prompt/deterministic-builder';
+} from '@bun/prompt/deterministic';
 import { APP_CONSTANTS } from '@shared/constants';
 
 const { selectRandomGenre } = _testHelpers;

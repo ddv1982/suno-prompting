@@ -11,7 +11,7 @@ import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/con
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
 import { createLogger } from '@bun/logger';
 import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
-import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic-builder';
+import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 
 import { DEFAULT_LYRICS_TOPIC, injectWordlessVocals, generateLyricsForCreativeBoost } from './helpers';

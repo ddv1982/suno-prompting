@@ -1275,6 +1275,9 @@
       background-color: color-mix(in oklab, var(--color-background) 50%, transparent);
     }
   }
+  .bg-base {
+    background-color: var(--bg-base);
+  }
   .bg-black\/50 {
     background-color: color-mix(in srgb, #000 50%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -1648,6 +1651,16 @@
     letter-spacing: 0.08em;
     color: var(--muted-foreground);
   }
+  .text-headline {
+    font-size: var(--text-headline);
+    line-height: 1.3;
+    font-weight: var(--weight-semibold);
+  }
+  .text-large-title {
+    font-size: var(--text-large-title);
+    line-height: 1.2;
+    font-weight: var(--weight-bold);
+  }
   .ui-helper {
     font-size: var(--text-tiny);
     line-height: 1.5;
@@ -1723,6 +1736,12 @@
   }
   .text-footnote {
     font-size: var(--text-footnote);
+  }
+  .text-headline {
+    font-size: var(--text-headline);
+  }
+  .text-large-title {
+    font-size: var(--text-large-title);
   }
   .text-micro {
     font-size: var(--text-micro);

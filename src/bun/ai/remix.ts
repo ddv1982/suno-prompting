@@ -10,7 +10,7 @@ import {
 import { MOOD_POOL } from '@bun/instruments/datasets';
 import { detectGenre } from '@bun/instruments/detection';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
-import { _testHelpers } from '@bun/prompt/deterministic-builder';
+import { _testHelpers } from '@bun/prompt/deterministic';
 import { selectRealismTags, selectElectronicTags, isElectronicGenre, selectRecordingDescriptors, selectGenericTags } from '@bun/prompt/realism-tags';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
