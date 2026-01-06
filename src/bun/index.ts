@@ -14,8 +14,6 @@ ApplicationMenu.setApplicationMenu([
     // App Menu (macOS: first menu is always the app name)
     {
         submenu: [
-            { label: "About Suno Prompting", role: "about" },
-            { type: "separator" },
             { role: "hide" },
             { role: "hideOthers" },
             { role: "showAll" },
@@ -46,6 +44,7 @@ ApplicationMenu.setApplicationMenu([
             { role: "minimize" },
             { role: "zoom" },
             { type: "separator" },
+            { role: "close" },
             { role: "bringAllToFront" },
         ],
     },
