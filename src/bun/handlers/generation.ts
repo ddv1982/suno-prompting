@@ -1,7 +1,9 @@
 import { type AIEngine, type GenerationResult } from '@bun/ai';
+import { GenerateInitialSchema, RefinePromptSchema } from '@shared/schemas';
 import { validatePrompt } from '@shared/validation';
 
 import { withErrorHandling, log, type ActionMeta } from './utils';
+import { validate } from './validated';
 
 import type { RPCHandlers } from '@shared/types';
 
@@ -30,12 +32,14 @@ async function runAndValidate(
 
 export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers {
   return {
-    generateInitial: async ({ description, lockedPhrase, lyricsTopic, genreOverride }) => {
+    generateInitial: async (params) => {
+      const { description, lockedPhrase, lyricsTopic, genreOverride } = validate(GenerateInitialSchema, params);
       return runAndValidate('generateInitial', { description, genreOverride }, () =>
         aiEngine.generateInitial(description, lockedPhrase, lyricsTopic, genreOverride)
       );
     },
-    refinePrompt: async ({ currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride }) => {
+    refinePrompt: async (params) => {
+      const { currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride } = validate(RefinePromptSchema, params);
       return runAndValidate('refinePrompt', { feedback, genreOverride }, () =>
         aiEngine.refinePrompt(currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride)
       );

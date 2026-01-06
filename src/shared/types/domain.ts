@@ -41,14 +41,14 @@ export type CreativeBoostInput = {
   withWordlessVocals: boolean;             // Humming, oohs
 };
 
-export const EMPTY_CREATIVE_BOOST_INPUT: CreativeBoostInput = {
+export const EMPTY_CREATIVE_BOOST_INPUT = {
   creativityLevel: 50,
   seedGenres: [],
   sunoStyles: [],
   description: '',
   lyricsTopic: '',
   withWordlessVocals: false,
-};
+} as const satisfies CreativeBoostInput;
 
 // Editor mode types
 export type EditorMode = 'simple' | 'advanced';
@@ -65,14 +65,14 @@ export type AdvancedSelection = {
   seedGenres: string[];  // 0-4 genres or genre combinations
 };
 
-export const EMPTY_ADVANCED_SELECTION: AdvancedSelection = {
+export const EMPTY_ADVANCED_SELECTION = {
   harmonicStyle: null,
   harmonicCombination: null,
   polyrhythmCombination: null,
   timeSignature: null,
   timeSignatureJourney: null,
   seedGenres: [],
-};
+} as const satisfies AdvancedSelection;
 
 export type PromptVersion = {
   id: string;

@@ -1,5 +1,13 @@
 // Barrel file - re-exports all types for backwards compatibility
 
+// Branded types
+export type { Brand, SessionId, VersionId } from '@shared/types/brand';
+export { createSessionId, createVersionId, isSessionId, isVersionId, toSessionId, toVersionId } from '@shared/types/brand';
+
+// Result types
+export type { Result } from '@shared/types/result';
+export { Ok, Err, isOk, isErr, unwrap, unwrapOr, map, mapErr, tryCatch, tryCatchAsync } from '@shared/types/result';
+
 // Config types
 export type { AIProvider, APIKeys, AppConfig } from '@shared/types/config';
 export { DEFAULT_API_KEYS } from '@shared/types/config';

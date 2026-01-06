@@ -1,13 +1,8 @@
 import { type AIEngine } from '@bun/ai';
+import { GenerateCreativeBoostSchema, RefineCreativeBoostSchema } from '@shared/schemas';
 
 import { withErrorHandling, log } from './utils';
-import {
-  validateCreativityLevel,
-  validateGenreStylesMutualExclusivity,
-  validateRequiredField,
-  validateSeedGenresLimit,
-  validateSunoStylesLimit,
-} from './validation';
+import { validate } from './validated';
 
 import type { RPCHandlers } from '@shared/types';
 
@@ -15,20 +10,17 @@ type CreativeBoostHandlers = Pick<RPCHandlers, 'generateCreativeBoost' | 'refine
 
 export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHandlers {
   return {
-    generateCreativeBoost: async ({
-      creativityLevel,
-      seedGenres,
-      sunoStyles,
-      description,
-      lyricsTopic,
-      withWordlessVocals,
-      maxMode,
-      withLyrics
-    }) => {
-      validateCreativityLevel(creativityLevel);
-      validateSeedGenresLimit(seedGenres);
-      validateSunoStylesLimit(sunoStyles);
-      validateGenreStylesMutualExclusivity(seedGenres, sunoStyles);
+    generateCreativeBoost: async (params) => {
+      const {
+        creativityLevel,
+        seedGenres,
+        sunoStyles,
+        description,
+        lyricsTopic,
+        withWordlessVocals,
+        maxMode,
+        withLyrics
+      } = validate(GenerateCreativeBoostSchema, params);
 
       return withErrorHandling('generateCreativeBoost', async () => {
         const result = await aiEngine.generateCreativeBoost(
@@ -57,22 +49,19 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         };
       }, { creativityLevel, seedGenresCount: seedGenres.length });
     },
-    refineCreativeBoost: async ({
-      currentPrompt,
-      currentTitle,
-      feedback,
-      lyricsTopic,
-      description,
-      seedGenres,
-      sunoStyles,
-      withWordlessVocals,
-      maxMode,
-      withLyrics
-    }) => {
-      validateRequiredField(currentPrompt, 'currentPrompt', 'Current prompt is required for refinement');
-      validateRequiredField(currentTitle, 'currentTitle', 'Current title is required for refinement');
-      validateSunoStylesLimit(sunoStyles);
-      validateGenreStylesMutualExclusivity(seedGenres, sunoStyles);
+    refineCreativeBoost: async (params) => {
+      const {
+        currentPrompt,
+        currentTitle,
+        feedback,
+        lyricsTopic,
+        description,
+        seedGenres,
+        sunoStyles,
+        withWordlessVocals,
+        maxMode,
+        withLyrics
+      } = validate(RefineCreativeBoostSchema, params);
 
       return withErrorHandling('refineCreativeBoost', async () => {
         const result = await aiEngine.refineCreativeBoost(

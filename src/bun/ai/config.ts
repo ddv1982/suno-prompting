@@ -61,12 +61,12 @@ export class AIConfig {
   getModel(): LanguageModel {
     switch (this.provider) {
       case 'openai':
-        return createOpenAI({ apiKey: this.apiKeys.openai || process.env.OPENAI_API_KEY })(this.model) as unknown as LanguageModel;
+        return createOpenAI({ apiKey: this.apiKeys.openai ?? '' })(this.model);
       case 'anthropic':
-        return createAnthropic({ apiKey: this.apiKeys.anthropic || process.env.ANTHROPIC_API_KEY })(this.model) as unknown as LanguageModel;
+        return createAnthropic({ apiKey: this.apiKeys.anthropic ?? '' })(this.model);
       case 'groq':
       default:
-        return createGroq({ apiKey: this.apiKeys.groq || process.env.GROQ_API_KEY })(this.model) as LanguageModel;
+        return createGroq({ apiKey: this.apiKeys.groq ?? '' })(this.model);
     }
   }
 

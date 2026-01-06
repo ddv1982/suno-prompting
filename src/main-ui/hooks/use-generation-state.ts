@@ -4,8 +4,8 @@ import { type ChatMessage } from '@/lib/chat-utils';
 import { type DebugInfo } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
-export type GeneratingAction = 
-  | 'none' 
+/** Active generation actions (excluding 'none') */
+export type ActiveGeneratingAction = 
   | 'generate' 
   | 'remix' 
   | 'remixInstruments' 
@@ -17,6 +17,17 @@ export type GeneratingAction =
   | 'remixLyrics'
   | 'quickVibes'
   | 'creativeBoost';
+
+/** All generation actions including idle state */
+export type GeneratingAction = 'none' | ActiveGeneratingAction;
+
+/**
+ * Discriminated union for generation state.
+ * Ensures type safety: when status is 'generating', action is always defined.
+ */
+export type GenerationStatus =
+  | { readonly status: 'idle' }
+  | { readonly status: 'generating'; readonly action: ActiveGeneratingAction };
 
 export interface GenerationStateResult {
   generatingAction: GeneratingAction;

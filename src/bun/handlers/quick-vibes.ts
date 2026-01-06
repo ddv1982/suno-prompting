@@ -1,7 +1,8 @@
 import { type AIEngine, type GenerationResult } from '@bun/ai';
+import { GenerateQuickVibesSchema, RefineQuickVibesSchema } from '@shared/schemas';
 
 import { withErrorHandling, log, type ActionMeta } from './utils';
-import { validateCategoryStylesMutualExclusivity, validateSunoStylesLimit } from './validation';
+import { validate } from './validated';
 
 import type { RPCHandlers } from '@shared/types';
 
@@ -31,9 +32,8 @@ async function runQuickVibesAction(
 
 export function createQuickVibesHandlers(aiEngine: AIEngine): QuickVibesHandlers {
   return {
-    generateQuickVibes: async ({ category, customDescription, withWordlessVocals, sunoStyles }) => {
-      validateCategoryStylesMutualExclusivity(category, sunoStyles);
-      validateSunoStylesLimit(sunoStyles);
+    generateQuickVibes: async (params) => {
+      const { category, customDescription, withWordlessVocals, sunoStyles } = validate(GenerateQuickVibesSchema, params);
 
       return runQuickVibesAction(
         'generateQuickVibes',
@@ -41,9 +41,8 @@ export function createQuickVibesHandlers(aiEngine: AIEngine): QuickVibesHandlers
         () => aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals, sunoStyles)
       );
     },
-    refineQuickVibes: async ({ currentPrompt, currentTitle, description, feedback, withWordlessVocals, category, sunoStyles = [] }) => {
-      validateCategoryStylesMutualExclusivity(category, sunoStyles);
-      validateSunoStylesLimit(sunoStyles);
+    refineQuickVibes: async (params) => {
+      const { currentPrompt, currentTitle, description, feedback, withWordlessVocals, category, sunoStyles } = validate(RefineQuickVibesSchema, params);
 
       return runQuickVibesAction(
         'refineQuickVibes',
