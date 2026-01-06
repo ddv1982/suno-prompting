@@ -130,7 +130,8 @@ type RhythmicInfo = ReturnType<typeof detectRhythmic>;
 type PerformanceGuidanceType = NonNullable<ReturnType<typeof buildPerformanceGuidance>>;
 
 /**
- * Check if any guidance is available for the prompt.
+ * Early exit check - skips guidance assembly when no mode/genre/rhythm
+ * is selected, avoiding unnecessary string building.
  */
 function hasAnyGuidance(selection: ModeSelection, rhythmic: RhythmicInfo): boolean {
   return !!(
@@ -146,6 +147,8 @@ function hasAnyGuidance(selection: ModeSelection, rhythmic: RhythmicInfo): boole
 
 /**
  * Build performance guidance section for a genre.
+ * Extracts and formats vocal/production/instrument guidance from genre registry.
+ * Adds multi-genre blending hints when compound genres are detected.
  */
 function buildPerformanceGuidanceSection(
   genre: string,

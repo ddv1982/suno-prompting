@@ -17,8 +17,8 @@ import { enforceLengthLimit } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { APP_CONSTANTS } from '@shared/constants';
 
-import type { GenerationResult } from '../types';
-import type { PostProcessParams, CreativeBoostEngineConfig } from './types';
+import type { PostProcessParams, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
+import type { GenerationResult } from '@bun/ai/types';
 import type { DebugInfo, ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
@@ -183,7 +183,9 @@ export type GenerationDebugInfo = {
 };
 
 /**
- * Resolve genre for creative boost - detects from lyrics topic if needed.
+ * Resolve genre for creative boost.
+ * Uses seed genres when available to avoid LLM calls; falls back to
+ * topic-based detection only when necessary for lyrics generation.
  */
 export async function resolveGenreForCreativeBoost(
   seedGenres: string[],
@@ -210,7 +212,9 @@ export async function resolveGenreForCreativeBoost(
 }
 
 /**
- * Build the style prompt for creative boost using deterministic builders.
+ * Build style prompt using deterministic builders.
+ * Avoids LLM calls entirely - uses genre registry and curated instrument pools
+ * to produce consistent, high-quality prompts without network latency.
  */
 export function buildCreativeBoostStyle(
   genre: string,
@@ -231,7 +235,9 @@ export function buildCreativeBoostStyle(
 }
 
 /**
- * Generate title for creative boost - LLM when lyrics ON, deterministic otherwise.
+ * Generate title for creative boost.
+ * Uses LLM only when lyrics are enabled (title should match lyrical theme);
+ * otherwise generates deterministically to minimize latency.
  */
 export async function generateCreativeBoostTitle(
   withLyrics: boolean,
@@ -251,7 +257,8 @@ export async function generateCreativeBoostTitle(
 }
 
 /**
- * Generate lyrics for creative boost if requested.
+ * Generate lyrics for creative boost when lyrics mode is enabled.
+ * Early-exits when lyrics disabled to avoid unnecessary LLM calls.
  */
 export async function generateCreativeBoostLyrics(
   withLyrics: boolean,
@@ -275,6 +282,8 @@ export async function generateCreativeBoostLyrics(
 
 /**
  * Build debug info for creative boost generation.
+ * Only assembles when debug mode is enabled to avoid overhead in production.
+ * Labels indicate generation path (deterministic vs LLM-assisted).
  */
 export function buildCreativeBoostDebugInfo(
   config: CreativeBoostEngineConfig,

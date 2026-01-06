@@ -139,10 +139,14 @@ function LLMCallSection({
 // Sub-components for DebugDrawerBody
 // =============================================================================
 
-type DebugMetadataHeaderProps = {
+interface DebugMetadataHeaderProps {
   debugInfo: Partial<DebugInfo>;
-};
+}
 
+/**
+ * Displays timestamp, provider, and model info for debug inspection.
+ * Extracted to reduce complexity of parent component.
+ */
 function DebugMetadataHeader({ debugInfo }: DebugMetadataHeaderProps): React.JSX.Element {
   return (
     <div className="ui-helper flex items-center gap-3">
@@ -159,12 +163,16 @@ function DebugMetadataHeader({ debugInfo }: DebugMetadataHeaderProps): React.JSX
   );
 }
 
-type LLMCallsSectionProps = {
+interface LLMCallsSectionProps {
   debugInfo: Partial<DebugInfo>;
   onCopy: (text: string, section: string) => void;
   copiedSection: string | null;
-};
+}
 
+/**
+ * Renders collapsible sections for each LLM call (genre, title, lyrics, max).
+ * Returns null when no LLM calls exist to avoid empty container.
+ */
 function LLMCallsSection({ debugInfo, onCopy, copiedSection }: LLMCallsSectionProps): React.JSX.Element | null {
   const hasLLMCalls = debugInfo.genreDetection || debugInfo.titleGeneration || debugInfo.lyricsGeneration || debugInfo.maxConversion;
   

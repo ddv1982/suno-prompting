@@ -7,10 +7,6 @@
  * @module ai/creative-boost/generate
  */
 
-import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
-import { createLogger } from '@bun/logger';
-import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
-
 import {
   generateLyricsForCreativeBoost,
   resolveGenreForCreativeBoost,
@@ -18,10 +14,14 @@ import {
   generateCreativeBoostTitle,
   generateCreativeBoostLyrics,
   buildCreativeBoostDebugInfo,
-} from './helpers';
+} from '@bun/ai/creative-boost/helpers';
+import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
+import { createLogger } from '@bun/logger';
+import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
 
-import type { GenerationResult } from '../types';
-import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from './types';
+
+import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
+import type { GenerationResult } from '@bun/ai/types';
 
 const log = createLogger('CreativeBoostGenerate');
 
