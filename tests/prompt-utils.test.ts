@@ -4,39 +4,50 @@ import { MAX_MODE_HEADER, MAX_MODE_TAGS_HEADER, isMaxFormat } from '../src/share
 import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
 
 // ============================================================================
+// Test Fixtures
+// ============================================================================
+
+/** Sample JSON content used across multiple tests */
+const TEST_JSON = '{"prompt": "test"}';
+const TEST_JSON_MULTILINE = '{\n  "prompt": "test",\n  "title": "Title"\n}';
+const TEST_JSON_WITH_CONTENT = '{"prompt": "Genre: jazz, BPM: 110", "title": "Test"}';
+
+/** JSON wrapped in markdown code blocks */
+const JSON_WITH_MARKERS = `\`\`\`json\n${TEST_JSON}\n\`\`\``;
+const JSON_OPENING_MARKER_ONLY = `\`\`\`json\n${TEST_JSON}`;
+const JSON_CLOSING_MARKER_ONLY = `${TEST_JSON}\n\`\`\``;
+const JSON_WITH_WHITESPACE = `  \`\`\`json\n${TEST_JSON}\n\`\`\`  `;
+const JSON_MULTILINE_WITH_MARKERS = `\`\`\`json\n${TEST_JSON_MULTILINE}\n\`\`\``;
+const JSON_ADJACENT_MARKERS = `\`\`\`json${TEST_JSON}\`\`\``;
+const JSON_CONTENT_WITH_MARKERS = `\`\`\`json\n${TEST_JSON_WITH_CONTENT}\n\`\`\``;
+
+// ============================================================================
 // cleanJsonResponse Tests
 // ============================================================================
 
 describe('cleanJsonResponse', () => {
   it('removes ```json and ``` markers from response', () => {
-    const input = '```json\n{"prompt": "test"}\n```';
-    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+    expect(cleanJsonResponse(JSON_WITH_MARKERS)).toBe(TEST_JSON);
   });
 
   it('handles response without markers', () => {
-    const input = '{"prompt": "test"}';
-    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+    expect(cleanJsonResponse(TEST_JSON)).toBe(TEST_JSON);
   });
 
   it('handles response with only opening marker', () => {
-    const input = '```json\n{"prompt": "test"}';
-    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+    expect(cleanJsonResponse(JSON_OPENING_MARKER_ONLY)).toBe(TEST_JSON);
   });
 
   it('handles response with only closing marker', () => {
-    const input = '{"prompt": "test"}\n```';
-    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+    expect(cleanJsonResponse(JSON_CLOSING_MARKER_ONLY)).toBe(TEST_JSON);
   });
 
   it('trims whitespace from result', () => {
-    const input = '  ```json\n{"prompt": "test"}\n```  ';
-    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+    expect(cleanJsonResponse(JSON_WITH_WHITESPACE)).toBe(TEST_JSON);
   });
 
   it('handles multiline JSON content', () => {
-    const input = '```json\n{\n  "prompt": "test",\n  "title": "Title"\n}\n```';
-    const expected = '{\n  "prompt": "test",\n  "title": "Title"\n}';
-    expect(cleanJsonResponse(input)).toBe(expected);
+    expect(cleanJsonResponse(JSON_MULTILINE_WITH_MARKERS)).toBe(TEST_JSON_MULTILINE);
   });
 
   it('handles empty input', () => {
@@ -48,16 +59,14 @@ describe('cleanJsonResponse', () => {
   });
 
   it('produces valid JSON after cleaning', () => {
-    const input = '```json\n{"prompt": "Genre: jazz, BPM: 110", "title": "Test"}\n```';
-    const cleaned = cleanJsonResponse(input);
+    const cleaned = cleanJsonResponse(JSON_CONTENT_WITH_MARKERS);
     const parsed = JSON.parse(cleaned);
     expect(parsed.prompt).toBe('Genre: jazz, BPM: 110');
     expect(parsed.title).toBe('Test');
   });
 
   it('handles adjacent newlines correctly', () => {
-    const input = '```json{"prompt": "test"}```';
-    expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
+    expect(cleanJsonResponse(JSON_ADJACENT_MARKERS)).toBe(TEST_JSON);
   });
 });
 
