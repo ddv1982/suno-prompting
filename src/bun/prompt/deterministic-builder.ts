@@ -83,6 +83,9 @@ const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as GenreType[];
 /** Maximum character limit for prompts */
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
+/** Fallback BPM range when genre has no defined BPM */
+const DEFAULT_BPM_RANGE = 'between 90 and 140';
+
 /** Musical keys for STANDARD MODE */
 const MUSICAL_KEYS: readonly string[] = [
   'C',
@@ -223,8 +226,8 @@ function resolveGenre(
     const components = parseGenreComponents(genreOverride);
     if (components.length > 0) {
       // Valid genre(s) found - use original string for display, components for lookups
-      // components[0] is guaranteed to exist since length > 0
-      const primaryGenre = components[0]!;
+      // Pop fallback is genre-neutral and produces broadly appealing selections
+      const primaryGenre = components[0] ?? 'pop';
       return {
         detected: null,
         displayGenre: genreOverride.toLowerCase().trim(),
@@ -492,8 +495,7 @@ function getBpmRangeForGenre(genreString: string): string {
     return formatBpmRange(range);
   }
 
-  // Ultimate fallback
-  return 'between 90 and 140';
+  return DEFAULT_BPM_RANGE;
 }
 
 // =============================================================================
