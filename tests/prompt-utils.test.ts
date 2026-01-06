@@ -1,12 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 
-import { MAX_MODE_HEADER, isMaxFormat } from '../src/shared/max-format';
+import { MAX_MODE_HEADER, MAX_MODE_TAGS_HEADER, isMaxFormat } from '../src/shared/max-format';
 import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
-
-// Suno V5 tags format header (used by deterministic builder)
-const MAX_MODE_TAGS_HEADER = `::tags realistic music ::
-::quality maximum ::
-::style suno v5 ::`;
 
 // ============================================================================
 // cleanJsonResponse Tests

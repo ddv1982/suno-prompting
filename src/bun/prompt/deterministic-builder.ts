@@ -25,6 +25,7 @@ import {
 import { buildAllSections } from '@bun/prompt/section-templates';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
+import { MAX_MODE_TAGS_HEADER } from '@shared/max-format';
 
 const log = createLogger('DeterministicBuilder');
 
@@ -69,11 +70,6 @@ export type DeterministicResult = {
 // =============================================================================
 // Constants
 // =============================================================================
-
-/** Max Mode header tags for Suno V5 */
-const MAX_MODE_TAGS = `::tags realistic music ::
-::quality maximum ::
-::style suno v5 ::`;
 
 /** All genre keys for random selection */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as GenreType[];
@@ -539,7 +535,7 @@ export function buildDeterministicMaxPrompt(
   const bpmRange = getBpmRangeForGenre(genre);
 
   // 6. Format the prompt
-  const rawPrompt = `${MAX_MODE_TAGS}
+  const rawPrompt = `${MAX_MODE_TAGS_HEADER}
 
 genre: "${genre}"
 bpm: "${bpmRange}"

@@ -13,9 +13,17 @@ export const MAX_MODE_SIGNATURE = '[Is_MAX_MODE: MAX](MAX)';
 
 /**
  * Alternative signature used by deterministic builder (Suno V5 tags format).
- * First line of the MAX_MODE_TAGS header.
+ * First line of the MAX_MODE_TAGS_HEADER.
  */
 export const MAX_MODE_TAGS_SIGNATURE = '::tags realistic music ::';
+
+/**
+ * Full Suno V5 tags header used by deterministic builder.
+ * Alternative to MAX_MODE_HEADER for faster generation.
+ */
+export const MAX_MODE_TAGS_HEADER = `::tags realistic music ::
+::quality maximum ::
+::style suno v5 ::`;
 
 /**
  * Check if text is already in Max Mode format.
