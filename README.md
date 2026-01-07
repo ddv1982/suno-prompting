@@ -1,24 +1,6 @@
 # suno-prompting-app
 
-Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with enforced formatting, genre/mood/instrument guidance, and guardrails.
-
-## Table of Contents
-
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Architecture](#architecture)
-- [AI Providers](#ai-providers)
-- [Output Format](#output-format)
-- [Features](#features)
-- [Quick Vibes](#quick-vibes)
-- [Creative Boost](#creative-boost)
-- [Advanced Mode](#advanced-mode)
-- [Genre & Mode Detection](#genre--mode-detection)
-- [Max Mode](#max-mode)
-- [Title & Lyrics](#title--lyrics)
-- [Prompt Enhancement System](#prompt-enhancement-system)
-- [Reference Tables](#reference-tables)
-- [Tech Stack](#tech-stack)
+Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with genre/mood/instrument guidance and enforced formatting.
 
 ## Quick Start
 
@@ -29,273 +11,172 @@ bun install
 bun start
 ```
 
-Run tests: `bun test`
+Run tests: `bun test` | Validate: `bun run validate`
 
 <details>
 <summary><strong>Build Commands</strong></summary>
 
 | Command | Description |
 |---------|-------------|
-| `bun run build` | Development build (outputs to `build/`) |
+| `bun run build` | Development build |
+| `bun run build:stable` | Production (current platform) |
+| `bun run build:stable:all` | Production (all platforms) |
 | `bun run build:macos` | macOS (Intel & Apple Silicon) |
 | `bun run build:linux` | Linux (x64) |
 | `bun run build:windows` | Windows (x64) |
-| `bun run build:all` | All platforms |
-| `bun run build:stable` | Production (current platform) |
-| `bun run build:stable:all` | Production (all platforms) |
-| `bun run build:canary` | Canary (current platform) |
 
 </details>
 
 ## Configuration
 
-Settings (including your AI provider API keys) are stored locally:
+Settings and API keys stored locally (encrypted with AES-256-GCM):
 
 | Platform | Location |
 |----------|----------|
-| macOS | `~/.suno-prompting-app/config.json` |
-| Linux | `~/.suno-prompting-app/config.json` |
+| macOS/Linux | `~/.suno-prompting-app/config.json` |
 | Windows | `C:\Users\<username>\.suno-prompting-app\config.json` |
 
-API keys are encrypted at rest using AES-256-GCM.
+### AI Providers
 
-## Architecture
-
-| Module | Purpose |
-|--------|---------|
-| `src/bun/ai/` | AI engine, config, content generation, remix operations |
-| `src/bun/prompt/` | Prompt builders, postprocessing, articulations, vocal descriptors, chord progressions |
-| `src/bun/instruments/` | Instrument registry, genre pools, selection logic |
-
-## AI Providers
-
-| Provider | Models | Get API Key |
-|----------|--------|-------------|
+| Provider | Models | API Key |
+|----------|--------|---------|
 | Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
 | OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
 | Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
 
-Each provider's API key is stored separately and encrypted independently.
-
-## Output Format
-
-| Component | Format |
-|-----------|--------|
-| Line 1 | `[Mood, Genre/Style, Key: key/mode]` |
-| Required fields | `Genre:`, `BPM:`, `Mood:`, `Instruments:` |
-| Section tags | `[Intro]`, `[Verse]`, `[Pre-Chorus]`, `[Chorus]`, `[Bridge]`, `[Outro]` |
-
 ## Features
 
-- Generates structured Suno prompts from plain English.
-- Keyword + LLM-assisted detection for **genre / harmonic feel / rhythm / time signature**.
-- **Dynamic instrument selection** from curated pools with exclusion rules.
-- Quick remix buttons for **mood / genre / instruments**.
-- Prompt validation: **1000-character limit** + contradictory tag warnings.
-- **Max Mode**: Community-discovered prompt format for higher quality output (see below).
-- **Quick Vibes mode**: Simplified generation for atmospheric/background music with category presets.
-- **Creative Boost mode**: Experimental genre exploration with creativity slider (0-100%), Simple/Advanced mode toggle, up to 4 seed genres or 4 Suno V5 styles (~900+) with direct injection.
-- **Advanced Mode**: Precise genre selection with <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> single genres and <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> genre combinations.
+- **Structured prompts** from plain English with `Genre:`, `BPM:`, `Mood:`, `Instruments:` fields
+- **Three generation modes**: Full Prompt, Quick Vibes, Creative Boost
+- **Max Mode**: Community-discovered format for higher quality output
+- **Dynamic instrument selection** from curated pools with exclusion rules
+- **Genre detection**: Keyword matching → spelling correction → LLM analysis
+- **Quick remix buttons** for mood/genre/instruments/style/recording
+- **Lyrics Mode**: Optional AI-generated structured lyrics
+- **1000-character limit** validation + contradictory tag warnings
 
-## Quick Vibes
+## Modes
 
-Quick Vibes is a simplified mode for generating short, atmospheric prompts perfect for background music, study sessions, and ambient listening.
+### Full Prompt Mode (Default)
 
-### How to Use
+Generate structured prompts with optional Advanced Mode for precise genre control.
 
-1. Switch to Quick Vibes mode using the mode toggle
-2. Select a category preset OR enter a custom description
-3. Optionally enable "Wordless Vocals" for instrumental-only output
-4. Click Generate
+**Output format:**
+```
+[Mood, Genre/Style, Key: key/mode]
 
-### Category Presets
+Genre: jazz
+BPM: 110
+Mood: smooth, warm
+Instruments: Rhodes, upright bass, brushed drums
 
-| Category | Description | Example Output |
-|----------|-------------|----------------|
-| Lo-fi / Study | Chill beats for studying and focus | "warm lo-fi beats to study to" |
-| Cafe / Coffee shop | Cozy acoustic and jazz vibes | "relaxing cafe jazz on a sunday morning" |
-| Ambient / Focus | Atmospheric soundscapes for deep work | "dreamy ambient soundscape for deep focus" |
-| Late night / Chill | Mellow late-night listening | "late night chill hop vibes" |
-| Cozy / Rainy day | Warm sounds for rainy days | "cozy acoustic music for a rainy afternoon" |
-| Lo-fi chill | Classic lo-fi chill beats | "chill lo-fi beats with soft piano" |
+[INTRO] Warm piano chords...
+[VERSE] Gentle melody...
+```
 
-### Quick Vibes Features
+<details>
+<summary><strong>Advanced Mode</strong></summary>
 
-- **60 character limit**: Prompts are kept short and focused
-- **Wordless Vocals**: Toggle to request instrumental-only output
-- **Max Mode support**: When enabled, adds realism tags to output
-- **Refinement**: Chat-style refinement to adjust the generated prompt
+Searchable dropdowns for precise selection:
 
-### Best For
+| Option | Choices |
+|--------|---------|
+| Single Genre | <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres |
+| Genre Combination | <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos |
+| Harmonic Style | Modes (Dorian, Lydian, Phrygian, etc.) |
+| Modal Combination | Journeys (Major-Minor, Lydian-Minor, etc.) |
+| Polyrhythm | Rhythmic patterns |
+| Time Signature | Standard and odd meters (7/8, 5/4, etc.) |
 
-- Background music for work/study
-- Atmospheric playlists
-- Quick inspiration without detailed configuration
+</details>
 
-## Creative Boost
+### Quick Vibes
 
-Creative Boost is an experimental generation mode that explores creative genre combinations with adjustable creativity levels.
+Simplified 60-character prompts for ambient/background music.
 
-### How to Use
+<details>
+<summary><strong>Category Presets</strong></summary>
 
-1. Switch to Creative Boost mode using the mode toggle
-2. Choose **Simple** or **Advanced** mode:
-   - **Simple**: Creativity slider + Description + Toggles only (AI auto-selects genres/styles)
-   - **Advanced**: Full feature set including Seed Genres and Suno V5 Styles
-3. Adjust the **Creativity Slider** to control genre exploration intensity
-4. (Advanced only) Optionally select up to **4 seed genres** OR **4 Suno V5 styles**
-5. Add an optional description for additional context
-6. Click Generate
+| Category | Description |
+|----------|-------------|
+| Lo-fi / Study | Chill beats for focus |
+| Cafe / Coffee shop | Cozy acoustic and jazz |
+| Ambient / Focus | Atmospheric soundscapes |
+| Late night / Chill | Mellow listening |
+| Cozy / Rainy day | Warm sounds |
 
-### Simple vs Advanced Mode
+</details>
 
-| Aspect | Simple Mode | Advanced Mode |
-|--------|-------------|---------------|
-| **Creativity Slider** | ✅ Visible | ✅ Visible |
-| **Description Input** | ✅ Visible | ✅ Visible |
-| **Toggles** (Lyrics, Wordless, Max) | ✅ Visible | ✅ Visible |
-| **Seed Genres** | ❌ Hidden | ✅ Visible |
-| **Suno V5 Styles** | ❌ Hidden | ✅ Visible |
-| **Direct Mode Indicator** | ❌ Hidden | ✅ Visible |
-| **Genre Selection** | AI auto-selects | Manual selection |
-| **Default** | ✅ Yes | No |
+### Creative Boost
 
-**Note**: Direct Mode (when Suno V5 styles are selected) disables the Simple mode toggle, as exact style selections must remain visible.
+Experimental genre exploration with creativity slider (0-100%).
 
-### Creativity Levels
+| Level | Behavior |
+|-------|----------|
+| 0% Low | Single genres, pure and traditional |
+| 25% Safe | Established combinations |
+| 50% Normal | Balanced mix |
+| 75% Adventurous | Unusual combinations |
+| 100% High | Experimental fusions |
 
-| Level | Name | Behavior |
-|-------|------|----------|
-| 0% | Low | Single genres only, pure and traditional |
-| 25% | Safe | Established combinations from the registry |
-| 50% | Normal | Balanced mix of pure and blended genres |
-| 75% | Adventurous | Unusual combinations, creative risks |
-| 100% | High | Experimental fusions, invented combinations |
+<details>
+<summary><strong>Simple vs Advanced Mode</strong></summary>
 
-### Seed Genres
+| Feature | Simple | Advanced |
+|---------|--------|----------|
+| Creativity Slider | ✅ | ✅ |
+| Description Input | ✅ | ✅ |
+| Toggles (Lyrics, Wordless, Max) | ✅ | ✅ |
+| Seed Genres (up to 4) | ❌ | ✅ |
+| Suno V5 Styles (~900+) | ❌ | ✅ |
 
-Select up to 4 genres (single or combinations) to guide the creative direction:
+**Seed Genres vs Suno V5 Styles** (mutually exclusive):
 
-- Selected genres are **directly injected** into the output without LLM modification
-- Genres appear with proper formatting (e.g., "Jazz, Lo-Fi, Electronic, Ambient")
-- Mix single genres and combinations freely
-- Leave empty for fully AI-driven exploration
+| Selector | Source | Format |
+|----------|--------|--------|
+| Seed Genres | App registry (<!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> + <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos) | Title Case |
+| Suno V5 Styles | Official Suno V5 (~900+) | lowercase as-is |
 
-### Suno V5 Styles
+</details>
 
-Alternatively, select up to 4 official Suno V5 styles (~900+ available):
+### Max Mode
 
-- Styles are **directly injected exactly as-is** (lowercase, no transformation)
-- Choose from official Suno V5 style tags like "lo-fi afro-cuban jazz", "dark goa trance", "k-pop"
-- Searchable dropdown with alphabetical sorting
-- **Mutually exclusive** with Seed Genres - selecting one clears the other
+Community-discovered format for higher quality, realistic output. Best for organic genres (country, folk, jazz, blues, rock).
 
-| Selector | Source | Format | Example Output |
-|----------|--------|--------|----------------|
-| Seed Genres | App registry (<!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> + <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos) | Title Case | "Jazz, Lo-Fi, Electronic" |
-| Suno V5 Styles | Official Suno V5 (~900+) | lowercase as-is | "lo-fi, k-pop, dream pop" |
-
-### Creative Boost Features
-
-- **Simple/Advanced Toggle**: Quick switch between streamlined and full-featured interfaces
-- **Creativity Slider**: 5-level control from conservative to experimental
-- **Direct Genre Injection**: Your selected genres/styles appear exactly as chosen (Advanced mode)
-- **Suno V5 Styles**: Access to 900+ official Suno V5 style tags (Advanced mode)
-- **Max Mode support**: Works with both Max and standard output formats
-- **Wordless Vocals**: Toggle for instrumental-only output
-- **Lyrics Mode**: Optional AI-generated lyrics
-- **Refinement**: Chat-style refinement to adjust the generated prompt
-- **Mode Persistence**: Your Simple/Advanced preference is saved separately from Full Prompt mode
-
-### Output Examples
-
-**With 4 Seed Genres selected (Jazz, Lo-Fi, Electronic, Ambient) + Max Mode:**
 ```
 [Is_MAX_MODE: MAX](MAX)
 [QUALITY: MAX](MAX)
 [REALISM: MAX](MAX)
 [REAL_INSTRUMENTS: MAX](MAX)
-genre: "Jazz, Lo-Fi, Electronic, Ambient"
-bpm: "85"
-instruments: "Rhodes, warm synth pad, vinyl crackle, brushed drums"
-style tags: "tape saturation, intimate, analog warmth"
-recording: "late night studio session, vintage microphone"
+genre: "acoustic, country singer-songwriter"
+bpm: "95"
+instruments: "acoustic guitar, baritone vocals, raspy vocals"
+style tags: "tape recorder, raw performance, natural dynamics"
+recording: "one person, one guitar, vintage microphone"
 ```
 
-**With 3 Suno V5 Styles selected (lo-fi afro-cuban jazz, dark goa trance, k-pop) + Max Mode:**
-```
-[Is_MAX_MODE: MAX](MAX)
-[QUALITY: MAX](MAX)
-[REALISM: MAX](MAX)
-[REAL_INSTRUMENTS: MAX](MAX)
-genre: "lo-fi afro-cuban jazz, dark goa trance, k-pop"
-bpm: "110"
-instruments: "Rhodes, congas, synth pad, 808"
-style tags: "vinyl warmth, wide stereo, hypnotic pulse"
-recording: "hybrid studio session, blending acoustic and electronic"
-```
+<details>
+<summary><strong>Max Mode Details</strong></summary>
 
-**With Seed Genres selected + Standard Mode:**
-```
-[Dreamy, Jazz Lo-Fi Electronic Ambient]
+**Key differences from normal mode:**
 
-Genre: Jazz, Lo-Fi, Electronic, Ambient
-BPM: 85
-Mood: dreamy, warm, introspective
-Instruments: Rhodes, warm synth pad, vinyl crackle, brushed drums
+| Aspect | Normal Mode | Max Mode |
+|--------|-------------|----------|
+| Format | Section tags `[VERSE]`, `[CHORUS]` | Metadata `genre:`, `instruments:` |
+| Focus | Song structure | Recording quality & realism |
 
-[INTRO] Warm pads fade in with vinyl texture...
-[VERSE] Gentle Rhodes chords over lo-fi beats...
-```
+**Auto-conversion:** Pasting a standard format prompt with Max Mode enabled automatically converts it.
 
-### Best For
+**Not recommended for:** EDM, house, techno, synthwave (use normal mode).
 
-- Experimental genre exploration
-- Discovering unexpected combinations
-- When you want creative AI suggestions with genre control
-- Fusion and hybrid genre creation
+</details>
 
-## Advanced Mode
+## Genre Detection
 
-Advanced Mode provides precise control over genre selection with searchable dropdowns exposing all <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres and <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> genre combinations.
+3-tier system: Keywords → Spelling Correction → LLM Analysis
 
-### Genre Selection
-
-Two searchable dropdown selectors allow you to specify exact genres:
-
-| Selector | Options | Behavior |
-|----------|---------|----------|
-| **Single Genre** | <!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> genres | Direct genre selection (e.g., "Jazz", "Synthwave") |
-| **Genre Combination** | <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combinations | Fusion/hybrid genres (e.g., "Jazz Fusion", "Folk Rock") |
-
-**Note**: Single Genre and Genre Combination are mutually exclusive - selecting one clears the other.
-
-See [Reference Tables](#reference-tables) for complete genre and combination lists.
-
-### How it Works
-
-1. Enable Advanced Mode in the editor
-2. Select a genre from either dropdown (searchable/filterable)
-3. The selected genre appears at the start of the "Generated Music Phrase"
-4. When you generate, your selection **overrides** auto-detected genre
-
-### Other Advanced Options
-
-In addition to genre, Advanced Mode includes:
-
-- **Harmonic Style**: Single modes (Dorian, Lydian, Phrygian, etc.)
-- **Harmonic Combination**: Modal journeys (Major-Minor, Lydian-Minor, etc.)
-- **Polyrhythm**: Rhythmic complexity patterns
-- **Time Signature**: Standard and odd meters (7/8, 5/4, etc.)
-- **Time Signature Journey**: Multi-meter progressions
-
-## Genre & Mode Detection
-
-The app uses a 3-tier detection system to identify genre and select harmonic/rhythmic modes:
-
-### Tier 1: Keyword Matching
-
-Direct match against genre names and keywords. Genres are checked in priority order (first match wins):
+<details>
+<summary><strong>Genre Priority Order</strong></summary>
 
 <!-- GENRE_PRIORITY_START -->
 
@@ -309,346 +190,13 @@ rock → pop → ambient
 
 <!-- GENRE_PRIORITY_END -->
 
-Example: "symphonic rock retro ballad" matches `symphonic` first (higher priority than `retro`).
-
-Note: For multi-genre phrases, only recognized base-genre tokens contribute to performance guidance (e.g. "psy trance" contributes `trance`, but not `psy`).
-
-### Tier 2: Spelling Correction
-
-If no keyword match, the LLM attempts to correct potential typos and re-matches against keywords.
-
-### Tier 3: LLM Selection
-
-Full LLM analysis selects:
-- **Genre** (if not already detected in Tier 1/2)
-- **Harmonic combination** (e.g., `major_minor`, `lydian_exploration`) OR **single mode** (e.g., `dorian`, `phrygian`)
-- **Polyrhythm combination** (e.g., `complexity_build`, `tension_arc`)
-- **Reasoning** for the selection
-
-**Important**: Keyword-detected genre (Tier 1) always takes precedence over LLM-selected genre.
-
-### Detection Priority
-
-The system detects multiple musical concepts independently:
-
-| Concept | Detection Method | Example Keywords |
-|---------|------------------|------------------|
-| Genre | Keywords → LLM | "jazz", "synthwave", "cinematic" |
-| Harmonic Mode | Keywords + LLM | "lydian", "dorian", "harmonic minor" |
-| Modal Combination | Keywords + LLM | "bittersweet", "happy-sad", "emotional arc" |
-| Polyrhythm | Keywords + LLM | "building rhythm", "complex throughout" |
-| Time Signature | Keywords | "7/8", "waltz", "take five" |
-
-## Max Mode
-
-Max Mode uses a community-discovered prompt technique that triggers higher quality output in Suno V5. Enable it in Settings.
-
-### How it works
-
-When enabled, prompts are generated with special header tags:
-
-```
-[Is_MAX_MODE: MAX](MAX)
-[QUALITY: MAX](MAX)
-[REALISM: MAX](MAX)
-[REAL_INSTRUMENTS: MAX](MAX)
-
-genre: "acoustic, country singer-songwriter"
-bpm: "95"
-instruments: "single acoustic guitar, baritone vocals, raspy vocals, shouted hooks"
-style tags: "tape recorder, raw performance texture, narrow mono image"
-recording: "one person, one guitar, natural dynamics"
-```
-
-Note: vocal tags in `instruments:` are injected deterministically from Performance Guidance (the `Vocal style:` line), not invented by the LLM.
-
-### Best for
-
-- **Organic genres**: Country, folk, acoustic, blues, jazz, soul, rock
-- **Realism-focused**: Live recordings, authentic performances, analog warmth
-
-### Not recommended for
-
-- **Electronic genres**: EDM, house, techno, synthwave (use normal mode instead)
-
-### Key differences from normal mode
-
-| Aspect | Normal Mode | Max Mode |
-|--------|-------------|----------|
-| Format | Section tags `[VERSE]`, `[CHORUS]` | Metadata style `genre:`, `instruments:` |
-| Focus | Song structure | Recording quality & realism |
-| Tags | Backing vocals `(ooh)`, `(hey)` | Realism tags (tape saturation, room acoustics) |
-
-Note: Song Structure Tags are automatically disabled when Max Mode is enabled, as they can cause "lyric bleed-through" in this format.
-
-### Context Integration
-
-The app instructs the LLM to utilize ALL detected context when generating output:
-
-| Context | How It's Used |
-|---------|---------------|
-| **BPM Range** | Output uses tempo range (e.g., "between 80 and 160") instead of single value |
-| **Mood** | Mood suggestions integrated into `style tags:` field |
-| **Production** | Production style descriptors included in `style tags:` |
-| **Chord Progression** | Harmony feel added to `style tags:` (e.g., "bossa nova harmony") |
-| **Vocal Style** | Vocal descriptors woven into `instruments:` field |
-
-This ensures the rich contextual information from genre detection is reflected in the final output.
-
-### Style Tags Formula
-
-Max Mode style tags follow this formula to incorporate all detected context:
-
-```
-style tags: "<mood keywords>, <chord progression feel>, <production style>, <texture descriptors>"
-```
-
-**Example:**
-```
-style tags: "smooth, laid back, bossa nova harmony, organic feel, studio reverb, natural dynamics"
-```
-
-Components:
-- **Mood keywords**: From detected genre moods (smooth, groovy, laid back)
-- **Chord progression feel**: From detected harmony (bossa nova harmony, ii-V-I movement)
-- **Production style**: From genre production profile (organic feel, studio reverb)
-- **Texture descriptors**: Recording character (natural dynamics, room tone)
-
-### Auto-conversion from standard format
-
-When Max Mode is enabled and you paste a standard (non-max) format prompt, the app automatically converts it to Max Mode format:
-
-**Input (standard format):**
-```
-A dreamy ambient soundscape
-
-Genre: Ambient
-Mood: ethereal, calm, floating
-Instruments: synth pad, piano, strings
-
-[INTRO] Gentle pads fade in...
-[VERSE] Shimmering textures layer...
-```
-
-**Output (auto-converted to Max format):**
-```
-[Is_MAX_MODE: MAX](MAX)
-[QUALITY: MAX](MAX)
-[REALISM: MAX](MAX)
-[REAL_INSTRUMENTS: MAX](MAX)
-genre: "ambient"
-bpm: "65"
-instruments: "ethereal synth pad, warm piano, lush strings"
-style tags: "tape recorder, close-up, natural dynamics, room tone"
-recording: "intimate studio session with vintage microphone, analog warmth"
-```
-
-**How it works:**
-1. Paste any standard prompt while Max Mode is enabled
-2. The app detects the non-max format and triggers conversion
-3. BPM is inferred from the detected genre
-4. AI generates appropriate `style tags` and `recording` descriptions
-5. A toast notification confirms: "Converted to Max Mode format"
-6. Original input is preserved; converted output appears in the output area
-
-**Note**: If you paste a prompt that's already in Max Mode format, no conversion occurs.
-
-## Title & Lyrics
-
-The app always generates an AI-powered song title alongside your style prompt. Optionally enable Lyrics Mode to also generate structured song lyrics.
-
-### Output Format
-
-| Mode | Output |
-|------|--------|
-| Normal | Title + Style Prompt |
-| Lyrics Mode | Title + Style Prompt + Lyrics |
-
-Enable Lyrics Mode in Settings or via the toggle in the input area.
-
-### Lyrics Structure
-
-```
-[VERSE]
-First verse lyrics here...
-
-[PRE-CHORUS]
-Building anticipation...
-
-[CHORUS]
-Main hook and memorable lines...
-
-[VERSE]
-Second verse continues the story...
-
-[BRIDGE]
-Emotional shift or new perspective...
-
-[CHORUS]
-Repeat the hook...
-
-[OUTRO]
-Closing the song...
-```
-
-### Section Buttons
-
-Each output section (Title, Style Prompt, Lyrics) has consistent button controls:
-
-| Button | Function |
-|--------|----------|
-| **REMIX** | Regenerates that section's content |
-| **COPY** | Copies content to clipboard (shows "COPIED" on success) |
-
-**Style Prompt** has additional field-specific remix buttons:
-- GENRE, INSTRUMENTS, STYLE, RECORDING - Remix individual fields
-- DEBUG - View generation details (when debug mode enabled)
-
-### Best For
-
-- Songs where you want AI-generated lyrics
-- Quick songwriting inspiration
-- Complete song packages ready for Suno
-
-## Prompt Enhancement System
-
-The app includes a comprehensive prompt enhancement system based on professional prompt patterns. When a genre is detected (single or compound), the guidance includes genre-appropriate suggestions with **multi-genre blending** for compound genres:
-
-### Example Output
-
-```
-SUGGESTED INSTRUMENTS (Suno tags):
-Jazz: Sophisticated, improvisational music with complex harmonies
-
-Tempo: 110 BPM (range: 80-160)
-Mood suggestions: Smooth, Warm, Sophisticated
-Vocal style: Tenor, Crooner Style Delivery, Scat Fills
-Production: Analog Warmth, Long Hall Reverb
-Chord progression: The 2-5-1 (ii-V-I): The cornerstone of jazz harmony
-
-- Arpeggiated Rhodes
-- Walking upright bass
-- Brushed drums
-- tenor sax
-```
-
-### BPM Ranges
-
-Each genre has a defined tempo range with a typical BPM (researched from industry sources):
-
-| Genre | Typical BPM | Range |
-|-------|-------------|-------|
-| Ambient | 65 | 50-80 |
-| Blues | 88 | 68-132 |
-| Classical | 90 | 60-140 |
-| Country | 110 | 90-140 |
-| Electronic | 128 | 120-150 |
-| Folk | 100 | 80-120 |
-| Jazz | 110 | 80-160 |
-| Latin | 98 | 80-140 |
-| Lo-fi | 80 | 70-90 |
-| Metal | 140 | 100-180 |
-| Pop | 118 | 100-130 |
-| Punk | 175 | 160-200 |
-| R&B | 88 | 70-100 |
-| Rock | 120 | 100-160 |
-| Soul | 96 | 80-110 |
-| Synthwave | 115 | 100-130 |
-| Trap | 145 | 130-170 |
-
-### Multi-Genre Nuance Enhancement
-
-When you use compound genres (e.g., "jazz rock", "afrobeat jazz", "ambient metal"), the app provides enhanced guidance that reflects nuances from ALL constituent genres:
-
-| Feature | Behavior | Example |
-|---------|----------|---------|
-| **BPM Range** | Intersection of overlapping ranges, or narrowed union for non-overlapping | "jazz rock" → "between 100 and 160" |
-| **Harmonic Style** | Random selection from combined mode pools | "jazz rock" → dorian, mixolydian, aeolian, etc. |
-| **Time Signature** | Frequency-weighted selection (common signatures preferred) | "jazz rock" → 4/4, 6/8 |
-| **Polyrhythm** | Only suggested for genres with polyrhythmic traditions | "afrobeat jazz" → hemiola, afrobeat |
-
-**Example output for "jazz rock":**
-```
-MULTI-GENRE NUANCE:
-BPM Range: between 100 and 160
-Suggested harmonic style: Dorian (Sophisticated minor with a raised 6th)
-Suggested time signature: 4/4 - Steady, grounded
-```
-
-**Note**: Polyrhythms are only suggested for genres like afrobeat, latin, jazz, funk, and metal. Genres like pop, punk, and trap will not include polyrhythm suggestions.
-
-### Mood Pools
-
-| Genre | Moods |
-|-------|-------|
-| Jazz | Smooth, Warm, Sophisticated, Intimate, Late Night, Elegant, Groovy, Laid Back, Cool |
-| Rock | Driving, Powerful, Energetic, Rebellious, Raw, Intense, Confident, Gritty, Anthemic |
-| Ambient | Dreamy, Ethereal, Meditative, Calm, Floaty, Spacious, Otherworldly, Serene, Hypnotic |
-| Cinematic | Epic, Dramatic, Triumphant, Tense, Majestic, Heroic, Suspenseful, Powerful, Emotional |
-
-### Instrument Articulations
-
-40% of suggested instruments receive articulation prefixes:
-
-| Category | Example Articulations |
-|----------|----------------------|
-| Guitar | Arpeggiated, Strummed, Palm Muted, Jangly, Fingerpicked |
-| Piano | Comping, Rolling, Gentle, Dramatic |
-| Bass | Walking, Slapped, Round, Deep, Groovy |
-| Drums | Brushed, Tight, Punchy, Laid Back, Driving |
-| Strings | Legato, Staccato, Pizzicato, Swelling, Lush |
-| Brass | Muted, Bold, Fanfare, Stabs, Swells |
-
-### Vocal Descriptors
-
-Genre-appropriate vocal suggestions:
-
-- **Ranges**: Soprano, Mezzo Soprano, Alto, Tenor, Baritone, Bass
-- **Deliveries**: Belting, Intimate, Breathy, Raspy, Smooth, Falsetto, Crooner Style, Melismatic
-- **Techniques**: Stacked Harmonies, Call And Response, Ad Libs, Gospel Style Backing, Scat Fills
-
-### Backing Vocals
-
-Genre-specific backing vocal suggestions for lyrics mode:
-
-| Genre | Wordless Sounds | Echo Style |
-|-------|----------------|------------|
-| Pop | (ooh), (oh-oh), (na na na), (hey), (woah) | repeat the hook word |
-| Rock | (hey!), (woah), (oh), (go!) | repeat with intensity |
-| Soul | (oh yeah), (mmm-hmm), (sing it), (ooh), (come on) | call and response style |
-| Hip-hop | (uh), (ayy), (what), (let's go), (aye) | ad-lib the last word |
-| Jazz | (mmm), (ooh), (da da da), (doo) | scat-style echo |
-| Country | (ooh), (mm-hmm), (whoa), (oh) | harmony on key words |
-| Metal | (hey!), (go!), (woah), (oh!) | gang vocal shout |
-| Latin | (oye), (dale), (ooh), (ay) | passionate echo |
-
-Note: Backing vocals are injected based on detected genre. Content in parentheses is interpreted by Suno as backing vocals, so these are actual singable sounds rather than performance instructions.
-
-### Production Elements
-
-Recording character suggestions per genre:
-
-- **Reverb types**: Long Hall, Plate, Spring, Cathedral, Studio, Chamber
-- **Textures**: Polished Production, Analog Warmth, Lo-Fi Dusty, Vintage Warmth, Raw Performance
-
-<details>
-<summary><strong>Chord Progressions (26 named)</strong></summary>
-
-| Category | Name | Pattern | Best For |
-|----------|------|---------|----------|
-| Pop | The Standard | I-V-vi-IV | Radio hits, anthems |
-| Pop | The Doo-Wop | I-vi-IV-V | Romantic, nostalgic |
-| Pop | The Sensitive | vi-IV-I-V | Emotional ballads |
-| Dark | The Andalusian | i-VII-VI-V | Dramatic, flamenco |
-| Dark | The Phrygian | i-bII-i | Dark, exotic |
-| Jazz | The 2-5-1 | ii-V-I | Jazz standards |
-| Jazz | The Bossa Nova | Imaj7-ii7-V7 | Latin jazz |
+First match wins. Keyword-detected genre always takes precedence over LLM-selected genre.
 
 </details>
 
-## Reference tables
+## Reference
 
-### Genres (keywords → palette)
+### Genres
 
 <!-- GENRE_TABLE_START -->
 
@@ -692,22 +240,18 @@ Recording character suggestions per genre:
 
 <!-- GENRE_TABLE_END -->
 
-### Instrument Classification System
+### Instrument Classification
 
-The app uses a 3-tier classification system to ensure variety while maintaining genre authenticity:
+3-tier system ensures variety while maintaining genre authenticity:
 
 | Tier | Role | Count | Behavior |
 |------|------|-------|----------|
 | **Foundational** | Rhythm/harmony anchors | <!-- FOUNDATIONAL_COUNT -->14<!-- /FOUNDATIONAL_COUNT --> | 0-1 injected to fill gaps |
 | **Multi-genre** | Versatile wildcards | <!-- MULTIGENRE_TIER_COUNT -->49<!-- /MULTIGENRE_TIER_COUNT --> | 1-2 injected for variety |
-| **Orchestral Color** | Cinematic flavor | <!-- ORCHESTRAL_COUNT -->41<!-- /ORCHESTRAL_COUNT --> | Gated to orchestral genres only |
+| **Orchestral** | Cinematic flavor | <!-- ORCHESTRAL_COUNT -->41<!-- /ORCHESTRAL_COUNT --> | Gated to orchestral genres only |
 
-**How selection works:**
-1. Genre-specific pools are picked first (harmonic, pad, color, movement, rare)
-2. Quota-based injection fills missing tiers without exceeding `maxTags`
-3. Orchestral instruments only appear in cinematic/classical/videogame (or 15% chance in ambient)
-
-This prevents "genre drift" while ensuring prompts have enough variety to produce interesting results.
+<details>
+<summary><strong>Instrument Lists by Tier</strong></summary>
 
 <!-- INSTRUMENT_CLASSES_START -->
 
@@ -719,7 +263,10 @@ This prevents "genre drift" while ensuring prompts have enough variety to produc
 
 <!-- INSTRUMENT_CLASSES_END -->
 
-### Genre combinations
+</details>
+
+### Genre Combinations
+
 <!-- COMBINATIONS_START -->
 
 jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swing, electro swing, electronic rock, electro pop, synth pop, future bass, vaporwave, bass house, future house, tropical house, minimal techno, hard techno, psy trance, vocal trance, liquid drum and bass, liquid funk, neurofunk, jersey club, folk rock, folk pop, indie folk, chamber folk, bluegrass, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, post-rock, shoegaze, grunge, stoner rock, post-punk, goth rock, industrial rock, ambient rock, ambient metal, ambient symphonic rock, ambient symphonic metal, neo soul, psychedelic soul, funk soul, country soul, ambient soul, downtempo soul, ambient soul downtempo, chill soul, indie soul, bedroom soul, alternative soul, future soul, alternative r&b, soulful house, gospel house, vocal house, soul jazz, spiritual jazz, latin jazz, bossa nova, reggae fusion, reggaeton, dancehall, amapiano, country rock, country pop, progressive metal, symphonic metal, symphonic rock, doom metal, thrash metal, death metal, black metal, power metal, metalcore, post-metal, trip hop, lo-fi hip hop, g-funk, boom bap, conscious hip-hop, phonk, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
@@ -727,134 +274,97 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 <!-- COMBINATIONS_END -->
 
 <details>
-  <summary><strong>More references (modes, combinations, rhythms, time signatures, Lydian chords)</strong></summary>
+<summary><strong>BPM Ranges by Genre</strong></summary>
 
-  
-  ### Harmonic styles
-  
-  **Lydian variants**
-  
-  | Style | Keywords | Character |
-  |-------|----------|-----------|
-  | Lydian Dominant | jazzy, fusion, funk | Playful, mischievous |
-  | Lydian Augmented | mysterious, alien, space | Otherworldly, floating |
-  | Lydian #2 | exotic, enchanted, magic | Cinematic, evocative |
-  | Pure Lydian | lydian, #11, cinematic | Bright, ethereal |
-  
-  **Major modes**
-  
-  | Style | Keywords | Character |
-  |-------|----------|-----------|
-  | Ionian | major, happy, bright, pop | Resolved, joyful |
-  | Mixolydian | bluesy, rock, dominant | Driving, groovy |
-  
-  **Minor modes**
-  
-  | Style | Keywords | Character |
-  |-------|----------|-----------|
-  | Dorian | jazzy, soulful, minor groove | Sophisticated, hopeful |
-  | Aeolian | sad, melancholic, minor | Emotional, dramatic |
-  | Phrygian | spanish, flamenco, exotic | Tense, fiery |
-  | Locrian | horror, dissonant, unstable | Dread, experimental |
-  | Harmonic Minor | gothic, classical, vampire | Dramatic tension |
-  | Melodic Minor | jazz, noir, sophisticated | Bittersweet, smooth |
-  
-  ### Modal combinations
-  
-  **Cross-mode (2-phase)**
-  
-  | Combination | Emotional Arc | Use For |
-  |-------------|---------------|---------|
-  | Major-Minor | Joy → Melancholy | Bittersweet, happy-sad |
-  | Lydian-Minor | Wonder → Shadow | Dreamy-dark, ethereal tension |
-  | Lydian-Major | Wonder → Joy | Uplifting, bright resolution |
-  | Dorian-Lydian | Groove → Float | Jazz fusion, sophisticated |
-  | Harmonic-Major | Tension → Triumph | Classical drama, victory |
-  | Phrygian-Major | Exotic → Liberation | Spanish triumph, flamenco |
-  
-  **Within-mode (3-phase)**
-  
-  | Combination | Emotional Arc | Use For |
-  |-------------|---------------|---------|
-  | Minor Journey | Sadness → Drama → Resolution | Grief to acceptance |
-  | Lydian Exploration | Dream → Groove → Otherworldly | Multiple lydian colors |
-  | Major Modes | Wonder → Joy → Groove | Bright variety |
-  | Dark Modes | Melancholy → Danger → Dread | Horror, descent |
-  
-  ### Polyrhythm combinations
-  
-  **Cross-rhythm (2-phase)**
-  
-  | Combination | Emotional Arc | Use For |
-  |-------------|---------------|---------|
-  | Groove to Drive | Shuffle → Driving | Building energy, dance builds |
-  | Tension Release | Drive → Shuffle | Drops, resolution moments |
-  | Afrobeat Journey | Swing → Interlocking | World fusion, organic builds |
-  | Complex to Simple | Chaos → Grounded | Progressive resolution |
-  
-  **Multi-rhythm (3-phase)**
-  
-  | Combination | Emotional Arc | Use For |
-  |-------------|---------------|---------|
-  | Complexity Build | Groove → Drive → Chaos | Progressive builds, EDM climax |
-  | Triplet Exploration | Shuffle → Tension → Flow | Jazz fusion, exploratory |
-  | Odd Journey | Hypnotic → Complex → Intricate | Prog rock, math rock |
-  | Tension Arc | Drive → Chaos → Resolution | Full tension/release arc |
-  
-  ### Time signatures
-  
-  **Standard & compound**
-  
-  | Signature | Keywords | Feel |
-  |-----------|----------|------|
-  | 4/4 | common time, standard | Steady, grounded |
-  | 3/4 | waltz, triple meter | Elegant, dancing |
-  | 6/8 | jig, shuffle, compound | Rolling, swinging |
-  
-  **Odd time signatures**
-  
-  | Signature | Keywords | Feel | Famous Examples |
-  |-----------|----------|------|-----------------|
-  | 5/4 | take five, quintuple | Off-balance drive | Take Five, Mission Impossible |
-  | 5/8 | balkan five | Quick, nimble | Balkan folk |
-  | 7/8 | balkan, aksak, limping | Urgent, limping | Money (Pink Floyd) |
-  | 7/4 | expansive odd | Spacious, epic | Solsbury Hill |
-  | 9/8 | slip jig, compound triple | Lilting, Celtic | Blue Rondo à la Turk |
-  | 11/8 | tool time, prog eleven | Complex, shifting | Lateralus (Tool) |
-  | 13/8 | king crimson | Extreme complexity | King Crimson |
-  | 15/8 | extreme odd | Extended compound | Experimental prog |
-  
-  **Journeys (7)**
-  
-  | Journey | Signatures | Emotional Arc | Best For |
-  |---------|------------|---------------|----------|
-  | Prog Odyssey | 4/4 → 7/8 → 5/4 | Grounded → Urgent → Expansive | Prog rock, art rock |
-  | Balkan Fusion | 7/8 → 9/8 → 11/8 | Limping → Flowing → Hypnotic | World fusion, jazz |
-  | Jazz Exploration | 4/4 → 5/4 → 9/8 | Swing → Cool → Dance | Jazz, cool jazz |
-  | Math Rock Descent | 5/4 → 7/8 → 11/8 | Intellectual → Urgent → Labyrinthine | Math rock, prog metal |
-  | Celtic Journey | 6/8 → 9/8 → 3/4 | Rolling → Dancing → Elegance | Celtic, folk rock |
-  | Metal Complexity | 4/4 → 7/4 → 13/8 | Crushing → Epic → Chaotic | Prog metal, djent |
-  | Gentle Odd | 3/4 → 5/4 → 6/8 | Waltz → Thoughtful → Rolling | Indie, singer-songwriter |
-  
-  ### Lydian chord theory (C Lydian example)
-  
-  Scale formula: W-W-W-H-W-W-H (1-2-3-#4-5-6-7)
-  
-  | Degree | Roman | Triad | 7th Chord | Example |
-  |--------|-------|-------|-----------|---------|
-  | I | I | Major | Maj7 | Cmaj7 |
-  | II | II | Major | Dom7 | D7 |
-  | iii | iii | minor | min7 | Em7 |
-  | iv° | iv° | dim | m7b5 | F#m7b5 |
-  | V | V | Major | Maj7 | Gmaj7 |
-  | vi | vi | minor | min7 | Am7 |
-  | vii | vii | minor | min7 | Bm7 |
+| Genre | Typical BPM | Range |
+|-------|-------------|-------|
+| Ambient | 65 | 50-80 |
+| Blues | 88 | 68-132 |
+| Classical | 90 | 60-140 |
+| Country | 110 | 90-140 |
+| Electronic | 128 | 120-150 |
+| Folk | 100 | 80-120 |
+| Jazz | 110 | 80-160 |
+| Latin | 98 | 80-140 |
+| Lo-fi | 80 | 70-90 |
+| Metal | 140 | 100-180 |
+| Pop | 118 | 100-130 |
+| Punk | 175 | 160-200 |
+| R&B | 88 | 70-100 |
+| Rock | 120 | 100-160 |
+| Soul | 96 | 80-110 |
+| Synthwave | 115 | 100-130 |
+| Trap | 145 | 130-170 |
 
 </details>
 
-## Tech stack
+<details>
+<summary><strong>Chord Progressions (26 named)</strong></summary>
 
-- Runtime: [Electrobun](https://electrobun.dev/)
-- UI: React 19 + shadcn/ui + Tailwind CSS v4
-- AI: AI SDK v6 (Groq, OpenAI, Anthropic)
-- Package manager/runtime: Bun
+| Category | Name | Pattern | Best For |
+|----------|------|---------|----------|
+| Pop | The Standard | I-V-vi-IV | Radio hits, anthems |
+| Pop | The Doo-Wop | I-vi-IV-V | Romantic, nostalgic |
+| Pop | The Sensitive | vi-IV-I-V | Emotional ballads |
+| Dark | The Andalusian | i-VII-VI-V | Dramatic, flamenco |
+| Dark | The Phrygian | i-bII-i | Dark, exotic |
+| Jazz | The 2-5-1 | ii-V-I | Jazz standards |
+| Jazz | The Bossa Nova | Imaj7-ii7-V7 | Latin jazz |
+
+</details>
+
+<details>
+<summary><strong>Harmonic Modes & Combinations</strong></summary>
+
+**Lydian variants:** Lydian Dominant, Lydian Augmented, Lydian #2, Pure Lydian
+
+**Major modes:** Ionian, Mixolydian
+
+**Minor modes:** Dorian, Aeolian, Phrygian, Locrian, Harmonic Minor, Melodic Minor
+
+**Modal journeys:** Major-Minor, Lydian-Minor, Dorian-Lydian, Harmonic-Major, Minor Journey, Lydian Exploration
+
+</details>
+
+<details>
+<summary><strong>Time Signatures</strong></summary>
+
+**Standard:** 4/4, 3/4, 6/8
+
+**Odd meters:** 5/4 (Take Five), 7/8 (Balkan), 9/8 (Slip jig), 11/8 (Tool), 13/8
+
+**Journeys:** Prog Odyssey, Balkan Fusion, Jazz Exploration, Celtic Journey, Metal Complexity
+
+</details>
+
+<details>
+<summary><strong>Articulations & Vocal Descriptors</strong></summary>
+
+**Instrument articulations** (40% chance): Arpeggiated, Strummed, Palm Muted, Walking, Brushed, Legato, Muted
+
+**Vocal ranges:** Soprano, Mezzo Soprano, Alto, Tenor, Baritone, Bass
+
+**Vocal deliveries:** Belting, Intimate, Breathy, Raspy, Smooth, Falsetto, Crooner Style
+
+**Backing vocals by genre:** Pop (ooh, oh-oh), Rock (hey!, woah), Soul (oh yeah, mmm-hmm), Jazz (scat), Metal (gang shouts)
+
+</details>
+
+## Architecture
+
+| Module | Purpose |
+|--------|---------|
+| `src/bun/ai/` | AI engine, providers, generation, refinement, remix |
+| `src/bun/prompt/` | Prompt builders, postprocessing, deterministic operations |
+| `src/bun/instruments/` | Instrument registry, genre pools, selection logic |
+| `src/bun/handlers/` | RPC request handlers |
+| `src/main-ui/` | React frontend |
+| `src/shared/` | Types, schemas, constants |
+
+## Tech Stack
+
+- **Runtime:** [Electrobun](https://electrobun.dev/) (Bun-based desktop framework)
+- **UI:** React 19 + shadcn/ui + Tailwind CSS v4
+- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic)
+- **Validation:** Zod
+- **Testing:** Bun test (70% coverage threshold)
