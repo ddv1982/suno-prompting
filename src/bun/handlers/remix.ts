@@ -1,4 +1,15 @@
-import { type AIEngine, type GenerationResult } from '@bun/ai';
+import { type AIEngine } from '@bun/ai';
+import {
+  extractGenreFromPrompt,
+  extractMoodFromPrompt,
+  remixGenre,
+  remixInstruments,
+  remixMoodInPrompt,
+  remixRecording,
+  remixStyleTags,
+  type RemixResult,
+} from '@bun/prompt/deterministic';
+import { generateDeterministicTitle } from '@bun/prompt/title';
 import {
   RemixInstrumentsSchema,
   RemixGenreSchema,
@@ -22,10 +33,10 @@ type RemixHandlers = Pick<
 
 async function runRemixAction(
   name: string,
-  operation: () => Promise<GenerationResult>
+  operation: () => RemixResult
 ): Promise<{ prompt: string; versionId: string; validation: ReturnType<typeof validatePrompt> }> {
   return withErrorHandling(name, async () => {
-    const result = await operation();
+    const result = operation();
     const versionId = Bun.randomUUIDv7();
     const validation = validatePrompt(result.text);
     log.info(`${name}:result`, { versionId, promptLength: result.text.length });
@@ -39,33 +50,37 @@ async function runSingleFieldRemix<T>(name: string, operation: () => Promise<T>)
 
 export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
   return {
-    // All prompt remix actions are now synchronous (deterministic, no LLM)
+    // All prompt remix actions call deterministic functions directly (no LLM)
     remixInstruments: async (params) => {
       const { currentPrompt, originalInput } = validate(RemixInstrumentsSchema, params);
-      return runRemixAction('remixInstruments', () => Promise.resolve(aiEngine.remixInstruments(currentPrompt, originalInput)));
+      return runRemixAction('remixInstruments', () => remixInstruments(currentPrompt, originalInput));
     },
     remixGenre: async (params) => {
       const { currentPrompt } = validate(RemixGenreSchema, params);
-      return runRemixAction('remixGenre', () => Promise.resolve(aiEngine.remixGenre(currentPrompt)));
+      return runRemixAction('remixGenre', () => remixGenre(currentPrompt));
     },
     remixMood: async (params) => {
       const { currentPrompt } = validate(RemixMoodSchema, params);
-      return runRemixAction('remixMood', () => Promise.resolve(aiEngine.remixMood(currentPrompt)));
+      return runRemixAction('remixMood', () => remixMoodInPrompt(currentPrompt));
     },
     remixStyleTags: async (params) => {
       const { currentPrompt } = validate(RemixStyleTagsSchema, params);
-      return runRemixAction('remixStyleTags', () => Promise.resolve(aiEngine.remixStyleTags(currentPrompt)));
+      return runRemixAction('remixStyleTags', () => remixStyleTags(currentPrompt));
     },
     remixRecording: async (params) => {
       const { currentPrompt } = validate(RemixRecordingSchema, params);
-      return runRemixAction('remixRecording', () => Promise.resolve(aiEngine.remixRecording(currentPrompt)));
+      return runRemixAction('remixRecording', () => remixRecording(currentPrompt));
     },
-    // Title is now synchronous (deterministic, no LLM)
+    // Title uses deterministic generation
     remixTitle: async (params) => {
-      const { currentPrompt, originalInput } = validate(RemixTitleSchema, params);
-      return runSingleFieldRemix('remixTitle', () => Promise.resolve(aiEngine.remixTitle(currentPrompt, originalInput)));
+      const { currentPrompt } = validate(RemixTitleSchema, params);
+      return runSingleFieldRemix('remixTitle', async () => {
+        const genre = extractGenreFromPrompt(currentPrompt);
+        const mood = extractMoodFromPrompt(currentPrompt);
+        return { title: generateDeterministicTitle(genre, mood) };
+      });
     },
-    // Lyrics still uses LLM
+    // Lyrics still uses LLM (via AIEngine)
     remixLyrics: async (params) => {
       const { currentPrompt, originalInput, lyricsTopic } = validate(RemixLyricsSchema, params);
       return runSingleFieldRemix('remixLyrics', async () => {

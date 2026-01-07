@@ -125,29 +125,40 @@ describe("RPC Handlers", () => {
   });
 
   describe("remix handlers", () => {
-    test("remixGenre returns remixed prompt", async () => {
+    test("remixGenre returns remixed prompt with new genre", async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
       const handlers = createHandlers(aiEngine as any, storage as any);
 
-      const result = await handlers.remixGenre({ currentPrompt: "test" });
+      // Provide a valid prompt with a genre that can be remixed
+      const result = await handlers.remixGenre({
+        currentPrompt: 'genre: "jazz"\nbpm: "96"',
+      });
 
-      expect(result.prompt).toBe("Remixed genre");
+      // Deterministic remix - expect a valid result structure
+      expect(result.prompt).toBeDefined();
+      expect(typeof result.prompt).toBe("string");
       expect(result.versionId).toBeDefined();
       expect(result.validation).toBeDefined();
+      // Note: AIEngine.remixGenre is no longer called - handlers use deterministic functions directly
     });
 
-    test("remixTitle returns new title", async () => {
+    test("remixTitle returns deterministic title", async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
       const handlers = createHandlers(aiEngine as any, storage as any);
 
+      // Provide a valid prompt with genre and mood for title generation
       const result = await handlers.remixTitle({
-        currentPrompt: "test",
+        currentPrompt: 'genre: "jazz"\nmood: "smooth"',
         originalInput: "original",
       });
 
-      expect(result.title).toBe("New Title");
+      // Deterministic title generation - expect a valid title string
+      expect(result.title).toBeDefined();
+      expect(typeof result.title).toBe("string");
+      expect(result.title.length).toBeGreaterThan(0);
+      // Note: AIEngine.remixTitle is no longer called - handlers use deterministic functions directly
     });
   });
 

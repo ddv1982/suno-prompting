@@ -7,7 +7,7 @@
  * @module ai/types
  */
 
-import type { DebugInfo } from '@shared/types';
+import type { AIProvider, DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 /**
@@ -91,4 +91,40 @@ export interface EngineConfig extends EngineContext {
   buildDebugInfo: DebugInfoBuilder;
   /** Returns whether to use Suno performance tags (optional) */
   getUseSunoTags?: () => boolean;
+}
+
+/**
+ * Configuration for initial prompt generation.
+ *
+ * Provides all dependencies needed by the generation module,
+ * enabling testability through dependency injection.
+ */
+export interface GenerationConfig {
+  /** Returns the language model to use for LLM calls */
+  getModel: () => LanguageModel;
+  /** Returns whether debug mode is enabled */
+  isDebugMode: () => boolean;
+  /** Returns whether max mode is enabled */
+  isMaxMode: () => boolean;
+  /** Returns whether lyrics mode is enabled */
+  isLyricsMode: () => boolean;
+  /** Returns whether to use Suno performance tags */
+  getUseSunoTags: () => boolean;
+  /** Returns the model name for debug info */
+  getModelName: () => string;
+  /** Returns the AI provider for debug info */
+  getProvider: () => AIProvider;
+}
+
+/**
+ * Configuration for prompt refinement.
+ *
+ * Extends GenerationConfig with post-processing capability
+ * needed for refining existing prompts.
+ */
+export interface RefinementConfig extends GenerationConfig {
+  /** Post-process text (condense, rewrite, dedupe) */
+  postProcess: (text: string) => Promise<string>;
+  /** Builds debug info from prompts and response */
+  buildDebugInfo: DebugInfoBuilder;
 }

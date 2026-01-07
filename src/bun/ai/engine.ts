@@ -1,73 +1,63 @@
-import { generateText, type LanguageModel } from 'ai';
+/**
+ * AI Engine - Facade for AI Generation Operations
+ *
+ * Provides a unified interface for AI-powered prompt generation.
+ * Delegates to focused modules for specific operations:
+ * - generation.ts: Initial prompt generation
+ * - refinement.ts: Prompt refinement
+ * - quick-vibes-engine.ts: Quick Vibes generation
+ * - creative-boost/: Creative Boost generation
+ *
+ * @module ai/engine
+ */
+
+import { type LanguageModel } from 'ai';
 
 import { AIConfig } from '@bun/ai/config';
-import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import {
   generateCreativeBoost as generateCreativeBoostImpl,
   refineCreativeBoost as refineCreativeBoostImpl,
 } from '@bun/ai/creative-boost';
+import { generateInitial as generateInitialImpl, type GenerateInitialOptions } from '@bun/ai/generation';
 import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
 import {
   generateQuickVibes as generateQuickVibesImpl,
   refineQuickVibes as refineQuickVibesImpl,
 } from '@bun/ai/quick-vibes-engine';
+import { refinePrompt as refinePromptImpl, type RefinePromptOptions } from '@bun/ai/refinement';
 import { remixLyrics as remixLyricsImpl } from '@bun/ai/remix';
-import { createLogger } from '@bun/logger';
-import { buildCombinedSystemPrompt, buildCombinedWithLyricsSystemPrompt, buildSystemPrompt, buildMaxModeSystemPrompt, type RefinementContext } from '@bun/prompt/builders';
-import {
-  buildDeterministicMaxPrompt,
-  buildDeterministicStandardPrompt,
-  extractGenreFromPrompt,
-  extractMoodFromPrompt,
-  remixGenre as remixGenreImpl,
-  remixInstruments as remixInstrumentsImpl,
-  remixMoodInPrompt,
-  remixRecording as remixRecordingImpl,
-  remixStyleTags as remixStyleTagsImpl,
-} from '@bun/prompt/deterministic';
-import { postProcessPrompt, injectLockedPhrase } from '@bun/prompt/postprocess';
-import { generateDeterministicTitle } from '@bun/prompt/title';
+import { postProcessPrompt } from '@bun/prompt/postprocess';
 import { APP_CONSTANTS } from '@shared/constants';
-import { AIGenerationError } from '@shared/errors';
-import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
 
-import type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
+import type { GenerationConfig, GenerationResult, RefinementConfig } from '@bun/ai/types';
 import type { DebugInfo, QuickVibesCategory } from '@shared/types';
 
-// Re-export types for backwards compatibility
+// Re-export types and options for backwards compatibility
 export type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
-
-const log = createLogger('AIEngine');
+export type { GenerateInitialOptions } from '@bun/ai/generation';
+export type { RefinePromptOptions } from '@bun/ai/refinement';
 
 const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
 /**
- * Options for generating an initial prompt
+ * AI Engine - Unified facade for AI generation operations.
+ *
+ * Handles configuration and delegates to focused modules for:
+ * - Initial generation (deterministic or LLM-assisted)
+ * - Prompt refinement
+ * - Quick Vibes and Creative Boost modes
+ * - LLM-based remix operations (lyrics only)
+ *
+ * Deterministic remix operations (instruments, genre, mood, etc.)
+ * should be imported directly from @bun/prompt/deterministic.
  */
-export interface GenerateInitialOptions {
-  description: string;
-  lockedPhrase?: string;
-  lyricsTopic?: string;
-  genreOverride?: string;
-}
-
-/**
- * Options for refining a prompt
- */
-export interface RefinePromptOptions {
-  currentPrompt: string;
-  currentTitle: string;
-  feedback: string;
-  currentLyrics?: string;
-  lockedPhrase?: string;
-  lyricsTopic?: string;
-}
-
-
-
 export class AIEngine {
   private config = new AIConfig();
+
+  // ==========================================================================
+  // Configuration Proxies
+  // ==========================================================================
 
   setProvider = this.config.setProvider.bind(this.config);
   setApiKey = this.config.setApiKey.bind(this.config);
@@ -80,42 +70,14 @@ export class AIEngine {
   isDebugMode = this.config.isDebugMode.bind(this.config);
   getModel = (): LanguageModel => this.config.getModel();
 
-  private cleanJsonResponse(text: string): string {
-    return cleanJsonResponse(text);
-  }
+  // ==========================================================================
+  // Shared Utilities
+  // ==========================================================================
 
-  private cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
-    return title?.trim().replace(/^["']|["']$/g, '') || fallback;
-  }
-
-  private cleanLyrics(lyrics: string | undefined): string | undefined {
-    return lyrics?.trim() || undefined;
-  }
-
-  private parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {
-    try {
-      const cleaned = this.cleanJsonResponse(rawResponse);
-      const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
-      if (!parsed.prompt) {
-        throw new AIGenerationError('Missing prompt in response');
-      }
-      return parsed;
-    } catch (e) {
-      log.warn(`${actionName}:json_parse_failed`, {
-        error: e instanceof Error ? e.message : 'Unknown error',
-        rawResponse: rawResponse.slice(0, 200),
-      });
-      return null;
-    }
-  }
-
-  private get systemPrompt(): string {
-    if (this.config.isMaxMode()) {
-      return buildMaxModeSystemPrompt(MAX_CHARS);
-    }
-    return buildSystemPrompt(MAX_CHARS, this.config.getUseSunoTags());
-  }
-
+  /**
+   * Build debug information from LLM interaction.
+   * Used by generation, refinement, and other modules.
+   */
   private buildDebugInfo(
     systemPrompt: string,
     userPrompt: string,
@@ -146,6 +108,9 @@ export class AIEngine {
     };
   }
 
+  /**
+   * Post-process generated text (condense, dedupe, remove meta).
+   */
   private async postProcess(text: string): Promise<string> {
     return postProcessPrompt(text, {
       maxChars: MAX_CHARS,
@@ -156,332 +121,76 @@ export class AIEngine {
     });
   }
 
-  private async runGeneration(
-    actionLabel: string,
-    systemPrompt: string,
-    userPromptForDebug: string,
-    operation: () => Promise<Awaited<ReturnType<typeof generateText>>>,
-    messages?: Array<{ role: string; content: string }>
-  ): Promise<GenerationResult> {
-    try {
-      const genResult = await operation();
-
-      if (!genResult.text?.trim()) {
-        throw new AIGenerationError(`Empty response from AI model${actionLabel ? ` (${actionLabel})` : ''}`);
-      }
-
-      const result = await this.postProcess(genResult.text);
-
-      return {
-        text: result,
-        debugInfo: this.config.isDebugMode()
-          ? this.buildDebugInfo(systemPrompt, userPromptForDebug, genResult.text, messages)
-          : undefined,
-      };
-    } catch (error) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to ${actionLabel}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
-    }
-  }
+  // ==========================================================================
+  // Config Factories for Modules
+  // ==========================================================================
 
   /**
-   * Fully deterministic generation path (lyrics mode OFF).
-   * No LLM calls - executes in <50ms.
-   *
-   * Uses deterministic builders for prompt and title generation,
-   * avoiding any network calls for maximum performance.
+   * Get configuration for generation module.
    */
-  private generateInitialDeterministic(
-    description: string,
-    lockedPhrase?: string,
-    genreOverride?: string
-  ): GenerationResult {
-    // 1. Build prompt deterministically (max or standard mode)
-    const deterministicResult = this.config.isMaxMode()
-      ? buildDeterministicMaxPrompt({ description, genreOverride })
-      : buildDeterministicStandardPrompt({ description, genreOverride });
-
-    let promptText = deterministicResult.text;
-
-    // 2. Inject locked phrase if provided
-    if (lockedPhrase) {
-      promptText = injectLockedPhrase(promptText, lockedPhrase, this.config.isMaxMode());
-    }
-
-    // 3. Generate deterministic title from extracted genre/mood
-    const genre = extractGenreFromPrompt(promptText);
-    const mood = extractMoodFromPrompt(promptText);
-    const title = generateDeterministicTitle(genre, mood);
-
-    // 4. Build debug info if debug mode enabled
-    const debugInfo = this.config.isDebugMode()
-      ? {
-          systemPrompt: 'Fully deterministic generation - no LLM calls',
-          userPrompt: description,
-          model: this.config.getModelName(),
-          provider: this.config.getProvider(),
-          timestamp: nowISO(),
-          requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
-          responseBody: promptText,
-        }
-      : undefined;
-
+  private getGenerationConfig(): GenerationConfig {
     return {
-      text: promptText,
-      title: this.cleanTitle(title),
-      debugInfo,
+      getModel: this.getModel,
+      isDebugMode: this.config.isDebugMode.bind(this.config),
+      isMaxMode: this.config.isMaxMode.bind(this.config),
+      isLyricsMode: this.config.isLyricsMode.bind(this.config),
+      getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
+      getModelName: this.config.getModelName.bind(this.config),
+      getProvider: this.config.getProvider.bind(this.config),
     };
   }
 
   /**
-   * LLM-assisted generation path (lyrics mode ON).
-   *
-   * Uses LLM for:
-   * - Genre detection from topic (when no genre override provided)
-   * - Title generation (to match lyrics theme)
-   * - Lyrics generation
-   *
-   * Prompt building itself remains deterministic for consistency.
+   * Get configuration for refinement module.
    */
-  private async generateInitialWithLyrics(
-    description: string,
-    lockedPhrase?: string,
-    lyricsTopic?: string,
-    genreOverride?: string
-  ): Promise<GenerationResult> {
-    let resolvedGenreOverride = genreOverride;
-    let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
-
-    // 1. Detect genre from lyrics topic if no override provided (LLM call)
-    if (!genreOverride && lyricsTopic?.trim()) {
-      const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), this.getModel);
-      resolvedGenreOverride = genreResult.genre;
-      genreDetectionDebugInfo = genreResult.debugInfo;
-      log.info('generateInitialWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre });
-    }
-
-    // 2. Build prompt deterministically (no LLM)
-    const deterministicResult = this.config.isMaxMode()
-      ? buildDeterministicMaxPrompt({ description, genreOverride: resolvedGenreOverride })
-      : buildDeterministicStandardPrompt({ description, genreOverride: resolvedGenreOverride });
-
-    let promptText = deterministicResult.text;
-
-    // 3. Inject locked phrase if provided
-    if (lockedPhrase) {
-      promptText = injectLockedPhrase(promptText, lockedPhrase, this.config.isMaxMode());
-    }
-
-    // 4. Extract genre and mood for title/lyrics generation
-    const genre = extractGenreFromPrompt(promptText);
-    const mood = extractMoodFromPrompt(promptText);
-
-    // 5. Generate title via LLM (to match lyrics theme)
-    const topicForTitle = lyricsTopic?.trim() || description;
-    const titleResult = await generateTitle(topicForTitle, genre, mood, this.getModel);
-    const title = titleResult.title;
-    const titleDebugInfo = titleResult.debugInfo;
-
-    // 6. Generate lyrics via LLM
-    const topicForLyrics = lyricsTopic?.trim() || description;
-    const lyricsResult = await generateLyrics(
-      topicForLyrics,
-      genre,
-      mood,
-      this.config.isMaxMode(),
-      this.getModel,
-      this.config.getUseSunoTags()
-    );
-    const lyrics = lyricsResult.lyrics;
-    const lyricsDebugInfo = lyricsResult.debugInfo;
-
-    // 7. Build debug info if debug mode enabled
-    const debugInfo = this.config.isDebugMode()
-      ? {
-          systemPrompt: 'Deterministic prompt; LLM for genre detection, title, and lyrics',
-          userPrompt: description,
-          model: this.config.getModelName(),
-          provider: this.config.getProvider(),
-          timestamp: nowISO(),
-          requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
-          responseBody: promptText,
-          genreDetection: genreDetectionDebugInfo,
-          titleGeneration: titleDebugInfo,
-          lyricsGeneration: lyricsDebugInfo,
-        }
-      : undefined;
-
+  private getRefinementConfig(): RefinementConfig {
     return {
-      text: promptText,
-      title: this.cleanTitle(title),
-      lyrics: this.cleanLyrics(lyrics),
-      debugInfo,
+      ...this.getGenerationConfig(),
+      postProcess: this.postProcess.bind(this),
+      buildDebugInfo: this.buildDebugInfo.bind(this),
     };
   }
+
+  // ==========================================================================
+  // Core Generation & Refinement
+  // ==========================================================================
 
   /**
    * Generate initial prompt.
    *
-   * Branches based on lyrics mode:
+   * Delegates to generation module which handles:
    * - Lyrics OFF: Fully deterministic path (<50ms, no LLM calls)
-   * - Lyrics ON: LLM-assisted path (genre detection, title, lyrics generation)
-   *
-   * @param options - Options for generating initial prompt
-   * @param options.description - User's song description
-   * @param options.lockedPhrase - Optional phrase to inject into prompt
-   * @param options.lyricsTopic - Optional topic for lyrics generation
-   * @param options.genreOverride - Optional genre override from Advanced Mode
-   * @returns Generated prompt, title, and optionally lyrics
+   * - Lyrics ON: LLM-assisted path (genre detection, title, lyrics)
    */
   async generateInitial(options: GenerateInitialOptions): Promise<GenerationResult> {
-    const { description, lockedPhrase, lyricsTopic, genreOverride } = options;
-
-    if (!this.config.isLyricsMode()) {
-      return this.generateInitialDeterministic(description, lockedPhrase, genreOverride);
-    }
-    return this.generateInitialWithLyrics(description, lockedPhrase, lyricsTopic, genreOverride);
+    return generateInitialImpl(options, this.getGenerationConfig());
   }
 
+  /**
+   * Refine existing prompt based on user feedback.
+   *
+   * Delegates to refinement module which handles LLM-based
+   * refinement with fallback on JSON parse failure.
+   */
   async refinePrompt(options: RefinePromptOptions): Promise<GenerationResult> {
-    const {
-      currentPrompt,
-      currentTitle,
-      feedback,
-      currentLyrics,
-      lockedPhrase,
-      lyricsTopic,
-    } = options;
-
-    const promptForLLM = lockedPhrase
-      ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
-      : currentPrompt;
-
-    const refinement: RefinementContext = {
-      currentPrompt: promptForLLM,
-      currentTitle: currentTitle || 'Untitled',
-      currentLyrics: currentLyrics,
-      lyricsTopic: lyricsTopic,
-    };
-
-    const systemPrompt = this.config.isLyricsMode()
-      ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, this.config.getUseSunoTags(), this.config.isMaxMode(), refinement)
-      : buildCombinedSystemPrompt(MAX_CHARS, this.config.getUseSunoTags(), this.config.isMaxMode(), refinement);
-
-    const userPrompt = `Apply this feedback and return the refined JSON:\n\n${feedback}`;
-    const { text: rawResponse } = await generateText({
-      model: this.getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-    });
-
-    const parsed = this.parseJsonResponse(rawResponse, 'refinePrompt');
-    if (!parsed) {
-      const fallbackResult = await this.refinePromptFallback(promptForLLM, feedback, lockedPhrase);
-      return {
-        ...fallbackResult,
-        title: currentTitle,
-        lyrics: this.config.isLyricsMode() ? currentLyrics : undefined,
-      };
-    }
-
-    let promptText = await this.postProcess(parsed.prompt);
-
-    if (lockedPhrase) {
-      promptText = injectLockedPhrase(promptText, lockedPhrase, this.config.isMaxMode());
-    }
-
-    return {
-      text: promptText,
-      title: this.cleanTitle(parsed.title, currentTitle),
-      lyrics: this.config.isLyricsMode() ? (this.cleanLyrics(parsed.lyrics) || currentLyrics) : undefined,
-      debugInfo: this.config.isDebugMode()
-        ? this.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
-        : undefined,
-    };
+    return refinePromptImpl(options, this.getRefinementConfig());
   }
 
-  private async refinePromptFallback(
+  // ==========================================================================
+  // LLM-Based Remix (Lyrics Only)
+  // ==========================================================================
+
+  /**
+   * Remix lyrics using LLM.
+   *
+   * Note: Deterministic remix operations (instruments, genre, mood, etc.)
+   * should be imported directly from @bun/prompt/deterministic.
+   */
+  async remixLyrics(
     currentPrompt: string,
-    feedback: string,
-    lockedPhrase?: string
-  ): Promise<GenerationResult> {
-    const systemPrompt = this.systemPrompt;
-    const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
-    const messages: Array<{ role: 'assistant' | 'user'; content: string }> = [
-      { role: 'assistant', content: currentPrompt },
-      { role: 'user', content: feedback },
-    ];
-
-    const result = await this.runGeneration('refine prompt fallback', systemPrompt, userPrompt, async () =>
-      generateText({
-        model: this.getModel(),
-        system: systemPrompt,
-        messages,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-      }),
-      messages
-    );
-
-    if (lockedPhrase) {
-      result.text = injectLockedPhrase(result.text, lockedPhrase, this.config.isMaxMode());
-    }
-
-    return result;
-  }
-
-  /**
-   * Remix instruments in a prompt with new genre-appropriate instruments.
-   * This operation is fully deterministic - no LLM calls.
-   * Genre is extracted from currentPrompt; originalInput kept for API compatibility.
-   */
-  remixInstruments(currentPrompt: string, originalInput: string): GenerationResult {
-    return remixInstrumentsImpl(currentPrompt, originalInput);
-  }
-
-  /**
-   * Remix genre - fully deterministic, no LLM.
-   */
-  remixGenre(currentPrompt: string): GenerationResult {
-    return remixGenreImpl(currentPrompt);
-  }
-
-  /**
-   * Remix mood - fully deterministic, no LLM.
-   */
-  remixMood(currentPrompt: string): GenerationResult {
-    return remixMoodInPrompt(currentPrompt);
-  }
-
-  /**
-   * Remix style tags - fully deterministic, no LLM.
-   */
-  remixStyleTags(currentPrompt: string): GenerationResult {
-    return remixStyleTagsImpl(currentPrompt);
-  }
-
-  /**
-   * Remix recording context - fully deterministic, no LLM.
-   */
-  remixRecording(currentPrompt: string): GenerationResult {
-    return remixRecordingImpl(currentPrompt);
-  }
-
-  /**
-   * Remix title - fully deterministic, no LLM.
-   */
-  remixTitle(currentPrompt: string, _originalInput: string): { title: string } {
-    const genre = extractGenreFromPrompt(currentPrompt);
-    const mood = extractMoodFromPrompt(currentPrompt);
-    return { title: generateDeterministicTitle(genre, mood) };
-  }
-
-  async remixLyrics(currentPrompt: string, originalInput: string, lyricsTopic?: string): Promise<{ lyrics: string }> {
+    originalInput: string,
+    lyricsTopic?: string
+  ): Promise<{ lyrics: string }> {
     return remixLyricsImpl(
       currentPrompt,
       originalInput,
@@ -491,6 +200,10 @@ export class AIEngine {
       this.config.getUseSunoTags()
     );
   }
+
+  // ==========================================================================
+  // Quick Vibes
+  // ==========================================================================
 
   async generateQuickVibes(
     category: QuickVibesCategory | null,
@@ -528,6 +241,10 @@ export class AIEngine {
       }
     );
   }
+
+  // ==========================================================================
+  // Creative Boost
+  // ==========================================================================
 
   async generateCreativeBoost(
     creativityLevel: number,
