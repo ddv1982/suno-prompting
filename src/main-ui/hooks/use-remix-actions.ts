@@ -90,7 +90,26 @@ export function useRemixActions(deps: RemixActionDeps): RemixActions {
     await executeRemixAction(action as Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>, () => (api[method] as (p: string) => Promise<{ prompt: string; versionId: string; validation: ValidationResult }>)(currentSession.currentPrompt), label, msg);
   }, [currentSession, executeRemixAction]);
 
-  const handleRemixGenre = useMemo(() => makePromptRemix('remixGenre', 'remixGenre', 'genre remix', 'Genre remixed.'), [makePromptRemix]);
+  /**
+   * Special handler for genre remix that preserves genre count in Creative Boost mode.
+   * When the session has creativeBoostInput with seedGenres, we pass the count
+   * to ensure the remixed output maintains the same number of genres.
+   */
+  const handleRemixGenre = useCallback(async () => {
+    if (!currentSession?.currentPrompt) return;
+    
+    // In Creative Boost mode, pass the seed genre count to preserve multi-genre selections
+    const targetGenreCount = currentSession.promptMode === 'creativeBoost' && currentSession.creativeBoostInput?.seedGenres?.length
+      ? currentSession.creativeBoostInput.seedGenres.length
+      : undefined;
+    
+    await executeRemixAction(
+      'remixGenre',
+      () => api.remixGenre(currentSession.currentPrompt, targetGenreCount),
+      'genre remix',
+      'Genre remixed.'
+    );
+  }, [currentSession, executeRemixAction]);
   const handleRemixMood = useMemo(() => makePromptRemix('remixMood', 'remixMood', 'mood remix', 'Mood remixed.'), [makePromptRemix]);
   const handleRemixStyleTags = useMemo(() => makePromptRemix('remixStyleTags', 'remixStyleTags', 'style tags remix', 'Style tags remixed.'), [makePromptRemix]);
   const handleRemixRecording = useMemo(() => makePromptRemix('remixRecording', 'remixRecording', 'recording remix', 'Recording remixed.'), [makePromptRemix]);

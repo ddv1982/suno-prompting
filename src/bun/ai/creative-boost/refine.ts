@@ -23,7 +23,7 @@ import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
 import { APP_CONSTANTS } from '@shared/constants';
 
-import { DEFAULT_LYRICS_TOPIC, generateLyricsForCreativeBoost, postProcessCreativeBoostResponse } from './helpers';
+import { DEFAULT_LYRICS_TOPIC, enforceGenreCount, generateLyricsForCreativeBoost, postProcessCreativeBoostResponse } from './helpers';
 
 import type { RefineCreativeBoostOptions, RefineDirectModeOptions, CreativeBoostEngineConfig } from './types';
 import type { GenerationResult } from '@bun/ai/types';
@@ -152,9 +152,11 @@ export async function refineCreativeBoost(
     maxMode,
     withLyrics,
     config,
+    targetGenreCount,
   } = options;
 
   // Direct Mode: Apply new styles and optionally refine title/lyrics
+  // Skip genre count enforcement for Direct Mode (sunoStyles selected)
   if (isDirectMode(sunoStyles)) {
     return refineDirectMode({
       currentTitle,
@@ -180,7 +182,8 @@ export async function refineCreativeBoost(
   const bpmRangeData = genreString ? getBlendedBpmRange(genreString) : null;
   const bpmRange = bpmRangeData ? formatBpmRange(bpmRangeData) : undefined;
 
-  const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals);
+  // Pass targetGenreCount to system prompt builder for LLM instruction
+  const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals, targetGenreCount);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
     cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, performanceInstruments, guidance
   );
@@ -194,8 +197,14 @@ export async function refineCreativeBoost(
 
   const parsed = parseCreativeBoostResponse(rawResponse);
 
-  return postProcessCreativeBoostResponse(parsed, {
-    rawStyle: parsed.style,
+  // Enforce genre count on LLM response when targetGenreCount > 0
+  // This post-processes the style to guarantee the exact genre count
+  const enforcedStyle = targetGenreCount && targetGenreCount > 0
+    ? enforceGenreCount(parsed.style, targetGenreCount)
+    : parsed.style;
+
+  return postProcessCreativeBoostResponse({ ...parsed, style: enforcedStyle }, {
+    rawStyle: enforcedStyle,
     maxMode,
     seedGenres,
     sunoStyles,

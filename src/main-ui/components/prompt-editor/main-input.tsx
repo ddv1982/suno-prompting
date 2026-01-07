@@ -1,7 +1,6 @@
-import { AlertCircle, Loader2, MessageSquare, Send } from "lucide-react";
+import { AlertCircle, MessageSquare } from "lucide-react";
 import { useCallback, type ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
@@ -16,14 +15,14 @@ const log = createLogger('MainInput');
 
 type MainInputProps = {
   value: string; currentPrompt: string; lyricsMode: boolean; maxMode: boolean;
-  isGenerating: boolean; maxChars: number; inputOverLimit: boolean; canSubmit: boolean;
+  isGenerating: boolean; maxChars: number; inputOverLimit: boolean;
   hasAdvancedSelection: boolean; onChange: (value: string) => void; onSubmit: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
 };
 
 export function MainInput({
   value, currentPrompt, lyricsMode, maxMode, isGenerating, maxChars, inputOverLimit,
-  canSubmit, hasAdvancedSelection, onChange, onSubmit, onConversionComplete,
+  hasAdvancedSelection, onChange, onSubmit, onConversionComplete,
 }: MainInputProps): ReactNode {
   const { showToast } = useToast();
 
@@ -88,40 +87,18 @@ export function MainInput({
       <FormLabel icon={<MessageSquare className="w-3 h-3" />} badge={hasAdvancedSelection ? "optional" : undefined}>
         {getLabel()}
       </FormLabel>
-      <div className="flex gap-3 items-end">
-        <Textarea
-          value={value}
-          onChange={(e): void => { onChange(e.target.value); }}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          disabled={isGenerating}
-          className={cn(
-            "min-h-20 flex-1 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-            isGenerating && "opacity-70"
-          )}
-          placeholder={getPlaceholder()}
-        />
-        <Button
-          onClick={onSubmit}
-          disabled={!canSubmit}
-          size="sm"
-          className={cn(
-            "h-9 px-4 rounded-lg gap-2 shadow-panel shrink-0 interactive",
-            isGenerating && "w-9 px-0"
-          )}
-        >
-          {isGenerating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <>
-              <Send className="w-4 h-4" />
-              <span className="font-semibold text-tiny tracking-tight">
-                {currentPrompt ? "REFINE" : "GENERATE"}
-              </span>
-            </>
-          )}
-        </Button>
-      </div>
+      <Textarea
+        value={value}
+        onChange={(e): void => { onChange(e.target.value); }}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        disabled={isGenerating}
+        className={cn(
+          "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
+          isGenerating && "opacity-70"
+        )}
+        placeholder={getPlaceholder()}
+      />
       {inputOverLimit && (
         <p className="text-caption text-destructive flex items-center gap-2">
           <AlertCircle className="w-4 h-4" /> Feedback is over {maxChars} characters.

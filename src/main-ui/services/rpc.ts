@@ -41,8 +41,8 @@ export const api = {
         return await rpc.request.remixInstruments({ currentPrompt, originalInput });
     },
 
-    async remixGenre(currentPrompt: string): Promise<BunRequests['remixGenre']['response']> {
-        return await rpc.request.remixGenre({ currentPrompt });
+    async remixGenre(currentPrompt: string, targetGenreCount?: number): Promise<BunRequests['remixGenre']['response']> {
+        return await rpc.request.remixGenre({ currentPrompt, targetGenreCount });
     },
 
     async remixMood(currentPrompt: string): Promise<BunRequests['remixMood']['response']> {
@@ -194,6 +194,7 @@ export const api = {
         withWordlessVocals: boolean;
         maxMode: boolean;
         withLyrics: boolean;
+        targetGenreCount?: number;
     }): Promise<BunRequests['refineCreativeBoost']['response']> {
         return await rpc.request.refineCreativeBoost(params);
     }

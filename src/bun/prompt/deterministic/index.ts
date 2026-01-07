@@ -35,6 +35,7 @@ export {
   remixMoodInPrompt,
   remixStyleTags,
   remixRecording,
+  type RemixGenreOptions,
 } from './remix-operations';
 
 // Re-export test helpers

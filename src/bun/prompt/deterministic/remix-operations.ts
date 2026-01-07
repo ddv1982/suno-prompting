@@ -220,6 +220,21 @@ export function remixInstruments(
   };
 }
 
+/** Options for remixGenre operation */
+export interface RemixGenreOptions {
+  /**
+   * Target number of genres in the output (1-4).
+   *
+   * WHY: Creative Boost mode allows users to select multiple seed genres
+   * (e.g., 3 genres for a fusion). When remixing, we preserve this count
+   * so users get fresh genre combinations without losing their preferred
+   * fusion complexity. Without this, a 3-genre selection would randomly
+   * become 1 genre after remix, frustrating users who intentionally chose
+   * a multi-genre fusion.
+   */
+  targetGenreCount?: number;
+}
+
 /**
  * Remix genre in a prompt with a new genre.
  *
@@ -227,8 +242,15 @@ export function remixInstruments(
  * the user's creative intent for fusion styles. BPM is auto-updated to
  * match the new genre's typical tempo, preventing tempo/genre mismatches
  * that could confuse Suno (e.g., 140 BPM with "jazz").
+ *
+ * @param currentPrompt - The current prompt to modify
+ * @param options - Optional configuration including targetGenreCount
+ * @returns Updated prompt with new genre(s)
  */
-export function remixGenre(currentPrompt: string): RemixResult {
+export function remixGenre(
+  currentPrompt: string,
+  options?: RemixGenreOptions
+): RemixResult {
   const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
   const fullGenreValue = genreMatch?.[1]?.trim() || '';
   const currentGenres = fullGenreValue
@@ -236,18 +258,23 @@ export function remixGenre(currentPrompt: string): RemixResult {
     .map(g => g.trim().toLowerCase())
     .filter(Boolean);
 
+  // Determine target count: use provided count, otherwise preserve current count
+  // Clamp to valid range (1-4), default to 1 if 0 or undefined when no current genres
+  const rawTargetCount = options?.targetGenreCount ?? currentGenres.length;
+  const targetCount = Math.max(1, Math.min(4, rawTargetCount || 1));
+
   const allSingleGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
   const allGenreOptions = [...allSingleGenres, ...MULTI_GENRE_COMBINATIONS];
 
   let newGenreValue: string;
-  if (currentGenres.length <= 1) {
+  if (targetCount <= 1) {
     const selected = selectSingleGenre(currentGenres[0] || '', allSingleGenres);
     if (selected === null) return { text: currentPrompt };
     newGenreValue = selected;
   } else {
     newGenreValue = selectMultipleGenres(
       currentGenres,
-      currentGenres.length,
+      targetCount,
       allGenreOptions
     );
   }

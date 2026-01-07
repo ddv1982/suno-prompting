@@ -44,6 +44,15 @@ export interface RefineCreativeBoostOptions {
   maxMode: boolean;
   withLyrics: boolean;
   config: CreativeBoostEngineConfig;
+  /**
+   * Target genre count to enforce in the output (1-4).
+   *
+   * WHY: Users select a specific number of seed genres to control fusion
+   * complexity. During refinement, the LLM might change genres but should
+   * maintain the same count. 0 or undefined means no enforcement (preserve
+   * whatever the LLM returns).
+   */
+  targetGenreCount?: number;
 }
 
 /**

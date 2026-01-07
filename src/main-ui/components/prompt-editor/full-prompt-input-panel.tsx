@@ -1,13 +1,14 @@
+import { useCallback, type ReactNode } from "react";
 
 import { AdvancedPanel } from "@/components/advanced-panel";
 
+import { FullWidthSubmitButton } from "./full-width-submit-button";
 import { LockedPhraseInput } from "./locked-phrase-input";
 import { MainInput } from "./main-input";
 import { ModeToggle } from "./mode-toggle";
 import { SongTopicInput } from "./song-topic-input";
 
 import type { AdvancedSelection, DebugInfo, EditorMode } from "@shared/types";
-import type { ReactNode } from "react";
 
 type FullPromptInputPanelProps = {
   currentPrompt: string;
@@ -67,7 +68,13 @@ export function FullPromptInputPanel({
   // Allow generation without description in advanced mode when refining OR when lyrics topic is set
   const canGenerateWithoutInput = hasAdvancedSelection && (!!currentPrompt || (lyricsMode && !!lyricsTopic.trim()));
 
-  const handleSend = (): void => {
+  const canSubmit = !isGenerating &&
+    !inputOverLimit &&
+    !lyricsTopicOverLimit &&
+    lockedPhraseValidation.isValid &&
+    (!!pendingInput.trim() || canGenerateWithoutInput);
+
+  const handleSend = useCallback((): void => {
     const trimmed = pendingInput.trim();
     
     if (!trimmed && !canGenerateWithoutInput) return;
@@ -76,13 +83,14 @@ export function FullPromptInputPanel({
     if (!lockedPhraseValidation.isValid) return;
     if (lyricsTopicOverLimit) return;
     onGenerate(trimmed);
-  };
+  }, [pendingInput, canGenerateWithoutInput, isGenerating, maxChars, lockedPhraseValidation.isValid, lyricsTopicOverLimit, onGenerate]);
 
-  const canSubmit = !isGenerating &&
-    !inputOverLimit &&
-    !lyricsTopicOverLimit &&
-    lockedPhraseValidation.isValid &&
-    (!!pendingInput.trim() || canGenerateWithoutInput);
+  const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
+    if (e.key === "Enter" && !e.shiftKey && canSubmit) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [canSubmit, handleSend]);
 
   return (
     <>
@@ -121,7 +129,6 @@ export function FullPromptInputPanel({
         isGenerating={isGenerating}
         maxChars={maxChars}
         inputOverLimit={inputOverLimit}
-        canSubmit={canSubmit}
         hasAdvancedSelection={hasAdvancedSelection}
         onChange={onPendingInputChange}
         onSubmit={handleSend}
@@ -135,8 +142,16 @@ export function FullPromptInputPanel({
           hasCurrentPrompt={!!currentPrompt}
           isOverLimit={lyricsTopicOverLimit}
           onChange={onLyricsTopicChange}
+          onKeyDown={handleKeyDown}
         />
       )}
+
+      <FullWidthSubmitButton
+        isGenerating={isGenerating}
+        isRefineMode={!!currentPrompt}
+        disabled={!canSubmit}
+        onSubmit={handleSend}
+      />
     </>
   );
 }

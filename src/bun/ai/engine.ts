@@ -260,7 +260,8 @@ export class AIEngine {
     sunoStyles: string[],
     withWordlessVocals: boolean,
     maxMode: boolean,
-    withLyrics: boolean
+    withLyrics: boolean,
+    targetGenreCount?: number
   ): Promise<GenerationResult> {
     return refineCreativeBoostImpl({
       currentPrompt,
@@ -273,6 +274,7 @@ export class AIEngine {
       withWordlessVocals,
       maxMode,
       withLyrics,
+      targetGenreCount,
       config: {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),

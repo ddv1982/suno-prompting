@@ -1008,3 +1008,246 @@ describe("AIEngine.refineCreativeBoost performance instruments", () => {
     expect(result.text).toContain("instruments:");
   });
 });
+
+// =============================================================================
+// GENRE COUNT ENFORCEMENT TESTS
+// Tests for targetGenreCount parameter in refineCreativeBoost
+// =============================================================================
+
+describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+
+    // Mock for refine that returns a response with genres
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      if (generateTextCalls === 1) {
+        // Refine LLM response - intentionally returns 2 genres to test enforcement
+        return {
+          text: '{"title": "Refined Song", "style": "genre: \\"jazz, rock\\"\\nbpm: \\"120\\"\\nmood: \\"smooth\\"\\ninstruments: \\"piano, guitar\\""}',
+        };
+      } else {
+        // Conversion AI response
+        return {
+          text: JSON.stringify({
+            styleTags: "warm, intimate",
+            recording: "studio session",
+            intro: "Gentle intro",
+            verse: "Main verse",
+            chorus: "Powerful chorus",
+            outro: "Fade out",
+          }),
+        };
+      }
+    });
+  });
+
+  it("enforces targetGenreCount: 3 to produce exactly 3 genres in output", async () => {
+    const result = await engine.refineCreativeBoost(
+      'genre: "rock"\nbpm: "120"\nmood: "energetic"', // currentPrompt
+      "Original Title",
+      "make it more jazzy", // feedback
+      "", // lyricsTopic
+      "", // description
+      ["rock", "jazz", "funk"], // seedGenres - 3 genres
+      [], // sunoStyles
+      false, // withWordlessVocals
+      true, // maxMode
+      false, // withLyrics
+      3 // targetGenreCount
+    );
+
+    // Extract genres from the result
+    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
+
+    expect(genres).toHaveLength(3);
+  });
+
+  it("enforces targetGenreCount: 1 to produce exactly 1 genre in output", async () => {
+    const result = await engine.refineCreativeBoost(
+      'genre: "rock, jazz, funk"\nbpm: "100"', // currentPrompt with 3 genres
+      "Original Title",
+      "simplify the genre", // feedback
+      "", "", ["rock"], [], false, true, false,
+      1 // targetGenreCount
+    );
+
+    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
+
+    expect(genres).toHaveLength(1);
+  });
+
+  it("enforces targetGenreCount: 4 to produce exactly 4 genres in output", async () => {
+    const result = await engine.refineCreativeBoost(
+      'genre: "rock"\nbpm: "100"', // currentPrompt with 1 genre
+      "Original Title",
+      "make it a fusion", // feedback
+      "", "", ["rock", "jazz", "funk", "pop"], [], false, true, false,
+      4 // targetGenreCount
+    );
+
+    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
+
+    expect(genres).toHaveLength(4);
+  });
+});
+
+describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+
+    // Mock for direct mode
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      return { text: "Refined Title" };
+    });
+  });
+
+  it("skips genre enforcement when sunoStyles is provided (Direct Mode)", async () => {
+    const result = await engine.refineCreativeBoost(
+      "lo-fi, chillwave", // currentPrompt
+      "Original Title",
+      "make it warmer", // feedback
+      "", "", [],
+      ["lo-fi", "chillwave"], // sunoStyles - triggers Direct Mode
+      false, false, false,
+      3 // targetGenreCount - should be ignored in Direct Mode
+    );
+
+    // Direct Mode returns the styles directly, no genre enforcement
+    expect(result.text).toBe("lo-fi, chillwave");
+    // Should not contain a genre: field structure
+    expect(result.text).not.toContain('genre:');
+  });
+
+  it("returns exact sunoStyles in Direct Mode regardless of targetGenreCount", async () => {
+    const styles = ["synthwave", "retrowave", "outrun"];
+    const result = await engine.refineCreativeBoost(
+      "old styles",
+      "Title",
+      "",
+      "", "", [],
+      styles, // Direct Mode
+      false, false, false,
+      1 // targetGenreCount should be ignored
+    );
+
+    expect(result.text).toBe("synthwave, retrowave, outrun");
+  });
+});
+
+describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount is 0 or undefined", () => {
+  let engine: AIEngine;
+
+  beforeEach(() => {
+    engine = new AIEngine();
+    mockGenerateText.mockClear();
+    generateTextCalls = 0;
+
+    // Mock for refine - returns a response that will go through conversion
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      if (generateTextCalls === 1) {
+        // LLM refine response
+        return {
+          text: '{"title": "Song Title", "style": "genre: \\"jazz\\"\\nbpm: \\"100\\"\\nmood: \\"cool\\"\\ninstruments: \\"piano\\""}',
+        };
+      } else {
+        // Conversion AI response
+        return {
+          text: JSON.stringify({
+            styleTags: "smooth, warm",
+            recording: "studio session",
+            intro: "Gentle intro",
+            verse: "Main verse",
+            chorus: "Powerful chorus",
+            outro: "Fade out",
+          }),
+        };
+      }
+    });
+  });
+
+  it("does not call enforceGenreCount when targetGenreCount is 0", async () => {
+    // When targetGenreCount is 0, enforcement is skipped
+    // The output should contain a valid genre field (from LLM + conversion)
+    const result = await engine.refineCreativeBoost(
+      'genre: "rock"\nbpm: "120"',
+      "Title",
+      "add jazz elements",
+      "", "", ["rock"], [], false, true, false,
+      0 // targetGenreCount = 0 means no enforcement
+    );
+
+    // Verify we got a valid result with genre field
+    expect(result.text).toContain('genre:');
+    // Should have made 2 LLM calls (refine + conversion)
+    expect(generateTextCalls).toBe(2);
+  });
+
+  it("does not call enforceGenreCount when targetGenreCount is undefined", async () => {
+    // When targetGenreCount is undefined, enforcement is skipped
+    const result = await engine.refineCreativeBoost(
+      'genre: "rock"\nbpm: "120"',
+      "Title",
+      "add jazz elements",
+      "", "", ["rock"], [], false, true, false
+      // targetGenreCount not provided (undefined)
+    );
+
+    // Verify we got a valid result with genre field
+    expect(result.text).toContain('genre:');
+    // Should have made 2 LLM calls (refine + conversion)
+    expect(generateTextCalls).toBe(2);
+  });
+
+  it("enforcement is applied only when targetGenreCount > 0", async () => {
+    // Reset mock to return a single-genre response
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      if (generateTextCalls === 1) {
+        return {
+          text: '{"title": "Song Title", "style": "genre: \\"jazz\\"\\nbpm: \\"100\\"\\nmood: \\"cool\\"\\ninstruments: \\"piano\\""}',
+        };
+      } else {
+        return {
+          text: JSON.stringify({
+            styleTags: "smooth",
+            recording: "studio",
+            intro: "Intro",
+            verse: "Verse",
+            chorus: "Chorus",
+            outro: "Outro",
+          }),
+        };
+      }
+    });
+
+    // When targetGenreCount is 3, enforcement adds genres
+    const result = await engine.refineCreativeBoost(
+      'genre: "rock"\nbpm: "120"',
+      "Title",
+      "make it jazzy",
+      "", "", ["rock", "jazz", "funk"], [], false, true, false,
+      3 // targetGenreCount = 3 triggers enforcement
+    );
+
+    // Extract genres from the result
+    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
+
+    // Enforcement should have ensured exactly 3 genres
+    expect(genres).toHaveLength(3);
+  });
+});

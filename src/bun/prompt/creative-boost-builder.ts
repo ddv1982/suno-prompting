@@ -190,21 +190,37 @@ export function parseCreativeBoostResponse(text: string): {
 
 /**
  * Builds the system prompt for Creative Boost refinement.
+ *
+ * WHY targetGenreCount parameter: Users select a specific number of seed genres
+ * (e.g., 3 for "jazz, rock, electronic") to control fusion complexity. During
+ * refinement, the LLM might suggest different genres but should maintain the
+ * same count. This instruction ensures the user's fusion complexity preference
+ * is preserved even when genre choices change based on feedback.
+ *
  * Note: Lyrics are generated separately using the existing generateLyrics() function.
+ *
+ * @param withWordlessVocals - Whether to include wordless vocals guidance
+ * @param targetGenreCount - Optional genre count to enforce (1-4), 0 or undefined means no enforcement
  */
 export function buildCreativeBoostRefineSystemPrompt(
-  withWordlessVocals: boolean
+  withWordlessVocals: boolean,
+  targetGenreCount?: number
 ): string {
   const vocalsGuidance = withWordlessVocals
     ? `VOCALS: Include wordless vocals only (humming, oohs, aahs). NO actual words.`
     : `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
+
+  // Build genre count instruction when enforcement is requested
+  const genreCountInstruction = targetGenreCount && targetGenreCount > 0
+    ? `\nIMPORTANT: The output must contain exactly ${targetGenreCount} genre(s) in the genre field. You may suggest different genre combinations based on feedback, but the count must remain ${targetGenreCount}.`
+    : '';
 
   return `You are Creative Boost, an AI music genre exploration assistant for Suno V5.
 You are REFINING an existing Creative Boost prompt based on user feedback.
 
 Keep the same general vibe but apply the requested changes thoughtfully.
 
-${vocalsGuidance}
+${vocalsGuidance}${genreCountInstruction}
 
 OUTPUT FORMAT:
 Return a JSON object with:

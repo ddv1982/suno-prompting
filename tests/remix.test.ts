@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 
-import { extractGenreFromPrompt, extractGenresFromPrompt } from '@bun/prompt/deterministic';
+import { extractGenreFromPrompt, extractGenresFromPrompt, remixGenre } from '@bun/prompt/deterministic';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 
 describe('replaceFieldLine', () => {
@@ -162,5 +162,179 @@ describe('extractGenresFromPrompt (multi)', () => {
   it('preserves order of genres', () => {
     const prompt = 'genre: "funk, soul, rnb, jazz"\nmood: "groovy"';
     expect(extractGenresFromPrompt(prompt)).toEqual(['funk', 'soul', 'rnb', 'jazz']);
+  });
+});
+
+// =============================================================================
+// remixGenre with targetGenreCount - Genre Count Preservation Tests
+// =============================================================================
+
+/**
+ * Extract raw genre values from prompt (before registry validation).
+ * Used for testing the number of genre slots in output regardless of
+ * whether they are compound genres like "jazz fusion" or single genres.
+ */
+function extractRawGenreValues(prompt: string): string[] {
+  const match = prompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
+  if (!match?.[1]) return [];
+  return match[1].split(',').map(g => g.trim()).filter(Boolean);
+}
+
+describe('remixGenre with targetGenreCount', () => {
+  const basePrompt = `genre: "rock"
+bpm: "120"
+mood: "energetic"
+instruments: "guitar, drums"`;
+
+  const multiGenrePrompt = `genre: "jazz, rock, funk"
+bpm: "110"
+mood: "groovy"
+instruments: "saxophone, guitar"`;
+
+  describe('targetGenreCount enforcement', () => {
+    it('returns exactly targetGenreCount genre slots when specified', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 3 });
+      // Use raw extraction to count genre slots (may include compound genres like "jazz fusion")
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(3);
+    });
+
+    it('returns 1 genre slot when targetGenreCount is 1', () => {
+      const result = remixGenre(multiGenrePrompt, { targetGenreCount: 1 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(1);
+    });
+
+    it('returns 2 genre slots when targetGenreCount is 2', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 2 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(2);
+    });
+
+    it('returns 4 genre slots when targetGenreCount is 4', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 4 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(4);
+    });
+  });
+
+  describe('targetGenreCount capping at 4', () => {
+    it('caps targetGenreCount at 4 when input is 5', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 5 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres.length).toBeLessThanOrEqual(4);
+    });
+
+    it('caps targetGenreCount at 4 when input is 10', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 10 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres.length).toBeLessThanOrEqual(4);
+    });
+
+    it('caps targetGenreCount at 4 when input is 100', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 100 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres.length).toBeLessThanOrEqual(4);
+    });
+  });
+
+  describe('targetGenreCount defaults to 1 for invalid values', () => {
+    it('defaults to 1 when targetGenreCount is 0', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 0 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(1);
+    });
+
+    it('defaults to 1 when targetGenreCount is negative', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: -1 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(1);
+    });
+
+    it('defaults to 1 when targetGenreCount is -10', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: -10 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(1);
+    });
+  });
+
+  describe('preserves prompt count when targetGenreCount not provided', () => {
+    it('preserves single genre count when no options provided', () => {
+      const result = remixGenre(basePrompt);
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(1);
+    });
+
+    it('preserves multi-genre count when no options provided', () => {
+      const result = remixGenre(multiGenrePrompt);
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(3);
+    });
+
+    it('preserves 2-genre count when no targetGenreCount', () => {
+      const twoGenrePrompt = `genre: "rock, jazz"\nbpm: "100"\nmood: "smooth"`;
+      const result = remixGenre(twoGenrePrompt);
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(2);
+    });
+
+    it('preserves 4-genre count when no targetGenreCount', () => {
+      const fourGenrePrompt = `genre: "rock, jazz, pop, funk"\nbpm: "100"`;
+      const result = remixGenre(fourGenrePrompt);
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(4);
+    });
+  });
+
+  describe('works with both single-genre and multi-genre input prompts', () => {
+    it('expands single-genre prompt to 3 genre slots with targetGenreCount: 3', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 3 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(3);
+    });
+
+    it('reduces multi-genre prompt to 1 genre slot with targetGenreCount: 1', () => {
+      const result = remixGenre(multiGenrePrompt, { targetGenreCount: 1 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(1);
+    });
+
+    it('changes genre while maintaining count from multi-genre input', () => {
+      const result = remixGenre(multiGenrePrompt, { targetGenreCount: 3 });
+      const rawGenres = extractRawGenreValues(result.text);
+      expect(rawGenres).toHaveLength(3);
+    });
+  });
+
+  describe('output validation', () => {
+    it('returns valid genres from registry for single genre', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 1 });
+      const genres = extractGenresFromPrompt(result.text);
+      // Single genre should be from registry
+      expect(genres.length).toBeGreaterThanOrEqual(1);
+      expect(genres).not.toContain('invalid-genre');
+    });
+
+    it('returns different genre than input when possible', () => {
+      // Run multiple times to account for randomness
+      const results = Array.from({ length: 10 }, () =>
+        remixGenre(basePrompt, { targetGenreCount: 1 })
+      );
+      const genres = results.map(r => extractGenresFromPrompt(r.text)[0]);
+      // At least one should be different from 'rock'
+      const hasDifferentGenre = genres.some(g => g !== 'rock');
+      expect(hasDifferentGenre).toBe(true);
+    });
+
+    it('preserves other prompt fields when remixing genre', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 2 });
+      expect(result.text).toContain('mood:');
+      expect(result.text).toContain('instruments:');
+    });
+
+    it('includes genre field in output', () => {
+      const result = remixGenre(basePrompt, { targetGenreCount: 3 });
+      expect(result.text).toContain('genre:');
+    });
   });
 });

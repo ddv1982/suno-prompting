@@ -11,6 +11,7 @@ export const RemixInstrumentsSchema = z.object({
 
 export const RemixGenreSchema = z.object({
   currentPrompt: CurrentPromptSchema,
+  targetGenreCount: z.number().int().min(1).max(4).optional(),
 });
 
 export const RemixMoodSchema = z.object({

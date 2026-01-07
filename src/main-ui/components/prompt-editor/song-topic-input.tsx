@@ -14,6 +14,8 @@ type SongTopicInputProps = {
   hasCurrentPrompt: boolean;
   isOverLimit: boolean;
   onChange: (value: string) => void;
+  /** Optional keyboard handler for Enter key to trigger generation. */
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 };
 
 export function SongTopicInput({
@@ -22,6 +24,7 @@ export function SongTopicInput({
   hasCurrentPrompt,
   isOverLimit,
   onChange,
+  onKeyDown,
 }: SongTopicInputProps): ReactNode {
   return (
     <div className="space-y-1">
@@ -37,6 +40,7 @@ export function SongTopicInput({
       <Textarea
         value={value}
         onChange={(e): void => { onChange(e.target.value); }}
+        onKeyDown={onKeyDown}
         disabled={isGenerating}
         className={cn(
           "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",

@@ -56,8 +56,8 @@ export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
       return runRemixAction('remixInstruments', () => remixInstruments(currentPrompt, originalInput));
     },
     remixGenre: async (params) => {
-      const { currentPrompt } = validate(RemixGenreSchema, params);
-      return runRemixAction('remixGenre', () => remixGenre(currentPrompt));
+      const { currentPrompt, targetGenreCount } = validate(RemixGenreSchema, params);
+      return runRemixAction('remixGenre', () => remixGenre(currentPrompt, { targetGenreCount }));
     },
     remixMood: async (params) => {
       const { currentPrompt } = validate(RemixMoodSchema, params);

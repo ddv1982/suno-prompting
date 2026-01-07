@@ -42,6 +42,7 @@ export const RefineCreativeBoostSchema = z.object({
   withWordlessVocals: z.boolean(),
   maxMode: z.boolean(),
   withLyrics: z.boolean(),
+  targetGenreCount: z.number().int().min(0).max(4).optional(), // 0 means "no enforcement" (preserve LLM output)
 }).refine(genreStylesMutualExclusivity, {
   message: 'Cannot use both Seed Genres and Suno V5 Styles. Please select only one.',
   path: ['sunoStyles'],

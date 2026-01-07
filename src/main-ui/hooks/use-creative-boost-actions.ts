@@ -99,6 +99,12 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
     const { currentPrompt, currentTitle } = currentSession;
 
     try {
+      // Pass targetGenreCount to preserve genre count during refinement
+      // Only pass when seedGenres.length > 0, otherwise omit (backend treats undefined as "no enforcement")
+      const targetGenreCount = creativeBoostInput.seedGenres.length > 0
+        ? creativeBoostInput.seedGenres.length
+        : undefined;
+
       await execute(
         {
           action: 'creativeBoost',
@@ -113,6 +119,7 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
             withWordlessVocals: creativeBoostInput.withWordlessVocals,
             maxMode,
             withLyrics: lyricsMode,
+            targetGenreCount,
           }),
           originalInput: currentSession.originalInput || '',
           promptMode: 'creativeBoost',
