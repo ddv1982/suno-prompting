@@ -364,111 +364,56 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 <details>
 <summary><strong>Generation & Remix Dataflow</strong></summary>
 
+Most operations are **fully deterministic** (no LLM, <50ms) using curated data pools.
+LLM is only used when lyrics are enabled or for lyrics remix.
+
 ```mermaid
-flowchart TB
-    subgraph UI["Frontend (React)"]
-        FP[Full Prompt Mode]
-        QV[Quick Vibes Mode]
-        CB[Creative Boost Mode]
-        RX[Remix Buttons]
+flowchart LR
+    subgraph Input
+        UI[User Action]
     end
 
-    subgraph RPC["RPC Layer"]
-        H[Handlers]
+    subgraph Decision
+        LYR{Lyrics?}
     end
 
-    subgraph Engine["AIEngine (Facade)"]
-        GI[generateInitial]
-        GQ[generateQuickVibes]
-        GC[generateCreativeBoost]
-        RL[remixLyrics]
+    subgraph Deterministic
+        BUILD[Prompt Builder]
+        DATA[(Data Pools)]
     end
 
-    subgraph Deterministic["Deterministic Operations (No LLM)"]
-        MB[Max Mode Builder]
-        SB[Standard Builder]
-        QT[Quick Vibes Templates]
-        CBT[Creative Boost Templates]
-        DT[Deterministic Title]
-        subgraph RemixOps["Remix Operations"]
-            RI[remixInstruments]
-            RG[remixGenre]
-            RM[remixMood]
-            RS[remixStyleTags]
-            RR[remixRecording]
-            RT[remixTitle]
-        end
+    subgraph LLM
+        GEN[Genre Detection]
+        TITLE[Title Gen]
+        LYRICS[Lyrics Gen]
     end
 
-    subgraph AI["LLM Operations"]
-        GD[Genre Detection]
-        TG[Title Generation]
-        LG[Lyrics Generation]
-        LR[Lyrics Remix]
-    end
+    UI --> LYR
+    LYR -->|OFF| BUILD
+    LYR -->|ON| GEN --> BUILD
+    LYR -->|ON| TITLE
+    LYR -->|ON| LYRICS
+    BUILD -.-> DATA
 
-    subgraph Data["Data Sources"]
-        GR[Genre Registry]
-        IP[Instrument Pools]
-        MP[Mood Pool]
-        CP[Chord Progressions]
-    end
-
-    FP --> H
-    QV --> H
-    CB --> H
-    RX --> H
-
-    H --> GI
-    GI -->|Lyrics OFF| MB
-    GI -->|Lyrics OFF| SB
-    GI -->|Lyrics ON| GD
-    GD --> MB
-    GD --> SB
-    GI -->|Lyrics ON| TG
-    GI -->|Lyrics ON| LG
-    MB --> DT
-    SB --> DT
-
-    H --> GQ
-    GQ -->|Category| QT
-
-    H --> GC
-    GC --> CBT
-    GC -->|With Lyrics| TG
-    GC -->|With Lyrics| LG
-
-    H -->|Deterministic| RemixOps
-    H -->|LLM| RL
-    RL --> LR
-
-    GR --> MB
-    GR --> SB
-    IP --> RI
-    MP --> RM
-    CP --> RI
-
-    classDef deterministic fill:#d4edda,stroke:#28a745
+    classDef det fill:#d4edda,stroke:#28a745
     classDef ai fill:#fff3cd,stroke:#ffc107
     classDef data fill:#e2e3e5,stroke:#6c757d
 
-    class MB,SB,QT,CBT,DT,RI,RG,RM,RS,RR,RT deterministic
-    class GD,TG,LG,LR ai
-    class GR,IP,MP,CP data
+    class BUILD det
+    class GEN,TITLE,LYRICS ai
+    class DATA data
 ```
 
-**Performance by Path:**
+| Operation | LLM Calls | Latency | Notes |
+|-----------|-----------|---------|-------|
+| Generate (Lyrics OFF) | 0 | <50ms | Fully deterministic |
+| Generate (Lyrics ON) | 1-3 | ~2s | Genre + title + lyrics |
+| Quick Vibes | 0 | <50ms | Category templates |
+| Creative Boost | 0-3 | <50ms-2s | Depends on lyrics toggle |
+| Remix (6 buttons) | 0 | <10ms | All deterministic |
+| Remix Lyrics | 1 | ~1s | Only remix using LLM |
 
-| Path | LLM Calls | Latency |
-|------|-----------|---------|
-| Full Prompt (Lyrics OFF) | 0 | <50ms |
-| Full Prompt (Lyrics ON) | 3 | ~2-3s |
-| Quick Vibes (Category) | 0 | <50ms |
-| Creative Boost | 0-3 | <50ms to ~2s |
-| Remix (6 buttons) | 0 | <10ms |
-| Remix Lyrics | 1 | ~1s |
-
-**Legend:** 🟢 Deterministic (green) | 🟡 AI/LLM (yellow) | ⚪ Data (gray)
+**Why deterministic?** Faster response, predictable results, no API costs for basic generation.
 
 </details>
 
