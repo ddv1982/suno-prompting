@@ -637,3 +637,47 @@ describe('Context memoization patterns', () => {
     expect(memoizedCtx).toBe(sameMemoizedCtx);
   });
 });
+
+describe('useAsyncAction + useMounted integration', () => {
+  test('useAsyncAction imports and uses useMounted for memory leak prevention', async () => {
+    // Verify that useAsyncAction integrates with useMounted
+    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
+    
+    // Check that useMounted is imported
+    expect(asyncActionSource).toContain("import { useMounted } from './use-mounted'");
+    
+    // Check that it's actually used in the hook
+    expect(asyncActionSource).toContain('const mountedRef = useMounted()');
+    
+    // Check that mounted state is checked before setState
+    expect(asyncActionSource).toContain('if (mountedRef.current)');
+  });
+
+  test('both useAsyncAction and useAsyncActionSafe use useMounted', async () => {
+    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
+    
+    // Count occurrences of useMounted() calls - should be 2 (one for each variant)
+    const useMountedCalls = asyncActionSource.match(/const mountedRef = useMounted\(\)/g);
+    expect(useMountedCalls).toBeDefined();
+    expect(useMountedCalls?.length).toBe(2);
+  });
+
+  test('mount checking pattern is used consistently', async () => {
+    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
+    
+    // Verify the pattern: checking mountedRef.current before setState
+    const mountCheckPattern = /if \(mountedRef\.current\)/g;
+    const matches = asyncActionSource.match(mountCheckPattern);
+    
+    expect(matches).toBeDefined();
+    // Should appear multiple times (in both hooks, in both success and error paths)
+    expect(matches!.length).toBeGreaterThan(0);
+  });
+
+  test('mountedRef is included in useCallback dependencies', async () => {
+    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
+    
+    // Verify mountedRef is in the dependency array
+    expect(asyncActionSource).toContain('[action, mountedRef]');
+  });
+});

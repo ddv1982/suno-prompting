@@ -1,5 +1,6 @@
 import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_GENERATION_LIMIT } from '@bun/prompt/quick-vibes-categories';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
+import { WORDLESS_VOCALS_GUIDANCE } from '@bun/prompt/shared-instructions';
 
 import type { QuickVibesCategory } from '@shared/types';
 export { stripMaxModeHeader } from '@shared/prompt-utils';
@@ -9,7 +10,7 @@ export { stripMaxModeHeader } from '@shared/prompt-utils';
  */
 function buildQuickVibesSystemPrompt(_maxMode: boolean, withWordlessVocals: boolean): string {
   const vocalInstruction = withWordlessVocals 
-    ? 'Include WORDLESS vocals only (e.g., "with soft humming", "gentle vocalizations", "ethereal oohs and aahs"). NO actual lyrics or words.'
+    ? WORDLESS_VOCALS_GUIDANCE
     : 'This is instrumental music - do NOT mention vocals or singing.';
 
   return `You are a Quick Vibes prompt writer for Suno V5. Generate short, evocative music prompts that capture a mood or atmosphere.

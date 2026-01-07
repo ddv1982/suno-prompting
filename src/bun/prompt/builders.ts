@@ -11,21 +11,11 @@ import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genre-parser';
 import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
+import { CONTEXT_INTEGRATION_INSTRUCTIONS, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 
 import type { ModeSelection } from '@bun/instruments/selection';
 import type { PreFormattedMaxOutput, PreFormattedStandardOutput } from '@bun/prompt/context-preservation';
-
-/**
- * Shared context integration instructions for all prompt modes.
- * Ensures LLM utilizes all detected context consistently.
- */
-export const CONTEXT_INTEGRATION_INSTRUCTIONS = `CONTEXT INTEGRATION (use ALL detected context):
-- BPM: Use the tempo RANGE provided (e.g., "between 80 and 160"), not just a single number
-- Mood: Include mood suggestions directly (e.g., "smooth, groovy, laid back")
-- Production: Include production style descriptors (e.g., "organic feel, studio reverb")
-- Chord progression: Include harmony feel (e.g., "bossa nova harmony, ii-V-I movement")
-- Vocal style: Weave vocal descriptors naturally into the output`;
 
 /**
  * Builds song concept parts for LLM prompts.
@@ -81,7 +71,8 @@ RULES:
 
 STRICT CONSTRAINTS:
 - Output MUST be under ${maxChars} characters
-- Output ONLY the JSON object - no markdown code blocks`;
+
+${JSON_OUTPUT_FORMAT_RULES}`;
   }
 
   const songStructure = useSunoTags ? `
@@ -252,7 +243,8 @@ RULES:
 
 STRICT CONSTRAINTS:
 - Output MUST be under ${maxChars} characters
-- Output ONLY the JSON object - no markdown code blocks`;
+
+${JSON_OUTPUT_FORMAT_RULES}`;
   }
 
   return `You are a music prompt writer for Suno V5 MAX MODE. Generate prompts using the specific metadata format that triggers maximum quality output.

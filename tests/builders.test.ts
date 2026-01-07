@@ -5,8 +5,8 @@ import {
   buildContextualPrompt,
   buildMaxModeSystemPrompt,
   buildMaxModeContextualPrompt,
-  CONTEXT_INTEGRATION_INSTRUCTIONS,
 } from '@bun/prompt/builders';
+import { CONTEXT_INTEGRATION_INSTRUCTIONS } from '@bun/prompt/shared-instructions';
 
 import type { ModeSelection } from '@bun/instruments/selection';
 

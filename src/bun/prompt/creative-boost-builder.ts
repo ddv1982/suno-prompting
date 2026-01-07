@@ -1,6 +1,6 @@
 import { getMultiGenreNuanceGuidance } from '@bun/instruments';
-import { CONTEXT_INTEGRATION_INSTRUCTIONS } from '@bun/prompt/builders';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
+import { CONTEXT_INTEGRATION_INSTRUCTIONS, WORDLESS_VOCALS_GUIDANCE, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
 
@@ -61,7 +61,7 @@ export function buildCreativeBoostSystemPrompt(
   }
 
   const vocalsGuidance = withWordlessVocals
-    ? `VOCALS: Include wordless vocals only (humming, oohs, aahs, vocalizations). NO actual words or lyrics.`
+    ? WORDLESS_VOCALS_GUIDANCE
     : `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
 
   return `You are Creative Boost, an AI music genre exploration assistant for Suno V5.
@@ -85,7 +85,8 @@ RULES:
 2. Include sonic textures, mood, chord feel, and character in the style
 3. The title should be evocative and match the vibe
 4. Keep style under ${MAX_STYLE_CHARS} characters
-5. Do NOT wrap the JSON in markdown code blocks`;
+
+${JSON_OUTPUT_FORMAT_RULES}`;
 }
 
 /**
@@ -207,7 +208,7 @@ export function buildCreativeBoostRefineSystemPrompt(
   targetGenreCount?: number
 ): string {
   const vocalsGuidance = withWordlessVocals
-    ? `VOCALS: Include wordless vocals only (humming, oohs, aahs). NO actual words.`
+    ? WORDLESS_VOCALS_GUIDANCE
     : `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
 
   // Build genre count instruction when enforcement is requested

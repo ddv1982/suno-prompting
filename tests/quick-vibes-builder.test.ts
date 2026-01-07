@@ -30,8 +30,8 @@ describe("Quick Vibes Builder", () => {
 
     it("handles wordless vocals mode", () => {
       const prompt = buildQuickVibesSystemPrompt(false, true);
-      expect(prompt).toContain("WORDLESS vocals");
-      expect(prompt).toContain("humming");
+      expect(prompt).toContain("WORDLESS VOCALS");
+      expect(prompt).toContain("wordless vocalizations");
     });
 
     it("generates same prompt regardless of Max Mode flag", () => {
@@ -168,7 +168,7 @@ describe("buildQuickVibesRefineSystemPrompt", () => {
 
   it("includes wordless vocals instructions when enabled", () => {
     const prompt = buildQuickVibesRefineSystemPrompt(false, true);
-    expect(prompt).toContain("WORDLESS vocals");
+    expect(prompt).toContain("WORDLESS VOCALS");
   });
 });
 

@@ -138,8 +138,8 @@ describe('buildCreativeBoostSystemPrompt', () => {
   describe('vocal modes', () => {
     it('includes wordless vocals instructions when withWordlessVocals is true', () => {
       const prompt = buildCreativeBoostSystemPrompt(50, true);
-      expect(prompt).toContain('VOCALS: Include wordless vocals');
-      expect(prompt).toContain('humming');
+      expect(prompt).toContain('WORDLESS VOCALS');
+      expect(prompt).toContain('wordless vocalizations');
       expect(prompt).toContain('NO actual words');
     });
 
@@ -165,7 +165,8 @@ describe('buildCreativeBoostSystemPrompt', () => {
 
     it('warns against markdown code blocks', () => {
       const prompt = buildCreativeBoostSystemPrompt(50, false);
-      expect(prompt).toContain('Do NOT wrap the JSON in markdown code blocks');
+      expect(prompt).toContain('OUTPUT FORMAT RULES');
+      expect(prompt).toContain('no markdown code blocks');
     });
   });
 
@@ -427,8 +428,8 @@ describe('buildCreativeBoostRefineSystemPrompt', () => {
   describe('vocal modes', () => {
     it('includes wordless vocals guidance when withWordlessVocals is true', () => {
       const prompt = buildCreativeBoostRefineSystemPrompt(true);
-      expect(prompt).toContain('VOCALS: Include wordless vocals only');
-      expect(prompt).toContain('humming');
+      expect(prompt).toContain('WORDLESS VOCALS');
+      expect(prompt).toContain('wordless vocalizations');
     });
 
     it('focuses on musical style when withWordlessVocals is false', () => {

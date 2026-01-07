@@ -1,4 +1,6 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
+
+import { useMounted } from '@/hooks/use-mounted';
 
 /**
  * Result type for useAsyncAction hook.
@@ -46,7 +48,7 @@ export function useAsyncAction<TArgs extends unknown[], TReturn>(
   const [error, setError] = useState<string | null>(null);
   
   // Track if component is mounted to prevent state updates after unmount
-  const mountedRef = useRef(true);
+  const mountedRef = useMounted();
 
   const execute = useCallback(async (...args: TArgs): Promise<TReturn | undefined> => {
     setIsLoading(true);
@@ -66,7 +68,7 @@ export function useAsyncAction<TArgs extends unknown[], TReturn>(
       }
       throw e;
     }
-  }, [action]);
+  }, [action, mountedRef]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -109,7 +111,7 @@ export function useAsyncActionSafe<TArgs extends unknown[], TReturn>(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const mountedRef = useRef(true);
+  const mountedRef = useMounted();
 
   const execute = useCallback(async (...args: TArgs): Promise<TReturn | undefined> => {
     setIsLoading(true);
@@ -129,7 +131,7 @@ export function useAsyncActionSafe<TArgs extends unknown[], TReturn>(
       }
       return undefined;
     }
-  }, [action]);
+  }, [action, mountedRef]);
 
   const clearError = useCallback(() => {
     setError(null);
