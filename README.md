@@ -198,6 +198,9 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 
 ### Genres
 
+<details>
+<summary><strong>35 Genres with Keywords & Instruments</strong></summary>
+
 <!-- GENRE_TABLE_START -->
 
 | Genre | Keywords | Key Instruments |
@@ -240,6 +243,8 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 
 <!-- GENRE_TABLE_END -->
 
+</details>
+
 ### Instrument Classification
 
 3-tier system ensures variety while maintaining genre authenticity:
@@ -267,11 +272,16 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 
 ### Genre Combinations
 
+<details>
+<summary><strong>108 Multi-Genre Combinations</strong></summary>
+
 <!-- COMBINATIONS_START -->
 
 jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swing, electro swing, electronic rock, electro pop, synth pop, future bass, vaporwave, bass house, future house, tropical house, minimal techno, hard techno, psy trance, vocal trance, liquid drum and bass, liquid funk, neurofunk, jersey club, folk rock, folk pop, indie folk, chamber folk, bluegrass, blues rock, southern rock, progressive rock, psychedelic rock, art rock, indie rock, alternative rock, post-rock, shoegaze, grunge, stoner rock, post-punk, goth rock, industrial rock, ambient rock, ambient metal, ambient symphonic rock, ambient symphonic metal, neo soul, psychedelic soul, funk soul, country soul, ambient soul, downtempo soul, ambient soul downtempo, chill soul, indie soul, bedroom soul, alternative soul, future soul, alternative r&b, soulful house, gospel house, vocal house, soul jazz, spiritual jazz, latin jazz, bossa nova, reggae fusion, reggaeton, dancehall, amapiano, country rock, country pop, progressive metal, symphonic metal, symphonic rock, doom metal, thrash metal, death metal, black metal, power metal, metalcore, post-metal, trip hop, lo-fi hip hop, g-funk, boom bap, conscious hip-hop, phonk, dark ambient, space ambient, drone ambient, disco funk, nu-disco, disco house, deep house, tech house, afro house, melodic house, dub techno, roots reggae, dream pop shoegaze, chillhop, downtempo electronica, lo-fi chill, uk drill, hyperpop trap, drill rap
 
 <!-- COMBINATIONS_END -->
+
+</details>
 
 <details>
 <summary><strong>BPM Ranges by Genre</strong></summary>
