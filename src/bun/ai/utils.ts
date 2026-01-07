@@ -1,0 +1,123 @@
+/**
+ * AI Engine Utilities
+ *
+ * Shared utility functions used across AI generation modules.
+ * Extracted to avoid duplication and ensure consistent behavior.
+ *
+ * @module ai/utils
+ */
+
+import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
+import { postProcessPrompt } from '@bun/prompt/postprocess';
+import { APP_CONSTANTS } from '@shared/constants';
+import { nowISO } from '@shared/utils';
+
+import type { AIProvider, DebugInfo } from '@shared/types';
+import type { LanguageModel } from 'ai';
+
+// =============================================================================
+// Text Cleaning Utilities
+// =============================================================================
+
+/**
+ * Clean title by removing quotes and trimming whitespace.
+ *
+ * WHY: LLMs often wrap titles in quotes ("My Song" or 'My Song').
+ * These quotes are formatting artifacts, not part of the actual title.
+ * Stripping them ensures consistent display in the UI.
+ */
+export function cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
+  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
+}
+
+/**
+ * Clean lyrics by trimming whitespace.
+ *
+ * WHY: LLMs may include leading/trailing whitespace in lyrics output.
+ * Trimming ensures consistent formatting when displaying in the UI.
+ * Returns undefined if empty to signal "no lyrics" vs "empty lyrics".
+ */
+export function cleanLyrics(lyrics: string | undefined): string | undefined {
+  return lyrics?.trim() || undefined;
+}
+
+// =============================================================================
+// Debug Information
+// =============================================================================
+
+/**
+ * Build debug information from LLM interaction.
+ *
+ * WHY: Debug info captures the full context of an LLM call for debugging
+ * and development. Includes prompts, model info, and raw response to
+ * help diagnose issues with generation quality or parsing.
+ *
+ * @param systemPrompt - The system prompt sent to the LLM
+ * @param userPrompt - The user prompt sent to the LLM
+ * @param rawResponse - The raw response from the LLM
+ * @param modelName - Name of the model used
+ * @param provider - AI provider (groq, openai, anthropic)
+ * @param messages - Optional array of messages for multi-turn conversations
+ */
+export function buildDebugInfo(
+  systemPrompt: string,
+  userPrompt: string,
+  rawResponse: string,
+  modelName: string,
+  provider: AIProvider,
+  messages?: Array<{ role: string; content: string }>
+): DebugInfo {
+  const requestMessages = messages
+    ? [{ role: 'system', content: systemPrompt }, ...messages]
+    : [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ];
+
+  const requestBody = {
+    provider,
+    model: modelName,
+    messages: requestMessages,
+  };
+
+  return {
+    systemPrompt,
+    userPrompt,
+    model: modelName,
+    provider,
+    timestamp: nowISO(),
+    requestBody: JSON.stringify(requestBody, null, 2),
+    responseBody: rawResponse,
+  };
+}
+
+// =============================================================================
+// Post-Processing
+// =============================================================================
+
+/**
+ * Post-process generated text (condense, dedupe, remove meta).
+ *
+ * WHY: LLM output often needs cleanup before use:
+ * - May exceed character limits (Suno has 1000 char max)
+ * - May contain repeated phrases (LLM hallucination)
+ * - May leak meta-instructions ("Here's your prompt:")
+ *
+ * This function applies all necessary transformations to ensure
+ * the output is clean and within constraints.
+ *
+ * @param text - The raw text to post-process
+ * @param getModel - Function to get the language model for LLM-based cleanup
+ */
+export async function postProcess(
+  text: string,
+  getModel: () => LanguageModel
+): Promise<string> {
+  return postProcessPrompt(text, {
+    maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS,
+    minChars: APP_CONSTANTS.MIN_PROMPT_CHARS,
+    rewriteWithoutMeta: (t) => rewriteWithoutMeta(t, getModel),
+    condense: (t) => condense(t, getModel),
+    condenseWithDedup: (t, repeated) => condenseWithDedup(t, repeated, getModel),
+  });
+}

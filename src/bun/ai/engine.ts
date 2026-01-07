@@ -19,16 +19,13 @@ import {
   refineCreativeBoost as refineCreativeBoostImpl,
 } from '@bun/ai/creative-boost';
 import { generateInitial as generateInitialImpl, type GenerateInitialOptions } from '@bun/ai/generation';
-import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
 import {
   generateQuickVibes as generateQuickVibesImpl,
   refineQuickVibes as refineQuickVibesImpl,
 } from '@bun/ai/quick-vibes-engine';
 import { refinePrompt as refinePromptImpl, type RefinePromptOptions } from '@bun/ai/refinement';
 import { remixLyrics as remixLyricsImpl } from '@bun/ai/remix';
-import { postProcessPrompt } from '@bun/prompt/postprocess';
-import { APP_CONSTANTS } from '@shared/constants';
-import { nowISO } from '@shared/utils';
+import { buildDebugInfo, postProcess } from '@bun/ai/utils';
 
 import type { GenerationConfig, GenerationResult, RefinementConfig } from '@bun/ai/types';
 import type { DebugInfo, QuickVibesCategory } from '@shared/types';
@@ -37,8 +34,6 @@ import type { DebugInfo, QuickVibesCategory } from '@shared/types';
 export type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
 export type { GenerateInitialOptions } from '@bun/ai/generation';
 export type { RefinePromptOptions } from '@bun/ai/refinement';
-
-const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
 /**
  * AI Engine - Unified facade for AI generation operations.
@@ -71,54 +66,35 @@ export class AIEngine {
   getModel = (): LanguageModel => this.config.getModel();
 
   // ==========================================================================
-  // Shared Utilities
+  // Shared Utilities (delegated to ai/utils.ts)
   // ==========================================================================
 
   /**
    * Build debug information from LLM interaction.
-   * Used by generation, refinement, and other modules.
+   * Wraps the standalone utility to inject model/provider context.
    */
-  private buildDebugInfo(
+  private buildDebugInfoInternal(
     systemPrompt: string,
     userPrompt: string,
     rawResponse: string,
     messages?: Array<{ role: string; content: string }>
   ): DebugInfo {
-    const requestMessages = messages
-      ? [{ role: 'system', content: systemPrompt }, ...messages]
-      : [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ];
-
-    const requestBody = {
-      provider: this.config.getProvider(),
-      model: this.config.getModelName(),
-      messages: requestMessages,
-    };
-
-    return {
+    return buildDebugInfo(
       systemPrompt,
       userPrompt,
-      model: this.config.getModelName(),
-      provider: this.config.getProvider(),
-      timestamp: nowISO(),
-      requestBody: JSON.stringify(requestBody, null, 2),
-      responseBody: rawResponse,
-    };
+      rawResponse,
+      this.config.getModelName(),
+      this.config.getProvider(),
+      messages
+    );
   }
 
   /**
    * Post-process generated text (condense, dedupe, remove meta).
+   * Wraps the standalone utility to inject model getter.
    */
-  private async postProcess(text: string): Promise<string> {
-    return postProcessPrompt(text, {
-      maxChars: MAX_CHARS,
-      minChars: APP_CONSTANTS.MIN_PROMPT_CHARS,
-      rewriteWithoutMeta: (t) => rewriteWithoutMeta(t, this.getModel),
-      condense: (t) => condense(t, this.getModel),
-      condenseWithDedup: (t, repeated) => condenseWithDedup(t, repeated, this.getModel),
-    });
+  private async postProcessInternal(text: string): Promise<string> {
+    return postProcess(text, this.getModel);
   }
 
   // ==========================================================================
@@ -146,8 +122,8 @@ export class AIEngine {
   private getRefinementConfig(): RefinementConfig {
     return {
       ...this.getGenerationConfig(),
-      postProcess: this.postProcess.bind(this),
-      buildDebugInfo: this.buildDebugInfo.bind(this),
+      postProcess: this.postProcessInternal.bind(this),
+      buildDebugInfo: this.buildDebugInfoInternal.bind(this),
     };
   }
 
@@ -217,7 +193,7 @@ export class AIEngine {
         getModel: this.getModel,
         isMaxMode: this.config.isMaxMode.bind(this.config),
         isDebugMode: this.config.isDebugMode.bind(this.config),
-        buildDebugInfo: this.buildDebugInfo.bind(this),
+        buildDebugInfo: this.buildDebugInfoInternal.bind(this),
       }
     );
   }
@@ -237,7 +213,7 @@ export class AIEngine {
         getModel: this.getModel,
         isMaxMode: this.config.isMaxMode.bind(this.config),
         isDebugMode: this.config.isDebugMode.bind(this.config),
-        buildDebugInfo: this.buildDebugInfo.bind(this),
+        buildDebugInfo: this.buildDebugInfoInternal.bind(this),
       }
     );
   }
@@ -268,7 +244,7 @@ export class AIEngine {
       config: {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),
-        buildDebugInfo: this.buildDebugInfo.bind(this),
+        buildDebugInfo: this.buildDebugInfoInternal.bind(this),
         getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
       },
     });
@@ -300,7 +276,7 @@ export class AIEngine {
       config: {
         getModel: this.getModel,
         isDebugMode: this.config.isDebugMode.bind(this.config),
-        buildDebugInfo: this.buildDebugInfo.bind(this),
+        buildDebugInfo: this.buildDebugInfoInternal.bind(this),
         getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
       },
     });

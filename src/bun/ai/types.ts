@@ -53,6 +53,9 @@ export type ParsedCombinedResponse = {
 /**
  * Function type for building debug information from LLM interactions.
  *
+ * WHY: This type allows different modules to inject their own debug info
+ * builder, which may include additional context (e.g., multi-turn messages).
+ *
  * @param systemPrompt - The system prompt sent to the LLM
  * @param userPrompt - The user prompt sent to the LLM
  * @param rawResponse - The raw response from the LLM
@@ -67,28 +70,24 @@ export type DebugInfoBuilder = (
 ) => DebugInfo;
 
 /**
- * Common context shared across engine operations.
- * Provides access to model and mode state without exposing internal configuration.
+ * Unified configuration for AI engines.
+ *
+ * WHY: Provides a common interface for Quick Vibes, Creative Boost, and
+ * other engines that need access to model, debug mode, and debug info building.
+ * Optional properties (isMaxMode, isLyricsMode, getUseSunoTags) allow engines
+ * to use only what they need.
  */
-export interface EngineContext {
+export interface EngineConfig {
   /** Returns the language model to use for generation */
   getModel: () => LanguageModel;
   /** Returns whether debug mode is enabled */
   isDebugMode: () => boolean;
+  /** Builds debug info from prompts and response */
+  buildDebugInfo: DebugInfoBuilder;
   /** Returns whether max mode is enabled (optional) */
   isMaxMode?: () => boolean;
   /** Returns whether lyrics mode is enabled (optional) */
   isLyricsMode?: () => boolean;
-}
-
-/**
- * Unified configuration for AI engines.
- * Extends EngineContext with additional configuration options.
- * Used by Quick Vibes, Creative Boost, and other generation engines.
- */
-export interface EngineConfig extends EngineContext {
-  /** Builds debug info from prompts and response */
-  buildDebugInfo: DebugInfoBuilder;
   /** Returns whether to use Suno performance tags (optional) */
   getUseSunoTags?: () => boolean;
 }

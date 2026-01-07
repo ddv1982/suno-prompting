@@ -11,6 +11,7 @@
 
 import { generateText } from 'ai';
 
+import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import {
   buildCombinedSystemPrompt,
@@ -46,20 +47,6 @@ export interface RefinePromptOptions {
   lockedPhrase?: string;
   /** Topic for lyrics refinement */
   lyricsTopic?: string;
-}
-
-/**
- * Clean title by removing quotes and trimming.
- */
-function cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
-  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
-}
-
-/**
- * Clean lyrics by trimming whitespace.
- */
-function cleanLyrics(lyrics: string | undefined): string | undefined {
-  return lyrics?.trim() || undefined;
 }
 
 /**

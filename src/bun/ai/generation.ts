@@ -11,6 +11,7 @@
  */
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
+import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import {
   buildDeterministicMaxPrompt,
@@ -38,20 +39,6 @@ export interface GenerateInitialOptions {
   lyricsTopic?: string;
   /** Optional genre override from Advanced Mode */
   genreOverride?: string;
-}
-
-/**
- * Clean title by removing quotes and trimming.
- */
-function cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
-  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
-}
-
-/**
- * Clean lyrics by trimming whitespace.
- */
-function cleanLyrics(lyrics: string | undefined): string | undefined {
-  return lyrics?.trim() || undefined;
 }
 
 /**
