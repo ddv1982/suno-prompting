@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 
-import { extractGenreFromPrompt, extractGenresFromPrompt } from '@bun/ai/remix';
+import { extractGenreFromPrompt, extractGenresFromPrompt } from '@bun/prompt/deterministic';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 
 describe('replaceFieldLine', () => {

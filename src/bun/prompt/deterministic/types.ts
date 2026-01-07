@@ -75,3 +75,13 @@ export type StyleTagsResult = {
   readonly tags: readonly string[];
   readonly formatted: string;
 };
+
+/**
+ * Standard result type for remix operations.
+ *
+ * All remix functions return a consistent shape to enable uniform
+ * handling in the UI and simplified composition of remix operations.
+ */
+export type RemixResult = {
+  readonly text: string;
+};

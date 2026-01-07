@@ -9,10 +9,9 @@
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import { condense } from '@bun/ai/llm-rewriter';
-import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
 import { convertToMaxFormat, convertToNonMaxFormat } from '@bun/prompt/conversion';
-import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt } from '@bun/prompt/deterministic';
+import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt, extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 import { enforceLengthLimit } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { APP_CONSTANTS } from '@shared/constants';

@@ -16,11 +16,26 @@ export type {
   ResolvedGenre,
   InstrumentAssemblyResult,
   StyleTagsResult,
+  RemixResult,
 } from './types';
 
 // Re-export main builder functions
 export { buildDeterministicMaxPrompt } from './max-builder';
 export { buildDeterministicStandardPrompt } from './standard-builder';
+
+// Re-export remix operations
+export {
+  extractGenreFromPrompt,
+  extractGenresFromPrompt,
+  extractMoodFromPrompt,
+  injectStyleTags,
+  remixInstruments,
+  remixGenre,
+  remixMood,
+  remixMoodInPrompt,
+  remixStyleTags,
+  remixRecording,
+} from './remix-operations';
 
 // Re-export test helpers
 import { detectGenreKeywordsOnly, selectRandomGenre, parseMultiGenre } from './genre';

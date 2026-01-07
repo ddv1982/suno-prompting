@@ -12,13 +12,15 @@
 
 import { describe, it, expect } from 'bun:test';
 
-import { remixInstruments, extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/ai/remix';
 import { detectGenre } from '@bun/instruments/detection';
 import { selectModes } from '@bun/instruments/selection';
 import {
+  _testHelpers,
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
-  _testHelpers,
+  extractGenreFromPrompt,
+  extractMoodFromPrompt,
+  remixInstruments,
 } from '@bun/prompt/deterministic';
 import { APP_CONSTANTS } from '@shared/constants';
 
