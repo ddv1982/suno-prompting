@@ -13,9 +13,14 @@ export { generateCreativeBoost, generateDirectMode } from './generate';
 // Public API - Refinement
 export { refineCreativeBoost } from './refine';
 
+// Public API - Helpers (exposed for testing and reuse)
+export { enforceGenreCount, DEFAULT_LYRICS_TOPIC } from './helpers';
+
 // Public API - Types
 export type {
   CreativeBoostEngineConfig,
   GenerateCreativeBoostOptions,
   RefineCreativeBoostOptions,
+  RefineDirectModeOptions,
+  PostProcessParams,
 } from './types';

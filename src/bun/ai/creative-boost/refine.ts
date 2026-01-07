@@ -31,6 +31,55 @@ import type { LanguageModel } from 'ai';
 
 const log = createLogger('CreativeBoostRefine');
 
+// =============================================================================
+// Performance Context
+// =============================================================================
+
+/**
+ * Context for genre-aware max mode conversion.
+ *
+ * WHY separate type? This context is computed once and used in two places:
+ * 1. LLM user prompt (to guide refinement toward appropriate instruments)
+ * 2. Post-processing (for max mode conversion with genre-specific elements)
+ */
+interface PerformanceContext {
+  primaryGenre: string | undefined;
+  guidance: ReturnType<typeof buildPerformanceGuidance> | null;
+  performanceInstruments: string[] | undefined;
+  performanceVocalStyle: string | undefined;
+  chordProgression: string | undefined;
+  bpmRange: string | undefined;
+}
+
+/**
+ * Build performance context from seed genres.
+ *
+ * WHY extract this? The same context is needed for:
+ * 1. Building LLM prompts (genre-aware guidance)
+ * 2. Max mode conversion (instrument/vocal injection)
+ *
+ * Computing once avoids duplicate logic and ensures consistency.
+ */
+function buildPerformanceContext(seedGenres: string[]): PerformanceContext {
+  const primaryGenre = seedGenres[0];
+  const genreString = seedGenres.join(' ');
+  const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
+  const bpmRangeData = genreString ? getBlendedBpmRange(genreString) : null;
+
+  return {
+    primaryGenre,
+    guidance,
+    performanceInstruments: guidance?.instruments,
+    performanceVocalStyle: guidance?.vocal,
+    chordProgression: primaryGenre ? buildProgressionShort(primaryGenre) : undefined,
+    bpmRange: bpmRangeData ? formatBpmRange(bpmRangeData) : undefined,
+  };
+}
+
+// =============================================================================
+// Title & Lyrics Helpers
+// =============================================================================
+
 /**
  * Refine title based on feedback
  */
@@ -170,22 +219,12 @@ export async function refineCreativeBoost(
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
 
-  // Compute performance context ONCE - used for both LLM prompt and conversion
-  const primaryGenre = seedGenres[0];
-  const genreString = seedGenres.join(' ');
-  const guidance = primaryGenre ? buildPerformanceGuidance(primaryGenre) : null;
-  const performanceInstruments = guidance?.instruments;
-  const performanceVocalStyle = guidance?.vocal;
-  const chordProgression = primaryGenre ? buildProgressionShort(primaryGenre) : undefined;
-  
-  // Compute BPM range from blended genres
-  const bpmRangeData = genreString ? getBlendedBpmRange(genreString) : null;
-  const bpmRange = bpmRangeData ? formatBpmRange(bpmRangeData) : undefined;
+  // Build performance context once - used for both LLM prompt and post-processing
+  const perfCtx = buildPerformanceContext(seedGenres);
 
-  // Pass targetGenreCount to system prompt builder for LLM instruction
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals, targetGenreCount);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
-    cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, performanceInstruments, guidance
+    cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, perfCtx.performanceInstruments, perfCtx.guidance
   );
 
   const rawResponse = await callLLM({
@@ -215,9 +254,9 @@ export async function refineCreativeBoost(
     userPrompt,
     rawResponse,
     config,
-    performanceInstruments,
-    performanceVocalStyle,
-    chordProgression,
-    bpmRange,
+    performanceInstruments: perfCtx.performanceInstruments,
+    performanceVocalStyle: perfCtx.performanceVocalStyle,
+    chordProgression: perfCtx.chordProgression,
+    bpmRange: perfCtx.bpmRange,
   });
 }

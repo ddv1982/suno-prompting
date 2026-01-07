@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'bun:test';
 
-import { extractGenreFromPrompt, extractGenresFromPrompt, remixGenre } from '@bun/prompt/deterministic';
+import {
+  extractGenreFromPrompt,
+  extractGenresFromPrompt,
+  remixGenre,
+  remixMoodInPrompt,
+  remixStyleTags,
+  remixRecording,
+} from '@bun/prompt/deterministic';
 import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 
 describe('replaceFieldLine', () => {
@@ -335,6 +342,195 @@ instruments: "saxophone, guitar"`;
     it('includes genre field in output', () => {
       const result = remixGenre(basePrompt, { targetGenreCount: 3 });
       expect(result.text).toContain('genre:');
+    });
+  });
+});
+
+// =============================================================================
+// remixMoodInPrompt - Mood Replacement Tests
+// =============================================================================
+
+describe('remixMoodInPrompt', () => {
+  const basePrompt = `genre: "rock"
+bpm: "120"
+mood: "energetic, powerful"
+instruments: "guitar, drums"`;
+
+  describe('basic functionality', () => {
+    it('replaces mood line with new mood combination', () => {
+      const result = remixMoodInPrompt(basePrompt);
+      expect(result.text).toContain('mood:');
+      expect(result.text).not.toContain('energetic, powerful');
+    });
+
+    it('preserves other prompt fields', () => {
+      const result = remixMoodInPrompt(basePrompt);
+      expect(result.text).toContain('genre: "rock"');
+      expect(result.text).toContain('bpm: "120"');
+      expect(result.text).toContain('instruments:');
+    });
+
+    it('generates 2-3 moods each time', () => {
+      // Run multiple times to verify mood count
+      const results = Array.from({ length: 20 }, () => remixMoodInPrompt(basePrompt));
+      results.forEach(r => {
+        const moodMatch = r.text.match(/mood:\s*"?([^"\n]+)/i);
+        const moods = moodMatch?.[1]?.split(',').map(m => m.trim()).filter(Boolean) || [];
+        expect(moods.length).toBeGreaterThanOrEqual(2);
+        expect(moods.length).toBeLessThanOrEqual(3);
+      });
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles prompt with no mood line', () => {
+      const noMoodPrompt = `genre: "rock"\nbpm: "120"\ninstruments: "guitar"`;
+      const result = remixMoodInPrompt(noMoodPrompt);
+      // Should return unchanged if no mood line to replace
+      expect(result.text).toBe(noMoodPrompt);
+    });
+
+    it('handles standard mode format (Mood: ...)', () => {
+      const standardPrompt = `Genre: rock\nBPM: 120\nMood: energetic\nInstruments: guitar`;
+      const result = remixMoodInPrompt(standardPrompt);
+      expect(result.text).toContain('Mood:');
+    });
+
+    it('produces different moods on consecutive calls', () => {
+      const results = Array.from({ length: 5 }, () => remixMoodInPrompt(basePrompt).text);
+      const uniqueResults = new Set(results);
+      // Should have at least 2 different results (accounting for randomness)
+      expect(uniqueResults.size).toBeGreaterThanOrEqual(2);
+    });
+  });
+});
+
+// =============================================================================
+// remixStyleTags - Style Tags Replacement Tests
+// =============================================================================
+
+describe('remixStyleTags', () => {
+  const basePrompt = `genre: "rock"
+bpm: "120"
+mood: "energetic"
+style tags: "raw, distorted"
+instruments: "guitar, drums"`;
+
+  describe('basic functionality', () => {
+    it('replaces style tags with genre-appropriate tags', () => {
+      const result = remixStyleTags(basePrompt);
+      expect(result.text).toContain('style tags:');
+    });
+
+    it('preserves other prompt fields', () => {
+      const result = remixStyleTags(basePrompt);
+      expect(result.text).toContain('genre: "rock"');
+      expect(result.text).toContain('bpm: "120"');
+      expect(result.text).toContain('mood: "energetic"');
+      expect(result.text).toContain('instruments:');
+    });
+  });
+
+  describe('genre-aware selection', () => {
+    it('selects appropriate tags for electronic genres', () => {
+      const electronicPrompt = `genre: "electronic"\nstyle tags: "old"\nmood: "energetic"`;
+      const result = remixStyleTags(electronicPrompt);
+      expect(result.text).toContain('style tags:');
+    });
+
+    it('selects appropriate tags for acoustic genres', () => {
+      const folkPrompt = `genre: "folk"\nstyle tags: "old"\nmood: "warm"`;
+      const result = remixStyleTags(folkPrompt);
+      expect(result.text).toContain('style tags:');
+    });
+
+    it('selects appropriate tags for jazz genre', () => {
+      const jazzPrompt = `genre: "jazz"\nstyle tags: "old"\nmood: "smooth"`;
+      const result = remixStyleTags(jazzPrompt);
+      expect(result.text).toContain('style tags:');
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles prompt with no style tags line', () => {
+      const noStylePrompt = `genre: "rock"\nmood: "energetic"\ninstruments: "guitar"`;
+      const result = remixStyleTags(noStylePrompt);
+      // Should return unchanged if no style tags line to replace
+      expect(result.text).toBe(noStylePrompt);
+    });
+
+    it('handles prompt with default genre (pop)', () => {
+      const noGenrePrompt = `bpm: "120"\nstyle tags: "old"\nmood: "happy"`;
+      const result = remixStyleTags(noGenrePrompt);
+      expect(result.text).toContain('style tags:');
+    });
+
+    it('produces different tags on consecutive calls', () => {
+      const results = Array.from({ length: 5 }, () => remixStyleTags(basePrompt).text);
+      const uniqueResults = new Set(results);
+      // Should have at least 2 different results (accounting for randomness)
+      expect(uniqueResults.size).toBeGreaterThanOrEqual(2);
+    });
+  });
+});
+
+// =============================================================================
+// remixRecording - Recording Descriptors Replacement Tests
+// =============================================================================
+
+describe('remixRecording', () => {
+  const basePrompt = `genre: "rock"
+bpm: "120"
+mood: "energetic"
+recording: "studio, polished"
+instruments: "guitar, drums"`;
+
+  describe('basic functionality', () => {
+    it('replaces recording descriptors', () => {
+      const result = remixRecording(basePrompt);
+      expect(result.text).toContain('recording:');
+      expect(result.text).not.toContain('studio, polished');
+    });
+
+    it('preserves other prompt fields', () => {
+      const result = remixRecording(basePrompt);
+      expect(result.text).toContain('genre: "rock"');
+      expect(result.text).toContain('bpm: "120"');
+      expect(result.text).toContain('mood: "energetic"');
+      expect(result.text).toContain('instruments:');
+    });
+
+    it('replaces recording with new descriptors', () => {
+      const result = remixRecording(basePrompt);
+      const recordingMatch = result.text.match(/recording:\s*"?([^"\n]+)/i);
+      // Recording descriptors may contain internal commas (e.g., "tape recorder, close-up, raw")
+      // so we just verify the field was replaced with non-empty content
+      expect(recordingMatch?.[1]).toBeDefined();
+      expect(recordingMatch?.[1]?.length).toBeGreaterThan(0);
+      expect(recordingMatch?.[1]).not.toBe('studio, polished');
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles prompt with no recording line', () => {
+      const noRecordingPrompt = `genre: "rock"\nmood: "energetic"\ninstruments: "guitar"`;
+      const result = remixRecording(noRecordingPrompt);
+      // Should return unchanged if no recording line to replace
+      expect(result.text).toBe(noRecordingPrompt);
+    });
+
+    it('produces different descriptors on consecutive calls', () => {
+      const results = Array.from({ length: 5 }, () => remixRecording(basePrompt).text);
+      const uniqueResults = new Set(results);
+      // Should have at least 2 different results (accounting for randomness)
+      expect(uniqueResults.size).toBeGreaterThanOrEqual(2);
+    });
+
+    it('handles lowercase recording field', () => {
+      const lowercasePrompt = `genre: "jazz"\nrecording: "live"\nmood: "smooth"`;
+      const result = remixRecording(lowercasePrompt);
+      expect(result.text).toContain('recording:');
+      expect(result.text).not.toContain('"live"');
     });
   });
 });

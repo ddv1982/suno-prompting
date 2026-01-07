@@ -68,22 +68,45 @@ export interface RefineDirectModeOptions {
 }
 
 /**
- * Parameters for post-processing Creative Boost response
+ * Parameters for post-processing Creative Boost response.
+ *
+ * WHY so many fields? Post-processing needs context from multiple stages:
+ * 1. User inputs (description, lyrics settings) for content generation
+ * 2. LLM interaction data (prompts, response) for debug info
+ * 3. Performance context (instruments, vocals, BPM) for max mode conversion
+ *
+ * This consolidates all context needed for the postProcessCreativeBoostResponse()
+ * pipeline to avoid threading 15+ parameters through multiple function calls.
  */
 export type PostProcessParams = {
+  /** Raw style output from LLM before max mode conversion */
   rawStyle: string;
+  /** Whether to apply max mode formatting (community format for realism) */
   maxMode: boolean;
+  /** User-selected seed genres for genre-aware instrument injection */
   seedGenres: string[];
+  /** User-selected Suno V5 styles (mutually exclusive with seedGenres) */
   sunoStyles: string[];
+  /** Topic for lyrics generation when withLyrics is true */
   lyricsTopic: string;
+  /** Fallback topic when lyricsTopic is empty */
   description: string;
+  /** Whether to generate lyrics via LLM */
   withLyrics: boolean;
+  /** System prompt sent to LLM (for debug info) */
   systemPrompt: string;
+  /** User prompt sent to LLM (for debug info) */
   userPrompt: string;
+  /** Raw LLM response before parsing (for debug info) */
   rawResponse: string;
+  /** Engine config for model access and debug mode checks */
   config: CreativeBoostEngineConfig;
+  /** Genre-specific instruments for max mode conversion injection */
   performanceInstruments?: string[];
+  /** Genre-specific vocal style for max mode conversion injection */
   performanceVocalStyle?: string;
+  /** Genre-appropriate chord progression for max mode conversion */
   chordProgression?: string;
+  /** Genre-appropriate BPM range for max mode conversion */
   bpmRange?: string;
 };
