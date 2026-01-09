@@ -10,33 +10,52 @@ import { SongTopicInput } from "./song-topic-input";
 
 import type { AdvancedSelection, DebugInfo, EditorMode } from "@shared/types";
 
-type FullPromptInputPanelProps = {
-  currentPrompt: string;
+/** Input state and handlers */
+type InputState = {
   pendingInput: string;
   lockedPhrase: string;
   lyricsTopic: string;
+  onPendingInputChange: (input: string) => void;
+  onLockedPhraseChange: (phrase: string) => void;
+  onLyricsTopicChange: (topic: string) => void;
+};
+
+/** Mode state and handlers */
+type ModeState = {
   editorMode: EditorMode;
-  advancedSelection: AdvancedSelection;
-  computedMusicPhrase: string;
   maxMode: boolean;
   lyricsMode: boolean;
-  isGenerating: boolean;
+  onEditorModeChange: (mode: EditorMode) => void;
+  onMaxModeChange: (mode: boolean) => void;
+  onLyricsModeChange: (mode: boolean) => void;
+};
+
+/** Advanced selection state and handlers */
+type AdvancedState = {
+  advancedSelection: AdvancedSelection;
+  computedMusicPhrase: string;
+  hasAdvancedSelection: boolean;
+  onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
+  onAdvancedSelectionClear: () => void;
+};
+
+/** Validation and limits */
+type ValidationState = {
   maxChars: number;
   lockedPhraseValidation: { isValid: boolean; error: string | null };
   inputOverLimit: boolean;
   lyricsTopicOverLimit: boolean;
-  hasAdvancedSelection: boolean;
-  onPendingInputChange: (input: string) => void;
-  onLockedPhraseChange: (phrase: string) => void;
-  onLyricsTopicChange: (topic: string) => void;
-  onEditorModeChange: (mode: EditorMode) => void;
-  onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
-  onAdvancedSelectionClear: () => void;
-  onMaxModeChange: (mode: boolean) => void;
-  onLyricsModeChange: (mode: boolean) => void;
+};
+
+/** Generation state and handlers */
+type GenerationState = {
+  currentPrompt: string;
+  isGenerating: boolean;
   onGenerate: (input: string) => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
 };
+
+type FullPromptInputPanelProps = InputState & ModeState & AdvancedState & ValidationState & GenerationState;
 
 export function FullPromptInputPanel({
   currentPrompt,
