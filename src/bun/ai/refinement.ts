@@ -252,7 +252,7 @@ async function refinePromptFallbackWithModel(
         ? config.buildDebugInfo(systemPrompt, userPrompt, genResult.text, messages)
         : undefined,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof AIGenerationError) throw error;
     throw new AIGenerationError(
       `Failed to refine prompt fallback: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -69,7 +69,7 @@ export async function generateTitle(
       title: text.trim().replace(/^["']|["']$/g, ''),
       debugInfo,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('generateTitle:failed', { error: getErrorMessage(error) });
     return { title: 'Untitled', debugInfo };
   }
@@ -109,7 +109,7 @@ export async function generateLyrics(
     });
 
     return { lyrics: text.trim(), debugInfo };
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('generateLyrics:failed', { error: getErrorMessage(error) });
     return { lyrics: '[VERSE]\nLyrics generation failed...', debugInfo };
   }
@@ -175,7 +175,7 @@ Which genre fits best? Return only the genre key.`;
       genre: DEFAULT_GENRE,
       debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_GENRE} (fallback from invalid: ${genre})` },
     };
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('detectGenreFromTopic:failed', { error: getErrorMessage(error) });
     return {
       genre: DEFAULT_GENRE,

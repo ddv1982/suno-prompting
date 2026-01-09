@@ -35,7 +35,7 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
     }
 
     return rawResponse;
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof AIGenerationError) throw error;
     throw new AIGenerationError(
       `Failed to ${errorContext}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -65,7 +65,7 @@ export async function generateDirectModeTitle(
     const genre = styles[0] || 'music';
     const result = await generateTitle(titleDescription, genre, 'creative', getModel);
     return result.title;
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('generateDirectModeTitle:failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
     });

@@ -14,7 +14,7 @@ const mockCheckOllamaAvailable = mock(() =>
 );
 const mockInvalidateOllamaCache = mock(() => {});
 
-mock.module('@bun/ai/ollama-availability', () => ({
+await mock.module('@bun/ai/ollama-availability', () => ({
   checkOllamaAvailable: mockCheckOllamaAvailable,
   invalidateOllamaCache: mockInvalidateOllamaCache,
 }));

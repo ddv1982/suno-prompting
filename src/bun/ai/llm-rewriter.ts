@@ -26,7 +26,7 @@ export async function condenseWithDedup(
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });
     return condensed.trim();
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('condenseWithDedup:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     return text;
   }
@@ -52,7 +52,7 @@ export async function condense(
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });
     return condensed.trim();
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('condense:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     return text;
   }
@@ -75,7 +75,7 @@ export async function rewriteWithoutMeta(
       abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
     });
     return rewritten.trim();
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('rewriteWithoutMeta:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     return text;
   }

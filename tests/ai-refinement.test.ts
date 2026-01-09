@@ -9,12 +9,12 @@ const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: true, hasGemma: true })
 );
 
-mock.module('@bun/ai/ollama-availability', () => ({
+await mock.module('@bun/ai/ollama-availability', () => ({
   checkOllamaAvailable: mockCheckOllamaAvailable,
 }));
 
 // Mock generateText before importing refinement module
-mock.module('ai', () => ({
+await mock.module('ai', () => ({
   generateText: async () => ({
     text: JSON.stringify({
       prompt: 'Refined jazz prompt with more piano',

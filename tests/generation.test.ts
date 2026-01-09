@@ -9,7 +9,7 @@ const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: true, hasGemma: true })
 );
 
-mock.module('@bun/ai/ollama-availability', () => ({
+await mock.module('@bun/ai/ollama-availability', () => ({
   checkOllamaAvailable: mockCheckOllamaAvailable,
 }));
 

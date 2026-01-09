@@ -82,7 +82,7 @@ export async function checkOllamaAvailable(
       modelCount: tags.models?.length ?? 0,
     });
     return { available: true, hasGemma };
-  } catch (error) {
+  } catch (error: unknown) {
     log.warn('checkOllamaAvailable:failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
     });

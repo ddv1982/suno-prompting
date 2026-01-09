@@ -31,7 +31,7 @@ export function validated<S extends z.ZodType, R>(
     try {
       const validatedParams = schema.parse(params);
       return await handler(validatedParams);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         const { field, message } = extractZodError(error);
         throw new ValidationError(message, field);
@@ -51,7 +51,7 @@ export function validate<S extends z.ZodType>(
 ): z.infer<S> {
   try {
     return schema.parse(input);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       const { field, message } = extractZodError(error);
       throw new ValidationError(message, field);

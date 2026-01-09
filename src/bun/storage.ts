@@ -52,7 +52,7 @@ export class StorageManager {
     async initialize(): Promise<void> {
         try {
             await mkdir(this.baseDir, { recursive: true });
-        } catch (error) {
+        } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             log.error('initialize:failed', { error: message });
             throw new StorageError(`Failed to initialize storage directory: ${message}`, 'write');
@@ -67,7 +67,7 @@ export class StorageManager {
             }
             const sessions = await file.json() as PromptSession[];
             return sortByUpdated(sessions);
-        } catch (error) {
+        } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             log.error('getHistory:failed', { error: message });
             // For read errors on history, return empty array to allow app to function
@@ -79,7 +79,7 @@ export class StorageManager {
     async saveHistory(sessions: PromptSession[]): Promise<void> {
         try {
             await Bun.write(this.historyPath, JSON.stringify(sessions, null, 2));
-        } catch (error) {
+        } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             log.error('saveHistory:failed', { error: message });
             throw new StorageError(`Failed to save history: ${message}`, 'write');
@@ -169,7 +169,7 @@ export class StorageManager {
             toSave.apiKeys = encryptedKeys;
             
             await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
-        } catch (error) {
+        } catch (error: unknown) {
             if (error instanceof StorageError) throw error;
             const message = error instanceof Error ? error.message : String(error);
             log.error('saveConfig:failed', { error: message });

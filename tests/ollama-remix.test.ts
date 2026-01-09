@@ -9,7 +9,7 @@ const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: true, hasGemma: true })
 );
 
-mock.module('@bun/ai/ollama-availability', () => ({
+await mock.module('@bun/ai/ollama-availability', () => ({
   checkOllamaAvailable: mockCheckOllamaAvailable,
 }));
 
@@ -21,7 +21,7 @@ const mockGenerateLyrics = mock(() =>
   Promise.resolve({ lyrics: '[VERSE]\nGenerated lyrics', debugInfo: undefined })
 );
 
-mock.module('@bun/ai/content-generator', () => ({
+await mock.module('@bun/ai/content-generator', () => ({
   generateTitle: mockGenerateTitle,
   generateLyrics: mockGenerateLyrics,
   detectGenreFromTopic: mock(() => Promise.resolve({ genre: 'pop', debugInfo: undefined })),

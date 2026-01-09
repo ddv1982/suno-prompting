@@ -149,14 +149,14 @@ async function refineDirectMode(
   if (hasFeedback) {
     try {
       newTitle = await refineTitleWithFeedback(currentTitle, styleResult, lyricsTopic, feedback, config.getModel);
-    } catch (error) {
+    } catch (error: unknown) {
       log.warn('refineDirectMode:title:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
 
     if (withLyrics) {
       try {
         lyrics = await generateLyricsForDirectMode(styleResult, lyricsTopic, description, feedback, config.getModel, config.getUseSunoTags?.() ?? false);
-      } catch (error) {
+      } catch (error: unknown) {
         log.warn('refineDirectMode:lyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
       }
     }
