@@ -21,7 +21,7 @@ export interface UseOllamaSettingsReturn {
 }
 
 const DEFAULT_SETTINGS: OllamaSettingsState = {
-  endpoint: "http://localhost:11434",
+  endpoint: "http://127.0.0.1:11434",
   temperature: 0.7,
   maxTokens: 2000,
   contextLength: 4096,

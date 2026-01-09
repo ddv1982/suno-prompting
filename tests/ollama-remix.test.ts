@@ -8,9 +8,11 @@ import type { LanguageModel } from 'ai';
 const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: true, hasGemma: true })
 );
+const mockInvalidateOllamaCache = mock(() => {});
 
 await mock.module('@bun/ai/ollama-availability', () => ({
   checkOllamaAvailable: mockCheckOllamaAvailable,
+  invalidateOllamaCache: mockInvalidateOllamaCache,
 }));
 
 // Mock content generator functions
@@ -161,7 +163,7 @@ describe('remixLyrics - offline mode with Ollama', () => {
         mockGetModel,
         false,
         true, // isOffline
-        'http://localhost:11434'
+        'http://127.0.0.1:11434'
       )
     ).rejects.toThrow(OllamaUnavailableError);
   });
@@ -181,7 +183,7 @@ describe('remixLyrics - offline mode with Ollama', () => {
         mockGetModel,
         false,
         true,
-        'http://localhost:11434'
+        'http://127.0.0.1:11434'
       )
     ).rejects.toThrow(OllamaModelMissingError);
   });
@@ -222,7 +224,7 @@ describe('remixLyrics - offline mode with Ollama', () => {
       mockGetModel,
       false,
       true,
-      'http://localhost:11434'
+      'http://127.0.0.1:11434'
     );
 
     expect(result.lyrics).toBe('[VERSE]\nGenerated lyrics');
@@ -244,7 +246,7 @@ describe('remixLyrics - offline mode with Ollama', () => {
       mockGetModel,
       true,
       true,
-      'http://localhost:11434'
+      'http://127.0.0.1:11434'
     );
 
     expect(mockGenerateLyrics).toHaveBeenCalledWith(
@@ -272,7 +274,7 @@ describe('remixLyrics - offline mode with Ollama', () => {
       mockGetModel,
       true,
       true,
-      'http://localhost:11434'
+      'http://127.0.0.1:11434'
     );
 
     expect(mockGenerateLyrics).toHaveBeenCalledWith(

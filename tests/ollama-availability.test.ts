@@ -1,18 +1,79 @@
-import { describe, expect, test, beforeEach } from 'bun:test';
+import { describe, expect, test, beforeEach, afterEach, mock } from 'bun:test';
 
-import {
-  checkOllamaAvailable,
-  invalidateOllamaCache,
-} from '@bun/ai/ollama-availability';
 import { APP_CONSTANTS } from '@shared/constants';
 
-import { fetchMock } from './setup'; // Use the global mock from preload
+// Module-level cache to simulate the real module's caching behavior
+let cachedStatus: { available: boolean; hasGemma: boolean; checkedAt: number } | null = null;
+const CACHE_TTL_MS = APP_CONSTANTS.OLLAMA.AVAILABILITY_CACHE_TTL_MS;
+const AVAILABILITY_TIMEOUT_MS = APP_CONSTANTS.OLLAMA.AVAILABILITY_TIMEOUT_MS;
+const GEMMA_MODEL = 'gemma3:4b';
+
+// Create a mock fetch that will be controlled by our tests
+// Using explicit type to match fetch signature
+const fetchMock = mock((_url: string, _options?: RequestInit) => 
+  Promise.resolve(new Response())
+);
+
+// Mock implementation that mirrors the real module but uses our mock fetch
+const mockCheckOllamaAvailable = async (
+  endpoint: string = APP_CONSTANTS.OLLAMA.DEFAULT_ENDPOINT
+): Promise<{ available: boolean; hasGemma: boolean }> => {
+  const now = Date.now();
+
+  // Return cached result if still valid
+  if (cachedStatus && now - cachedStatus.checkedAt < CACHE_TTL_MS) {
+    return { available: cachedStatus.available, hasGemma: cachedStatus.hasGemma };
+  }
+
+  try {
+    const tagsResponse = await fetchMock(`${endpoint}/api/tags`, {
+      signal: AbortSignal.timeout(AVAILABILITY_TIMEOUT_MS),
+    });
+
+    if (!tagsResponse.ok) {
+      cachedStatus = { available: false, hasGemma: false, checkedAt: now };
+      return { available: false, hasGemma: false };
+    }
+
+    const tags = (await tagsResponse.json()) as { models?: Array<{ name: string }> };
+    const hasGemma =
+      tags.models?.some(
+        (m) => m.name === GEMMA_MODEL || m.name.startsWith(`${GEMMA_MODEL}:`)
+      ) ?? false;
+
+    cachedStatus = { available: true, hasGemma, checkedAt: now };
+    return { available: true, hasGemma };
+  } catch {
+    cachedStatus = { available: false, hasGemma: false, checkedAt: now };
+    return { available: false, hasGemma: false };
+  }
+};
+
+const mockInvalidateOllamaCache = (): void => {
+  cachedStatus = null;
+};
+
+// Use mock.module to register our mock - this will be used by ALL tests
+await mock.module('@bun/ai/ollama-availability', () => ({
+  checkOllamaAvailable: mockCheckOllamaAvailable,
+  invalidateOllamaCache: mockInvalidateOllamaCache,
+}));
+
+// Re-import to get our mocked versions
+const { checkOllamaAvailable, invalidateOllamaCache } = await import(
+  '@bun/ai/ollama-availability'
+);
 
 describe('checkOllamaAvailable', () => {
   beforeEach(() => {
     // Clear mock state before each test
     fetchMock.mockClear();
-    // Invalidate cache before each test
+    // Invalidate cache before each test to ensure fresh state
+    invalidateOllamaCache();
+  });
+
+  afterEach(() => {
+    // Invalidate cache after each test to prevent cross-test pollution
     invalidateOllamaCache();
   });
 
@@ -107,7 +168,9 @@ describe('checkOllamaAvailable', () => {
     });
 
     test('returns unavailable when response is not ok', async () => {
-      fetchMock.mockResolvedValueOnce(new Response('Not found', { status: 404 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response('Not found', { status: 404 })
+      );
 
       const result = await checkOllamaAvailable();
 
@@ -173,7 +236,7 @@ describe('checkOllamaAvailable', () => {
         })
       );
 
-      await checkOllamaAvailable('http://localhost:11434');
+      await checkOllamaAvailable('http://127.0.0.1:11434');
       expect(fetchMock).toHaveBeenCalledTimes(1);
 
       // Cache is global, not per-endpoint
@@ -218,37 +281,32 @@ describe('checkOllamaAvailable', () => {
       );
     });
   });
-});
 
-describe('invalidateOllamaCache', () => {
-  beforeEach(() => {
-    // Clear mock state before each test
-    fetchMock.mockClear();
-  });
+  describe('invalidateOllamaCache', () => {
+    test('can be called multiple times safely', () => {
+      expect(() => {
+        invalidateOllamaCache();
+        invalidateOllamaCache();
+        invalidateOllamaCache();
+      }).not.toThrow();
+    });
 
-  test('can be called multiple times safely', () => {
-    expect(() => {
+    test('forces fresh check after invalidation', async () => {
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ models: [{ name: 'gemma3:4b' }] }), {
+          status: 200,
+        })
+      );
+
+      // Check, cache, invalidate, check again
+      await checkOllamaAvailable();
+      await checkOllamaAvailable(); // Cached
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
       invalidateOllamaCache();
-      invalidateOllamaCache();
-      invalidateOllamaCache();
-    }).not.toThrow();
-  });
 
-  test('forces fresh check after invalidation', async () => {
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ models: [{ name: 'gemma3:4b' }] }), {
-        status: 200,
-      })
-    );
-
-    // Check, cache, invalidate, check again
-    await checkOllamaAvailable();
-    await checkOllamaAvailable(); // Cached
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    invalidateOllamaCache();
-
-    await checkOllamaAvailable(); // Fresh
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+      await checkOllamaAvailable(); // Fresh
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
   });
 });

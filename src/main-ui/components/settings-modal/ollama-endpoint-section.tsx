@@ -22,7 +22,7 @@ export function OllamaEndpointSection({
         type="url"
         value={endpoint}
         onChange={(e) => { onChange(e.target.value); }}
-        placeholder="http://localhost:11434"
+        placeholder="http://127.0.0.1:11434"
         className="font-mono text-sm"
       />
       <p className="text-xs text-muted-foreground">

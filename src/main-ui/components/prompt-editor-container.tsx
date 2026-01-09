@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { PromptEditor } from "@/components/prompt-editor";
 import { type OutputState, type InputState, type GenerationState, type ModeState, type QuickVibesState, type CreativeBoostState, type RemixHandlers, type EditorHandlers, type EditorConfig } from "@/components/prompt-editor/types";
 import { useEditorContext } from "@/context/editor-context";
-import { useGenerationContext } from "@/context/generation-context";
+import { useGenerationContext } from "@/context/generation";
 import { useSessionContext } from "@/context/session-context";
 import { useSettingsContext } from "@/context/settings-context";
 import { APP_CONSTANTS } from "@shared/constants";

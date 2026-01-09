@@ -8,7 +8,7 @@ import { PromptEditorContainer } from "@/components/prompt-editor-container";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ToastProvider } from "@/components/ui/toast";
 import { AppProvider } from "@/context/app-context";
-import { useGenerationContext } from "@/context/generation-context";
+import { useGenerationContext } from "@/context/generation";
 import { useSessionContext } from "@/context/session-context";
 import { useSettingsContext } from "@/context/settings-context";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";

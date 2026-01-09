@@ -8,6 +8,7 @@
  */
 
 import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS, type GenreType, selectInstrumentsForGenre as selectInstruments } from '@bun/instruments';
+import { InvariantError } from '@shared/errors';
 
 import type { CreativityLevel } from '@shared/types';
 
@@ -200,7 +201,7 @@ const CREATIVE_TITLE_WORDS = {
  */
 function selectRandom<T>(items: readonly T[], rng: () => number): T {
   if (items.length === 0) {
-    throw new Error('selectRandom called with empty array');
+    throw new InvariantError('selectRandom called with empty array');
   }
   const idx = Math.floor(rng() * items.length);
   // idx is always valid since 0 <= rng() < 1 and items.length > 0

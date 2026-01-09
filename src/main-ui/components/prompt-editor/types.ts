@@ -1,4 +1,4 @@
-import { type GeneratingAction } from "@/context/generation-context";
+import { type GeneratingAction } from "@/context/generation";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
 import { type ValidationResult } from "@shared/validation";

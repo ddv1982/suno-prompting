@@ -88,7 +88,7 @@ export const APP_CONSTANTS = {
         },
     },
     OLLAMA: {
-        DEFAULT_ENDPOINT: 'http://localhost:11434',
+        DEFAULT_ENDPOINT: 'http://127.0.0.1:11434',
         DEFAULT_TEMPERATURE: 0.7,
         DEFAULT_MAX_TOKENS: 2000,
         DEFAULT_CONTEXT_LENGTH: 4096,

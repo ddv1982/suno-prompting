@@ -8,9 +8,11 @@ import type { RefinementConfig } from '@bun/ai/types';
 const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: true, hasGemma: true })
 );
+const mockInvalidateOllamaCache = mock(() => {});
 
 await mock.module('@bun/ai/ollama-availability', () => ({
   checkOllamaAvailable: mockCheckOllamaAvailable,
+  invalidateOllamaCache: mockInvalidateOllamaCache,
 }));
 
 // Mock generateText before importing refinement module
@@ -37,7 +39,7 @@ function createMockConfig(overrides: Partial<RefinementConfig> = {}): Refinement
     getUseSunoTags: () => true,
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
-    getOllamaEndpoint: () => 'http://localhost:11434',
+    getOllamaEndpoint: () => 'http://127.0.0.1:11434',
     postProcess: async (text: string) => text,
     buildDebugInfo: (systemPrompt, userPrompt, rawResponse) => ({
       systemPrompt,

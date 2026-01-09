@@ -54,7 +54,7 @@ describe('createOllamaProvider', () => {
 
   test('creates provider with custom settings', () => {
     const customConfig: OllamaConfig = {
-      endpoint: 'http://localhost:11434',
+      endpoint: 'http://127.0.0.1:11434',
       temperature: 0.9,
       maxTokens: 3000,
       contextLength: 8192,
@@ -73,7 +73,7 @@ describe('getOllamaModel', () => {
 
   test('returns language model with custom config', () => {
     const customConfig: OllamaConfig = {
-      endpoint: 'http://localhost:11434',
+      endpoint: 'http://127.0.0.1:11434',
       temperature: 0.8,
       maxTokens: 2500,
       contextLength: 6144,
