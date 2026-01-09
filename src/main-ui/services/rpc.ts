@@ -197,5 +197,17 @@ export const api = {
         targetGenreCount?: number;
     }): Promise<BunRequests['refineCreativeBoost']['response']> {
         return await rpc.request.refineCreativeBoost(params);
+    },
+
+    async checkOllamaStatus(): Promise<BunRequests['checkOllamaStatus']['response']> {
+        return await rpc.request.checkOllamaStatus({});
+    },
+
+    async getOllamaSettings(): Promise<BunRequests['getOllamaSettings']['response']> {
+        return await rpc.request.getOllamaSettings({});
+    },
+
+    async setOllamaSettings(params: BunRequests['setOllamaSettings']['params']): Promise<void> {
+        await rpc.request.setOllamaSettings(params);
     }
 };

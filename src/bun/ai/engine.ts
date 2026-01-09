@@ -19,6 +19,7 @@ import {
   refineCreativeBoost as refineCreativeBoostImpl,
 } from '@bun/ai/creative-boost';
 import { generateInitial as generateInitialImpl, type GenerateInitialOptions } from '@bun/ai/generation';
+import { getOllamaModel } from '@bun/ai/ollama-provider';
 import {
   generateQuickVibes as generateQuickVibesImpl,
   refineQuickVibes as refineQuickVibesImpl,
@@ -61,9 +62,21 @@ export class AIEngine {
   setDebugMode = this.config.setDebugMode.bind(this.config);
   setMaxMode = this.config.setMaxMode.bind(this.config);
   setLyricsMode = this.config.setLyricsMode.bind(this.config);
+  setOfflineMode = this.config.setOfflineMode.bind(this.config);
   initialize = this.config.initialize.bind(this.config);
   isDebugMode = this.config.isDebugMode.bind(this.config);
+  isOfflineMode = this.config.isOfflineMode.bind(this.config);
   getModel = (): LanguageModel => this.config.getModel();
+
+  // Ollama configuration proxies
+  setOllamaEndpoint = this.config.setOllamaEndpoint.bind(this.config);
+  setOllamaTemperature = this.config.setOllamaTemperature.bind(this.config);
+  setOllamaMaxTokens = this.config.setOllamaMaxTokens.bind(this.config);
+  setOllamaContextLength = this.config.setOllamaContextLength.bind(this.config);
+  getOllamaConfig = this.config.getOllamaConfig.bind(this.config);
+
+  /** Get the Ollama language model with current configuration */
+  getOllamaModel = (): LanguageModel => getOllamaModel(this.config.getOllamaConfig());
 
   // ==========================================================================
   // Shared Utilities (delegated to ai/utils.ts)
@@ -107,12 +120,15 @@ export class AIEngine {
   private getGenerationConfig(): GenerationConfig {
     return {
       getModel: this.getModel,
+      getOllamaModel: this.getOllamaModel,
       isDebugMode: this.config.isDebugMode.bind(this.config),
       isMaxMode: this.config.isMaxMode.bind(this.config),
       isLyricsMode: this.config.isLyricsMode.bind(this.config),
+      isOfflineMode: this.config.isOfflineMode.bind(this.config),
       getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
       getModelName: this.config.getModelName.bind(this.config),
       getProvider: this.config.getProvider.bind(this.config),
+      getOllamaEndpoint: this.config.getOllamaEndpoint.bind(this.config),
     };
   }
 
@@ -159,6 +175,8 @@ export class AIEngine {
   /**
    * Remix lyrics using LLM.
    *
+   * Uses Ollama model when offline mode is enabled, otherwise cloud provider.
+   *
    * Note: Deterministic remix operations (instruments, genre, mood, etc.)
    * should be imported directly from @bun/prompt/deterministic.
    */
@@ -167,13 +185,16 @@ export class AIEngine {
     originalInput: string,
     lyricsTopic?: string
   ): Promise<{ lyrics: string }> {
+    const getModelFn = this.config.isOfflineMode() ? this.getOllamaModel : this.getModel;
     return remixLyricsImpl(
       currentPrompt,
       originalInput,
       lyricsTopic,
       this.config.isMaxMode(),
-      this.getModel,
-      this.config.getUseSunoTags()
+      getModelFn,
+      this.config.getUseSunoTags(),
+      this.config.isOfflineMode(),
+      this.config.getOllamaEndpoint()
     );
   }
 

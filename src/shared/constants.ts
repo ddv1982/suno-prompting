@@ -86,5 +86,14 @@ export const APP_CONSTANTS = {
                 { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5' },
             ],
         },
-    }
+    },
+    OLLAMA: {
+        DEFAULT_ENDPOINT: 'http://localhost:11434',
+        DEFAULT_TEMPERATURE: 0.7,
+        DEFAULT_MAX_TOKENS: 2000,
+        DEFAULT_CONTEXT_LENGTH: 4096,
+        AVAILABILITY_CACHE_TTL_MS: 30_000,
+        AVAILABILITY_TIMEOUT_MS: 5_000,
+        GENERATION_TIMEOUT_MS: 30_000,
+    },
 } as const;

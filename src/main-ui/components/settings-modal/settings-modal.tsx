@@ -17,6 +17,7 @@ import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
 import { ApiKeySection } from "./api-key-section";
 import { FeatureToggles } from "./feature-toggles";
 import { ModelSection } from "./model-section";
+import { OllamaSettings } from "./ollama-settings";
 
 const log = createLogger('SettingsModal');
 
@@ -112,6 +113,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
             onLyricsModeChange={setLyricsMode}
             onDebugModeChange={setDebugMode}
           />
+
+          <OllamaSettings />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>

@@ -189,3 +189,30 @@ export type RefineCreativeBoostResponse = {
   versionId: string;
   debugInfo?: DebugInfo;
 };
+
+// Ollama endpoints
+/** Response from checking Ollama server status */
+export type CheckOllamaStatusResponse = {
+  /** Whether Ollama server is reachable */
+  available: boolean;
+  /** Whether Gemma 3 4B model is installed */
+  hasGemma: boolean;
+  /** Current Ollama endpoint URL */
+  endpoint: string;
+};
+
+/** Response from getting Ollama settings */
+export type OllamaSettingsResponse = {
+  endpoint: string;
+  temperature: number;
+  maxTokens: number;
+  contextLength: number;
+};
+
+/** Parameters for setting Ollama configuration */
+export type SetOllamaSettingsParams = {
+  endpoint?: string;
+  temperature?: number;
+  maxTokens?: number;
+  contextLength?: number;
+};

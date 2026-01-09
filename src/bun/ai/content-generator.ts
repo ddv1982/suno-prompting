@@ -36,11 +36,21 @@ export type GenreDetectionResult = {
   debugInfo: ContentDebugInfo & { detectedGenre: string };
 };
 
+/**
+ * Generate a song title using AI.
+ *
+ * @param description - The song description or lyrics topic
+ * @param genre - The detected or selected genre
+ * @param mood - The detected mood
+ * @param getModel - Function to get the language model (cloud or Ollama)
+ * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
+ */
 export async function generateTitle(
   description: string,
   genre: string,
   mood: string,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS
 ): Promise<TitleResult> {
   const systemPrompt = buildTitleSystemPrompt();
   const userPrompt = buildTitleUserPrompt(description, genre, mood);
@@ -52,7 +62,7 @@ export async function generateTitle(
       system: systemPrompt,
       prompt: userPrompt,
       maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      abortSignal: AbortSignal.timeout(timeoutMs),
     });
 
     return {
@@ -65,13 +75,25 @@ export async function generateTitle(
   }
 }
 
+/**
+ * Generate song lyrics using AI.
+ *
+ * @param description - The lyrics topic or song description
+ * @param genre - The detected or selected genre
+ * @param mood - The detected mood
+ * @param maxMode - Whether to use max mode for lyrics generation
+ * @param getModel - Function to get the language model (cloud or Ollama)
+ * @param useSunoTags - Whether to include Suno performance tags
+ * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
+ */
 export async function generateLyrics(
   description: string,
   genre: string,
   mood: string,
   maxMode: boolean,
   getModel: () => LanguageModel,
-  useSunoTags: boolean = false
+  useSunoTags: boolean = false,
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS
 ): Promise<LyricsResult> {
   const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
   const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags);
@@ -83,7 +105,7 @@ export async function generateLyrics(
       system: systemPrompt,
       prompt: userPrompt,
       maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      abortSignal: AbortSignal.timeout(timeoutMs),
     });
 
     return { lyrics: text.trim(), debugInfo };
@@ -98,12 +120,14 @@ export async function generateLyrics(
  * Used when lyrics mode is ON but no genre is selected - LLM picks the most fitting genre.
  *
  * @param lyricsTopic - The user's lyrics topic/theme
- * @param getModel - Function to get the language model
+ * @param getModel - Function to get the language model (cloud or Ollama)
+ * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
  * @returns Genre key and debug info with prompts used for detection
  */
 export async function detectGenreFromTopic(
   lyricsTopic: string,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS
 ): Promise<GenreDetectionResult> {
   // Build genre list with descriptions for LLM context
   const genreDescriptions = ALL_GENRE_KEYS.map((key) => {
@@ -133,7 +157,7 @@ Which genre fits best? Return only the genre key.`;
       system: systemPrompt,
       prompt: userPrompt,
       maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      abortSignal: AbortSignal.timeout(timeoutMs),
     });
 
     const genre = text.trim().toLowerCase();

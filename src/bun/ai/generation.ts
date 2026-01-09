@@ -1,9 +1,10 @@
 /**
  * Initial Prompt Generation Module
  *
- * Handles initial prompt generation with two distinct paths:
+ * Handles initial prompt generation with three distinct paths:
  * - Deterministic path (lyrics OFF): No LLM calls, <50ms execution
- * - LLM-assisted path (lyrics ON): Genre detection, title, and lyrics via LLM
+ * - LLM-assisted path (lyrics ON, cloud): Genre detection, title, and lyrics via cloud LLM
+ * - Offline path (lyrics ON, offline mode): Same as LLM-assisted but using local Ollama
  *
  * Extracted from AIEngine for single responsibility and testability.
  *
@@ -11,6 +12,7 @@
  */
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
+import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import {
@@ -21,6 +23,7 @@ import {
 } from '@bun/prompt/deterministic';
 import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
+import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 import { nowISO } from '@shared/utils';
 
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
@@ -96,22 +99,30 @@ function generateInitialDeterministic(
  * Uses LLM for genre detection (when no override), title generation
  * (to match lyrics theme), and lyrics generation. Prompt building
  * remains deterministic for consistency.
+ *
+ * @param options - Generation options
+ * @param config - Configuration with dependencies
+ * @param useOffline - Whether to use Ollama for offline generation
  */
 async function generateInitialWithLyrics(
   options: GenerateInitialOptions,
-  config: GenerationConfig
+  config: GenerationConfig,
+  useOffline: boolean = false
 ): Promise<GenerationResult> {
   const { description, lockedPhrase, lyricsTopic, genreOverride } = options;
+
+  // Use Ollama model for offline mode, cloud model otherwise
+  const getModelFn = useOffline ? config.getOllamaModel : config.getModel;
 
   let resolvedGenreOverride = genreOverride;
   let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
 
   // 1. Detect genre from lyrics topic if no override provided (LLM call)
   if (!genreOverride && lyricsTopic?.trim()) {
-    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), config.getModel);
+    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), getModelFn);
     resolvedGenreOverride = genreResult.genre;
     genreDetectionDebugInfo = genreResult.debugInfo;
-    log.info('generateInitialWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre });
+    log.info('generateInitialWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre, offline: useOffline });
   }
 
   // 2. Build prompt deterministically (no LLM)
@@ -132,7 +143,7 @@ async function generateInitialWithLyrics(
 
   // 5. Generate title via LLM (to match lyrics theme)
   const topicForTitle = lyricsTopic?.trim() || description;
-  const titleResult = await generateTitle(topicForTitle, genre, mood, config.getModel);
+  const titleResult = await generateTitle(topicForTitle, genre, mood, getModelFn);
   const title = titleResult.title;
   const titleDebugInfo = titleResult.debugInfo;
 
@@ -143,21 +154,22 @@ async function generateInitialWithLyrics(
     genre,
     mood,
     config.isMaxMode(),
-    config.getModel,
+    getModelFn,
     config.getUseSunoTags()
   );
   const lyrics = lyricsResult.lyrics;
   const lyricsDebugInfo = lyricsResult.debugInfo;
 
   // 7. Build debug info if debug mode enabled
+  const modelLabel = useOffline ? 'ollama:gemma3:4b' : config.getModelName();
   const debugInfo = config.isDebugMode()
     ? {
-        systemPrompt: 'Deterministic prompt; LLM for genre detection, title, and lyrics',
+        systemPrompt: `Deterministic prompt; ${useOffline ? 'Ollama' : 'LLM'} for genre detection, title, and lyrics`,
         userPrompt: description,
-        model: config.getModelName(),
+        model: modelLabel,
         provider: config.getProvider(),
         timestamp: nowISO(),
-        requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
+        requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata, offline: useOffline }, null, 2),
         responseBody: promptText,
         genreDetection: genreDetectionDebugInfo,
         titleGeneration: titleDebugInfo,
@@ -174,11 +186,43 @@ async function generateInitialWithLyrics(
 }
 
 /**
+ * Offline generation path using Ollama local LLM.
+ *
+ * Pre-flight checks Ollama availability before delegating to the
+ * standard LLM-assisted generation with the Ollama model.
+ *
+ * @throws {OllamaUnavailableError} When Ollama server is not running
+ * @throws {OllamaModelMissingError} When Gemma 3 4B model is not installed
+ */
+async function generateInitialWithOfflineLyrics(
+  options: GenerateInitialOptions,
+  config: GenerationConfig
+): Promise<GenerationResult> {
+  // Pre-flight check: Verify Ollama is available
+  const endpoint = config.getOllamaEndpoint();
+  const status = await checkOllamaAvailable(endpoint);
+
+  if (!status.available) {
+    throw new OllamaUnavailableError(endpoint);
+  }
+
+  if (!status.hasGemma) {
+    throw new OllamaModelMissingError('gemma3:4b');
+  }
+
+  log.info('generateInitialWithOfflineLyrics:start', { endpoint });
+
+  // Delegate to standard generation with offline flag
+  return generateInitialWithLyrics(options, config, true);
+}
+
+/**
  * Generate initial prompt.
  *
- * Branches based on lyrics mode:
+ * Branches based on lyrics and offline mode:
  * - Lyrics OFF: Fully deterministic path (<50ms, no LLM calls)
- * - Lyrics ON: LLM-assisted path (genre detection, title, lyrics generation)
+ * - Lyrics ON + Offline: Ollama-assisted path (local Gemma 3 4B)
+ * - Lyrics ON + Cloud: LLM-assisted path (genre detection, title, lyrics generation)
  *
  * @param options - Options for generating initial prompt
  * @param config - Configuration with dependencies
@@ -191,5 +235,11 @@ export async function generateInitial(
   if (!config.isLyricsMode()) {
     return generateInitialDeterministic(options, config);
   }
+  
+  // Use offline generation with Ollama when offline mode is enabled
+  if (config.isOfflineMode()) {
+    return generateInitialWithOfflineLyrics(options, config);
+  }
+  
   return generateInitialWithLyrics(options, config);
 }

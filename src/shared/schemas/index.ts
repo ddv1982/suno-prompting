@@ -55,3 +55,10 @@ export {
   type GenerateCreativeBoostInput,
   type RefineCreativeBoostInput,
 } from './creative-boost';
+
+// Ollama schemas
+export {
+  SetOllamaSettingsSchema,
+  OLLAMA_DEFAULTS,
+  type SetOllamaSettingsInput,
+} from './ollama';

@@ -44,6 +44,9 @@ import type {
   GenerateCreativeBoostResponse,
   RefineCreativeBoostParams,
   RefineCreativeBoostResponse,
+  CheckOllamaStatusResponse,
+  OllamaSettingsResponse,
+  SetOllamaSettingsParams,
 } from '@shared/types/api';
 import type { PromptMode, CreativeBoostMode } from '@shared/types/domain';
 
@@ -84,6 +87,10 @@ export type RPCHandlers = {
   convertToMaxFormat: (params: ConvertToMaxFormatParams) => Promise<ConvertToMaxFormatResponse>;
   generateCreativeBoost: (params: GenerateCreativeBoostParams) => Promise<GenerateCreativeBoostResponse>;
   refineCreativeBoost: (params: RefineCreativeBoostParams) => Promise<RefineCreativeBoostResponse>;
+  // Ollama handlers
+  checkOllamaStatus: (params: Record<string, never>) => Promise<CheckOllamaStatusResponse>;
+  getOllamaSettings: (params: Record<string, never>) => Promise<OllamaSettingsResponse>;
+  setOllamaSettings: (params: SetOllamaSettingsParams) => Promise<{ success: boolean }>;
 };
 
 export type SunoRPCSchema = {
@@ -228,6 +235,19 @@ export type SunoRPCSchema = {
       refineCreativeBoost: {
         params: RefineCreativeBoostParams;
         response: RefineCreativeBoostResponse;
+      };
+      // Ollama handlers
+      checkOllamaStatus: {
+        params: Record<string, never>;
+        response: CheckOllamaStatusResponse;
+      };
+      getOllamaSettings: {
+        params: Record<string, never>;
+        response: OllamaSettingsResponse;
+      };
+      setOllamaSettings: {
+        params: SetOllamaSettingsParams;
+        response: { success: boolean };
       };
     };
     messages: Record<string, never>;

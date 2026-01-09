@@ -1,18 +1,33 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test, mock, beforeEach } from 'bun:test';
 
-import { generateInitial } from '@bun/ai/generation';
+import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
 import type { GenerationConfig } from '@bun/ai/types';
+
+// Mock Ollama availability checks
+const mockCheckOllamaAvailable = mock(() =>
+  Promise.resolve({ available: true, hasGemma: true })
+);
+
+mock.module('@bun/ai/ollama-availability', () => ({
+  checkOllamaAvailable: mockCheckOllamaAvailable,
+}));
+
+// Import after mocking
+const { generateInitial } = await import('@bun/ai/generation');
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
     getModel: () => ({} as any),
+    getOllamaModel: () => ({} as any),
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
+    isOfflineMode: () => false,
     getUseSunoTags: () => true,
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
+    getOllamaEndpoint: () => 'http://localhost:11434',
     ...overrides,
   };
 }
@@ -149,5 +164,112 @@ describe('generateInitial - edge cases', () => {
 
     expect(result.text).toBeDefined();
     expect(result.title).toBeDefined();
+  });
+});
+
+describe('generateInitial - offline mode with Ollama', () => {
+  beforeEach(() => {
+    mockCheckOllamaAvailable.mockClear();
+  });
+
+  test('throws OllamaUnavailableError when Ollama is not running', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isOfflineMode: () => true,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: false,
+      hasGemma: false,
+    });
+
+    await expect(
+      generateInitial({ description: 'A jazz song' }, config)
+    ).rejects.toThrow(OllamaUnavailableError);
+  });
+
+  test('throws OllamaModelMissingError when Gemma model not installed', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isOfflineMode: () => true,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: true,
+      hasGemma: false,
+    });
+
+    await expect(
+      generateInitial({ description: 'A rock song' }, config)
+    ).rejects.toThrow(OllamaModelMissingError);
+  });
+
+  test('checks Ollama availability with correct endpoint', async () => {
+    const customEndpoint = 'http://custom:12345';
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isOfflineMode: () => true,
+      getOllamaEndpoint: () => customEndpoint,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: true,
+      hasGemma: true,
+    });
+
+    await generateInitial({ description: 'A pop song' }, config);
+
+    expect(mockCheckOllamaAvailable).toHaveBeenCalledWith(customEndpoint);
+  });
+
+  test('generates prompt when Ollama is available with Gemma', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isOfflineMode: () => true,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: true,
+      hasGemma: true,
+    });
+
+    const result = await generateInitial(
+      { description: 'An electronic song' },
+      config
+    );
+
+    expect(result.text).toBeDefined();
+    expect(result.title).toBeDefined();
+    expect(mockCheckOllamaAvailable).toHaveBeenCalled();
+  });
+
+  test('does not check Ollama when offline mode is disabled', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isOfflineMode: () => false,
+    });
+
+    const result = await generateInitial(
+      { description: 'A blues song' },
+      config
+    );
+
+    expect(result.text).toBeDefined();
+    expect(mockCheckOllamaAvailable).not.toHaveBeenCalled();
+  });
+
+  test('does not check Ollama when lyrics mode is disabled', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => false,
+      isOfflineMode: () => true,
+    });
+
+    const result = await generateInitial(
+      { description: 'A country song' },
+      config
+    );
+
+    expect(result.text).toBeDefined();
+    expect(mockCheckOllamaAvailable).not.toHaveBeenCalled();
   });
 });

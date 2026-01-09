@@ -51,6 +51,7 @@ function createMockStorage() {
     debugMode: false,
     maxMode: false,
     lyricsMode: false,
+    offlineMode: false,
     promptMode: "full",
     creativeBoostMode: "simple",
   };

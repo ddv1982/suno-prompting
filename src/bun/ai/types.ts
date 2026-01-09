@@ -101,18 +101,24 @@ export interface EngineConfig {
 export interface GenerationConfig {
   /** Returns the language model to use for LLM calls */
   getModel: () => LanguageModel;
+  /** Returns the Ollama language model for offline generation */
+  getOllamaModel: () => LanguageModel;
   /** Returns whether debug mode is enabled */
   isDebugMode: () => boolean;
   /** Returns whether max mode is enabled */
   isMaxMode: () => boolean;
   /** Returns whether lyrics mode is enabled */
   isLyricsMode: () => boolean;
+  /** Returns whether offline mode (Ollama) is enabled */
+  isOfflineMode: () => boolean;
   /** Returns whether to use Suno performance tags */
   getUseSunoTags: () => boolean;
   /** Returns the model name for debug info */
   getModelName: () => string;
   /** Returns the AI provider for debug info */
   getProvider: () => AIProvider;
+  /** Returns the Ollama endpoint URL */
+  getOllamaEndpoint: () => string;
 }
 
 /**

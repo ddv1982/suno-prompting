@@ -74,6 +74,50 @@ export class InvariantError extends AppError {
 }
 
 /**
+ * Error thrown when Ollama server is not reachable.
+ * Indicates that Ollama needs to be started.
+ */
+export class OllamaUnavailableError extends AppError {
+    constructor(endpoint: string, cause?: Error) {
+        super(
+            `Ollama server not reachable at ${endpoint}. Please ensure Ollama is running.`,
+            'OLLAMA_UNAVAILABLE',
+            cause
+        );
+        this.name = 'OllamaUnavailableError';
+    }
+}
+
+/**
+ * Error thrown when the required Gemma model is not installed.
+ * Includes installation instructions for the user.
+ */
+export class OllamaModelMissingError extends AppError {
+    constructor(model: string = 'gemma3:4b') {
+        super(
+            `Model ${model} not found. Run 'ollama pull ${model}' to install it.`,
+            'OLLAMA_MODEL_MISSING'
+        );
+        this.name = 'OllamaModelMissingError';
+    }
+}
+
+/**
+ * Error thrown when Ollama generation times out.
+ * Used when local generation exceeds the configured timeout.
+ */
+export class OllamaTimeoutError extends AppError {
+    constructor(timeoutMs: number, cause?: Error) {
+        super(
+            `Ollama generation timed out after ${timeoutMs / 1000} seconds.`,
+            'OLLAMA_TIMEOUT',
+            cause
+        );
+        this.name = 'OllamaTimeoutError';
+    }
+}
+
+/**
  * Extracts error message from unknown error type.
  * Use this instead of repeating `error instanceof Error ? error.message : fallback` pattern.
  */
