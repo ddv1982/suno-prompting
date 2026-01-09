@@ -114,7 +114,7 @@ function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps
     setConfirmOpen(false);
     try {
       await onDelete();
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("delete:failed", error);
     } finally {
       setDeleting(false);

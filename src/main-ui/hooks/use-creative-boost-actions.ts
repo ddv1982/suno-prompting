@@ -87,7 +87,7 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
         },
         sessionDeps
       );
-    } catch (error) {
+    } catch (error: unknown) {
       showToast(getErrorMessage(error, "Failed to generate Creative Boost"), 'error');
     }
   }, [execute, sessionDeps, creativeBoostInput, maxMode, lyricsMode, showToast]);
@@ -135,7 +135,7 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
         },
         sessionDeps
       );
-    } catch (error) {
+    } catch (error: unknown) {
       handleGenerationError(error, "refine Creative Boost", setChatMessages, log);
       showToast(getErrorMessage(error, "Failed to refine Creative Boost"), 'error');
     }

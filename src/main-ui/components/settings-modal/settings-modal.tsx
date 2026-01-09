@@ -49,7 +49,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
         setModel(modelExists ? settings.model : providerModels[0].id);
         setUseSunoTags(settings.useSunoTags); setDebugMode(settings.debugMode);
         setMaxMode(settings.maxMode); setLyricsMode(settings.lyricsMode);
-      } catch (err) { log.error("fetchSettings:failed", err); setError("Unable to load settings."); }
+      } catch (err: unknown) { log.error("fetchSettings:failed", err); setError("Unable to load settings."); }
       finally { setLoading(false); }
     };
     void loadSettings();
@@ -70,7 +70,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
         apiKeys: { groq: apiKeys.groq?.trim() || null, openai: apiKeys.openai?.trim() || null, anthropic: apiKeys.anthropic?.trim() || null },
       });
       onClose();
-    } catch (e) { log.error("saveSettings:failed", e); setError("Failed to save settings. Please try again."); }
+    } catch (e: unknown) { log.error("saveSettings:failed", e); setError("Failed to save settings. Please try again."); }
     finally { setSaving(false); }
   };
 

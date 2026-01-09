@@ -57,7 +57,7 @@ async function tryMaxModeConversion(deps: MaxModeConversionDeps): Promise<boolea
       return true;
     }
     return false;
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
       log.info('Conversion cancelled, falling through to normal generation');
     } else {
@@ -202,7 +202,7 @@ export function GenerationProvider({ children }: { children: ReactNode }): React
       const result = await executeGenerationApi({ input, isInitial, currentPrompt, currentTitle: currentSession?.currentTitle, currentLyrics: currentSession?.currentLyrics, lockedPhrase: effectiveLockedPhrase, lyricsTopic: effectiveLyricsTopic, genreOverride: advancedSelection.seedGenres[0] });
       await updateSessionWithResult(result, isInitial ? undefined : input, "Updated prompt generated.", isInitial, buildFullPromptOriginalInput(input, advancedSelection.seedGenres[0], effectiveLyricsTopic), effectiveLockedPhrase, effectiveLyricsTopic);
       setPendingInput(""); setLyricsTopic("");
-    } catch (error) { handleGenerationError(error, "generate prompt", setChatMessages, log); }
+    } catch (error: unknown) { handleGenerationError(error, "generate prompt", setChatMessages, log); }
     finally { setGeneratingAction('none'); }
   }, [isGenerating, isQuickVibesRefinement, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, setPendingInput, lyricsTopic, setLyricsTopic, advancedSelection, maxMode, createConversionSession, showToast, quickVibesActions, setChatMessages, setGeneratingAction]);
 
@@ -218,7 +218,7 @@ export function GenerationProvider({ children }: { children: ReactNode }): React
       const result = await api.generateInitial(currentSession.originalInput, effectiveLockedPhrase, currentSession.lyricsTopic, advancedSelection.seedGenres[0]);
       if (!result?.prompt) throw new Error("Invalid result received from remix");
       await updateSessionWithResult(result, "[remix]", "Remixed prompt generated.", false, currentSession.originalInput, effectiveLockedPhrase, currentSession.lyricsTopic);
-    } catch (error) { handleGenerationError(error, "remix prompt", setChatMessages, log); }
+    } catch (error: unknown) { handleGenerationError(error, "remix prompt", setChatMessages, log); }
     finally { setGeneratingAction('none'); }
   }, [isGenerating, currentSession, getEffectiveLockedPhrase, updateSessionWithResult, advancedSelection, setChatMessages, setGeneratingAction]);
 

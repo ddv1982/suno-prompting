@@ -34,7 +34,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     try {
       const model = await api.getModel();
       setCurrentModel(model);
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("loadModel:failed", error);
     }
   }, []);
@@ -43,7 +43,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     try {
       const mode = await api.getMaxMode();
       setMaxMode(mode);
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("loadMaxMode:failed", error);
     }
   }, []);
@@ -52,7 +52,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     try {
       const mode = await api.getLyricsMode();
       setLyricsMode(mode);
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("loadLyricsMode:failed", error);
     }
   }, []);
@@ -62,7 +62,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     setMaxMode(mode);
     try {
       await api.setMaxMode(mode);
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("setMaxMode:failed", error);
       setMaxMode(previousMode);
     }
@@ -73,7 +73,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     setLyricsMode(mode);
     try {
       await api.setLyricsMode(mode);
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("setLyricsMode:failed", error);
       setLyricsMode(previousMode);
     }

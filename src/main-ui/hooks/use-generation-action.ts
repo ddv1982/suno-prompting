@@ -137,7 +137,7 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
       );
 
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       handleGenerationError(error, errorContext, setChatMessages, log);
     } finally {
       setGeneratingAction('none');
