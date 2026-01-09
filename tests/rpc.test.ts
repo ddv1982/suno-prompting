@@ -21,7 +21,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false, offlineMode: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false, useLocalLLM: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -52,7 +52,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false, offlineMode: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false, useLocalLLM: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -87,7 +87,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: true, offlineMode: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: true, useLocalLLM: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -137,7 +137,7 @@ describe("RPC Handlers", () => {
                 debugMode: false, 
                 maxMode: false, 
                 lyricsMode: true,
-                offlineMode: false,
+                useLocalLLM: false,
                 promptMode: 'full' as const,
                 creativeBoostMode: 'simple' as const
             })),
@@ -180,7 +180,7 @@ describe("RPC Handlers", () => {
             getHistory: mock(async () => []),
             saveSession: mock(async () => {}),
             deleteSession: mock(async () => {}),
-            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false, offlineMode: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
+            getConfig: mock(async () => ({ provider: 'groq' as const, apiKeys: { groq: null, openai: null, anthropic: null }, model: APP_CONSTANTS.AI.DEFAULT_MODEL, useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS, debugMode: false, maxMode: false, lyricsMode: false, useLocalLLM: false, promptMode: 'full' as const, creativeBoostMode: 'simple' as const })),
             saveConfig: mock(async () => {}),
             initialize: mock(async () => {})
         };
@@ -230,7 +230,7 @@ describe("RPC Handlers", () => {
                 debugMode: false, 
                 maxMode: false, 
                 lyricsMode: false,
-                offlineMode: false,
+                useLocalLLM: false,
                 promptMode: 'full' as const,
                 creativeBoostMode: 'simple' as const
             }))

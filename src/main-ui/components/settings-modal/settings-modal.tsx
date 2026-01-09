@@ -16,6 +16,7 @@ import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
 
 import { ApiKeySection } from "./api-key-section";
 import { FeatureToggles } from "./feature-toggles";
+import { LLMProviderToggle } from "./llm-provider-toggle";
 import { ModelSection } from "./model-section";
 import { OllamaSettings } from "./ollama-settings";
 
@@ -32,6 +33,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
   const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
   const [lyricsMode, setLyricsMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
+  const [useLocalLLM, setUseLocalLLM] = useState<boolean>(true); // Default to local
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
         setModel(modelExists ? settings.model : providerModels[0].id);
         setUseSunoTags(settings.useSunoTags); setDebugMode(settings.debugMode);
         setMaxMode(settings.maxMode); setLyricsMode(settings.lyricsMode);
+        setUseLocalLLM(settings.useLocalLLM ?? true); // Default to true if not set
       } catch (err: unknown) { log.error("fetchSettings:failed", err); setError("Unable to load settings."); }
       finally { setLoading(false); }
     };
@@ -66,7 +69,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
     setSaving(true); setError(null);
     try {
       await api.saveAllSettings({
-        provider, model, useSunoTags, debugMode, maxMode, lyricsMode,
+        provider, model, useSunoTags, debugMode, maxMode, lyricsMode, useLocalLLM,
         apiKeys: { groq: apiKeys.groq?.trim() || null, openai: apiKeys.openai?.trim() || null, anthropic: apiKeys.anthropic?.trim() || null },
       });
       onClose();
@@ -100,6 +103,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
             model={model}
             loading={loading}
             onModelChange={setModel}
+          />
+
+          <LLMProviderToggle
+            useLocalLLM={useLocalLLM}
+            hasApiKey={apiKeys[provider] !== null && apiKeys[provider] !== ''}
+            loading={loading}
+            onToggle={setUseLocalLLM}
           />
 
           <FeatureToggles

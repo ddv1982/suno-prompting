@@ -32,6 +32,7 @@ import type {
   SetSunoTagsParams,
   SetMaxModeParams,
   SetLyricsModeParams,
+  SetUseLocalLLMParams,
   SetPromptModeParams,
   SetCreativeBoostModeParams,
   GenerateQuickVibesParams,
@@ -76,6 +77,8 @@ export type RPCHandlers = {
   setMaxMode: (params: SetMaxModeParams) => Promise<{ success: boolean }>;
   getLyricsMode: (params: Record<string, never>) => Promise<{ lyricsMode: boolean }>;
   setLyricsMode: (params: SetLyricsModeParams) => Promise<{ success: boolean }>;
+  getUseLocalLLM: (params: Record<string, never>) => Promise<{ useLocalLLM: boolean }>;
+  setUseLocalLLM: (params: SetUseLocalLLMParams) => Promise<{ success: boolean }>;
   getAllSettings: (params: Record<string, never>) => Promise<GetAllSettingsResponse>;
   saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
   getPromptMode: (params: Record<string, never>) => Promise<{ promptMode: PromptMode }>;
@@ -190,6 +193,14 @@ export type SunoRPCSchema = {
       };
       setLyricsMode: {
         params: SetLyricsModeParams;
+        response: { success: boolean };
+      };
+      getUseLocalLLM: {
+        params: Record<string, never>;
+        response: { useLocalLLM: boolean };
+      };
+      setUseLocalLLM: {
+        params: SetUseLocalLLMParams;
         response: { success: boolean };
       };
       getAllSettings: {

@@ -19,7 +19,7 @@ export class AIConfig {
   private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
   private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
-  private offlineMode: boolean = false;
+  private useLocalLLM: boolean = false; // Default to false, will be set to true if no API keys
   private registry: ProviderRegistry | null = null;
   private ollamaConfig: OllamaConfig = { ...DEFAULT_OLLAMA_CONFIG };
 
@@ -65,8 +65,8 @@ export class AIConfig {
     this.lyricsMode = value;
   }
 
-  setOfflineMode(value: boolean): void {
-    this.offlineMode = value;
+  setUseLocalLLM(value: boolean): void {
+    this.useLocalLLM = value;
   }
 
   // Ollama configuration setters
@@ -97,7 +97,16 @@ export class AIConfig {
     if (config.debugMode !== undefined) this.debugMode = config.debugMode;
     if (config.maxMode !== undefined) this.maxMode = config.maxMode;
     if (config.lyricsMode !== undefined) this.lyricsMode = config.lyricsMode;
-    if (config.offlineMode !== undefined) this.offlineMode = config.offlineMode;
+    
+    // Smart default: use local LLM if no API keys are configured
+    if (config.useLocalLLM !== undefined) {
+      this.useLocalLLM = config.useLocalLLM;
+    } else {
+      // Auto-enable local LLM if no API keys exist
+      const hasAnyKey = Object.values(this.apiKeys).some(key => key !== null && key.trim() !== '');
+      this.useLocalLLM = !hasAnyKey;
+    }
+    
     if (config.ollamaConfig) {
       this.ollamaConfig = { ...this.ollamaConfig, ...config.ollamaConfig };
     }
@@ -128,8 +137,8 @@ export class AIConfig {
     return this.lyricsMode;
   }
 
-  isOfflineMode(): boolean {
-    return this.offlineMode;
+  isUseLocalLLM(): boolean {
+    return this.useLocalLLM;
   }
 
   getOllamaEndpoint(): string {

@@ -62,11 +62,21 @@ export class AIEngine {
   setDebugMode = this.config.setDebugMode.bind(this.config);
   setMaxMode = this.config.setMaxMode.bind(this.config);
   setLyricsMode = this.config.setLyricsMode.bind(this.config);
-  setOfflineMode = this.config.setOfflineMode.bind(this.config);
+  setUseLocalLLM = this.config.setUseLocalLLM.bind(this.config);
   initialize = this.config.initialize.bind(this.config);
   isDebugMode = this.config.isDebugMode.bind(this.config);
-  isOfflineMode = this.config.isOfflineMode.bind(this.config);
-  getModel = (): LanguageModel => this.config.getModel();
+  isUseLocalLLM = this.config.isUseLocalLLM.bind(this.config);
+  
+  /**
+   * Get the appropriate language model based on useLocalLLM setting.
+   * Returns Ollama model if useLocalLLM is true, otherwise cloud provider model.
+   */
+  getModel = (): LanguageModel => {
+    if (this.config.isUseLocalLLM()) {
+      return this.getOllamaModel();
+    }
+    return this.config.getModel();
+  };
 
   // Ollama configuration proxies
   setOllamaEndpoint = this.config.setOllamaEndpoint.bind(this.config);
@@ -124,7 +134,7 @@ export class AIEngine {
       isDebugMode: this.config.isDebugMode.bind(this.config),
       isMaxMode: this.config.isMaxMode.bind(this.config),
       isLyricsMode: this.config.isLyricsMode.bind(this.config),
-      isOfflineMode: this.config.isOfflineMode.bind(this.config),
+      isUseLocalLLM: this.config.isUseLocalLLM.bind(this.config),
       getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
       getModelName: this.config.getModelName.bind(this.config),
       getProvider: this.config.getProvider.bind(this.config),
@@ -185,7 +195,8 @@ export class AIEngine {
     originalInput: string,
     lyricsTopic?: string
   ): Promise<{ lyrics: string }> {
-    const getModelFn = this.config.isOfflineMode() ? this.getOllamaModel : this.getModel;
+    // Note: getModel() already handles local vs cloud routing based on useLocalLLM
+    const getModelFn = this.getModel;
     return remixLyricsImpl(
       currentPrompt,
       originalInput,
@@ -193,7 +204,7 @@ export class AIEngine {
       this.config.isMaxMode(),
       getModelFn,
       this.config.getUseSunoTags(),
-      this.config.isOfflineMode(),
+      this.config.isUseLocalLLM(),
       this.config.getOllamaEndpoint()
     );
   }

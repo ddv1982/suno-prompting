@@ -32,11 +32,13 @@ export {
   SetDebugModeSchema,
   SetMaxModeSchema,
   SetLyricsModeSchema,
+  SetUseLocalLLMSchema,
   SetPromptModeSchema,
   SetCreativeBoostModeSchema,
   SaveAllSettingsSchema,
   type SetApiKeyInput,
   type SetModelInput,
+  type SetUseLocalLLMInput,
   type SaveAllSettingsInput,
 } from './settings';
 

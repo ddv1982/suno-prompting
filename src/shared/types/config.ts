@@ -37,7 +37,7 @@ export type AppConfig = {
   maxMode: boolean;
   lyricsMode: boolean;
   /** Whether to use Ollama local LLM instead of cloud providers */
-  offlineMode: boolean;
+  useLocalLLM: boolean;
   promptMode: PromptMode;
   creativeBoostMode: CreativeBoostMode;
   /** Optional Ollama configuration for local LLM */

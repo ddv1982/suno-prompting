@@ -13,6 +13,22 @@ bun start
 
 Run tests: `bun test` | Validate: `bun run validate`
 
+### Optional: Local LLM (Privacy-First)
+
+For **100% offline, private AI generation**, install [Ollama](https://ollama.ai/):
+
+```bash
+# macOS/Linux
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Or download from https://ollama.ai/download
+
+# Pull the model used by this app
+ollama pull gemma2:2b
+```
+
+The app will automatically detect Ollama and enable "Local LLM" mode when no API keys are configured.
+
 <details>
 <summary><strong>Build Commands</strong></summary>
 
@@ -38,14 +54,44 @@ Settings and API keys stored locally (encrypted with AES-256-GCM):
 
 ### AI Providers
 
-| Provider | Models | API Key |
-|----------|--------|---------|
+| Provider | Models | Setup |
+|----------|--------|-------|
+| **Ollama (Local)** | Gemma 2 2B (default), Llama 3.2 1B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
 | Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
 | OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
 | Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
 
+### Local LLM Mode (Ollama)
+
+Run AI generation **completely offline** with no API keys required:
+
+**Benefits:**
+- ✅ **100% Private** - No data sent to cloud providers
+- ✅ **Offline** - Works without internet connection
+- ✅ **Free** - No API costs
+- ✅ **Fast** - Local inference on your hardware
+
+**Setup:**
+1. Install [Ollama](https://ollama.ai/download)
+2. Pull a model: `ollama pull gemma2:2b`
+3. App automatically detects Ollama and enables local mode
+4. Or manually toggle in Settings → "Use Local LLM"
+
+**Smart Defaults:**
+- No API keys configured → **Local LLM enabled**
+- API key added → **Cloud provider** (you can still toggle back to local)
+- Your preference is saved and persists
+
+**Recommended Models:**
+- `gemma2:2b` (default) - Fast, balanced quality (~1.5GB)
+- `llama3.2:1b` - Faster, smaller (~700MB)
+- `gemma2:9b` - Better quality, slower (~5GB)
+
+**Note:** Local models are optimized for speed. For highest quality lyrics/titles, use cloud providers (Groq/OpenAI/Anthropic).
+
 ## Features
 
+- **Local LLM support**: 100% offline AI generation with Ollama (no API keys, fully private)
 - **Structured prompts** from plain English with `Genre:`, `BPM:`, `Mood:`, `Instruments:` fields
 - **Three generation modes**: Full Prompt, Quick Vibes, Creative Boost
 - **Max Mode**: Community-discovered format for higher quality output
@@ -364,7 +410,7 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 
 | Module | Purpose |
 |--------|---------|
-| `src/bun/ai/` | AI engine, providers, generation, refinement, remix |
+| `src/bun/ai/` | AI engine, providers (Ollama, Groq, OpenAI, Anthropic), generation, refinement, remix |
 | `src/bun/prompt/` | Prompt builders, postprocessing, deterministic operations |
 | `src/bun/instruments/` | Instrument registry, genre pools, selection logic |
 | `src/bun/handlers/` | RPC request handlers |
@@ -377,6 +423,8 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 Most operations are **fully deterministic** (no LLM, <50ms) using curated data pools.
 LLM is only used when lyrics are enabled or for lyrics remix.
 
+**LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
+
 ```mermaid
 flowchart LR
     subgraph Input
@@ -385,6 +433,7 @@ flowchart LR
 
     subgraph Decision
         LYR{Lyrics?}
+        PROVIDER{LLM Provider}
     end
 
     subgraph Deterministic
@@ -392,36 +441,50 @@ flowchart LR
         DATA[(Data Pools)]
     end
 
-    subgraph LLM
+    subgraph "LLM Operations"
         GEN[Genre Detection]
         TITLE[Title Gen]
         LYRICS[Lyrics Gen]
     end
 
+    subgraph "LLM Backends"
+        OLLAMA[Ollama Local]
+        CLOUD[Cloud API]
+    end
+
     UI --> LYR
     LYR -->|OFF| BUILD
-    LYR -->|ON| GEN --> BUILD
+    LYR -->|ON| GEN
     LYR -->|ON| TITLE
     LYR -->|ON| LYRICS
+    GEN --> PROVIDER
+    TITLE --> PROVIDER
+    LYRICS --> PROVIDER
+    PROVIDER -->|Local Mode| OLLAMA --> BUILD
+    PROVIDER -->|Cloud Mode| CLOUD --> BUILD
     BUILD -.-> DATA
 
     classDef det fill:#d4edda,stroke:#28a745
     classDef ai fill:#fff3cd,stroke:#ffc107
     classDef data fill:#e2e3e5,stroke:#6c757d
+    classDef provider fill:#cfe2ff,stroke:#0d6efd
 
     class BUILD det
     class GEN,TITLE,LYRICS ai
     class DATA data
+    class OLLAMA,CLOUD provider
 ```
 
-| Operation | LLM Calls | Latency | Notes |
-|-----------|-----------|---------|-------|
-| Generate (Lyrics OFF) | 0 | <50ms | Fully deterministic |
-| Generate (Lyrics ON) | 1-3 | ~2s | Genre + title + lyrics |
-| Quick Vibes | 0 | <50ms | Category templates |
-| Creative Boost | 0-3 | <50ms-2s | Depends on lyrics toggle |
-| Remix (6 buttons) | 0 | <10ms | All deterministic |
-| Remix Lyrics | 1 | ~1s | Only remix using LLM |
+| Operation | LLM Calls | Latency (Cloud) | Latency (Local) | Notes |
+|-----------|-----------|-----------------|-----------------|-------|
+| Generate (Lyrics OFF) | 0 | <50ms | <50ms | Fully deterministic |
+| Generate (Lyrics ON) | 1-3 | ~2s | ~1-3s* | Genre + title + lyrics |
+| Quick Vibes | 0 | <50ms | <50ms | Category templates |
+| Creative Boost | 0-3 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle |
+| Remix (6 buttons) | 0 | <10ms | <10ms | All deterministic |
+| Remix Lyrics | 1 | ~1s | ~1-2s* | LLM-based remix |
+
+*Local latency varies by hardware (CPU vs GPU, model size)
 
 **Why deterministic?** Faster response, predictable results, no API costs for basic generation.
 
@@ -431,6 +494,6 @@ flowchart LR
 
 - **Runtime:** [Electrobun](https://electrobun.dev/) (Bun-based desktop framework)
 - **UI:** React 19 + shadcn/ui + Tailwind CSS v4
-- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic)
+- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Ollama (local inference)
 - **Validation:** Zod
 - **Testing:** Bun test (70% coverage threshold)

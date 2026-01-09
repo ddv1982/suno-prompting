@@ -61,6 +61,7 @@ export type {
   SetSunoTagsParams,
   SetMaxModeParams,
   SetLyricsModeParams,
+  SetUseLocalLLMParams,
   GetPromptModeResponse,
   SetPromptModeParams,
   SetPromptModeResponse,

@@ -18,7 +18,7 @@ type StoredConfig = Partial<{
     debugMode: boolean;
     maxMode: boolean;
     lyricsMode: boolean;
-    offlineMode: boolean;
+    useLocalLLM: boolean;
     promptMode: PromptMode;
     creativeBoostMode: CreativeBoostMode;
 }>;
@@ -33,7 +33,7 @@ const DEFAULT_CONFIG: AppConfig = {
     debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
     maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
     lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
-    offlineMode: false,
+    useLocalLLM: true, // Default to true (local LLM first)
     promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
     creativeBoostMode: 'simple',
 };
@@ -119,6 +119,13 @@ export class StorageManager {
 
     /** Build AppConfig with defaults for missing values */
     private buildConfigWithDefaults(config: StoredConfig, apiKeys: APIKeys): AppConfig {
+        // Smart default: if no explicit useLocalLLM setting and no API keys, default to true
+        let useLocalLLM = config.useLocalLLM;
+        if (useLocalLLM === undefined) {
+            const hasAnyKey = Object.values(apiKeys).some(key => key !== null && key.trim() !== '');
+            useLocalLLM = !hasAnyKey; // Default to local if no keys
+        }
+        
         return {
             provider: config.provider ?? DEFAULT_CONFIG.provider,
             apiKeys,
@@ -127,7 +134,7 @@ export class StorageManager {
             debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
             maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
             lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
-            offlineMode: config.offlineMode ?? DEFAULT_CONFIG.offlineMode,
+            useLocalLLM,
             promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
             creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
         };

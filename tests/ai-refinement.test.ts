@@ -33,7 +33,7 @@ function createMockConfig(overrides: Partial<RefinementConfig> = {}): Refinement
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
-    isOfflineMode: () => false,
+    isUseLocalLLM: () => false,
     getUseSunoTags: () => true,
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
@@ -173,7 +173,7 @@ describe('refinePrompt - offline mode with Ollama', () => {
   });
 
   test('throws OllamaUnavailableError when Ollama is not running', async () => {
-    const config = createMockConfig({ isOfflineMode: () => true });
+    const config = createMockConfig({ isUseLocalLLM: () => true });
 
     mockCheckOllamaAvailable.mockResolvedValueOnce({
       available: false,
@@ -193,7 +193,7 @@ describe('refinePrompt - offline mode with Ollama', () => {
   });
 
   test('throws OllamaModelMissingError when Gemma model not installed', async () => {
-    const config = createMockConfig({ isOfflineMode: () => true });
+    const config = createMockConfig({ isUseLocalLLM: () => true });
 
     mockCheckOllamaAvailable.mockResolvedValueOnce({
       available: true,
@@ -215,7 +215,7 @@ describe('refinePrompt - offline mode with Ollama', () => {
   test('checks Ollama availability with correct endpoint', async () => {
     const customEndpoint = 'http://custom:12345';
     const config = createMockConfig({
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
       getOllamaEndpoint: () => customEndpoint,
     });
 
@@ -237,7 +237,7 @@ describe('refinePrompt - offline mode with Ollama', () => {
   });
 
   test('refines prompt when Ollama is available with Gemma', async () => {
-    const config = createMockConfig({ isOfflineMode: () => true });
+    const config = createMockConfig({ isUseLocalLLM: () => true });
 
     mockCheckOllamaAvailable.mockResolvedValueOnce({
       available: true,
@@ -258,7 +258,7 @@ describe('refinePrompt - offline mode with Ollama', () => {
   });
 
   test('does not check Ollama when offline mode is disabled', async () => {
-    const config = createMockConfig({ isOfflineMode: () => false });
+    const config = createMockConfig({ isUseLocalLLM: () => false });
 
     const result = await refinePrompt(
       {
@@ -275,7 +275,7 @@ describe('refinePrompt - offline mode with Ollama', () => {
 
   test('performs actual refinement in offline mode', async () => {
     const config = createMockConfig({
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
       isLyricsMode: () => true,
     });
 

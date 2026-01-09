@@ -237,7 +237,7 @@ export async function generateInitial(
   }
   
   // Use offline generation with Ollama when offline mode is enabled
-  if (config.isOfflineMode()) {
+  if (config.isUseLocalLLM()) {
     return generateInitialWithOfflineLyrics(options, config);
   }
   

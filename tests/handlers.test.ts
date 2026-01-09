@@ -35,6 +35,7 @@ function createMockAIEngine() {
     setUseSunoTags: mock(() => {}),
     setDebugMode: mock(() => {}),
     setMaxMode: mock(() => {}),
+    setUseLocalLLM: mock(() => {}),
     setLyricsMode: mock(() => {}),
     getModel: mock(() => ({} as any)),
   };
@@ -51,7 +52,7 @@ function createMockStorage() {
     debugMode: false,
     maxMode: false,
     lyricsMode: false,
-    offlineMode: false,
+    useLocalLLM: false,
     promptMode: "full",
     creativeBoostMode: "simple",
   };
@@ -256,6 +257,7 @@ describe("RPC Handlers", () => {
         debugMode: true,
         maxMode: true,
         lyricsMode: true,
+        useLocalLLM: false,
       });
 
       expect(storage.saveConfig).toHaveBeenCalled();
@@ -265,6 +267,7 @@ describe("RPC Handlers", () => {
       expect(aiEngine.setDebugMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setMaxMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setLyricsMode).toHaveBeenCalledWith(true);
+      expect(aiEngine.setUseLocalLLM).toHaveBeenCalledWith(false);
     });
   });
 

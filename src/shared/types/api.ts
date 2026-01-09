@@ -71,6 +71,7 @@ export type SaveAllSettingsParams = {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  useLocalLLM?: boolean; // Optional for backwards compatibility
 };
 
 export type GetAllSettingsResponse = {
@@ -81,6 +82,7 @@ export type GetAllSettingsResponse = {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  useLocalLLM: boolean;
 };
 
 // Session endpoints
@@ -94,6 +96,7 @@ export type SetModelParams = { model: string };
 export type SetSunoTagsParams = { useSunoTags: boolean };
 export type SetMaxModeParams = { maxMode: boolean };
 export type SetLyricsModeParams = { lyricsMode: boolean };
+export type SetUseLocalLLMParams = { useLocalLLM: boolean };
 
 // Quick Vibes endpoints
 export type GetPromptModeResponse = { promptMode: PromptMode };

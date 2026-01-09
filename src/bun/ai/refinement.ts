@@ -91,7 +91,7 @@ function getSystemPrompt(isMaxMode: boolean, useSunoTags: boolean): string {
 async function getModelForRefinement(
   config: RefinementConfig
 ): Promise<() => LanguageModel> {
-  if (!config.isOfflineMode()) {
+  if (!config.isUseLocalLLM()) {
     return config.getModel;
   }
 
@@ -142,7 +142,7 @@ export async function refinePrompt(
 
   // Get the appropriate model (cloud or Ollama)
   const getModelFn = await getModelForRefinement(config);
-  const isOffline = config.isOfflineMode();
+  const isOffline = config.isUseLocalLLM();
   const timeoutMs = isOffline
     ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
     : APP_CONSTANTS.AI.TIMEOUT_MS;

@@ -23,7 +23,7 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
-    isOfflineMode: () => false,
+    isUseLocalLLM: () => false,
     getUseSunoTags: () => true,
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
@@ -175,7 +175,7 @@ describe('generateInitial - offline mode with Ollama', () => {
   test('throws OllamaUnavailableError when Ollama is not running', async () => {
     const config = createMockConfig({
       isLyricsMode: () => true,
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
     });
 
     mockCheckOllamaAvailable.mockResolvedValueOnce({
@@ -191,7 +191,7 @@ describe('generateInitial - offline mode with Ollama', () => {
   test('throws OllamaModelMissingError when Gemma model not installed', async () => {
     const config = createMockConfig({
       isLyricsMode: () => true,
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
     });
 
     mockCheckOllamaAvailable.mockResolvedValueOnce({
@@ -208,7 +208,7 @@ describe('generateInitial - offline mode with Ollama', () => {
     const customEndpoint = 'http://custom:12345';
     const config = createMockConfig({
       isLyricsMode: () => true,
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
       getOllamaEndpoint: () => customEndpoint,
     });
 
@@ -225,7 +225,7 @@ describe('generateInitial - offline mode with Ollama', () => {
   test('generates prompt when Ollama is available with Gemma', async () => {
     const config = createMockConfig({
       isLyricsMode: () => true,
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
     });
 
     mockCheckOllamaAvailable.mockResolvedValueOnce({
@@ -246,7 +246,7 @@ describe('generateInitial - offline mode with Ollama', () => {
   test('does not check Ollama when offline mode is disabled', async () => {
     const config = createMockConfig({
       isLyricsMode: () => true,
-      isOfflineMode: () => false,
+      isUseLocalLLM: () => false,
     });
 
     const result = await generateInitial(
@@ -261,7 +261,7 @@ describe('generateInitial - offline mode with Ollama', () => {
   test('does not check Ollama when lyrics mode is disabled', async () => {
     const config = createMockConfig({
       isLyricsMode: () => false,
-      isOfflineMode: () => true,
+      isUseLocalLLM: () => true,
     });
 
     const result = await generateInitial(

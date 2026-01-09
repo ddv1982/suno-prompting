@@ -57,7 +57,7 @@ function createMockStorage(config?: Partial<AppConfig>): StorageManager {
     debugMode: false,
     maxMode: false,
     lyricsMode: false,
-    offlineMode: false,
+    useLocalLLM: false,
     promptMode: 'full',
     creativeBoostMode: 'simple',
     ollamaConfig: DEFAULT_OLLAMA_CONFIG,

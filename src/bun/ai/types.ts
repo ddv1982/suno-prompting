@@ -109,8 +109,8 @@ export interface GenerationConfig {
   isMaxMode: () => boolean;
   /** Returns whether lyrics mode is enabled */
   isLyricsMode: () => boolean;
-  /** Returns whether offline mode (Ollama) is enabled */
-  isOfflineMode: () => boolean;
+  /** Returns whether local LLM (Ollama) is enabled */
+  isUseLocalLLM: () => boolean;
   /** Returns whether to use Suno performance tags */
   getUseSunoTags: () => boolean;
   /** Returns the model name for debug info */
