@@ -643,8 +643,11 @@ describe('useAsyncAction + useMounted integration', () => {
     // Verify that useAsyncAction integrates with useMounted
     const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
     
-    // Check that useMounted is imported
-    expect(asyncActionSource).toContain("import { useMounted } from './use-mounted'");
+    // Check that useMounted is imported (can be relative or alias import)
+    expect(
+      asyncActionSource.includes("import { useMounted } from './use-mounted'") ||
+      asyncActionSource.includes("import { useMounted } from '@/hooks/use-mounted'")
+    ).toBe(true);
     
     // Check that it's actually used in the hook
     expect(asyncActionSource).toContain('const mountedRef = useMounted()');

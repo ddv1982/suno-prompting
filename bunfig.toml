@@ -1,0 +1,7 @@
+# Bun configuration file
+# https://bun.sh/docs/runtime/bunfig
+
+[test]
+# Preload this file before running any tests
+# This ensures global mocks (like fetch) are set up before modules load
+preload = ["./tests/setup.ts"]
