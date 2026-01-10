@@ -53,23 +53,22 @@ Run AI generation **100% offline and private** with no API keys required.
 
 #### Quick Start
 
+**macOS (Recommended):**
+1. Download and install from [ollama.com/download/mac](https://ollama.com/download/mac)
+2. Ollama starts automatically after installation
+3. Pull the model: `ollama pull gemma3:4b`
+
+**Linux:**
 ```bash
-# macOS (Homebrew) - recommended
-brew install ollama && ollama serve
-
-# macOS/Linux (direct install)
-curl -fsSL https://ollama.ai/install.sh | sh && ollama serve
-
-# Windows
-# Download and run installer from https://ollama.ai/download
-# Then start Ollama from Start menu
-```
-
-After Ollama is running, pull the required model:
-
-```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+ollama serve
 ollama pull gemma3:4b
 ```
+
+**Windows:**
+1. Download installer from [ollama.ai/download](https://ollama.ai/download)
+2. Run installer and start Ollama from Start menu
+3. Pull the model: `ollama pull gemma3:4b`
 
 The app automatically detects Ollama and switches to local mode.
 
