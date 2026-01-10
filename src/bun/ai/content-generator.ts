@@ -1,5 +1,6 @@
 import { generateText, type LanguageModel } from 'ai';
 
+import { generateWithOllama } from '@bun/ai/ollama-client';
 import { GENRE_REGISTRY } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
 import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
@@ -10,6 +11,39 @@ const log = createLogger('ContentGenerator');
 
 /** All available genre keys from the registry */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as Array<keyof typeof GENRE_REGISTRY>;
+
+/**
+ * Generate text using either the AI SDK (cloud) or direct Ollama client (local).
+ * This helper encapsulates the provider selection logic to avoid repetition.
+ *
+ * @param systemPrompt - System prompt for the model
+ * @param userPrompt - User prompt for the model
+ * @param getModel - Function to get the language model (for cloud providers)
+ * @param timeoutMs - Timeout in milliseconds
+ * @param ollamaEndpoint - Optional Ollama endpoint (when provided, uses direct Ollama client)
+ * @returns Generated text
+ */
+async function generateTextWithProvider(
+  systemPrompt: string,
+  userPrompt: string,
+  getModel: () => LanguageModel,
+  timeoutMs: number,
+  ollamaEndpoint?: string
+): Promise<string> {
+  if (ollamaEndpoint) {
+    // Use direct Ollama client to bypass Bun fetch empty body bug
+    return generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeoutMs);
+  }
+  // Use AI SDK for cloud providers
+  const result = await generateText({
+    model: getModel(),
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+    abortSignal: AbortSignal.timeout(timeoutMs),
+  });
+  return result.text;
+}
 
 export type ContentDebugInfo = {
   systemPrompt: string;
@@ -44,26 +78,22 @@ export type GenreDetectionResult = {
  * @param mood - The detected mood
  * @param getModel - Function to get the language model (cloud or Ollama)
  * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
+ * @param ollamaEndpoint - Optional Ollama endpoint for direct API calls (bypasses AI SDK)
  */
 export async function generateTitle(
   description: string,
   genre: string,
   mood: string,
   getModel: () => LanguageModel,
-  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
+  ollamaEndpoint?: string
 ): Promise<TitleResult> {
   const systemPrompt = buildTitleSystemPrompt();
   const userPrompt = buildTitleUserPrompt(description, genre, mood);
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const { text } = await generateText({
-      model: getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(timeoutMs),
-    });
+    const text = await generateTextWithProvider(systemPrompt, userPrompt, getModel, timeoutMs, ollamaEndpoint);
 
     return {
       title: text.trim().replace(/^["']|["']$/g, ''),
@@ -85,6 +115,7 @@ export async function generateTitle(
  * @param getModel - Function to get the language model (cloud or Ollama)
  * @param useSunoTags - Whether to include Suno performance tags
  * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
+ * @param ollamaEndpoint - Optional Ollama endpoint for direct API calls (bypasses AI SDK)
  */
 export async function generateLyrics(
   description: string,
@@ -93,20 +124,15 @@ export async function generateLyrics(
   maxMode: boolean,
   getModel: () => LanguageModel,
   useSunoTags: boolean = false,
-  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
+  ollamaEndpoint?: string
 ): Promise<LyricsResult> {
   const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
   const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags);
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const { text } = await generateText({
-      model: getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(timeoutMs),
-    });
+    const text = await generateTextWithProvider(systemPrompt, userPrompt, getModel, timeoutMs, ollamaEndpoint);
 
     return { lyrics: text.trim(), debugInfo };
   } catch (error: unknown) {
@@ -122,12 +148,14 @@ export async function generateLyrics(
  * @param lyricsTopic - The user's lyrics topic/theme
  * @param getModel - Function to get the language model (cloud or Ollama)
  * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
+ * @param ollamaEndpoint - Optional Ollama endpoint for direct API calls (bypasses AI SDK)
  * @returns Genre key and debug info with prompts used for detection
  */
 export async function detectGenreFromTopic(
   lyricsTopic: string,
   getModel: () => LanguageModel,
-  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
+  ollamaEndpoint?: string
 ): Promise<GenreDetectionResult> {
   // Build genre list with descriptions for LLM context
   const genreDescriptions = ALL_GENRE_KEYS.map((key) => {
@@ -152,13 +180,7 @@ RULES:
 Which genre fits best? Return only the genre key.`;
 
   try {
-    const { text } = await generateText({
-      model: getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(timeoutMs),
-    });
+    const text = await generateTextWithProvider(systemPrompt, userPrompt, getModel, timeoutMs, ollamaEndpoint);
 
     const genre = text.trim().toLowerCase();
     // Validate the returned genre exists in registry

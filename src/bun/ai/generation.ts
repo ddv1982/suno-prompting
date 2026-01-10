@@ -111,15 +111,17 @@ async function generateInitialWithLyrics(
 ): Promise<GenerationResult> {
   const { description, lockedPhrase, lyricsTopic, genreOverride } = options;
 
-  // Use Ollama model for offline mode, cloud model otherwise
-  const getModelFn = useOffline ? config.getOllamaModel : config.getModel;
+  // For offline mode, use direct Ollama client to bypass Bun fetch empty body bug
+  // For cloud mode, use AI SDK as normal
+  const getModelFn = config.getModel;
+  const ollamaEndpoint = useOffline ? config.getOllamaEndpoint() : undefined;
 
   let resolvedGenreOverride = genreOverride;
   let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
 
   // 1. Detect genre from lyrics topic if no override provided (LLM call)
   if (!genreOverride && lyricsTopic?.trim()) {
-    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), getModelFn);
+    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), getModelFn, undefined, ollamaEndpoint);
     resolvedGenreOverride = genreResult.genre;
     genreDetectionDebugInfo = genreResult.debugInfo;
     log.info('generateInitialWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre, offline: useOffline });
@@ -143,7 +145,7 @@ async function generateInitialWithLyrics(
 
   // 5. Generate title via LLM (to match lyrics theme)
   const topicForTitle = lyricsTopic?.trim() || description;
-  const titleResult = await generateTitle(topicForTitle, genre, mood, getModelFn);
+  const titleResult = await generateTitle(topicForTitle, genre, mood, getModelFn, undefined, ollamaEndpoint);
   const title = titleResult.title;
   const titleDebugInfo = titleResult.debugInfo;
 
@@ -155,7 +157,9 @@ async function generateInitialWithLyrics(
     mood,
     config.isMaxMode(),
     getModelFn,
-    config.getUseSunoTags()
+    config.getUseSunoTags(),
+    undefined,
+    ollamaEndpoint
   );
   const lyrics = lyricsResult.lyrics;
   const lyricsDebugInfo = lyricsResult.debugInfo;
@@ -164,7 +168,7 @@ async function generateInitialWithLyrics(
   const modelLabel = useOffline ? 'ollama:gemma3:4b' : config.getModelName();
   const debugInfo = config.isDebugMode()
     ? {
-        systemPrompt: `Deterministic prompt; ${useOffline ? 'Ollama' : 'LLM'} for genre detection, title, and lyrics`,
+        systemPrompt: `Deterministic prompt; ${useOffline ? 'Ollama (direct)' : 'LLM'} for genre detection, title, and lyrics`,
         userPrompt: description,
         model: modelLabel,
         provider: config.getProvider(),

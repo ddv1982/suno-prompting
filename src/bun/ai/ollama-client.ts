@@ -1,0 +1,146 @@
+/**
+ * Ollama Client Module
+ *
+ * Provides direct Ollama API integration using node:http.
+ * This bypasses both the AI SDK and the official Ollama package to avoid
+ * Bun fetch compatibility issues where empty response bodies are returned
+ * due to missing Content-Length headers (Bun bug #6932).
+ *
+ * @module ai/ollama-client
+ */
+
+import * as http from 'node:http';
+
+import { createLogger } from '@bun/logger';
+import { APP_CONSTANTS } from '@shared/constants';
+import { AIGenerationError, OllamaTimeoutError, getErrorMessage } from '@shared/errors';
+
+const log = createLogger('OllamaClient');
+
+/** Default Ollama model to use for local generation */
+const DEFAULT_OLLAMA_MODEL = 'gemma3:4b';
+
+/** Ollama chat response type */
+interface OllamaChatResponse {
+  model: string;
+  message: { role: string; content: string };
+  done: boolean;
+  eval_count?: number;
+}
+
+/**
+ * Make an HTTP request to Ollama using node:http.
+ * This avoids Bun fetch issues with empty response bodies.
+ */
+async function ollamaRequest(
+  endpoint: string,
+  body: string,
+  timeoutMs: number
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(endpoint);
+    const port = url.port ? parseInt(url.port, 10) : 11434;
+    
+    const req = http.request({
+      hostname: url.hostname,
+      port,
+      path: '/api/chat',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+      timeout: timeoutMs,
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk: Buffer | string) => {
+        data += String(chunk);
+      });
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          reject(new AIGenerationError(`Ollama returned status ${String(res.statusCode)}: ${data}`));
+        } else {
+          resolve(data);
+        }
+      });
+    });
+    
+    req.on('error', (error: Error) => {
+      reject(new AIGenerationError(`Ollama request failed: ${error.message}`, error));
+    });
+    
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new OllamaTimeoutError(timeoutMs));
+    });
+    
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * Generate text using the Ollama API via node:http.
+ * Bypasses Bun fetch to avoid empty body issues.
+ *
+ * @param endpoint - Ollama server endpoint (e.g., http://127.0.0.1:11434)
+ * @param systemPrompt - System prompt for the model
+ * @param userPrompt - User prompt for the model
+ * @param timeoutMs - Timeout in milliseconds (default: 90s)
+ * @param model - Ollama model to use (default: gemma3:4b)
+ * @returns Generated text response
+ */
+export async function generateWithOllama(
+  endpoint: string,
+  systemPrompt: string,
+  userPrompt: string,
+  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
+  model: string = DEFAULT_OLLAMA_MODEL
+): Promise<string> {
+  log.info('generateWithOllama:start', {
+    endpoint,
+    model,
+    systemPromptLength: systemPrompt.length,
+    userPromptLength: userPrompt.length,
+  });
+
+  const body = JSON.stringify({
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    stream: false,
+  });
+
+  try {
+    const responseText = await ollamaRequest(endpoint, body, timeoutMs);
+    const response = JSON.parse(responseText) as OllamaChatResponse;
+    
+    const content = response.message.content;
+    log.info('generateWithOllama:success', {
+      responseLength: content.length,
+      evalCount: response.eval_count,
+    });
+
+    return content;
+  } catch (error: unknown) {
+    // Re-throw custom errors as-is
+    if (error instanceof AIGenerationError || error instanceof OllamaTimeoutError) {
+      log.error('generateWithOllama:failed', { error: error.message });
+      throw error;
+    }
+    // Wrap unexpected errors
+    const errorMessage = getErrorMessage(error);
+    log.error('generateWithOllama:failed', { error: errorMessage });
+    throw new AIGenerationError(`Ollama generation failed: ${errorMessage}`, error instanceof Error ? error : undefined);
+  }
+}
+
+/**
+ * Invalidate the cached Ollama client.
+ * No-op since we don't cache the node:http client.
+ */
+export function invalidateOllamaClient(): void {
+  log.info('invalidateOllamaClient:cleared');
+}

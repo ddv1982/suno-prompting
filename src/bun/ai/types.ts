@@ -90,6 +90,8 @@ export interface EngineConfig {
   isLyricsMode?: () => boolean;
   /** Returns whether to use Suno performance tags (optional) */
   getUseSunoTags?: () => boolean;
+  /** Returns Ollama endpoint for direct API calls when using local LLM (optional) */
+  getOllamaEndpoint?: () => string | undefined;
 }
 
 /**

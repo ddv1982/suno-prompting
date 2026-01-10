@@ -278,6 +278,7 @@ export class AIEngine {
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfoInternal.bind(this),
         getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
+        getOllamaEndpoint: () => this.config.isUseLocalLLM() ? this.config.getOllamaEndpoint() : undefined,
       },
     });
   }
@@ -312,6 +313,7 @@ export class AIEngine {
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfoInternal.bind(this),
         getUseSunoTags: this.config.getUseSunoTags.bind(this.config),
+        getOllamaEndpoint: () => this.config.isUseLocalLLM() ? this.config.getOllamaEndpoint() : undefined,
       },
     });
   }

@@ -120,11 +120,12 @@ async function generateLyricsForDirectMode(
   description: string,
   feedback: string,
   getModel: () => LanguageModel,
-  useSunoTags: boolean
+  useSunoTags: boolean,
+  ollamaEndpoint?: string
 ): Promise<string | undefined> {
   const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
   const result = await generateLyricsForCreativeBoost(
-    styleResult, topicForLyrics, feedback, false, true, getModel, useSunoTags
+    styleResult, topicForLyrics, feedback, false, true, getModel, useSunoTags, ollamaEndpoint
   );
   return result.lyrics;
 }
@@ -155,7 +156,7 @@ async function refineDirectMode(
 
     if (withLyrics) {
       try {
-        lyrics = await generateLyricsForDirectMode(styleResult, lyricsTopic, description, feedback, config.getModel, config.getUseSunoTags?.() ?? false);
+        lyrics = await generateLyricsForDirectMode(styleResult, lyricsTopic, description, feedback, config.getModel, config.getUseSunoTags?.() ?? false, config.getOllamaEndpoint?.());
       } catch (error: unknown) {
         log.warn('refineDirectMode:lyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
       }
