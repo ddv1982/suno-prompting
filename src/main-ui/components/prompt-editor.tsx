@@ -76,7 +76,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
           />
 
           {promptMode === 'quickVibes' ? (
-            <QuickVibesPanel input={quickVibes.input} withWordlessVocals={quickVibes.withWordlessVocals} maxMode={maxMode}
+            <QuickVibesPanel input={quickVibes.input} originalInput={quickVibes.originalInput} withWordlessVocals={quickVibes.withWordlessVocals} maxMode={maxMode}
               isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} onInputChange={handlers.onQuickVibesInputChange}
               onWordlessVocalsChange={handlers.onWordlessVocalsChange} onMaxModeChange={handlers.onMaxModeChange}
               onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.withWordlessVocals, quickVibes.input.sunoStyles); }}

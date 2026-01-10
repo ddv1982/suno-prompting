@@ -36,8 +36,16 @@ export type QuickVibesSubmitInput = {
   sunoStyles: string[];
 };
 
+export type QuickVibesRefineInput = QuickVibesSubmitInput & {
+  original: {
+    category: string | null;
+    customDescription: string;
+    sunoStyles: string[];
+  } | null;
+};
+
 /**
- * Determines if Quick Vibes mode can submit.
+ * Determines if Quick Vibes mode can submit (generate).
  * User can submit with ANY of: category, description, or suno styles.
  */
 export function canSubmitQuickVibes(input: QuickVibesSubmitInput): boolean {
@@ -45,6 +53,25 @@ export function canSubmitQuickVibes(input: QuickVibesSubmitInput): boolean {
   const hasDescription = !!input.customDescription.trim();
   const hasSunoStyles = input.sunoStyles.length > 0;
   return hasCategory || hasDescription || hasSunoStyles;
+}
+
+/**
+ * Determines if Quick Vibes refine mode can submit.
+ * User can submit when ANY input differs from the original.
+ */
+export function canRefineQuickVibes(input: QuickVibesRefineInput): boolean {
+  if (!input.original) return canSubmitQuickVibes(input);
+
+  const categoryChanged = input.category !== input.original.category;
+  const descriptionChanged = input.customDescription.trim() !== input.original.customDescription.trim();
+  const stylesChanged = !arraysEqual(input.sunoStyles, input.original.sunoStyles);
+
+  return categoryChanged || descriptionChanged || stylesChanged;
+}
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((val, i) => val === b[i]);
 }
 
 // ============================================

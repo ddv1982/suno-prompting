@@ -44,8 +44,8 @@ export function PromptEditorContainer(): ReactNode {
   }), [maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode]);
 
   const quickVibes: QuickVibesState = useMemo(() => ({
-    input: quickVibesInput, withWordlessVocals,
-  }), [quickVibesInput, withWordlessVocals]);
+    input: quickVibesInput, originalInput: currentSession?.quickVibesInput, withWordlessVocals,
+  }), [quickVibesInput, currentSession?.quickVibesInput, withWordlessVocals]);
 
   const creativeBoost: CreativeBoostState = useMemo(() => ({
     input: creativeBoostInput,

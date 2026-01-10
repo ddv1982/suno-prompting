@@ -29,7 +29,7 @@ export const RefineQuickVibesSchema = z.object({
   currentPrompt: z.string().min(1, 'Current prompt is required'),
   currentTitle: z.string().optional(),
   description: z.string().optional(),
-  feedback: z.string().min(1, 'Feedback is required'),
+  feedback: z.string(),
   withWordlessVocals: z.boolean(),
   category: QuickVibesCategorySchema.optional(),
   sunoStyles: SunoStylesSchema.optional().default([]),

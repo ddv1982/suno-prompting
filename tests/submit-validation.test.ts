@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   canSubmitFullPrompt,
   canSubmitQuickVibes,
+  canRefineQuickVibes,
   canSubmitCreativeBoost,
 } from '@shared/submit-validation';
 
@@ -118,6 +119,104 @@ describe('canSubmitQuickVibes', () => {
       category: null,
       customDescription: '   ',
       sunoStyles: [],
+    })).toBe(false);
+  });
+});
+
+describe('canRefineQuickVibes', () => {
+  const original = {
+    category: 'lofi-study' as const,
+    customDescription: '',
+    sunoStyles: [] as string[],
+  };
+
+  test('returns false when nothing changed', () => {
+    expect(canRefineQuickVibes({
+      category: 'lofi-study',
+      customDescription: '',
+      sunoStyles: [],
+      original,
+    })).toBe(false);
+  });
+
+  test('returns true when category changed', () => {
+    expect(canRefineQuickVibes({
+      category: 'cafe-coffeeshop',
+      customDescription: '',
+      sunoStyles: [],
+      original,
+    })).toBe(true);
+  });
+
+  test('returns true when category changed to null', () => {
+    expect(canRefineQuickVibes({
+      category: null,
+      customDescription: '',
+      sunoStyles: [],
+      original,
+    })).toBe(true);
+  });
+
+  test('returns true when description added', () => {
+    expect(canRefineQuickVibes({
+      category: 'lofi-study',
+      customDescription: 'more upbeat',
+      sunoStyles: [],
+      original,
+    })).toBe(true);
+  });
+
+  test('returns true when suno styles added', () => {
+    expect(canRefineQuickVibes({
+      category: null,
+      customDescription: '',
+      sunoStyles: ['Jazz'],
+      original,
+    })).toBe(true);
+  });
+
+  test('returns true when suno styles changed', () => {
+    const originalWithStyles = { ...original, sunoStyles: ['Jazz'] };
+    expect(canRefineQuickVibes({
+      category: 'lofi-study',
+      customDescription: '',
+      sunoStyles: ['Rock'],
+      original: originalWithStyles,
+    })).toBe(true);
+  });
+
+  test('returns true when suno styles order changed', () => {
+    const originalWithStyles = { ...original, sunoStyles: ['Jazz', 'Rock'] };
+    expect(canRefineQuickVibes({
+      category: 'lofi-study',
+      customDescription: '',
+      sunoStyles: ['Rock', 'Jazz'],
+      original: originalWithStyles,
+    })).toBe(true);
+  });
+
+  test('returns false when only whitespace added to description', () => {
+    expect(canRefineQuickVibes({
+      category: 'lofi-study',
+      customDescription: '   ',
+      sunoStyles: [],
+      original,
+    })).toBe(false);
+  });
+
+  test('falls back to canSubmitQuickVibes when no original', () => {
+    expect(canRefineQuickVibes({
+      category: 'lofi-study',
+      customDescription: '',
+      sunoStyles: [],
+      original: null,
+    })).toBe(true);
+
+    expect(canRefineQuickVibes({
+      category: null,
+      customDescription: '',
+      sunoStyles: [],
+      original: null,
     })).toBe(false);
   });
 });

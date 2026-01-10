@@ -59,6 +59,8 @@ export type ModeState = {
 export type QuickVibesState = {
   /** Quick Vibes input (category, description, styles) */
   input: QuickVibesInput;
+  /** Original input from session (for refine mode change detection) */
+  originalInput?: QuickVibesInput | null;
   /** Whether wordless vocals are enabled */
   withWordlessVocals: boolean;
 };

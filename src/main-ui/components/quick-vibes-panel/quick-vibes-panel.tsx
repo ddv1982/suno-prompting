@@ -4,7 +4,7 @@ import { useCallback, type ReactNode } from "react";
 import { CategorySelector } from "@/components/category-selector";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { FormLabel } from "@/components/ui/form-label";
-import { canSubmitQuickVibes } from "@shared/submit-validation";
+import { canSubmitQuickVibes, canRefineQuickVibes } from "@shared/submit-validation";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 import { DescriptionInput } from "./description-input";
@@ -13,26 +13,29 @@ import { TogglesSection } from "./toggles-section";
 
 import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 
+function getCanSubmit(input: QuickVibesInput, originalInput: QuickVibesInput | null | undefined, isRefineMode: boolean): boolean {
+  const submitInput = { category: input.category, customDescription: input.customDescription, sunoStyles: input.sunoStyles };
+  if (!isRefineMode) return canSubmitQuickVibes(submitInput);
+  return canRefineQuickVibes({
+    ...submitInput,
+    original: originalInput ? { category: originalInput.category, customDescription: originalInput.customDescription, sunoStyles: originalInput.sunoStyles } : null,
+  });
+}
+
 type QuickVibesPanelProps = {
-  input: QuickVibesInput; withWordlessVocals: boolean; maxMode: boolean;
+  input: QuickVibesInput; originalInput?: QuickVibesInput | null; withWordlessVocals: boolean; maxMode: boolean;
   isGenerating: boolean; hasCurrentPrompt: boolean; onInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void; onMaxModeChange: (value: boolean) => void;
   onGenerate: () => void; onRefine: (feedback: string) => void;
 };
 
 export function QuickVibesPanel({
-  input, withWordlessVocals, maxMode, isGenerating, hasCurrentPrompt,
+  input, originalInput, withWordlessVocals, maxMode, isGenerating, hasCurrentPrompt,
   onInputChange, onWordlessVocalsChange, onMaxModeChange, onGenerate, onRefine,
 }: QuickVibesPanelProps): ReactNode {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
-
-  // Use centralized validation for submit eligibility
-  const canSubmit = canSubmitQuickVibes({
-    category: input.category,
-    customDescription: input.customDescription,
-    sunoStyles: input.sunoStyles,
-  });
+  const canSubmit = getCanSubmit(input, originalInput, isRefineMode);
 
   const handleCategorySelect = useCallback((categoryId: QuickVibesCategory | null): void => {
     onInputChange(categoryId !== null && input.sunoStyles.length > 0
