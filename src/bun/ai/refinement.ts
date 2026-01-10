@@ -83,6 +83,71 @@ function getSystemPrompt(isMaxMode: boolean, useSunoTags: boolean): string {
 }
 
 /**
+ * Apply locked phrase to prompt if provided.
+ * 
+ * @param prompt - Prompt text to modify
+ * @param lockedPhrase - Optional locked phrase to inject
+ * @param isMaxMode - Whether max mode is enabled
+ * @returns Prompt with locked phrase injected if provided
+ */
+async function applyLockedPhraseIfNeeded(
+  prompt: string,
+  lockedPhrase: string | undefined,
+  isMaxMode: boolean
+): Promise<string> {
+  if (!lockedPhrase) return prompt;
+  
+  const { injectLockedPhrase } = await import('@bun/prompt/postprocess');
+  return injectLockedPhrase(prompt, lockedPhrase, isMaxMode);
+}
+
+/**
+ * Refine prompt deterministically without LLM calls.
+ * Used when local LLM is active and lyrics mode is disabled.
+ * 
+ * Regenerates style tags using genre-based deterministic logic,
+ * preserving title and other prompt fields.
+ * 
+ * @param options - Refinement options
+ * @param config - Configuration with dependencies
+ * @returns Refined prompt with updated style tags
+ */
+async function refinePromptDeterministic(
+  options: RefinePromptOptions,
+  config: RefinementConfig
+): Promise<GenerationResult> {
+  const { currentPrompt, currentTitle, lockedPhrase } = options;
+
+  const { extractGenreFromPrompt, remixStyleTags } = await import('@bun/prompt/deterministic');
+
+  const genre = extractGenreFromPrompt(currentPrompt);
+  
+  log.info('refinePromptDeterministic:start', { genre, hasLockedPhrase: !!lockedPhrase });
+
+  const { text: updatedPrompt } = remixStyleTags(currentPrompt);
+
+  let finalPrompt = await config.postProcess(updatedPrompt);
+  finalPrompt = await applyLockedPhraseIfNeeded(finalPrompt, lockedPhrase, config.isMaxMode());
+
+  log.info('refinePromptDeterministic:complete', { 
+    promptLength: finalPrompt.length,
+    genre,
+  });
+
+  return {
+    text: finalPrompt,
+    title: currentTitle,
+    debugInfo: config.isDebugMode()
+      ? config.buildDebugInfo(
+          'DETERMINISTIC_REFINE (offline mode, style-only)',
+          `Genre: ${genre}\nFeedback: ${options.feedback}`,
+          'Style tags regenerated deterministically'
+        )
+      : undefined,
+  };
+}
+
+/**
  * Validate Ollama availability for offline mode.
  *
  * @throws {OllamaUnavailableError} When Ollama is not running
@@ -135,7 +200,9 @@ async function generateTextForRefinement(
  * expecting JSON response with refined prompt, title, and optional lyrics.
  * Falls back to simpler refinement if JSON parsing fails.
  *
- * When offline mode is enabled, uses Ollama local LLM instead of cloud provider.
+ * When offline mode is enabled:
+ * - For style-only refinement (no lyrics): Uses deterministic style tag generation
+ * - For lyrics refinement: Uses Ollama local LLM
  *
  * @param options - Options for refinement
  * @param config - Configuration with dependencies
@@ -159,12 +226,20 @@ export async function refinePrompt(
 
   // Determine offline mode and endpoint
   const isOffline = config.isUseLocalLLM();
+  const isLyricsMode = config.isLyricsMode();
   const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
   const timeoutMs = isOffline
     ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
     : APP_CONSTANTS.AI.TIMEOUT_MS;
 
-  // Validate Ollama if in offline mode
+  // NEW: Use deterministic refinement when offline AND not in lyrics mode
+  // Style prompt refinement is too complex for local LLM, use rule-based approach
+  if (isOffline && !isLyricsMode) {
+    log.info('refinePrompt:useDeterministic', { reason: 'offline mode + style-only refinement' });
+    return refinePromptDeterministic(options, config);
+  }
+
+  // Validate Ollama if in offline mode (for lyrics refinement)
   if (isOffline && ollamaEndpoint) {
     await validateOllamaForRefinement(ollamaEndpoint);
   }
@@ -181,7 +256,6 @@ export async function refinePrompt(
     lyricsTopic: lyricsTopic,
   };
 
-  const isLyricsMode = config.isLyricsMode();
   const systemPrompt = isLyricsMode
     ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, config.getUseSunoTags(), config.isMaxMode(), refinement)
     : buildCombinedSystemPrompt(MAX_CHARS, config.getUseSunoTags(), config.isMaxMode(), refinement);
