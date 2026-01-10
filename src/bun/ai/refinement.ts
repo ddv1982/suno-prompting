@@ -257,6 +257,52 @@ async function validateOllamaForRefinement(endpoint: string): Promise<void> {
 }
 
 /**
+ * Handle offline refinement: deterministic style + optional LLM lyrics.
+ * Extracted to reduce complexity of main refinePrompt function.
+ */
+async function refinePromptOffline(
+  options: RefinePromptOptions,
+  config: RefinementConfig
+): Promise<GenerationResult> {
+  const { currentPrompt, feedback, currentLyrics, lyricsTopic } = options;
+  const isLyricsMode = config.isLyricsMode();
+
+  log.info('refinePrompt:offlineMode', {
+    isLyricsMode,
+    hasCurrentLyrics: !!currentLyrics,
+    reason: 'local LLM = style always deterministic, LLM for lyrics only',
+  });
+
+  // Step 1: ALWAYS do deterministic style refinement
+  const styleResult = await refinePromptDeterministic(options, config);
+
+  // Step 2: If lyrics mode is ON and we have lyrics, refine them with local LLM
+  if (isLyricsMode && currentLyrics) {
+    const lyricsResult = await refineLyricsWithFeedback(
+      currentLyrics,
+      feedback,
+      currentPrompt,
+      lyricsTopic,
+      config
+    );
+
+    return {
+      ...styleResult,
+      lyrics: lyricsResult.lyrics,
+      debugInfo: config.isDebugMode()
+        ? config.buildDebugInfo(
+            'OFFLINE_REFINEMENT (style: deterministic, lyrics: LLM)',
+            `Style feedback + lyrics feedback: ${feedback}`,
+            `Style: deterministic remix\nLyrics: local LLM refined`
+          )
+        : undefined,
+    };
+  }
+
+  return styleResult;
+}
+
+/**
  * Refine an existing prompt based on user feedback.
  *
  * Uses combined system prompt that includes current prompt context,
@@ -278,14 +324,7 @@ export async function refinePrompt(
   options: RefinePromptOptions,
   config: RefinementConfig
 ): Promise<GenerationResult> {
-  const {
-    currentPrompt,
-    currentTitle,
-    feedback,
-    currentLyrics,
-    lockedPhrase,
-    lyricsTopic,
-  } = options;
+  const { currentPrompt, currentTitle, feedback, currentLyrics, lockedPhrase, lyricsTopic } = options;
 
   // Determine offline mode and endpoint
   const isOffline = config.isUseLocalLLM();
@@ -295,42 +334,9 @@ export async function refinePrompt(
     ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
     : APP_CONSTANTS.AI.TIMEOUT_MS;
 
-  // When local LLM is active: style is ALWAYS deterministic
-  // LLM is used ONLY for lyrics (matching README architecture)
+  // When local LLM is active: use extracted offline handler
   if (isOffline) {
-    log.info('refinePrompt:offlineMode', {
-      isLyricsMode,
-      hasCurrentLyrics: !!currentLyrics,
-      reason: 'local LLM = style always deterministic, LLM for lyrics only',
-    });
-
-    // Step 1: ALWAYS do deterministic style refinement
-    const styleResult = await refinePromptDeterministic(options, config);
-
-    // Step 2: If lyrics mode is ON and we have lyrics, refine them with local LLM
-    if (isLyricsMode && currentLyrics) {
-      const lyricsResult = await refineLyricsWithFeedback(
-        currentLyrics,
-        feedback,
-        currentPrompt,
-        lyricsTopic,
-        config
-      );
-
-      return {
-        ...styleResult,
-        lyrics: lyricsResult.lyrics,
-        debugInfo: config.isDebugMode()
-          ? config.buildDebugInfo(
-              'OFFLINE_REFINEMENT (style: deterministic, lyrics: LLM)',
-              `Style feedback + lyrics feedback: ${feedback}`,
-              `Style: deterministic remix\nLyrics: local LLM refined`
-            )
-          : undefined,
-      };
-    }
-
-    return styleResult;
+    return refinePromptOffline(options, config);
   }
 
   // Remove locked phrase from prompt before sending to LLM

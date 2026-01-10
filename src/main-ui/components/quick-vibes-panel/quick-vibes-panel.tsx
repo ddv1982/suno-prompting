@@ -4,6 +4,7 @@ import { useCallback, type ReactNode } from "react";
 import { CategorySelector } from "@/components/category-selector";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { FormLabel } from "@/components/ui/form-label";
+import { canSubmitQuickVibes } from "@shared/submit-validation";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 import { DescriptionInput } from "./description-input";
@@ -25,9 +26,13 @@ export function QuickVibesPanel({
 }: QuickVibesPanelProps): ReactNode {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
-  const canSubmit = isRefineMode 
-    ? input.customDescription.trim().length > 0 || input.category !== null || isDirectMode
-    : input.category !== null || input.customDescription.trim().length > 0 || isDirectMode;
+
+  // Use centralized validation for submit eligibility
+  const canSubmit = canSubmitQuickVibes({
+    category: input.category,
+    customDescription: input.customDescription,
+    sunoStyles: input.sunoStyles,
+  });
 
   const handleCategorySelect = useCallback((categoryId: QuickVibesCategory | null): void => {
     onInputChange(categoryId !== null && input.sunoStyles.length > 0

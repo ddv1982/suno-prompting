@@ -1,8 +1,7 @@
-
-
 import { CreativitySlider } from "@/components/creativity-slider";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
+import { canSubmitCreativeBoost } from "@shared/submit-validation";
 
 import { CreativeBoostModeToggle } from "./creative-boost-mode-toggle";
 import { DescriptionInput } from "./description-input";
@@ -37,6 +36,15 @@ export function CreativeBoostPanel({
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
   const isSimpleMode = creativeBoostMode === 'simple';
+
+  // Use centralized validation for submit eligibility
+  const canSubmit = canSubmitCreativeBoost({
+    description: input.description,
+    lyricsTopic: input.lyricsTopic,
+    lyricsMode,
+    sunoStyles: input.sunoStyles,
+    seedGenres: input.seedGenres,
+  });
 
   const {
     handleCreativityChange, handleGenresChange, handleSunoStylesChange,
@@ -125,6 +133,7 @@ export function CreativeBoostPanel({
         isGenerating={isGenerating}
         isRefineMode={isRefineMode}
         isDirectMode={isDirectMode}
+        canSubmit={canSubmit}
         onSubmit={handleSubmit}
       />
     </div>
