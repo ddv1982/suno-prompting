@@ -24,7 +24,7 @@ curl -fsSL https://ollama.ai/install.sh | sh
 # Or download from https://ollama.ai/download
 
 # Pull the model used by this app
-ollama pull gemma2:2b
+ollama pull gemma3:4b
 ```
 
 The app will automatically detect Ollama and enable "Local LLM" mode when no API keys are configured.
@@ -56,7 +56,7 @@ Settings and API keys stored locally (encrypted with AES-256-GCM):
 
 | Provider | Models | Setup |
 |----------|--------|-------|
-| **Ollama (Local)** | Gemma 2 2B (default), Llama 3.2 1B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
+| **Ollama (Local)** | Gemma 3 4B (default), Llama 3.2 1B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
 | Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
 | OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
 | Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
@@ -73,7 +73,7 @@ Run AI generation **completely offline** with no API keys required:
 
 **Setup:**
 1. Install [Ollama](https://ollama.ai/download)
-2. Pull a model: `ollama pull gemma2:2b`
+2. Pull a model: `ollama pull gemma3:4b`
 3. App automatically detects Ollama and enables local mode
 4. Or manually toggle in Settings → "Use Local LLM"
 
@@ -83,9 +83,9 @@ Run AI generation **completely offline** with no API keys required:
 - Your preference is saved and persists
 
 **Recommended Models:**
-- `gemma2:2b` (default) - Fast, balanced quality (~1.5GB)
+- `gemma3:4b` (default) - Fast, balanced quality (~2.5GB)
 - `llama3.2:1b` - Faster, smaller (~700MB)
-- `gemma2:9b` - Better quality, slower (~5GB)
+- `gemma3:9b` - Better quality, slower (~5GB)
 
 **Note:** Local models are optimized for speed. For highest quality lyrics/titles, use cloud providers (Groq/OpenAI/Anthropic).
 

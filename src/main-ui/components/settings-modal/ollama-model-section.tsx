@@ -27,7 +27,7 @@ export function OllamaModelSection({
               Install the Gemma model to use local generation:
             </p>
             <code className="block rounded bg-muted px-2 py-1 font-mono text-xs">
-              ollama pull gemma2:3b
+              ollama pull gemma3:4b
             </code>
             <p className="text-xs text-muted-foreground">
               After installation, refresh to verify the model is available.
