@@ -148,6 +148,95 @@ async function refinePromptDeterministic(
 }
 
 /**
+ * Build system prompt for lyrics refinement.
+ * Used when local LLM is active and lyrics mode is ON.
+ *
+ * @param genre - Genre for lyrics context
+ * @param mood - Mood for lyrics context
+ * @param useSunoTags - Whether to use Suno-compatible tags
+ * @returns System prompt for lyrics refinement
+ */
+function buildLyricsRefinementPrompt(
+  genre: string,
+  mood: string,
+  useSunoTags: boolean
+): string {
+  const tagInstructions = useSunoTags
+    ? 'Use Suno-compatible section tags: [Verse], [Chorus], [Bridge], [Outro], etc.'
+    : 'Use standard section markers like [Verse 1], [Chorus], [Bridge].';
+
+  return `You are a professional songwriter refining existing lyrics for a ${genre} song with a ${mood} mood.
+
+TASK: Apply the user's feedback to improve the lyrics while maintaining the song structure.
+
+RULES:
+- Keep the same overall structure (verses, chorus, bridge)
+- Apply the specific changes requested in the feedback
+- Maintain the genre (${genre}) and mood (${mood})
+- ${tagInstructions}
+- Keep lines singable with natural rhythm
+- Output ONLY the refined lyrics, no explanations
+
+IMPORTANT: Return only the refined lyrics text, nothing else.`;
+}
+
+/**
+ * Refine only the lyrics using LLM, applying user feedback.
+ * Used when local LLM is active and lyrics mode is ON.
+ * Style fields remain unchanged (handled by deterministic refinement).
+ *
+ * @param currentLyrics - Current lyrics to refine
+ * @param feedback - User feedback to apply
+ * @param currentPrompt - Current prompt for genre/mood extraction
+ * @param lyricsTopic - Optional topic for context
+ * @param config - Configuration with dependencies
+ * @returns Refined lyrics
+ *
+ * @throws {OllamaUnavailableError} When Ollama is not running
+ * @throws {OllamaModelMissingError} When Gemma model is missing
+ */
+async function refineLyricsWithFeedback(
+  currentLyrics: string,
+  feedback: string,
+  currentPrompt: string,
+  lyricsTopic: string | undefined,
+  config: RefinementConfig
+): Promise<{ lyrics: string }> {
+  const { extractGenreFromPrompt, extractMoodFromPrompt } = await import('@bun/prompt/deterministic');
+
+  const genre = extractGenreFromPrompt(currentPrompt);
+  const mood = extractMoodFromPrompt(currentPrompt);
+  const ollamaEndpoint = config.getOllamaEndpoint();
+  const timeoutMs = APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
+
+  log.info('refineLyricsWithFeedback:start', {
+    genre,
+    mood,
+    feedbackLength: feedback.length,
+    currentLyricsLength: currentLyrics.length,
+  });
+
+  // Validate Ollama is available
+  await validateOllamaForRefinement(ollamaEndpoint);
+
+  const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags());
+  const userPrompt = `Current lyrics:\n${currentLyrics}\n\nFeedback to apply:\n${feedback}${lyricsTopic ? `\n\nTopic/theme: ${lyricsTopic}` : ''}`;
+
+  const refinedLyrics = await generateWithOllama(
+    ollamaEndpoint,
+    systemPrompt,
+    userPrompt,
+    timeoutMs
+  );
+
+  log.info('refineLyricsWithFeedback:complete', {
+    outputLength: refinedLyrics.length,
+  });
+
+  return { lyrics: cleanLyrics(refinedLyrics) || currentLyrics };
+}
+
+/**
  * Validate Ollama availability for offline mode.
  *
  * @throws {OllamaUnavailableError} When Ollama is not running
@@ -232,16 +321,42 @@ export async function refinePrompt(
     ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
     : APP_CONSTANTS.AI.TIMEOUT_MS;
 
-  // NEW: Use deterministic refinement when offline AND not in lyrics mode
-  // Style prompt refinement is too complex for local LLM, use rule-based approach
-  if (isOffline && !isLyricsMode) {
-    log.info('refinePrompt:useDeterministic', { reason: 'offline mode + style-only refinement' });
-    return refinePromptDeterministic(options, config);
-  }
+  // When local LLM is active: style is ALWAYS deterministic
+  // LLM is used ONLY for lyrics (matching README architecture)
+  if (isOffline) {
+    log.info('refinePrompt:offlineMode', {
+      isLyricsMode,
+      hasCurrentLyrics: !!currentLyrics,
+      reason: 'local LLM = style always deterministic, LLM for lyrics only',
+    });
 
-  // Validate Ollama if in offline mode (for lyrics refinement)
-  if (isOffline && ollamaEndpoint) {
-    await validateOllamaForRefinement(ollamaEndpoint);
+    // Step 1: ALWAYS do deterministic style refinement
+    const styleResult = await refinePromptDeterministic(options, config);
+
+    // Step 2: If lyrics mode is ON and we have lyrics, refine them with local LLM
+    if (isLyricsMode && currentLyrics) {
+      const lyricsResult = await refineLyricsWithFeedback(
+        currentLyrics,
+        feedback,
+        currentPrompt,
+        lyricsTopic,
+        config
+      );
+
+      return {
+        ...styleResult,
+        lyrics: lyricsResult.lyrics,
+        debugInfo: config.isDebugMode()
+          ? config.buildDebugInfo(
+              'OFFLINE_REFINEMENT (style: deterministic, lyrics: LLM)',
+              `Style feedback + lyrics feedback: ${feedback}`,
+              `Style: deterministic remix\nLyrics: local LLM refined`
+            )
+          : undefined,
+      };
+    }
+
+    return styleResult;
   }
 
   // Remove locked phrase from prompt before sending to LLM

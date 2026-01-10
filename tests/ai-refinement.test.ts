@@ -1,4 +1,4 @@
-import { describe, expect, test, mock } from 'bun:test';
+import { describe, expect, test, mock, beforeEach } from 'bun:test';
 
 import type { RefinementConfig } from '@bun/ai/types';
 
@@ -13,15 +13,42 @@ await mock.module('@bun/ai/ollama-availability', () => ({
   invalidateOllamaCache: mockInvalidateOllamaCache,
 }));
 
+// Mock generateWithOllama for local LLM calls
+const mockGenerateWithOllama = mock(() =>
+  Promise.resolve('[Verse]\nRefined lyrics from Ollama')
+);
+
+await mock.module('@bun/ai/ollama-client', () => ({
+  generateWithOllama: mockGenerateWithOllama,
+}));
+
 // Mock generateText before importing refinement module
-await mock.module('ai', () => ({
-  generateText: async () => ({
+const mockGenerateText = mock(() =>
+  Promise.resolve({
     text: JSON.stringify({
       prompt: 'Refined jazz prompt with more piano',
       title: 'Refined Title',
       lyrics: '[VERSE]\nRefined lyrics here',
     }),
-  }),
+  })
+);
+
+await mock.module('ai', () => ({
+  generateText: mockGenerateText,
+}));
+
+// Mock deterministic functions
+const mockExtractGenreFromPrompt = mock(() => 'jazz');
+const mockExtractMoodFromPrompt = mock(() => 'mellow');
+const mockRemixStyleTags = mock((prompt: string) => ({
+  text: `${prompt} with remixed style tags`,
+  genre: 'jazz',
+}));
+
+await mock.module('@bun/prompt/deterministic', () => ({
+  extractGenreFromPrompt: mockExtractGenreFromPrompt,
+  extractMoodFromPrompt: mockExtractMoodFromPrompt,
+  remixStyleTags: mockRemixStyleTags,
 }));
 
 const { refinePrompt } = await import('@bun/ai/refinement');
@@ -164,6 +191,95 @@ describe('refinePrompt - edge cases', () => {
     );
 
     expect(result.lyrics).toBeDefined();
+  });
+});
+
+describe('refinePrompt with local LLM (offline mode)', () => {
+  beforeEach(() => {
+    // Reset all mocks before each test
+    mockGenerateWithOllama.mockClear();
+    mockGenerateText.mockClear();
+    mockRemixStyleTags.mockClear();
+  });
+
+  test('uses deterministic refinement for style when local LLM is active (no lyrics mode)', async () => {
+    const config = createMockConfig({
+      isUseLocalLLM: () => true,
+      isLyricsMode: () => false,
+    });
+
+    const result = await refinePrompt(
+      {
+        currentPrompt: 'A jazz song with smooth vibes',
+        currentTitle: 'Jazz Song',
+        feedback: 'Add more piano',
+      },
+      config
+    );
+
+    // Style should be refined deterministically
+    expect(result.text).toBeDefined();
+    expect(result.text).toContain('with remixed style tags');
+    expect(result.lyrics).toBeUndefined();
+    
+    // Should NOT call Ollama for style refinement
+    expect(mockGenerateWithOllama).not.toHaveBeenCalled();
+    // Should NOT call cloud generateText either
+    expect(mockGenerateText).not.toHaveBeenCalled();
+  });
+
+  test('uses deterministic style + LLM lyrics when local LLM + lyrics mode', async () => {
+    const config = createMockConfig({
+      isUseLocalLLM: () => true,
+      isLyricsMode: () => true,
+    });
+
+    const result = await refinePrompt(
+      {
+        currentPrompt: 'A jazz song with smooth vibes',
+        currentTitle: 'Jazz Song',
+        feedback: 'Make the lyrics more emotional',
+        currentLyrics: '[Verse 1]\nOriginal lyrics about love',
+      },
+      config
+    );
+
+    // Style should be deterministic, lyrics refined via LLM
+    expect(result.text).toBeDefined();
+    expect(result.text).toContain('with remixed style tags');
+    expect(result.lyrics).toBeDefined();
+    expect(result.lyrics).toContain('Refined lyrics from Ollama');
+    
+    // Should call Ollama exactly once - for lyrics only
+    expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
+    // Should NOT call cloud generateText
+    expect(mockGenerateText).not.toHaveBeenCalled();
+  });
+
+  test('uses combined LLM refinement for cloud providers', async () => {
+    const config = createMockConfig({
+      isUseLocalLLM: () => false,
+      isLyricsMode: () => true,
+    });
+
+    const result = await refinePrompt(
+      {
+        currentPrompt: 'A rock ballad',
+        currentTitle: 'Rock Ballad',
+        feedback: 'Add more guitar',
+        currentLyrics: '[Verse 1]\nOriginal rock lyrics',
+      },
+      config
+    );
+
+    // Cloud: uses combined LLM refinement for everything
+    expect(result.text).toBeDefined();
+    expect(result.title).toBeDefined();
+    
+    // Should call cloud generateText
+    expect(mockGenerateText).toHaveBeenCalled();
+    // Should NOT use Ollama client
+    expect(mockGenerateWithOllama).not.toHaveBeenCalled();
   });
 });
 

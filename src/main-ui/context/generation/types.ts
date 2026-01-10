@@ -78,6 +78,7 @@ export interface GenerationContextType
     sunoStyles: string[]
   ) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
+  handleRefineQuickVibes: (feedback: string) => Promise<void>;
   // Creative Boost actions
   handleGenerateCreativeBoost: () => Promise<void>;
   handleRefineCreativeBoost: (feedback: string) => Promise<void>;

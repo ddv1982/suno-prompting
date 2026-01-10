@@ -75,7 +75,8 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
     handleRemixMood: remixActions.handleRemixMood, handleRemixStyleTags: remixActions.handleRemixStyleTags,
     handleRemixRecording: remixActions.handleRemixRecording, handleRemixTitle: remixActions.handleRemixTitle,
     handleRemixLyrics: remixActions.handleRemixLyrics, handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
-    handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes, handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
+    handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes, handleRefineQuickVibes: quickVibesActions.handleRefineQuickVibes,
+    handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
     handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
   }), [stateCtx, sessionOps, stdGeneration, remixActions, quickVibesActions, creativeBoostActions]);
 

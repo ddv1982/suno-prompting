@@ -80,7 +80,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
               isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} onInputChange={handlers.onQuickVibesInputChange}
               onWordlessVocalsChange={handlers.onWordlessVocalsChange} onMaxModeChange={handlers.onMaxModeChange}
               onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.withWordlessVocals, quickVibes.input.sunoStyles); }}
-              onRefine={(feedback) => { handlers.onGenerate(feedback); }} />
+              onRefine={handlers.onRefineQuickVibes} />
           ) : promptMode === 'creativeBoost' ? (
             <CreativeBoostPanel input={creativeBoost.input} maxMode={maxMode} lyricsMode={lyricsMode}
               isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} creativeBoostMode={creativeBoostMode}

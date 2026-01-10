@@ -99,6 +99,7 @@ export type EditorHandlers = {
   onCreativeBoostInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onGenerate: (input: string) => void;
   onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[]) => void;
+  onRefineQuickVibes: (feedback: string) => void;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => void;
   onCopy: () => void;
