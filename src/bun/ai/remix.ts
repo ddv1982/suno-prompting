@@ -105,7 +105,8 @@ export async function remixLyrics(
     maxMode,
     getModel,
     useSunoTags,
-    timeoutMs
+    timeoutMs,
+    isOffline ? ollamaEndpoint : undefined
   );
   return { lyrics: result.lyrics };
 }

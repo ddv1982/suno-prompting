@@ -102,7 +102,8 @@ describe('remixLyrics - cloud mode', () => {
       false,
       mockGetModel,
       false,
-      90000 // Default AI timeout
+      90000, // Default AI timeout
+      undefined // No ollamaEndpoint in cloud mode
     );
   });
 
@@ -123,7 +124,8 @@ describe('remixLyrics - cloud mode', () => {
       true, // maxMode
       mockGetModel,
       true, // useSunoTags
-      90000 // Default AI timeout
+      90000, // Default AI timeout
+      undefined // No ollamaEndpoint in cloud mode
     );
   });
 
@@ -256,7 +258,8 @@ describe('remixLyrics - offline mode with Ollama', () => {
       false,
       mockGetModel,
       true,
-      30000 // Ollama timeout
+      30000, // Ollama timeout
+      'http://127.0.0.1:11434' // ollamaEndpoint passed in offline mode
     );
   });
 
@@ -284,7 +287,8 @@ describe('remixLyrics - offline mode with Ollama', () => {
       true, // maxMode
       mockGetModel,
       true,
-      30000 // Ollama timeout
+      30000, // Ollama timeout
+      'http://127.0.0.1:11434' // ollamaEndpoint passed in offline mode
     );
   });
 });
