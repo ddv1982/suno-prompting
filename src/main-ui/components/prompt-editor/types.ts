@@ -111,6 +111,8 @@ export type EditorConfig = {
   maxChars: number;
   /** Current AI model being used */
   currentModel: string;
+  /** Whether using local LLM (Ollama) instead of cloud provider */
+  useLocalLLM: boolean;
 };
 
 /** Combined props for PromptEditor component - groups related props for cleaner API */

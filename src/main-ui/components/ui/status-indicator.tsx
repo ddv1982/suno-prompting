@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type StatusType = "ready" | "working" | "error";
+type StatusType = "ready" | "working" | "error" | "local";
 
 interface StatusIndicatorProps {
   status: StatusType;
@@ -13,12 +13,14 @@ const statusStyles: Record<StatusType, string> = {
   ready: "bg-emerald-500/60 shadow-emerald-500/30",
   working: "bg-primary animate-pulse shadow-primary/40",
   error: "bg-destructive shadow-destructive/30",
+  local: "bg-blue-500/60 shadow-blue-500/30",
 };
 
 const statusLabels: Record<StatusType, string> = {
   ready: "Ready",
   working: "Generating",
   error: "Error",
+  local: "Local",
 };
 
 export function StatusIndicator({ status, label, showLabel = true, className }: StatusIndicatorProps): React.JSX.Element {

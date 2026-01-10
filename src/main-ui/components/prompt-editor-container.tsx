@@ -16,7 +16,7 @@ export function PromptEditorContainer(): ReactNode {
   const { currentSession } = useSessionContext();
 
   // -- Settings --
-  const { currentModel, maxMode, lyricsMode, setMaxMode, setLyricsMode } = useSettingsContext();
+  const { currentModel, maxMode, lyricsMode, useLocalLLM, setMaxMode, setLyricsMode } = useSettingsContext();
 
   // -- Editor State & Handlers --
   const { editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic, computedMusicPhrase, quickVibesInput, withWordlessVocals, creativeBoostInput, setEditorMode, setPromptMode, setCreativeBoostMode, updateAdvancedSelection, clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput } = useEditorContext();
@@ -68,8 +68,8 @@ export function PromptEditorContainer(): ReactNode {
   }), [setPendingInput, setLockedPhrase, setLyricsTopic, setEditorMode, updateAdvancedSelection, clearAdvancedSelection, setPromptMode, setMaxMode, setLyricsMode, setCreativeBoostMode, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput, handleGenerate, handleGenerateQuickVibes, handleGenerateCreativeBoost, handleRefineCreativeBoost, handleCopy, handleConversionComplete]);
 
   const config: EditorConfig = useMemo(() => ({
-    maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS, currentModel,
-  }), [currentModel]);
+    maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS, currentModel, useLocalLLM,
+  }), [currentModel, useLocalLLM]);
 
   return (
     <PromptEditor

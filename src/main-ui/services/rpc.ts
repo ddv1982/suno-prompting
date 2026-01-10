@@ -209,5 +209,9 @@ export const api = {
 
     async setOllamaSettings(params: BunRequests['setOllamaSettings']['params']): Promise<void> {
         await rpc.request.setOllamaSettings(params);
+    },
+
+    async getUseLocalLLM(): Promise<{ useLocalLLM: boolean }> {
+        return await rpc.request.getUseLocalLLM({});
     }
 };

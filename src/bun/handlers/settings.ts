@@ -39,7 +39,11 @@ function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
     },
     getModel: async () => {
       log.info('getModel');
-      return { model: (await storage.getConfig()).model };
+      const config = await storage.getConfig();
+      if (config.useLocalLLM) {
+        return { model: config.ollamaModel ?? APP_CONSTANTS.OLLAMA.DEFAULT_MODEL };
+      }
+      return { model: config.model };
     },
     setModel: async ({ model }: { model: string }) => {
       log.info('setModel', { model });

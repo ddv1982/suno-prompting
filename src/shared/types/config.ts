@@ -42,4 +42,6 @@ export type AppConfig = {
   creativeBoostMode: CreativeBoostMode;
   /** Optional Ollama configuration for local LLM */
   ollamaConfig?: OllamaConfig;
+  /** Ollama model name for local LLM (e.g., 'gemma3:4b') */
+  ollamaModel?: string;
 };

@@ -20,7 +20,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
   const { isGenerating, generatingAction, validation, debugInfo, chatMessages } = generation;
   const { maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode } = modes;
-  const { maxChars, currentModel } = config;
+  const { maxChars, currentModel, useLocalLLM } = config;
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -100,7 +100,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
               onGenerate={handlers.onGenerate} onConversionComplete={handlers.onConversionComplete} />
           )}
 
-          <EditorStatusFooter isGenerating={isGenerating} currentModel={currentModel} />
+          <EditorStatusFooter isGenerating={isGenerating} currentModel={currentModel} useLocalLLM={useLocalLLM} />
         </div>
       </div>
     </section>

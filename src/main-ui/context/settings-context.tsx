@@ -9,6 +9,7 @@ export interface SettingsContextType {
   currentModel: string;
   maxMode: boolean;
   lyricsMode: boolean;
+  useLocalLLM: boolean;
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
   setMaxMode: (mode: boolean) => void;
@@ -28,6 +29,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
   const [currentModel, setCurrentModel] = useState("");
   const [maxMode, setMaxMode] = useState(false);
   const [lyricsMode, setLyricsMode] = useState(false);
+  const [useLocalLLM, setUseLocalLLMState] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const loadModel = useCallback(async () => {
@@ -57,6 +59,15 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     }
   }, []);
 
+  const loadUseLocalLLM = useCallback(async () => {
+    try {
+      const response = await api.getUseLocalLLM();
+      setUseLocalLLMState(response.useLocalLLM);
+    } catch (error: unknown) {
+      log.error("loadUseLocalLLM:failed", error);
+    }
+  }, []);
+
   const handleSetMaxMode = useCallback(async (mode: boolean) => {
     const previousMode = maxMode;
     setMaxMode(mode);
@@ -80,8 +91,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
   }, [lyricsMode]);
 
   const reloadSettings = useCallback(async () => {
-    await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode()]);
-  }, [loadModel, loadMaxMode, loadLyricsMode]);
+    await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode(), loadUseLocalLLM()]);
+  }, [loadModel, loadMaxMode, loadLyricsMode, loadUseLocalLLM]);
 
   // Load settings on mount and reload when settings modal closes
   useEffect(() => {
@@ -95,6 +106,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     currentModel,
     maxMode,
     lyricsMode,
+    useLocalLLM,
     settingsOpen,
     setSettingsOpen,
     setMaxMode: handleSetMaxMode,
@@ -104,6 +116,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     currentModel,
     maxMode,
     lyricsMode,
+    useLocalLLM,
     settingsOpen,
     handleSetMaxMode,
     handleSetLyricsMode,
