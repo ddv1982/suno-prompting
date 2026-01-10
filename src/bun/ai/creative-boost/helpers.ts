@@ -141,7 +141,8 @@ export async function postProcessCreativeBoostResponse(
     maxMode,
     withLyrics,
     config.getModel,
-    config.getUseSunoTags?.() ?? false
+    config.getUseSunoTags?.() ?? false,
+    config.getOllamaEndpoint?.()
   );
 
   let debugInfo: DebugInfo | undefined;
