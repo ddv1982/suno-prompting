@@ -77,6 +77,29 @@ Run AI generation **completely offline** with no API keys required:
 3. App automatically detects Ollama and enables local mode
 4. Or manually toggle in Settings → "Use Local LLM"
 
+**Quick Install:**
+
+```bash
+# macOS (Homebrew)
+brew install ollama
+
+# macOS/Linux (direct install)
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Windows
+# Download installer from https://ollama.ai/download
+
+# Start Ollama service
+ollama serve
+
+# Pull the default model (in a new terminal)
+ollama pull gemma3:4b
+
+# Optional: Pull alternative models
+ollama pull llama3.2:1b  # Faster, smaller (~700MB)
+ollama pull gemma3:9b    # Better quality (~5GB)
+```
+
 **Smart Defaults:**
 - No API keys configured → **Local LLM enabled**
 - API key added → **Cloud provider** (you can still toggle back to local)
