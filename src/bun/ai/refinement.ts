@@ -99,7 +99,7 @@ async function refinePromptDeterministic(
     title: currentTitle,
     debugInfo: config.isDebugMode()
       ? config.buildDebugInfo(
-          'DETERMINISTIC_REFINE (offline mode, style-only)',
+          'DETERMINISTIC_REFINE (style-only)',
           `Genre: ${genre}\nFeedback: ${options.feedback}`,
           'Style tags regenerated deterministically'
         )
@@ -109,7 +109,7 @@ async function refinePromptDeterministic(
 
 /**
  * Build system prompt for lyrics refinement.
- * Used when local LLM is active and lyrics mode is ON.
+ * Used when lyrics mode is ON (works with both cloud and local LLM).
  *
  * @param genre - Genre for lyrics context
  * @param mood - Mood for lyrics context

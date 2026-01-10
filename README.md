@@ -433,45 +433,45 @@ flowchart LR
     end
 
     subgraph Decision
-        LYR{Lyrics?}
-        PROVIDER{LLM Provider}
+        LYR{Lyrics<br/>Enabled?}
+        PROVIDER{Provider}
     end
 
-    subgraph Deterministic
-        BUILD[Prompt Builder]
-        DATA[(Data Pools)]
+    subgraph "Deterministic (No LLM)"
+        STYLE[Style/Prompt<br/>Builder]
+        DATA[(Genre, Instrument,<br/>Mood Pools)]
     end
 
-    subgraph "LLM Operations"
-        GEN[Genre Detection]
-        TITLE[Title Gen]
-        LYRICS[Lyrics Gen]
+    subgraph "LLM Operations (Lyrics Only)"
+        LGEN[Lyrics Gen]
+        LREF[Lyrics Refine]
+        LTITLE[Title Gen]
     end
 
-    subgraph "LLM Backends"
-        OLLAMA[Ollama Local]
-        CLOUD[Cloud API]
+    subgraph Backends
+        OLLAMA[Ollama<br/>Local]
+        CLOUD[Cloud API<br/>Groq/OpenAI/Anthropic]
     end
 
+    UI --> STYLE
+    STYLE -.-> DATA
     UI --> LYR
-    LYR -->|OFF| BUILD
-    LYR -->|ON| GEN
-    LYR -->|ON| TITLE
-    LYR -->|ON| LYRICS
-    GEN --> PROVIDER
-    TITLE --> PROVIDER
-    LYRICS --> PROVIDER
-    PROVIDER -->|Local Mode| OLLAMA --> BUILD
-    PROVIDER -->|Cloud Mode| CLOUD --> BUILD
-    BUILD -.-> DATA
+    LYR -->|OFF| STYLE
+    LYR -->|ON| LGEN
+    LYR -->|ON| LTITLE
+    LGEN --> PROVIDER
+    LREF --> PROVIDER
+    LTITLE --> PROVIDER
+    PROVIDER -->|Local| OLLAMA
+    PROVIDER -->|Cloud| CLOUD
 
     classDef det fill:#d4edda,stroke:#28a745
     classDef ai fill:#fff3cd,stroke:#ffc107
     classDef data fill:#e2e3e5,stroke:#6c757d
     classDef provider fill:#cfe2ff,stroke:#0d6efd
 
-    class BUILD det
-    class GEN,TITLE,LYRICS ai
+    class STYLE det
+    class LGEN,LREF,LTITLE ai
     class DATA data
     class OLLAMA,CLOUD provider
 ```
