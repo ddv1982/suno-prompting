@@ -13,6 +13,7 @@
 import { generateText, type LanguageModel } from 'ai';
 
 import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
+import { generateWithOllama } from '@bun/ai/ollama-client';
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import {
@@ -82,21 +83,12 @@ function getSystemPrompt(isMaxMode: boolean, useSunoTags: boolean): string {
 }
 
 /**
- * Get the appropriate model for refinement based on offline mode setting.
- * When offline, validates Ollama availability first.
+ * Validate Ollama availability for offline mode.
  *
- * @throws {OllamaUnavailableError} When offline mode is on but Ollama is not running
- * @throws {OllamaModelMissingError} When offline mode is on but Gemma model is missing
+ * @throws {OllamaUnavailableError} When Ollama is not running
+ * @throws {OllamaModelMissingError} When Gemma model is missing
  */
-async function getModelForRefinement(
-  config: RefinementConfig
-): Promise<() => LanguageModel> {
-  if (!config.isUseLocalLLM()) {
-    return config.getModel;
-  }
-
-  // Pre-flight check for Ollama
-  const endpoint = config.getOllamaEndpoint();
+async function validateOllamaForRefinement(endpoint: string): Promise<void> {
   const status = await checkOllamaAvailable(endpoint);
 
   if (!status.available) {
@@ -108,7 +100,32 @@ async function getModelForRefinement(
   }
 
   log.info('refinePrompt:usingOllama', { endpoint });
-  return config.getOllamaModel;
+}
+
+/**
+ * Generate text using either the AI SDK (cloud) or direct Ollama client (local).
+ * Uses direct Ollama client for offline mode to bypass Bun fetch empty body bug.
+ */
+async function generateTextForRefinement(
+  systemPrompt: string,
+  userPrompt: string,
+  getModel: () => LanguageModel,
+  timeoutMs: number,
+  ollamaEndpoint?: string
+): Promise<string> {
+  if (ollamaEndpoint) {
+    // Use direct Ollama client to bypass Bun fetch empty body bug
+    return generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeoutMs);
+  }
+  // Use AI SDK for cloud providers
+  const result = await generateText({
+    model: getModel(),
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+    abortSignal: AbortSignal.timeout(timeoutMs),
+  });
+  return result.text;
 }
 
 /**
@@ -140,12 +157,17 @@ export async function refinePrompt(
     lyricsTopic,
   } = options;
 
-  // Get the appropriate model (cloud or Ollama)
-  const getModelFn = await getModelForRefinement(config);
+  // Determine offline mode and endpoint
   const isOffline = config.isUseLocalLLM();
+  const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
   const timeoutMs = isOffline
     ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
     : APP_CONSTANTS.AI.TIMEOUT_MS;
+
+  // Validate Ollama if in offline mode
+  if (isOffline && ollamaEndpoint) {
+    await validateOllamaForRefinement(ollamaEndpoint);
+  }
 
   // Remove locked phrase from prompt before sending to LLM
   const promptForLLM = lockedPhrase
@@ -166,24 +188,25 @@ export async function refinePrompt(
 
   const userPrompt = `Apply this feedback and return the refined JSON:\n\n${feedback}`;
 
-  const { text: rawResponse } = await generateText({
-    model: getModelFn(),
-    system: systemPrompt,
-    prompt: userPrompt,
-    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-    abortSignal: AbortSignal.timeout(timeoutMs),
-  });
+  // Use direct Ollama client for offline mode to bypass Bun fetch bug
+  const rawResponse = await generateTextForRefinement(
+    systemPrompt,
+    userPrompt,
+    config.getModel,
+    timeoutMs,
+    ollamaEndpoint
+  );
 
   const parsed = parseJsonResponse(rawResponse, 'refinePrompt');
   if (!parsed) {
-    // Pass the model getter to fallback so it uses the same model (cloud or Ollama)
+    // Use fallback refinement with same provider routing
     const fallbackResult = await refinePromptFallbackWithModel(
       promptForLLM,
       feedback,
       lockedPhrase,
       config,
-      getModelFn,
-      timeoutMs
+      timeoutMs,
+      ollamaEndpoint
     );
     return {
       ...fallbackResult,
@@ -209,38 +232,35 @@ export async function refinePrompt(
 }
 
 /**
- * Fallback refinement with explicit model getter.
- * Used when JSON parsing fails, works with both cloud and Ollama models.
+ * Fallback refinement when JSON parsing fails.
+ * Uses direct Ollama client for offline mode to bypass Bun fetch bug.
  */
 async function refinePromptFallbackWithModel(
   currentPrompt: string,
   feedback: string,
   lockedPhrase: string | undefined,
   config: RefinementConfig,
-  getModelFn: () => LanguageModel,
-  timeoutMs: number
+  timeoutMs: number,
+  ollamaEndpoint?: string
 ): Promise<GenerationResult> {
   const systemPrompt = getSystemPrompt(config.isMaxMode(), config.getUseSunoTags());
   const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
-  const messages: Array<{ role: 'assistant' | 'user'; content: string }> = [
-    { role: 'assistant', content: currentPrompt },
-    { role: 'user', content: feedback },
-  ];
 
   try {
-    const genResult = await generateText({
-      model: getModelFn(),
-      system: systemPrompt,
-      messages,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(timeoutMs),
-    });
+    // Use direct Ollama client for offline mode to bypass Bun fetch bug
+    const text = await generateTextForRefinement(
+      systemPrompt,
+      userPrompt,
+      config.getModel,
+      timeoutMs,
+      ollamaEndpoint
+    );
 
-    if (!genResult.text?.trim()) {
+    if (!text?.trim()) {
       throw new AIGenerationError('Empty response from AI model (refine prompt fallback)');
     }
 
-    let result = await config.postProcess(genResult.text);
+    let result = await config.postProcess(text);
 
     if (lockedPhrase) {
       result = injectLockedPhrase(result, lockedPhrase, config.isMaxMode());
@@ -249,7 +269,7 @@ async function refinePromptFallbackWithModel(
     return {
       text: result,
       debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(systemPrompt, userPrompt, genResult.text, messages)
+        ? config.buildDebugInfo(systemPrompt, userPrompt, text)
         : undefined,
     };
   } catch (error: unknown) {

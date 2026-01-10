@@ -100,6 +100,9 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             convertToMaxFormat: handlers.convertToMaxFormat,
             generateCreativeBoost: handlers.generateCreativeBoost,
             refineCreativeBoost: handlers.refineCreativeBoost,
+            checkOllamaStatus: handlers.checkOllamaStatus,
+            getOllamaSettings: handlers.getOllamaSettings,
+            setOllamaSettings: handlers.setOllamaSettings,
         }
     }
 });
