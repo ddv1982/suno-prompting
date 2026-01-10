@@ -42,7 +42,7 @@ Settings and API keys stored locally (encrypted with AES-256-GCM):
 
 | Provider | Models | Setup |
 |----------|--------|-------|
-| **Ollama (Local)** | Gemma 3 4B (default), Llama 3.2 1B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
+| **Ollama (Local)** | Gemma 3 4B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
 | Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
 | OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
 | Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
@@ -65,20 +65,15 @@ curl -fsSL https://ollama.ai/install.sh | sh && ollama serve
 # Then start Ollama from Start menu
 ```
 
-After Ollama is running, pull a model:
+After Ollama is running, pull the required model:
 
 ```bash
-# Recommended: Balanced speed & quality (~2.5GB)
 ollama pull gemma3:4b
-
-# Alternative: Faster, smaller (~700MB)
-ollama pull llama3.2:1b
-
-# Alternative: Better quality, slower (~5GB)
-ollama pull gemma3:9b
 ```
 
 The app automatically detects Ollama and switches to local mode.
+
+**Model:** Gemma 3 4B (~2.5GB) - Balanced speed and quality, optimized for prompt generation.
 
 #### How It Works
 
@@ -93,15 +88,7 @@ The app automatically detects Ollama and switches to local mode.
 - ✅ **Free** - No API costs
 - ✅ **Fast** - Local inference
 
-#### Model Comparison
-
-| Model | Size | Speed | Quality | Best For |
-|-------|------|-------|---------|----------|
-| `gemma3:4b` ⭐ | 2.5GB | Fast | Balanced | **Recommended default** |
-| `llama3.2:1b` | 700MB | Fastest | Good | Low-end hardware, quick testing |
-| `gemma3:9b` | 5GB | Slower | Best | High-end hardware, max quality |
-
-**Note:** For highest quality lyrics/titles, use cloud providers (Groq/OpenAI/Anthropic).
+**Note:** For highest quality lyrics/titles, consider using cloud providers (Groq/OpenAI/Anthropic).
 
 ## Features
 
