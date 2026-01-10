@@ -77,6 +77,7 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     setChatMessages,
     setValidation,
     setGeneratingAction,
+    showToast,
     log,
   }), [
     currentSession,
@@ -86,6 +87,7 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     setChatMessages,
     setValidation,
     setGeneratingAction,
+    showToast,
   ]);
 
   const handleGenerate = useCallback(async (input: string) => {
@@ -100,7 +102,7 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
       if (!result?.prompt) throw new Error('Invalid result received from generation');
       await completeSessionUpdate(deps, result, buildFullPromptOriginalInput(input, genre, topic), 'full', {}, 'Updated prompt generated.', isInitial ? undefined : input);
       setPendingInput(''); setLyricsTopic('');
-    } catch (e: unknown) { handleGenerationError(e, 'generate prompt', setChatMessages, log); }
+    } catch (e: unknown) { handleGenerationError(e, 'generate prompt', setChatMessages, showToast, log); }
     finally { setGeneratingAction('none'); }
   }, [isGenerating, promptMode, currentSession, maxMode, getEffectiveLockedPhrase, lyricsTopic, advancedSelection, createConversionSession, setPendingInput, setLyricsTopic, showToast, deps, setChatMessages, setGeneratingAction]);
 
@@ -113,9 +115,9 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
       const result = await api.generateInitial(currentSession.originalInput, getEffectiveLockedPhrase(), currentSession.lyricsTopic, advancedSelection.seedGenres[0]);
       if (!result?.prompt) throw new Error('Invalid result received from remix');
       await completeSessionUpdate(deps, result, currentSession.originalInput, 'full', {}, 'Remixed prompt generated.', '[remix]');
-    } catch (e: unknown) { handleGenerationError(e, 'remix prompt', setChatMessages, log); }
+    } catch (e: unknown) { handleGenerationError(e, 'remix prompt', setChatMessages, showToast, log); }
     finally { setGeneratingAction('none'); }
-  }, [isGenerating, currentSession, getEffectiveLockedPhrase, advancedSelection, deps, setChatMessages, setGeneratingAction]);
+  }, [isGenerating, currentSession, getEffectiveLockedPhrase, advancedSelection, deps, setChatMessages, showToast, setGeneratingAction]);
 
   const handleConversionComplete = useCallback(async (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => {
     await createConversionSession(originalInput, convertedPrompt, versionId, debugInfo);

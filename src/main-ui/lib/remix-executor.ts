@@ -18,6 +18,7 @@ export interface RemixExecutorDeps {
   setDebugInfo: (info: undefined) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
+  showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
 }
 
 /**
@@ -30,7 +31,7 @@ export async function executePromptRemix(
   feedbackLabel: string,
   successMessage: string
 ): Promise<void> {
-  const { isGenerating, currentSession, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation } = deps;
+  const { isGenerating, currentSession, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation, showToast } = deps;
 
   if (isGenerating || !currentSession?.currentPrompt) return;
 
@@ -59,7 +60,7 @@ export async function executePromptRemix(
     setValidation(result.validation);
     await saveSession(updatedSession);
   } catch (error: unknown) {
-    handleGenerationError(error, feedbackLabel, setChatMessages, log);
+    handleGenerationError(error, feedbackLabel, setChatMessages, showToast, log);
   } finally {
     setGeneratingAction('none');
   }
@@ -76,7 +77,7 @@ export async function executeSingleFieldRemix<T extends { title?: string; lyrics
   label: string,
   successMessage: string
 ): Promise<void> {
-  const { isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setChatMessages } = deps;
+  const { isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setChatMessages, showToast } = deps;
 
   if (isGenerating || !currentSession) return;
 
@@ -102,7 +103,7 @@ export async function executeSingleFieldRemix<T extends { title?: string; lyrics
     setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
     await saveSession(updatedSession);
   } catch (error: unknown) {
-    handleGenerationError(error, label, setChatMessages, log);
+    handleGenerationError(error, label, setChatMessages, showToast, log);
   } finally {
     setGeneratingAction('none');
   }

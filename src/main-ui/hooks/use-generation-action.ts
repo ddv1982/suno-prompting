@@ -28,6 +28,7 @@ export type GenerationActionDeps = {
   setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
+  showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
 };
 
 /**
@@ -46,6 +47,7 @@ export function createSessionDeps(
     setChatMessages: deps.setChatMessages,
     setValidation: deps.setValidation,
     setGeneratingAction: deps.setGeneratingAction,
+    showToast: deps.showToast,
     log,
   };
 }
@@ -138,7 +140,7 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
 
       onSuccess?.();
     } catch (error: unknown) {
-      handleGenerationError(error, errorContext, setChatMessages, log);
+      handleGenerationError(error, errorContext, setChatMessages, sessionDeps.showToast, log);
     } finally {
       setGeneratingAction('none');
     }

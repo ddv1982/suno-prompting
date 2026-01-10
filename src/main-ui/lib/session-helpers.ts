@@ -1,5 +1,14 @@
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
-import { getErrorMessage } from '@shared/errors';
+import {
+  getErrorMessage,
+  ValidationError,
+  OllamaTimeoutError,
+  OllamaUnavailableError,
+  OllamaModelMissingError,
+  AIGenerationError,
+  StorageError,
+  InvariantError,
+} from '@shared/errors';
 import { nowISO } from '@shared/utils';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
@@ -25,6 +34,27 @@ export function buildFullPromptOriginalInput(
   ].filter(Boolean).join(' ') || 'Full Prompt';
 }
 
+/**
+ * Maps error types to toast variants.
+ * Critical errors → 'error' (red toast)
+ * Warnings → 'warning' (orange toast)
+ */
+export function getErrorToastType(error: unknown): 'error' | 'warning' {
+  // Warnings (recoverable, user-fixable)
+  if (error instanceof ValidationError) return 'warning';
+  if (error instanceof OllamaTimeoutError) return 'warning';
+  
+  // All other errors are critical
+  if (error instanceof OllamaUnavailableError) return 'error';
+  if (error instanceof OllamaModelMissingError) return 'error';
+  if (error instanceof AIGenerationError) return 'error';
+  if (error instanceof StorageError) return 'error';
+  if (error instanceof InvariantError) return 'error';
+  
+  // Default: treat unknown errors as critical
+  return 'error';
+}
+
 export type GenerationResultBase = {
   prompt: string;
   title?: string;
@@ -46,6 +76,7 @@ export type SessionDeps = {
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
   setGeneratingAction: (action: GeneratingAction) => void;
+  showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
   log: Logger;
 };
 
@@ -129,20 +160,27 @@ export function updateChatMessagesAfterGeneration(
 
 /**
  * Handles errors in generation/refine actions.
- * Logs the error and updates chat with error message.
+ * Logs the error, updates chat with error message, and shows toast notification.
  */
 export function handleGenerationError(
   error: unknown,
   actionName: string,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
+  showToast: (message: string, type: 'success' | 'error' | 'warning') => void,
   log: Logger
 ): void {
   const errorMessage = getErrorMessage(error, `Failed to ${actionName}`);
   log.error(`${actionName}:failed`, error);
+  
+  // Existing: Add to chat
   setChatMessages(prev => [
     ...prev,
     { role: "ai", content: `Error: ${errorMessage}.` },
   ]);
+  
+  // NEW: Show toast notification
+  const toastType = getErrorToastType(error);
+  showToast(errorMessage, toastType);
 }
 
 /**

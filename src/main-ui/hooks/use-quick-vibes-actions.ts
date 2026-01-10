@@ -37,6 +37,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     setPendingInput,
     withWordlessVocals,
     getQuickVibesInput,
+    showToast,
   } = config;
 
   const sessionDeps = useMemo(() => createSessionDeps(config, log), [config]);
@@ -63,10 +64,11 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
         successMessage: "Quick Vibes prompt generated.",
         errorContext: "generate Quick Vibes",
         log,
+        onSuccess: () => { showToast('Quick Vibes generated!', 'success'); },
       },
       sessionDeps
     );
-  }, [execute, sessionDeps]);
+  }, [execute, sessionDeps, showToast]);
 
   const handleRemixQuickVibes = useCallback(async () => {
     if (isGenerating) return;
@@ -100,11 +102,14 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
         feedback: input,
         errorContext: "refine Quick Vibes",
         log,
-        onSuccess: () => { setPendingInput(""); },
+        onSuccess: () => {
+          setPendingInput("");
+          showToast('Quick Vibes refined!', 'success');
+        },
       },
       sessionDeps
     );
-  }, [execute, sessionDeps, getQuickVibesInput, currentSession, withWordlessVocals, setPendingInput]);
+  }, [execute, sessionDeps, getQuickVibesInput, currentSession, withWordlessVocals, setPendingInput, showToast]);
 
   return {
     handleGenerateQuickVibes,

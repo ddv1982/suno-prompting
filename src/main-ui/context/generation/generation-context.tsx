@@ -41,6 +41,7 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
     setDebugInfo: stateCtx.setDebugInfo,
     setChatMessages: stateCtx.setChatMessages,
     setValidation: stateCtx.setValidation,
+    showToast,
   }), [
     stateCtx.isGenerating,
     currentSession,
@@ -50,6 +51,7 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
     stateCtx.setDebugInfo,
     stateCtx.setChatMessages,
     stateCtx.setValidation,
+    showToast,
   ]);
 
   const remixActions = useRemixActions(baseDeps);
@@ -62,7 +64,6 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
   const creativeBoostActions = useCreativeBoostActions({
     ...baseDeps,
     setPendingInput,
-    showToast,
     creativeBoostInput,
     maxMode,
     lyricsMode,
