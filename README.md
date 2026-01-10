@@ -13,22 +13,6 @@ bun start
 
 Run tests: `bun test` | Validate: `bun run validate`
 
-### Optional: Local LLM (Privacy-First)
-
-For **100% offline, private AI generation**, install [Ollama](https://ollama.ai/):
-
-```bash
-# macOS/Linux
-curl -fsSL https://ollama.ai/install.sh | sh
-
-# Or download from https://ollama.ai/download
-
-# Pull the model used by this app
-ollama pull gemma3:4b
-```
-
-The app will automatically detect Ollama and enable "Local LLM" mode when no API keys are configured.
-
 <details>
 <summary><strong>Build Commands</strong></summary>
 
@@ -63,54 +47,59 @@ Settings and API keys stored locally (encrypted with AES-256-GCM):
 
 ### Local LLM Mode (Ollama)
 
-Run AI generation **completely offline** with no API keys required:
+Run AI generation **100% offline and private** with no API keys required.
 
-**Benefits:**
-- ✅ **100% Private** - No data sent to cloud providers
-- ✅ **Offline** - Works without internet connection
-- ✅ **Free** - No API costs
-- ✅ **Fast** - Local inference on your hardware
-
-**Setup:**
-1. Install [Ollama](https://ollama.ai/download)
-2. Pull a model: `ollama pull gemma3:4b`
-3. App automatically detects Ollama and enables local mode
-4. Or manually toggle in Settings → "Use Local LLM"
-
-**Quick Install:**
+#### Quick Start
 
 ```bash
-# macOS (Homebrew)
-brew install ollama
+# macOS (Homebrew) - recommended
+brew install ollama && ollama serve
 
 # macOS/Linux (direct install)
-curl -fsSL https://ollama.ai/install.sh | sh
+curl -fsSL https://ollama.ai/install.sh | sh && ollama serve
 
 # Windows
-# Download installer from https://ollama.ai/download
-
-# Start Ollama service
-ollama serve
-
-# Pull the default model (in a new terminal)
-ollama pull gemma3:4b
-
-# Optional: Pull alternative models
-ollama pull llama3.2:1b  # Faster, smaller (~700MB)
-ollama pull gemma3:9b    # Better quality (~5GB)
+# Download and run installer from https://ollama.ai/download
+# Then start Ollama from Start menu
 ```
 
+After Ollama is running, pull a model:
+
+```bash
+# Recommended: Balanced speed & quality (~2.5GB)
+ollama pull gemma3:4b
+
+# Alternative: Faster, smaller (~700MB)
+ollama pull llama3.2:1b
+
+# Alternative: Better quality, slower (~5GB)
+ollama pull gemma3:9b
+```
+
+The app automatically detects Ollama and switches to local mode.
+
+#### How It Works
+
 **Smart Defaults:**
-- No API keys configured → **Local LLM enabled**
-- API key added → **Cloud provider** (you can still toggle back to local)
-- Your preference is saved and persists
+- No API keys configured → Auto-enables Local LLM
+- API key added → Uses cloud provider (can toggle back to local in Settings)
+- Your choice persists across sessions
 
-**Recommended Models:**
-- `gemma3:4b` (default) - Fast, balanced quality (~2.5GB)
-- `llama3.2:1b` - Faster, smaller (~700MB)
-- `gemma3:9b` - Better quality, slower (~5GB)
+**Benefits:**
+- ✅ **100% Private** - No data sent to cloud
+- ✅ **Offline** - No internet required
+- ✅ **Free** - No API costs
+- ✅ **Fast** - Local inference
 
-**Note:** Local models are optimized for speed. For highest quality lyrics/titles, use cloud providers (Groq/OpenAI/Anthropic).
+#### Model Comparison
+
+| Model | Size | Speed | Quality | Best For |
+|-------|------|-------|---------|----------|
+| `gemma3:4b` ⭐ | 2.5GB | Fast | Balanced | **Recommended default** |
+| `llama3.2:1b` | 700MB | Fastest | Good | Low-end hardware, quick testing |
+| `gemma3:9b` | 5GB | Slower | Best | High-end hardware, max quality |
+
+**Note:** For highest quality lyrics/titles, use cloud providers (Groq/OpenAI/Anthropic).
 
 ## Features
 
