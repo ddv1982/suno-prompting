@@ -2,6 +2,9 @@ import { RefreshCcw } from 'lucide-react';
 import React, { Component, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('ErrorBoundary');
 
 interface Props {
     children: ReactNode;
@@ -21,7 +24,10 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     override componentDidCatch(error: Error, info: React.ErrorInfo): void {
-        console.error('React Error Boundary caught:', error, info);
+        log.error('boundary:error', { 
+            error, 
+            componentStack: info.componentStack 
+        });
     }
 
     handleRestart = (): void => {

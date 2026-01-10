@@ -38,6 +38,8 @@ export async function generateDirectMode(
 ): Promise<GenerationResult> {
   log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics });
 
+  const ollamaEndpoint = config.getOllamaEndpoint?.();
+
   const result = await generateDirectModeWithLyrics(
     {
       sunoStyles,
@@ -52,7 +54,8 @@ export async function generateDirectMode(
           false,
           true,
           config.getModel,
-          config.getUseSunoTags?.() ?? false
+          config.getUseSunoTags?.() ?? false,
+          ollamaEndpoint
         ),
     },
     config
@@ -84,9 +87,11 @@ export async function generateCreativeBoost(
 
   log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals, withLyrics });
 
+  const ollamaEndpoint = config.getOllamaEndpoint?.();
+
   // 1. Resolve genre (detect from lyrics topic if needed)
   const { genres: resolvedGenres, debugInfo: genreDebugInfo } = await resolveGenreForCreativeBoost(
-    seedGenres, lyricsTopic, withLyrics, config.getModel
+    seedGenres, lyricsTopic, withLyrics, config.getModel, ollamaEndpoint
   );
 
   // 2. Select genre and mood based on creativity level
@@ -99,12 +104,12 @@ export async function generateCreativeBoost(
 
   // 4. Generate title
   const { title, debugInfo: titleDebugInfo } = await generateCreativeBoostTitle(
-    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel, ollamaEndpoint
   );
 
   // 5. Generate lyrics if requested
   const { lyrics, debugInfo: lyricsDebugInfo } = await generateCreativeBoostLyrics(
-    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, maxMode, config.getModel, config.getUseSunoTags?.() ?? false
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, maxMode, config.getModel, config.getUseSunoTags?.() ?? false, ollamaEndpoint
   );
 
   // 6. Build debug info

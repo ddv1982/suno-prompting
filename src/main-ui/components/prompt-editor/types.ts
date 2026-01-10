@@ -1,4 +1,4 @@
-import { type GeneratingAction } from "@/context/generation-context";
+import { type GeneratingAction } from "@/context/generation";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
 import { type ValidationResult } from "@shared/validation";
@@ -59,6 +59,8 @@ export type ModeState = {
 export type QuickVibesState = {
   /** Quick Vibes input (category, description, styles) */
   input: QuickVibesInput;
+  /** Original input from session (for refine mode change detection) */
+  originalInput?: QuickVibesInput | null;
   /** Whether wordless vocals are enabled */
   withWordlessVocals: boolean;
 };
@@ -99,6 +101,7 @@ export type EditorHandlers = {
   onCreativeBoostInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onGenerate: (input: string) => void;
   onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[]) => void;
+  onRefineQuickVibes: (feedback: string) => void;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => void;
   onCopy: () => void;
@@ -111,6 +114,8 @@ export type EditorConfig = {
   maxChars: number;
   /** Current AI model being used */
   currentModel: string;
+  /** Whether using local LLM (Ollama) instead of cloud provider */
+  useLocalLLM: boolean;
 };
 
 /** Combined props for PromptEditor component - groups related props for cleaner API */

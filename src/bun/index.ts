@@ -87,6 +87,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             setMaxMode: handlers.setMaxMode,
             getLyricsMode: handlers.getLyricsMode,
             setLyricsMode: handlers.setLyricsMode,
+            getUseLocalLLM: handlers.getUseLocalLLM,
+            setUseLocalLLM: handlers.setUseLocalLLM,
             getAllSettings: handlers.getAllSettings,
             saveAllSettings: handlers.saveAllSettings,
             getPromptMode: handlers.getPromptMode,
@@ -98,6 +100,9 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             convertToMaxFormat: handlers.convertToMaxFormat,
             generateCreativeBoost: handlers.generateCreativeBoost,
             refineCreativeBoost: handlers.refineCreativeBoost,
+            checkOllamaStatus: handlers.checkOllamaStatus,
+            getOllamaSettings: handlers.getOllamaSettings,
+            setOllamaSettings: handlers.setOllamaSettings,
         }
     }
 });

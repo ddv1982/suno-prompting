@@ -18,12 +18,13 @@ import { useEffect, useRef } from 'react';
  * };
  * ```
  */
-export function useMounted(): React.MutableRefObject<boolean> {
+export function useMounted(): { readonly current: boolean } {
   const mountedRef = useRef(true);
 
   useEffect(() => {
     return () => {
-      mountedRef.current = false;
+      // Type assertion needed as we're modifying it internally
+      (mountedRef as { current: boolean }).current = false;
     };
   }, []);
 

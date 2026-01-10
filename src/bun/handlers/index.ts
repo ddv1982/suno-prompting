@@ -4,6 +4,7 @@ import { type StorageManager } from '@bun/storage';
 import { createCreativeBoostHandlers } from './creative-boost';
 import { createGenerationHandlers } from './generation';
 import { createMaxConversionHandlers } from './max-conversion';
+import { createOllamaHandlers } from './ollama';
 import { createQuickVibesHandlers } from './quick-vibes';
 import { createRemixHandlers } from './remix';
 import { createSessionHandlers } from './sessions';
@@ -23,5 +24,6 @@ export function createHandlers(
     ...createQuickVibesHandlers(aiEngine),
     ...createCreativeBoostHandlers(aiEngine),
     ...createMaxConversionHandlers(aiEngine),
+    ...createOllamaHandlers(aiEngine, storage),
   };
 }

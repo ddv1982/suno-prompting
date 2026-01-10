@@ -1,5 +1,4 @@
 import { Settings } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -9,69 +8,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createLogger } from "@/lib/logger";
-import { api } from "@/services/rpc";
-import { APP_CONSTANTS } from "@shared/constants";
-import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
+import { useSettingsModalState } from "@/hooks/use-settings-modal-state";
 
 import { ApiKeySection } from "./api-key-section";
 import { FeatureToggles } from "./feature-toggles";
+import { LLMProviderToggle } from "./llm-provider-toggle";
 import { ModelSection } from "./model-section";
-
-const log = createLogger('SettingsModal');
+import { OllamaSettings } from "./ollama-settings";
 
 type SettingsModalProps = { isOpen: boolean; onClose: () => void };
-const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.ReactElement {
-  const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
-  const [apiKeys, setApiKeys] = useState<APIKeys>({ ...DEFAULT_API_KEYS });
-  const [model, setModel] = useState("");
-  const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
-  const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
-  const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
-  const [lyricsMode, setLyricsMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
-  const [showKey, setShowKey] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const loadSettings = async (): Promise<void> => {
-      setError(null); setLoading(true);
-      try {
-        const settings = await api.getAllSettings();
-        setProvider(settings.provider); setApiKeys(settings.apiKeys);
-        const providerModels = MODELS_BY_PROVIDER[settings.provider];
-        const modelExists = providerModels.some(m => m.id === settings.model);
-        setModel(modelExists ? settings.model : providerModels[0].id);
-        setUseSunoTags(settings.useSunoTags); setDebugMode(settings.debugMode);
-        setMaxMode(settings.maxMode); setLyricsMode(settings.lyricsMode);
-      } catch (err) { log.error("fetchSettings:failed", err); setError("Unable to load settings."); }
-      finally { setLoading(false); }
-    };
-    void loadSettings();
-  }, [isOpen]);
-
-  const handleProviderChange = (newProvider: AIProvider): void => {
-    setProvider(newProvider); setShowKey(false);
-    const models = MODELS_BY_PROVIDER[newProvider];
-    if (models.length > 0) setModel(models[0].id);
-  };
-  const handleApiKeyChange = (value: string): void => { setApiKeys(prev => ({ ...prev, [provider]: value || null })); };
-
-  const handleSave = async (): Promise<void> => {
-    setSaving(true); setError(null);
-    try {
-      await api.saveAllSettings({
-        provider, model, useSunoTags, debugMode, maxMode, lyricsMode,
-        apiKeys: { groq: apiKeys.groq?.trim() || null, openai: apiKeys.openai?.trim() || null, anthropic: apiKeys.anthropic?.trim() || null },
-      });
-      onClose();
-    } catch (e) { log.error("saveSettings:failed", e); setError("Failed to save settings. Please try again."); }
-    finally { setSaving(false); }
-  };
+  const [state, actions] = useSettingsModalState(isOpen);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -84,41 +32,50 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
         </DialogHeader>
         <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto pr-2 is-scrolling">
           <ApiKeySection
-            provider={provider}
-            apiKeys={apiKeys}
-            showKey={showKey}
-            loading={loading}
-            error={error}
-            onProviderChange={handleProviderChange}
-            onApiKeyChange={handleApiKeyChange}
-            onToggleShowKey={() => { setShowKey(!showKey); }}
+            provider={state.provider}
+            apiKeys={state.apiKeys}
+            showKey={state.showKey}
+            loading={state.loading}
+            error={state.error}
+            onProviderChange={actions.handleProviderChange}
+            onApiKeyChange={actions.handleApiKeyChange}
+            onToggleShowKey={actions.toggleShowKey}
           />
 
           <ModelSection
-            provider={provider}
-            model={model}
-            loading={loading}
-            onModelChange={setModel}
+            provider={state.provider}
+            model={state.model}
+            loading={state.loading}
+            onModelChange={actions.setModel}
+          />
+
+          <LLMProviderToggle
+            useLocalLLM={state.useLocalLLM}
+            hasApiKey={state.apiKeys[state.provider] !== null && state.apiKeys[state.provider] !== ''}
+            loading={state.loading}
+            onToggle={actions.setUseLocalLLM}
           />
 
           <FeatureToggles
-            useSunoTags={useSunoTags}
-            maxMode={maxMode}
-            lyricsMode={lyricsMode}
-            debugMode={debugMode}
-            loading={loading}
-            onUseSunoTagsChange={setUseSunoTags}
-            onMaxModeChange={setMaxMode}
-            onLyricsModeChange={setLyricsMode}
-            onDebugModeChange={setDebugMode}
+            useSunoTags={state.useSunoTags}
+            maxMode={state.maxMode}
+            lyricsMode={state.lyricsMode}
+            debugMode={state.debugMode}
+            loading={state.loading}
+            onUseSunoTagsChange={actions.setUseSunoTags}
+            onMaxModeChange={actions.setMaxMode}
+            onLyricsModeChange={actions.setLyricsMode}
+            onDebugModeChange={actions.setDebugMode}
           />
+
+          <OllamaSettings />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={saving}>
+          <Button variant="outline" onClick={onClose} disabled={state.saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving || loading}>
-            {saving ? "Saving..." : "Save Changes"}
+          <Button onClick={() => actions.handleSave(onClose)} disabled={state.saving || state.loading}>
+            {state.saving ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

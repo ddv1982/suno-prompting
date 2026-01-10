@@ -56,7 +56,7 @@ export function MainInput({
         );
         showToast('Converted to Max Mode format', 'success');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
         log.info('Conversion cancelled by user');
         return;

@@ -28,6 +28,10 @@ export const SetLyricsModeSchema = z.object({
   lyricsMode: z.boolean(),
 });
 
+export const SetUseLocalLLMSchema = z.object({
+  useLocalLLM: z.boolean(),
+});
+
 export const SetPromptModeSchema = z.object({
   promptMode: PromptModeSchema,
 });
@@ -48,8 +52,10 @@ export const SaveAllSettingsSchema = z.object({
   debugMode: z.boolean(),
   maxMode: z.boolean(),
   lyricsMode: z.boolean(),
+  useLocalLLM: z.boolean(),
 });
 
 export type SetApiKeyInput = z.infer<typeof SetApiKeySchema>;
 export type SetModelInput = z.infer<typeof SetModelSchema>;
+export type SetUseLocalLLMInput = z.infer<typeof SetUseLocalLLMSchema>;
 export type SaveAllSettingsInput = z.infer<typeof SaveAllSettingsSchema>;

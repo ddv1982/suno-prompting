@@ -14,7 +14,7 @@ export async function withErrorHandling<T>(
     const result = await operation();
     log.info(`${actionName}:complete`);
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     log.error(`${actionName}:failed`, error);
     throw error;
   }

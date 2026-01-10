@@ -65,8 +65,8 @@ export async function decrypt(encryptedBase64: string): Promise<string> {
         );
         
         return new TextDecoder().decode(decrypted);
-    } catch (error) {
+    } catch (error: unknown) {
         log.error('decrypt:failed', error);
-        throw new StorageError('Failed to decrypt sensitive data. The key might have been encrypted on a different machine.', 'decrypt');
+        throw new StorageError('Failed to decrypt sensitive data. The key might have been encrypted on a different machine.', 'decrypt', error as Error);
     }
 }

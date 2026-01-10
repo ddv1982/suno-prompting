@@ -23,10 +23,11 @@
     "readme:sync": "bun run scripts/generate-readme-genre-table.ts",
     "readme:check": "bun run scripts/generate-readme-genre-table.ts --check",
     "test": "bun test",
+    "test:precommit": "bun test",
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "validate": "bun run typecheck && bun run lint && bun run test",
+    "validate": "bun run typecheck && bun run lint && bun run test:precommit",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -65,6 +66,7 @@
     "dompurify": "^3.3.1",
     "electrobun": "0.8.0",
     "lucide-react": "^0.562.0",
+    "ollama-ai-provider-v2": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "tailwind-merge": "^3.4.0",

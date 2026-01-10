@@ -60,7 +60,7 @@ export function useAsyncAction<TArgs extends unknown[], TReturn>(
         setIsLoading(false);
       }
       return result;
-    } catch (e) {
+    } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'An unexpected error occurred';
       if (mountedRef.current) {
         setError(message);
@@ -123,7 +123,7 @@ export function useAsyncActionSafe<TArgs extends unknown[], TReturn>(
         setIsLoading(false);
       }
       return result;
-    } catch (e) {
+    } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'An unexpected error occurred';
       if (mountedRef.current) {
         setError(message);

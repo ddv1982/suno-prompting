@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, test, expect, mock } from 'bun:test';
 
 import {
   buildCombinedSystemPrompt,
@@ -19,13 +19,13 @@ describe('Prompt Builder Refinement', () => {
       currentTitle: 'Ocean Dreams',
     };
 
-    it('includes refinement mode instructions when context provided', () => {
+    test('includes refinement mode instructions when context provided', () => {
       const result = buildCombinedSystemPrompt(200, true, false, refinement);
       expect(result).toContain('REFINEMENT MODE');
       expect(result).toContain('refining an existing music prompt');
     });
 
-    it('includes current prompt and title in template', () => {
+    test('includes current prompt and title in template', () => {
       const result = buildCombinedSystemPrompt(200, true, false, refinement);
       expect(result).toContain('CURRENT STYLE PROMPT:');
       expect(result).toContain('ambient electronic, soft pads');
@@ -33,19 +33,19 @@ describe('Prompt Builder Refinement', () => {
       expect(result).toContain('Ocean Dreams');
     });
 
-    it('outputs JSON format with prompt and title fields', () => {
+    test('outputs JSON format with prompt and title fields', () => {
       const result = buildCombinedSystemPrompt(200, true, false, refinement);
       expect(result).toContain('"prompt":');
       expect(result).toContain('"title":');
     });
 
-    it('works with maxMode enabled', () => {
+    test('works with maxMode enabled', () => {
       const result = buildCombinedSystemPrompt(200, true, true, refinement);
       expect(result).toContain('REFINEMENT MODE');
       expect(result).toContain('MAX MODE');
     });
 
-    it('does not include refinement mode without context', () => {
+    test('does not include refinement mode without context', () => {
       const result = buildCombinedSystemPrompt(200, true, false);
       expect(result).not.toContain('REFINEMENT MODE');
       expect(result).not.toContain('CURRENT STYLE PROMPT');
@@ -53,7 +53,7 @@ describe('Prompt Builder Refinement', () => {
   });
 
   describe('buildCombinedWithLyricsSystemPrompt with refinement', () => {
-    it('includes current lyrics when provided', () => {
+    test('includes current lyrics when provided', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -64,7 +64,7 @@ describe('Prompt Builder Refinement', () => {
       expect(result).toContain('Rolling down the highway');
     });
 
-    it('instructs to generate fresh lyrics when currentLyrics is empty', () => {
+    test('instructs to generate fresh lyrics when currentLyrics is empty', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -74,7 +74,7 @@ describe('Prompt Builder Refinement', () => {
       expect(result).toContain('generate fresh lyrics');
     });
 
-    it('instructs to generate fresh lyrics when currentLyrics is undefined', () => {
+    test('instructs to generate fresh lyrics when currentLyrics is undefined', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -83,7 +83,7 @@ describe('Prompt Builder Refinement', () => {
       expect(result).toContain('generate fresh lyrics');
     });
 
-    it('includes lyrics requirements for fresh generation', () => {
+    test('includes lyrics requirements for fresh generation', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -96,7 +96,7 @@ describe('Prompt Builder Refinement', () => {
       expect(result).toContain('[CHORUS]');
     });
 
-    it('does not include lyrics requirements when lyrics exist', () => {
+    test('does not include lyrics requirements when lyrics exist', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -106,7 +106,7 @@ describe('Prompt Builder Refinement', () => {
       expect(result).not.toContain('LYRICS REQUIREMENTS FOR NEW LYRICS');
     });
 
-    it('includes max mode header requirement when maxMode enabled', () => {
+    test('includes max mode header requirement when maxMode enabled', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -116,7 +116,7 @@ describe('Prompt Builder Refinement', () => {
       expect(result).toContain('///*****///');
     });
 
-    it('outputs JSON format with prompt, title, and lyrics fields', () => {
+    test('outputs JSON format with prompt, title, and lyrics fields', () => {
       const refinement: RefinementContext = {
         currentPrompt: 'rock anthem',
         currentTitle: 'Thunder Road',
@@ -130,116 +130,222 @@ describe('Prompt Builder Refinement', () => {
   });
 });
 
+describe('Deterministic Refinement (Offline Mode)', () => {
+  test('uses deterministic style tag regeneration when offline and no lyrics', async () => {
+    const { refinePrompt } = await import('@bun/ai/refinement');
+    
+    const mockConfig = {
+      isUseLocalLLM: () => true,
+      isLyricsMode: () => false,
+      isMaxMode: () => false,
+      isDebugMode: () => true, // Enable debug mode to test debug info
+      getUseSunoTags: () => true,
+      getOllamaEndpoint: () => 'http://localhost:11434',
+      getModel: () => { throw new Error('Should not call LLM in deterministic mode'); },
+      postProcess: async (text: string) => text,
+      buildDebugInfo: (system: string, user: string, response: string) => ({
+        systemPrompt: system,
+        userPrompt: user,
+        rawResponse: response,
+      }),
+    };
+
+    const currentPrompt = `genre: "jazz"
+mood: "smooth, warm"
+style tags: "old tags, outdated"
+instruments: "piano, bass"
+BPM: 90`;
+
+    const result = await refinePrompt(
+      {
+        currentPrompt,
+        currentTitle: 'My Jazz Song',
+        feedback: 'make it more energetic',
+      },
+      mockConfig as any
+    );
+
+    // Verify style tags were regenerated (should be different from "old tags, outdated")
+    expect(result.text).toContain('style tags:');
+    expect(result.text).not.toContain('old tags, outdated');
+    
+    // Verify prompt structure is preserved
+    expect(result.text).toContain('genre: "jazz"');
+    expect(result.text).toContain('mood: "smooth, warm"');
+    
+    // Verify title is preserved
+    expect(result.title).toBe('My Jazz Song');
+    
+    // Verify debug info indicates deterministic mode
+    expect(result.debugInfo?.systemPrompt).toContain('DETERMINISTIC_REFINE');
+  });
+
+  test('uses LLM when offline but lyrics mode is enabled', async () => {
+    // Mock the Ollama availability check to return unavailable BEFORE importing refinePrompt
+    const mockCheckOllama = mock(() =>
+      Promise.resolve({ available: false, hasGemma: false })
+    );
+    
+    await mock.module('@bun/ai/ollama-availability', () => ({
+      checkOllamaAvailable: mockCheckOllama,
+      invalidateOllamaCache: mock(() => {}),
+    }));
+    
+    // Re-import after mocking to get the mocked version
+    const { refinePrompt } = await import('@bun/ai/refinement');
+    
+    const mockConfig = {
+      isUseLocalLLM: () => true,
+      isLyricsMode: () => true, // Lyrics mode ON - should use LLM
+      isMaxMode: () => false,
+      isDebugMode: () => false,
+      getUseSunoTags: () => true,
+      getOllamaEndpoint: () => 'http://localhost:11434',
+      getModel: () => {
+        throw new Error('Should not be called - Ollama check should fail first');
+      },
+      postProcess: async (text: string) => text,
+      buildDebugInfo: (system: string, user: string, response: string) => ({
+        systemPrompt: system,
+        userPrompt: user,
+        rawResponse: response,
+      }),
+    };
+
+    const currentPrompt = `genre: "jazz"
+mood: "smooth"
+style tags: "warm"
+instruments: "piano"`;
+
+    // Should attempt to use LLM (not deterministic)
+    // Will fail Ollama availability check since we mocked it as unavailable
+    await expect(
+      refinePrompt(
+        {
+          currentPrompt,
+          currentTitle: 'My Song',
+          feedback: 'refine it',
+          currentLyrics: '[VERSE]\nExisting lyrics',
+        },
+        mockConfig as any
+      )
+    ).rejects.toThrow('Ollama');
+    
+    // Verify that checkOllamaAvailable was called (proves it's NOT using deterministic path)
+    expect(mockCheckOllama).toHaveBeenCalled();
+  });
+});
+
 describe('AI Engine Helper Methods', () => {
   describe('cleanJsonResponse', () => {
-    it('removes markdown code blocks', () => {
+    test('removes markdown code blocks', () => {
       const input = '```json\n{"prompt": "test"}\n```';
       expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
 
-    it('handles json without newline after opener', () => {
+    test('handles json without newline after opener', () => {
       const input = '```json{"prompt": "test"}```';
       expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
 
-    it('trims whitespace', () => {
+    test('trims whitespace', () => {
       const input = '  {"prompt": "test"}  ';
       expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
 
-    it('returns clean json unchanged', () => {
+    test('returns clean json unchanged', () => {
       const input = '{"prompt": "test"}';
       expect(cleanJsonResponse(input)).toBe('{"prompt": "test"}');
     });
   });
 
   describe('cleanTitle', () => {
-    it('trims whitespace', () => {
+    test('trims whitespace', () => {
       expect(cleanTitle('  Ocean Dreams  ')).toBe('Ocean Dreams');
     });
 
-    it('removes surrounding single quotes', () => {
+    test('removes surrounding single quotes', () => {
       expect(cleanTitle("'Ocean Dreams'")).toBe('Ocean Dreams');
     });
 
-    it('removes surrounding double quotes', () => {
+    test('removes surrounding double quotes', () => {
       expect(cleanTitle('"Ocean Dreams"')).toBe('Ocean Dreams');
     });
 
-    it('returns fallback when title is undefined', () => {
+    test('returns fallback when title is undefined', () => {
       expect(cleanTitle(undefined)).toBe('Untitled');
     });
 
-    it('returns fallback when title is empty string', () => {
+    test('returns fallback when title is empty string', () => {
       expect(cleanTitle('')).toBe('Untitled');
     });
 
-    it('returns fallback when title is only whitespace', () => {
+    test('returns fallback when title is only whitespace', () => {
       expect(cleanTitle('   ')).toBe('Untitled');
     });
 
-    it('uses custom fallback when provided', () => {
+    test('uses custom fallback when provided', () => {
       expect(cleanTitle(undefined, 'My Default')).toBe('My Default');
     });
 
-    it('preserves internal quotes', () => {
+    test('preserves internal quotes', () => {
       expect(cleanTitle("Ocean's Dream")).toBe("Ocean's Dream");
     });
   });
 
   describe('cleanLyrics', () => {
-    it('trims whitespace', () => {
+    test('trims whitespace', () => {
       expect(cleanLyrics('  [VERSE]\nHello  ')).toBe('[VERSE]\nHello');
     });
 
-    it('returns undefined for empty string', () => {
+    test('returns undefined for empty string', () => {
       expect(cleanLyrics('')).toBeUndefined();
     });
 
-    it('returns undefined for whitespace only', () => {
+    test('returns undefined for whitespace only', () => {
       expect(cleanLyrics('   ')).toBeUndefined();
     });
 
-    it('returns undefined for undefined input', () => {
+    test('returns undefined for undefined input', () => {
       expect(cleanLyrics(undefined)).toBeUndefined();
     });
 
-    it('preserves valid lyrics', () => {
+    test('preserves valid lyrics', () => {
       const lyrics = '[VERSE]\nLine one\nLine two';
       expect(cleanLyrics(lyrics)).toBe(lyrics);
     });
   });
 
   describe('parseJsonResponse', () => {
-    it('parses valid JSON response', () => {
+    test('parses valid JSON response', () => {
       const input = '{"prompt": "test prompt", "title": "Test Title"}';
       const result = parseJsonResponse(input);
       expect(result).toEqual({ prompt: 'test prompt', title: 'Test Title' });
     });
 
-    it('parses JSON with lyrics', () => {
+    test('parses JSON with lyrics', () => {
       const input = '{"prompt": "test", "title": "Title", "lyrics": "[VERSE]\\nHello"}';
       const result = parseJsonResponse(input);
       expect(result?.lyrics).toBe('[VERSE]\nHello');
     });
 
-    it('removes markdown code blocks before parsing', () => {
+    test('removes markdown code blocks before parsing', () => {
       const input = '```json\n{"prompt": "test", "title": "Title"}\n```';
       const result = parseJsonResponse(input);
       expect(result).toEqual({ prompt: 'test', title: 'Title' });
     });
 
-    it('returns null for invalid JSON', () => {
+    test('returns null for invalid JSON', () => {
       const input = 'not valid json';
       expect(parseJsonResponse(input)).toBeNull();
     });
 
-    it('returns null when prompt field is missing', () => {
+    test('returns null when prompt field is missing', () => {
       const input = '{"title": "Title Only"}';
       expect(parseJsonResponse(input)).toBeNull();
     });
 
-    it('returns null when prompt is empty string', () => {
+    test('returns null when prompt is empty string', () => {
       const input = '{"prompt": "", "title": "Title"}';
       expect(parseJsonResponse(input)).toBeNull();
     });

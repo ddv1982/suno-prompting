@@ -9,6 +9,7 @@ type SubmitButtonProps = {
   isGenerating: boolean;
   isRefineMode: boolean;
   isDirectMode: boolean;
+  canSubmit: boolean;
   onSubmit: () => void;
 };
 
@@ -16,12 +17,13 @@ export function SubmitButton({
   isGenerating,
   isRefineMode,
   isDirectMode,
+  canSubmit,
   onSubmit,
 }: SubmitButtonProps): ReactNode {
   return (
     <Button
       onClick={onSubmit}
-      disabled={isGenerating}
+      disabled={!canSubmit || isGenerating}
       className="w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2"
     >
       {isGenerating ? (

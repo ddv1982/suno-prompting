@@ -2,6 +2,8 @@
 
 Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with genre/mood/instrument guidance and enforced formatting.
 
+[Quick Start](#quick-start) | [Configuration](#configuration) | [Features](#features) | [Modes](#modes) | [Genre Detection](#genre-detection) | [Reference](#reference) | [Architecture](#architecture) | [Tech Stack](#tech-stack)
+
 ## Quick Start
 
 Prereq: [Bun](https://bun.sh/)
@@ -38,14 +40,58 @@ Settings and API keys stored locally (encrypted with AES-256-GCM):
 
 ### AI Providers
 
-| Provider | Models | API Key |
-|----------|--------|---------|
+| Provider | Models | Setup |
+|----------|--------|-------|
+| **Ollama (Local)** | Gemma 3 4B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
 | Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
 | OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
 | Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
 
+### Local LLM Mode (Ollama)
+
+Run AI generation **100% offline and private** with no API keys required.
+
+#### Quick Start
+
+**macOS (Recommended):**
+1. Download and install from [ollama.com/download/mac](https://ollama.com/download/mac)
+2. Ollama starts automatically after installation
+3. Pull the model: `ollama pull gemma3:4b`
+
+**Linux:**
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+ollama serve
+ollama pull gemma3:4b
+```
+
+**Windows:**
+1. Download installer from [ollama.ai/download](https://ollama.ai/download)
+2. Run installer and start Ollama from Start menu
+3. Pull the model: `ollama pull gemma3:4b`
+
+The app automatically detects Ollama and switches to local mode.
+
+**Model:** Gemma 3 4B (~2.5GB) - Balanced speed and quality, optimized for prompt generation.
+
+#### How It Works
+
+**Smart Defaults:**
+- No API keys configured → Auto-enables Local LLM
+- API key added → Uses cloud provider (can toggle back to local in Settings)
+- Your choice persists across sessions
+
+**Benefits:**
+- ✅ **100% Private** - No data sent to cloud
+- ✅ **Offline** - No internet required
+- ✅ **Free** - No API costs
+- ✅ **Fast** - Local inference
+
+**Note:** For highest quality lyrics/titles, consider using cloud providers (Groq/OpenAI/Anthropic).
+
 ## Features
 
+- **Local LLM support**: 100% offline AI generation with Ollama (no API keys, fully private)
 - **Structured prompts** from plain English with `Genre:`, `BPM:`, `Mood:`, `Instruments:` fields
 - **Three generation modes**: Full Prompt, Quick Vibes, Creative Boost
 - **Max Mode**: Community-discovered format for higher quality output
@@ -364,7 +410,7 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 
 | Module | Purpose |
 |--------|---------|
-| `src/bun/ai/` | AI engine, providers, generation, refinement, remix |
+| `src/bun/ai/` | AI engine, providers (Ollama, Groq, OpenAI, Anthropic), generation, refinement, remix |
 | `src/bun/prompt/` | Prompt builders, postprocessing, deterministic operations |
 | `src/bun/instruments/` | Instrument registry, genre pools, selection logic |
 | `src/bun/handlers/` | RPC request handlers |
@@ -374,56 +420,90 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 <details>
 <summary><strong>Generation & Remix Dataflow</strong></summary>
 
-Most operations are **fully deterministic** (no LLM, <50ms) using curated data pools.
-LLM is only used when lyrics are enabled or for lyrics remix.
+**Style/Prompt generation is ALWAYS deterministic** (no LLM, <50ms) using curated data pools.
+LLM is only used for lyrics and title generation when Lyrics Mode is enabled.
+
+**Architecture:**
+- **Style/Prompt**: Always deterministic - uses genre/instrument/mood pools
+- **Title**: Deterministic when Lyrics OFF, LLM when Lyrics ON (to match lyrics theme)
+- **Lyrics**: LLM only (when Lyrics Mode enabled)
+
+**LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Input
         UI[User Action]
     end
 
+    subgraph "Always Deterministic"
+        STYLE[Style/Prompt<br/>Builder]
+        DATA[(Genre, Instrument,<br/>Mood Pools)]
+        DTITLE[Deterministic<br/>Title]
+    end
+
     subgraph Decision
-        LYR{Lyrics?}
+        LYR{Lyrics<br/>Mode?}
     end
 
-    subgraph Deterministic
-        BUILD[Prompt Builder]
-        DATA[(Data Pools)]
+    subgraph "LLM (Lyrics Mode Only)"
+        LTITLE[Title Gen]
+        LYRICS[Lyrics Gen/Refine]
     end
 
-    subgraph LLM
-        GEN[Genre Detection]
-        TITLE[Title Gen]
-        LYRICS[Lyrics Gen]
+    subgraph Provider
+        PROV{LLM<br/>Provider}
+        OLLAMA[Ollama Local]
+        CLOUD[Cloud API]
     end
 
-    UI --> LYR
-    LYR -->|OFF| BUILD
-    LYR -->|ON| GEN --> BUILD
-    LYR -->|ON| TITLE
+    subgraph Output
+        RESULT[Final Result]
+    end
+
+    UI --> STYLE
+    STYLE -.-> DATA
+    STYLE --> LYR
+    LYR -->|OFF| DTITLE
+    DTITLE --> RESULT
+    LYR -->|ON| LTITLE
     LYR -->|ON| LYRICS
-    BUILD -.-> DATA
+    LTITLE --> PROV
+    LYRICS --> PROV
+    PROV -->|Local| OLLAMA
+    PROV -->|Cloud| CLOUD
+    OLLAMA --> RESULT
+    CLOUD --> RESULT
 
-    classDef det fill:#d4edda,stroke:#28a745
-    classDef ai fill:#fff3cd,stroke:#ffc107
-    classDef data fill:#e2e3e5,stroke:#6c757d
+    classDef det fill:#28a745,stroke:#1e7e34,color:#fff
+    classDef ai fill:#fd7e14,stroke:#dc6a12,color:#fff
+    classDef data fill:#6c757d,stroke:#545b62,color:#fff
+    classDef provider fill:#007bff,stroke:#0069d9,color:#fff
+    classDef output fill:#17a2b8,stroke:#138496,color:#fff
+    classDef decision fill:#6f42c1,stroke:#5a32a3,color:#fff
 
-    class BUILD det
-    class GEN,TITLE,LYRICS ai
+    class STYLE,DTITLE det
+    class LTITLE,LYRICS ai
     class DATA data
+    class OLLAMA,CLOUD provider
+    class PROV,LYR decision
+    class RESULT output
 ```
 
-| Operation | LLM Calls | Latency | Notes |
-|-----------|-----------|---------|-------|
-| Generate (Lyrics OFF) | 0 | <50ms | Fully deterministic |
-| Generate (Lyrics ON) | 1-3 | ~2s | Genre + title + lyrics |
-| Quick Vibes | 0 | <50ms | Category templates |
-| Creative Boost | 0-3 | <50ms-2s | Depends on lyrics toggle |
-| Remix (6 buttons) | 0 | <10ms | All deterministic |
-| Remix Lyrics | 1 | ~1s | Only remix using LLM |
+| Operation | LLM Calls | Latency (Cloud) | Latency (Local) | Notes |
+|-----------|-----------|-----------------|-----------------|-------|
+| Generate (Lyrics OFF) | 0 | <50ms | <50ms | Style + title: deterministic |
+| Generate (Lyrics ON) | 2-3 | ~2s | ~1-3s* | Style: deterministic, Title + lyrics: LLM |
+| Refine (Lyrics OFF) | 0 | <50ms | <50ms | Deterministic style remix |
+| Refine (Lyrics ON) | 1 | ~1s | ~1-2s* | Style: deterministic, Lyrics: LLM |
+| Quick Vibes | 0 | <50ms | <50ms | Category templates |
+| Creative Boost | 0-3 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle |
+| Remix (6 buttons) | 0 | <10ms | <10ms | All deterministic |
+| Remix Lyrics | 1 | ~1s | ~1-2s* | LLM-based |
 
-**Why deterministic?** Faster response, predictable results, no API costs for basic generation.
+*Local latency varies by hardware (CPU vs GPU, model size)
+
+**Why deterministic for style?** Faster response (~50ms), predictable results, no API costs, consistent quality.
 
 </details>
 
@@ -431,6 +511,6 @@ flowchart LR
 
 - **Runtime:** [Electrobun](https://electrobun.dev/) (Bun-based desktop framework)
 - **UI:** React 19 + shadcn/ui + Tailwind CSS v4
-- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic)
+- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Ollama (local inference)
 - **Validation:** Zod
 - **Testing:** Bun test (70% coverage threshold)

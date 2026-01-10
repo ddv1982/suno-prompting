@@ -29,6 +29,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# generated CSS (regenerated on each build)
+src/main-ui/dist.css
+
 # IntelliJ based IDEs
 .idea
 

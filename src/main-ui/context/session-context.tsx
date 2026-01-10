@@ -44,7 +44,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
     try {
       const history = await api.getHistory();
       setSessions(history);
-    } catch (error) {
+    } catch (error: unknown) {
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, 400));
         return loadHistory(retries - 1);
@@ -61,7 +61,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
     setCurrentSession(session);
     try {
       await api.saveSession(session);
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("saveSession:failed", error);
     }
   }, []);
@@ -73,7 +73,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
       if (currentSession?.id === id) {
         setCurrentSession(null);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       log.error("deleteSession:failed", error);
     }
   }, [currentSession?.id]);

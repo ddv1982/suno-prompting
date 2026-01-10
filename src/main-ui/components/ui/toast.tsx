@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority"
-import { CheckCircle2, XCircle, Info } from "lucide-react"
+import { CheckCircle2, XCircle, Info, AlertTriangle } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -14,6 +14,7 @@ const toastVariants = cva(
         success: "bg-green-500/90 text-white",
         error: "bg-destructive/90 text-white",
         info: "bg-blue-500/90 text-white",
+        warning: "bg-orange-500/90 text-white",
       },
     },
     defaultVariants: {
@@ -27,12 +28,22 @@ const toastIcons = {
   success: CheckCircle2,
   error: XCircle,
   info: Info,
+  warning: AlertTriangle,
 } as const
 
 interface Toast {
   id: string
   message: string
-  type: "success" | "error" | "info"
+  type: "success" | "error" | "info" | "warning"
+}
+
+interface ToastWithMeta {
+  id: string
+  message: string
+  type: Toast["type"]
+  count: number
+  lastUpdated: number
+  originalMessage: string
 }
 
 interface ToastProps extends React.ComponentProps<"div">, VariantProps<typeof toastVariants> {
@@ -74,19 +85,69 @@ export function useToast(): ToastContextType {
 
 // Auto-dismiss duration from app constants
 const TOAST_DISMISS_DURATION = APP_CONSTANTS.UI.TOAST_DURATION_MS
+const DEDUPLICATION_WINDOW_MS = 5000
+const MAX_TOASTS = 4
+const MAX_MESSAGE_LENGTH = 150
+
+/**
+ * Truncates long messages to maintain visual consistency
+ */
+function truncateMessage(message: string): string {
+  if (message.length <= MAX_MESSAGE_LENGTH) return message
+  return message.slice(0, MAX_MESSAGE_LENGTH - 3) + '...'
+}
 
 // ToastProvider component
 export function ToastProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
-  const [toasts, setToasts] = React.useState<Toast[]>([])
+  const [toasts, setToasts] = React.useState<ToastWithMeta[]>([])
 
   const showToast = React.useCallback((message: string, type: Toast["type"] = "success"): void => {
-    const id = crypto.randomUUID()
-    setToasts((prev) => [...prev, { id, message, type }])
+    const truncatedMessage = truncateMessage(message)
+    const now = Date.now()
+    
+    setToasts((prev) => {
+      // Check for duplicate within deduplication window
+      const duplicateIndex = prev.findIndex(
+        (t) => t.originalMessage === truncatedMessage && 
+               t.type === type && 
+               (now - t.lastUpdated) < DEDUPLICATION_WINDOW_MS
+      )
 
-    // Auto-dismiss after duration
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, TOAST_DISMISS_DURATION)
+      if (duplicateIndex >= 0) {
+        // Update existing toast with incremented count
+        const updated = [...prev]
+        const duplicate = updated[duplicateIndex]
+        if (duplicate) {
+          duplicate.count += 1
+          duplicate.lastUpdated = now
+          duplicate.message = `${duplicate.originalMessage} (${duplicate.count}x)`
+        }
+        return updated
+      }
+
+      // Create new toast
+      const id = crypto.randomUUID()
+      const newToast: ToastWithMeta = {
+        id,
+        message: truncatedMessage,
+        type,
+        count: 1,
+        lastUpdated: now,
+        originalMessage: truncatedMessage,
+      }
+
+      // Apply max toast limit (FIFO)
+      const newToasts = prev.length >= MAX_TOASTS 
+        ? [...prev.slice(1), newToast]  // Remove oldest, add new
+        : [...prev, newToast]            // Just add new
+
+      // Auto-dismiss after duration
+      setTimeout(() => {
+        setToasts((current) => current.filter((t) => t.id !== id))
+      }, TOAST_DISMISS_DURATION)
+
+      return newToasts
+    })
   }, [])
 
   const contextValue = React.useMemo(() => ({ showToast }), [showToast])

@@ -1,9 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { handleGenerationError } from '@/lib/session-helpers';
 import { api } from '@/services/rpc';
-import { getErrorMessage } from '@shared/errors';
 import { type CreativeBoostInput } from '@shared/types';
 
 import {
@@ -35,7 +33,6 @@ const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {
 
 type CreativeBoostActionsConfig = GenerationActionDeps & {
   setPendingInput: (input: string) => void;
-  showToast: (message: string, type: 'success' | 'error') => void;
   creativeBoostInput: CreativeBoostInput;
   maxMode: boolean;
   lyricsMode: boolean;
@@ -49,7 +46,6 @@ export interface CreativeBoostActionsResult {
 export function useCreativeBoostActions(config: CreativeBoostActionsConfig): CreativeBoostActionsResult {
   const {
     currentSession,
-    setChatMessages,
     setPendingInput,
     showToast,
     creativeBoostInput,
@@ -63,33 +59,29 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
   const handleGenerateCreativeBoost = useCallback(async () => {
     const originalInput = buildCreativeBoostOriginalInput(creativeBoostInput);
 
-    try {
-      await execute(
-        {
-          action: 'creativeBoost',
-          apiCall: () => api.generateCreativeBoost({
-            creativityLevel: creativeBoostInput.creativityLevel,
-            seedGenres: creativeBoostInput.seedGenres,
-            sunoStyles: creativeBoostInput.sunoStyles,
-            description: creativeBoostInput.description,
-            lyricsTopic: creativeBoostInput.lyricsTopic,
-            withWordlessVocals: creativeBoostInput.withWordlessVocals,
-            maxMode,
-            withLyrics: lyricsMode,
-          }),
-          originalInput,
-          promptMode: 'creativeBoost',
-          modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
-          successMessage: "Creative Boost prompt generated.",
-          errorContext: "generate Creative Boost",
-          log,
-          onSuccess: () => { showToast('Creative Boost generated!', 'success'); },
-        },
-        sessionDeps
-      );
-    } catch (error) {
-      showToast(getErrorMessage(error, "Failed to generate Creative Boost"), 'error');
-    }
+    await execute(
+      {
+        action: 'creativeBoost',
+        apiCall: () => api.generateCreativeBoost({
+          creativityLevel: creativeBoostInput.creativityLevel,
+          seedGenres: creativeBoostInput.seedGenres,
+          sunoStyles: creativeBoostInput.sunoStyles,
+          description: creativeBoostInput.description,
+          lyricsTopic: creativeBoostInput.lyricsTopic,
+          withWordlessVocals: creativeBoostInput.withWordlessVocals,
+          maxMode,
+          withLyrics: lyricsMode,
+        }),
+        originalInput,
+        promptMode: 'creativeBoost',
+        modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+        successMessage: "Creative Boost prompt generated.",
+        errorContext: "generate Creative Boost",
+        log,
+        onSuccess: () => { showToast('Creative Boost generated!', 'success'); },
+      },
+      sessionDeps
+    );
   }, [execute, sessionDeps, creativeBoostInput, maxMode, lyricsMode, showToast]);
 
   const handleRefineCreativeBoost = useCallback(async (feedback: string) => {
@@ -98,48 +90,43 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
     // Extract for TypeScript narrowing
     const { currentPrompt, currentTitle } = currentSession;
 
-    try {
-      // Pass targetGenreCount to preserve genre count during refinement
-      // Only pass when seedGenres.length > 0, otherwise omit (backend treats undefined as "no enforcement")
-      const targetGenreCount = creativeBoostInput.seedGenres.length > 0
-        ? creativeBoostInput.seedGenres.length
-        : undefined;
+    // Pass targetGenreCount to preserve genre count during refinement
+    // Only pass when seedGenres.length > 0, otherwise omit (backend treats undefined as "no enforcement")
+    const targetGenreCount = creativeBoostInput.seedGenres.length > 0
+      ? creativeBoostInput.seedGenres.length
+      : undefined;
 
-      await execute(
-        {
-          action: 'creativeBoost',
-          apiCall: () => api.refineCreativeBoost({
-            currentPrompt,
-            currentTitle,
-            feedback,
-            lyricsTopic: creativeBoostInput.lyricsTopic,
-            description: creativeBoostInput.description,
-            seedGenres: creativeBoostInput.seedGenres,
-            sunoStyles: creativeBoostInput.sunoStyles,
-            withWordlessVocals: creativeBoostInput.withWordlessVocals,
-            maxMode,
-            withLyrics: lyricsMode,
-            targetGenreCount,
-          }),
-          originalInput: currentSession.originalInput || '',
-          promptMode: 'creativeBoost',
-          modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
-          successMessage: "Creative Boost prompt refined.",
+    await execute(
+      {
+        action: 'creativeBoost',
+        apiCall: () => api.refineCreativeBoost({
+          currentPrompt,
+          currentTitle,
           feedback,
-          errorContext: "refine Creative Boost",
-          log,
-          onSuccess: () => {
-            setPendingInput("");
-            showToast('Creative Boost refined!', 'success');
-          },
+          lyricsTopic: creativeBoostInput.lyricsTopic,
+          description: creativeBoostInput.description,
+          seedGenres: creativeBoostInput.seedGenres,
+          sunoStyles: creativeBoostInput.sunoStyles,
+          withWordlessVocals: creativeBoostInput.withWordlessVocals,
+          maxMode,
+          withLyrics: lyricsMode,
+          targetGenreCount,
+        }),
+        originalInput: currentSession.originalInput || '',
+        promptMode: 'creativeBoost',
+        modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+        successMessage: "Creative Boost prompt refined.",
+        feedback,
+        errorContext: "refine Creative Boost",
+        log,
+        onSuccess: () => {
+          setPendingInput("");
+          showToast('Creative Boost refined!', 'success');
         },
-        sessionDeps
-      );
-    } catch (error) {
-      handleGenerationError(error, "refine Creative Boost", setChatMessages, log);
-      showToast(getErrorMessage(error, "Failed to refine Creative Boost"), 'error');
-    }
-  }, [execute, sessionDeps, currentSession, creativeBoostInput, maxMode, lyricsMode, setPendingInput, showToast, setChatMessages]);
+      },
+      sessionDeps
+    );
+  }, [execute, sessionDeps, currentSession, creativeBoostInput, maxMode, lyricsMode, setPendingInput, showToast]);
 
   return {
     handleGenerateCreativeBoost,

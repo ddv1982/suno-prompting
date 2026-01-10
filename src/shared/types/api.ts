@@ -71,6 +71,7 @@ export type SaveAllSettingsParams = {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  useLocalLLM?: boolean; // Optional for backwards compatibility
 };
 
 export type GetAllSettingsResponse = {
@@ -81,6 +82,7 @@ export type GetAllSettingsResponse = {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  useLocalLLM: boolean;
 };
 
 // Session endpoints
@@ -94,6 +96,7 @@ export type SetModelParams = { model: string };
 export type SetSunoTagsParams = { useSunoTags: boolean };
 export type SetMaxModeParams = { maxMode: boolean };
 export type SetLyricsModeParams = { lyricsMode: boolean };
+export type SetUseLocalLLMParams = { useLocalLLM: boolean };
 
 // Quick Vibes endpoints
 export type GetPromptModeResponse = { promptMode: PromptMode };
@@ -188,4 +191,31 @@ export type RefineCreativeBoostResponse = {
   lyrics?: string;
   versionId: string;
   debugInfo?: DebugInfo;
+};
+
+// Ollama endpoints
+/** Response from checking Ollama server status */
+export type CheckOllamaStatusResponse = {
+  /** Whether Ollama server is reachable */
+  available: boolean;
+  /** Whether Gemma 3 4B model is installed */
+  hasGemma: boolean;
+  /** Current Ollama endpoint URL */
+  endpoint: string;
+};
+
+/** Response from getting Ollama settings */
+export type OllamaSettingsResponse = {
+  endpoint: string;
+  temperature: number;
+  maxTokens: number;
+  contextLength: number;
+};
+
+/** Parameters for setting Ollama configuration */
+export type SetOllamaSettingsParams = {
+  endpoint?: string;
+  temperature?: number;
+  maxTokens?: number;
+  contextLength?: number;
 };

@@ -18,6 +18,7 @@ type StoredConfig = Partial<{
     debugMode: boolean;
     maxMode: boolean;
     lyricsMode: boolean;
+    useLocalLLM: boolean;
     promptMode: PromptMode;
     creativeBoostMode: CreativeBoostMode;
 }>;
@@ -32,6 +33,7 @@ const DEFAULT_CONFIG: AppConfig = {
     debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
     maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
     lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
+    useLocalLLM: true, // Default to true (local LLM first)
     promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
     creativeBoostMode: 'simple',
 };
@@ -50,7 +52,7 @@ export class StorageManager {
     async initialize(): Promise<void> {
         try {
             await mkdir(this.baseDir, { recursive: true });
-        } catch (error) {
+        } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             log.error('initialize:failed', { error: message });
             throw new StorageError(`Failed to initialize storage directory: ${message}`, 'write');
@@ -65,7 +67,7 @@ export class StorageManager {
             }
             const sessions = await file.json() as PromptSession[];
             return sortByUpdated(sessions);
-        } catch (error) {
+        } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             log.error('getHistory:failed', { error: message });
             // For read errors on history, return empty array to allow app to function
@@ -77,7 +79,7 @@ export class StorageManager {
     async saveHistory(sessions: PromptSession[]): Promise<void> {
         try {
             await Bun.write(this.historyPath, JSON.stringify(sessions, null, 2));
-        } catch (error) {
+        } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             log.error('saveHistory:failed', { error: message });
             throw new StorageError(`Failed to save history: ${message}`, 'write');
@@ -117,6 +119,13 @@ export class StorageManager {
 
     /** Build AppConfig with defaults for missing values */
     private buildConfigWithDefaults(config: StoredConfig, apiKeys: APIKeys): AppConfig {
+        // Smart default: if no explicit useLocalLLM setting and no API keys, default to true
+        let useLocalLLM = config.useLocalLLM;
+        if (useLocalLLM === undefined) {
+            const hasAnyKey = Object.values(apiKeys).some(key => key !== null && key.trim() !== '');
+            useLocalLLM = !hasAnyKey; // Default to local if no keys
+        }
+        
         return {
             provider: config.provider ?? DEFAULT_CONFIG.provider,
             apiKeys,
@@ -125,6 +134,7 @@ export class StorageManager {
             debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
             maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
             lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
+            useLocalLLM,
             promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
             creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
         };
@@ -166,7 +176,7 @@ export class StorageManager {
             toSave.apiKeys = encryptedKeys;
             
             await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
-        } catch (error) {
+        } catch (error: unknown) {
             if (error instanceof StorageError) throw error;
             const message = error instanceof Error ? error.message : String(error);
             log.error('saveConfig:failed', { error: message });

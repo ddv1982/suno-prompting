@@ -286,11 +286,15 @@ export async function refineQuickVibes(
   const systemPrompt = buildQuickVibesRefineSystemPrompt(config.isMaxMode(), withWordlessVocals);
   const userPrompt = buildQuickVibesRefineUserPrompt(cleanPrompt, feedback, category);
 
+  // Get Ollama endpoint for local LLM mode (bypasses Bun fetch bug)
+  const ollamaEndpoint = config.getOllamaEndpoint?.();
+
   const rawResponse = await callLLM({
     getModel: config.getModel,
     systemPrompt,
     userPrompt,
     errorContext: 'refine Quick Vibes',
+    ollamaEndpoint,
   });
 
   let result = postProcessQuickVibes(rawResponse);

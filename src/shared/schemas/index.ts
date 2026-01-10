@@ -32,11 +32,13 @@ export {
   SetDebugModeSchema,
   SetMaxModeSchema,
   SetLyricsModeSchema,
+  SetUseLocalLLMSchema,
   SetPromptModeSchema,
   SetCreativeBoostModeSchema,
   SaveAllSettingsSchema,
   type SetApiKeyInput,
   type SetModelInput,
+  type SetUseLocalLLMInput,
   type SaveAllSettingsInput,
 } from './settings';
 
@@ -55,3 +57,10 @@ export {
   type GenerateCreativeBoostInput,
   type RefineCreativeBoostInput,
 } from './creative-boost';
+
+// Ollama schemas
+export {
+  SetOllamaSettingsSchema,
+  OLLAMA_DEFAULTS,
+  type SetOllamaSettingsInput,
+} from './ollama';

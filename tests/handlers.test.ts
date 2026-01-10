@@ -35,6 +35,7 @@ function createMockAIEngine() {
     setUseSunoTags: mock(() => {}),
     setDebugMode: mock(() => {}),
     setMaxMode: mock(() => {}),
+    setUseLocalLLM: mock(() => {}),
     setLyricsMode: mock(() => {}),
     getModel: mock(() => ({} as any)),
   };
@@ -51,6 +52,7 @@ function createMockStorage() {
     debugMode: false,
     maxMode: false,
     lyricsMode: false,
+    useLocalLLM: false,
     promptMode: "full",
     creativeBoostMode: "simple",
   };
@@ -207,7 +209,7 @@ describe("RPC Handlers", () => {
   });
 
   describe("settings handlers", () => {
-    test("getModel returns model from config", async () => {
+    test("getModel returns cloud model when useLocalLLM is false", async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
       const handlers = createHandlers(aiEngine as any, storage as any);
@@ -215,6 +217,30 @@ describe("RPC Handlers", () => {
       const result = await handlers.getModel({});
 
       expect(result.model).toBe(APP_CONSTANTS.AI.DEFAULT_MODEL);
+    });
+
+    test("getModel returns Ollama model when useLocalLLM is true with configured model", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      // Set useLocalLLM to true and configure an Ollama model
+      await storage.saveConfig({ useLocalLLM: true, ollamaModel: "llama3:8b" });
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.getModel({});
+
+      expect(result.model).toBe("llama3:8b");
+    });
+
+    test("getModel returns default Ollama model when useLocalLLM is true but ollamaModel is undefined", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      // Set useLocalLLM to true without configuring ollamaModel
+      await storage.saveConfig({ useLocalLLM: true, ollamaModel: undefined });
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.getModel({});
+
+      expect(result.model).toBe(APP_CONSTANTS.OLLAMA.DEFAULT_MODEL);
     });
 
     test("setModel updates config and engine", async () => {
@@ -255,6 +281,7 @@ describe("RPC Handlers", () => {
         debugMode: true,
         maxMode: true,
         lyricsMode: true,
+        useLocalLLM: false,
       });
 
       expect(storage.saveConfig).toHaveBeenCalled();
@@ -264,6 +291,7 @@ describe("RPC Handlers", () => {
       expect(aiEngine.setDebugMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setMaxMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setLyricsMode).toHaveBeenCalledWith(true);
+      expect(aiEngine.setUseLocalLLM).toHaveBeenCalledWith(false);
     });
   });
 
