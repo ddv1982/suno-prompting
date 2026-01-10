@@ -18,15 +18,32 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactNod
     hasAdvancedSelection, onPendingInputChange, onLockedPhraseChange, onLyricsTopicChange, onEditorModeChange,
     onAdvancedSelectionUpdate, onAdvancedSelectionClear, onMaxModeChange, onLyricsModeChange, onGenerate, onConversionComplete } = props;
 
-  const canGenerateWithoutInput = hasAdvancedSelection && (!!currentPrompt || (lyricsMode && !!lyricsTopic.trim()));
-  const canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && (!!pendingInput.trim() || canGenerateWithoutInput);
+  const trimmedInput = pendingInput.trim();
+  const isRefineMode = !!currentPrompt;
+  const hasDescription = !!trimmedInput;
+  const hasLyricsTopic = lyricsMode && !!lyricsTopic.trim();
+
+  // Determine if we have valid content to submit:
+  // - Refinement: allow description OR advanced selections OR lyrics topic
+  // - Initial generation: require description OR (advanced + lyrics topic when in lyrics mode)
+  const canSubmitContent = isRefineMode
+    ? (hasDescription || hasAdvancedSelection || hasLyricsTopic)
+    : (hasDescription || (hasAdvancedSelection && (!lyricsMode || hasLyricsTopic)));
+
+  const canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && canSubmitContent;
 
   const handleSend = useCallback((): void => {
-    const trimmed = pendingInput.trim();
-    if (!trimmed && !canGenerateWithoutInput) return;
-    if (isGenerating || trimmed.length > maxChars || !lockedPhraseValidation.isValid || lyricsTopicOverLimit) return;
-    onGenerate(trimmed);
-  }, [pendingInput, canGenerateWithoutInput, isGenerating, maxChars, lockedPhraseValidation.isValid, lyricsTopicOverLimit, onGenerate]);
+    const input = pendingInput.trim();
+    const hasInput = !!input;
+    const hasValidLyricsTopic = lyricsMode && !!lyricsTopic.trim();
+    const hasValidContent = isRefineMode
+      ? (hasInput || hasAdvancedSelection || hasValidLyricsTopic)
+      : (hasInput || (hasAdvancedSelection && (!lyricsMode || hasValidLyricsTopic)));
+
+    if (!hasValidContent) return;
+    if (isGenerating || (hasInput && input.length > maxChars) || !lockedPhraseValidation.isValid || lyricsTopicOverLimit) return;
+    onGenerate(input);
+  }, [pendingInput, lyricsMode, lyricsTopic, isRefineMode, hasAdvancedSelection, isGenerating, maxChars, lockedPhraseValidation.isValid, lyricsTopicOverLimit, onGenerate]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey && canSubmit) { e.preventDefault(); handleSend(); }
