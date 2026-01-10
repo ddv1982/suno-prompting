@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 
+import { generateWithOllama } from '@bun/ai/ollama-client';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError } from '@shared/errors';
@@ -13,22 +14,45 @@ export type CallLLMOptions = {
   systemPrompt: string;
   userPrompt: string;
   errorContext: string;
+  /** Optional Ollama endpoint - when provided, uses direct Ollama client to bypass Bun fetch bug */
+  ollamaEndpoint?: string;
 };
 
 /**
- * Shared helper for making LLM calls with consistent error handling
+ * Shared helper for making LLM calls with consistent error handling.
+ * Supports both cloud providers (via AI SDK) and local Ollama (via direct HTTP client).
+ * 
+ * When ollamaEndpoint is provided, uses direct Ollama client to bypass Bun fetch
+ * empty body bug (#6932).
  */
 export async function callLLM(options: CallLLMOptions): Promise<string> {
-  const { getModel, systemPrompt, userPrompt, errorContext } = options;
+  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint } = options;
 
   try {
-    const { text: rawResponse } = await generateText({
-      model: getModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-      abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
-    });
+    let rawResponse: string;
+
+    if (ollamaEndpoint) {
+      // Use direct Ollama client to bypass Bun fetch empty body bug
+      // Uses longer timeout (90s) for local models which can be slower
+      log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint });
+      rawResponse = await generateWithOllama(
+        ollamaEndpoint,
+        systemPrompt,
+        userPrompt,
+        APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
+      );
+    } else {
+      // Use AI SDK for cloud providers
+      log.info('callLLM:cloud', { errorContext });
+      const { text } = await generateText({
+        model: getModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
+        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+      });
+      rawResponse = text;
+    }
 
     if (!rawResponse?.trim()) {
       throw new AIGenerationError(`Empty response from AI model (${errorContext})`);

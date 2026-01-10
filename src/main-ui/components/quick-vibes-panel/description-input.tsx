@@ -89,6 +89,7 @@ export function DescriptionInput({
         onChange={(e): void => { onChange(e.target.value); }}
         onKeyDown={onKeyDown}
         disabled={isGenerating}
+        maxLength={APP_CONSTANTS.QUICK_VIBES_MAX_CHARS}
         className={cn(
           "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
           isGenerating && "opacity-70"

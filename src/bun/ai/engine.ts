@@ -246,6 +246,7 @@ export class AIEngine {
         isMaxMode: this.config.isMaxMode.bind(this.config),
         isDebugMode: this.config.isDebugMode.bind(this.config),
         buildDebugInfo: this.buildDebugInfoInternal.bind(this),
+        getOllamaEndpoint: () => this.config.isUseLocalLLM() ? this.config.getOllamaEndpoint() : undefined,
       }
     );
   }

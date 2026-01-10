@@ -228,11 +228,15 @@ export async function refineCreativeBoost(
     cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, perfCtx.performanceInstruments, perfCtx.guidance
   );
 
+  // Get Ollama endpoint for local LLM mode (bypasses Bun fetch bug)
+  const ollamaEndpoint = config.getOllamaEndpoint?.();
+
   const rawResponse = await callLLM({
     getModel: config.getModel,
     systemPrompt,
     userPrompt,
     errorContext: 'refine Creative Boost',
+    ollamaEndpoint,
   });
 
   const parsed = parseCreativeBoostResponse(rawResponse);
