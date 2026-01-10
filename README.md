@@ -420,76 +420,90 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 <details>
 <summary><strong>Generation & Remix Dataflow</strong></summary>
 
-Most operations are **fully deterministic** (no LLM, <50ms) using curated data pools.
-LLM is only used for lyrics generation/refinement - never for style/prompt generation.
+**Style/Prompt generation is ALWAYS deterministic** (no LLM, <50ms) using curated data pools.
+LLM is only used for lyrics and title generation when Lyrics Mode is enabled.
 
-**Architecture:** Style operations are always deterministic for fast, predictable results.
+**Architecture:**
+- **Style/Prompt**: Always deterministic - uses genre/instrument/mood pools
+- **Title**: Deterministic when Lyrics OFF, LLM when Lyrics ON (to match lyrics theme)
+- **Lyrics**: LLM only (when Lyrics Mode enabled)
+
 **LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Input
         UI[User Action]
     end
 
-    subgraph Decision
-        LYR{Lyrics<br/>Enabled?}
-        PROVIDER{Provider}
-    end
-
-    subgraph "Deterministic (No LLM)"
+    subgraph "Always Deterministic"
         STYLE[Style/Prompt<br/>Builder]
         DATA[(Genre, Instrument,<br/>Mood Pools)]
+        DTITLE[Deterministic<br/>Title]
     end
 
-    subgraph "LLM Operations (Lyrics Only)"
-        LGEN[Lyrics Gen]
-        LREF[Lyrics Refine]
+    subgraph Decision
+        LYR{Lyrics<br/>Mode?}
+    end
+
+    subgraph "LLM (Lyrics Mode Only)"
         LTITLE[Title Gen]
+        LYRICS[Lyrics Gen/Refine]
     end
 
-    subgraph Backends
-        OLLAMA[Ollama<br/>Local]
-        CLOUD[Cloud API<br/>Groq/OpenAI/Anthropic]
+    subgraph Provider
+        PROV{LLM<br/>Provider}
+        OLLAMA[Ollama Local]
+        CLOUD[Cloud API]
+    end
+
+    subgraph Output
+        RESULT[Final Result]
     end
 
     UI --> STYLE
     STYLE -.-> DATA
-    UI --> LYR
-    LYR -->|OFF| STYLE
-    LYR -->|ON| LGEN
+    STYLE --> LYR
+    LYR -->|OFF| DTITLE
+    DTITLE --> RESULT
     LYR -->|ON| LTITLE
-    LGEN --> PROVIDER
-    LREF --> PROVIDER
-    LTITLE --> PROVIDER
-    PROVIDER -->|Local| OLLAMA
-    PROVIDER -->|Cloud| CLOUD
+    LYR -->|ON| LYRICS
+    LTITLE --> PROV
+    LYRICS --> PROV
+    PROV -->|Local| OLLAMA
+    PROV -->|Cloud| CLOUD
+    OLLAMA --> RESULT
+    CLOUD --> RESULT
 
-    classDef det fill:#d4edda,stroke:#28a745
-    classDef ai fill:#fff3cd,stroke:#ffc107
-    classDef data fill:#e2e3e5,stroke:#6c757d
-    classDef provider fill:#cfe2ff,stroke:#0d6efd
+    classDef det fill:#28a745,stroke:#1e7e34,color:#fff
+    classDef ai fill:#fd7e14,stroke:#dc6a12,color:#fff
+    classDef data fill:#6c757d,stroke:#545b62,color:#fff
+    classDef provider fill:#007bff,stroke:#0069d9,color:#fff
+    classDef output fill:#17a2b8,stroke:#138496,color:#fff
+    classDef decision fill:#6f42c1,stroke:#5a32a3,color:#fff
 
-    class STYLE det
-    class LGEN,LREF,LTITLE ai
+    class STYLE,DTITLE det
+    class LTITLE,LYRICS ai
     class DATA data
     class OLLAMA,CLOUD provider
+    class PROV,LYR decision
+    class RESULT output
 ```
 
 | Operation | LLM Calls | Latency (Cloud) | Latency (Local) | Notes |
 |-----------|-----------|-----------------|-----------------|-------|
-| Generate (Lyrics OFF) | 0 | <50ms | <50ms | Fully deterministic |
-| Generate (Lyrics ON) | 1-3 | ~2s | ~1-3s* | Genre + title + lyrics |
+| Generate (Lyrics OFF) | 0 | <50ms | <50ms | Style + title: deterministic |
+| Generate (Lyrics ON) | 2-3 | ~2s | ~1-3s* | Style: deterministic, Title + lyrics: LLM |
 | Refine (Lyrics OFF) | 0 | <50ms | <50ms | Deterministic style remix |
 | Refine (Lyrics ON) | 1 | ~1s | ~1-2s* | Style: deterministic, Lyrics: LLM |
 | Quick Vibes | 0 | <50ms | <50ms | Category templates |
 | Creative Boost | 0-3 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle |
 | Remix (6 buttons) | 0 | <10ms | <10ms | All deterministic |
-| Remix Lyrics | 1 | ~1s | ~1-2s* | LLM-based remix |
+| Remix Lyrics | 1 | ~1s | ~1-2s* | LLM-based |
 
 *Local latency varies by hardware (CPU vs GPU, model size)
 
-**Why deterministic?** Faster response, predictable results, no API costs for basic operations.
+**Why deterministic for style?** Faster response (~50ms), predictable results, no API costs, consistent quality.
 
 </details>
 
