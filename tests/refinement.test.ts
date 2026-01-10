@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect, mock } from 'bun:test';
 
 import {
   buildCombinedSystemPrompt,
@@ -181,6 +181,17 @@ BPM: 90`;
   });
 
   test('uses LLM when offline but lyrics mode is enabled', async () => {
+    // Mock the Ollama availability check to return unavailable BEFORE importing refinePrompt
+    const mockCheckOllama = mock(() =>
+      Promise.resolve({ available: false, hasGemma: false })
+    );
+    
+    await mock.module('@bun/ai/ollama-availability', () => ({
+      checkOllamaAvailable: mockCheckOllama,
+      invalidateOllamaCache: mock(() => {}),
+    }));
+    
+    // Re-import after mocking to get the mocked version
     const { refinePrompt } = await import('@bun/ai/refinement');
     
     const mockConfig = {
@@ -207,9 +218,9 @@ style tags: "warm"
 instruments: "piano"`;
 
     // Should attempt to use LLM (not deterministic)
-    // Will fail Ollama availability check since Ollama is not running in test environment
-    try {
-      await refinePrompt(
+    // Will fail Ollama availability check since we mocked it as unavailable
+    await expect(
+      refinePrompt(
         {
           currentPrompt,
           currentTitle: 'My Song',
@@ -217,14 +228,11 @@ instruments: "piano"`;
           currentLyrics: '[VERSE]\nExisting lyrics',
         },
         mockConfig as any
-      );
-      // Should not reach here
-      expect(false).toBe(true);
-    } catch (error: any) {
-      // When lyrics mode is enabled, should attempt Ollama validation
-      // This proves it's NOT using deterministic path
-      expect(error.message).toContain('Ollama');
-    }
+      )
+    ).rejects.toThrow('Ollama');
+    
+    // Verify that checkOllamaAvailable was called (proves it's NOT using deterministic path)
+    expect(mockCheckOllama).toHaveBeenCalled();
   });
 });
 

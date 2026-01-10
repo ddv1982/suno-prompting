@@ -15,6 +15,13 @@ await mock.module('@bun/ai/ollama-availability', () => ({
   invalidateOllamaCache: mockInvalidateOllamaCache,
 }));
 
+// Mock Ollama client for local LLM calls
+const mockGenerateWithOllama = mock(() => Promise.resolve('Generated text from Ollama'));
+
+await mock.module('@bun/ai/ollama-client', () => ({
+  generateWithOllama: mockGenerateWithOllama,
+}));
+
 // Import after mocking
 const { generateInitial } = await import('@bun/ai/generation');
 
@@ -172,6 +179,7 @@ describe('generateInitial - edge cases', () => {
 describe('generateInitial - offline mode with Ollama', () => {
   beforeEach(() => {
     mockCheckOllamaAvailable.mockClear();
+    mockGenerateWithOllama.mockClear();
   });
 
   test('throws OllamaUnavailableError when Ollama is not running', async () => {
