@@ -421,8 +421,9 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 <summary><strong>Generation & Remix Dataflow</strong></summary>
 
 Most operations are **fully deterministic** (no LLM, <50ms) using curated data pools.
-LLM is only used when lyrics are enabled or for lyrics remix.
+LLM is only used for lyrics generation/refinement - never for style/prompt generation.
 
+**Architecture:** Style operations are always deterministic for fast, predictable results.
 **LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
 
 ```mermaid
@@ -479,6 +480,8 @@ flowchart LR
 |-----------|-----------|-----------------|-----------------|-------|
 | Generate (Lyrics OFF) | 0 | <50ms | <50ms | Fully deterministic |
 | Generate (Lyrics ON) | 1-3 | ~2s | ~1-3s* | Genre + title + lyrics |
+| Refine (Lyrics OFF) | 0 | <50ms | <50ms | Deterministic style remix |
+| Refine (Lyrics ON) | 1 | ~1s | ~1-2s* | Style: deterministic, Lyrics: LLM |
 | Quick Vibes | 0 | <50ms | <50ms | Category templates |
 | Creative Boost | 0-3 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle |
 | Remix (6 buttons) | 0 | <10ms | <10ms | All deterministic |
@@ -486,7 +489,7 @@ flowchart LR
 
 *Local latency varies by hardware (CPU vs GPU, model size)
 
-**Why deterministic?** Faster response, predictable results, no API costs for basic generation.
+**Why deterministic?** Faster response, predictable results, no API costs for basic operations.
 
 </details>
 

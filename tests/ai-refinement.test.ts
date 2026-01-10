@@ -80,7 +80,7 @@ function createMockConfig(overrides: Partial<RefinementConfig> = {}): Refinement
 }
 
 describe('refinePrompt', () => {
-  test('refines prompt with feedback', async () => {
+  test('refines prompt with feedback (deterministic style)', async () => {
     const config = createMockConfig();
 
     const result = await refinePrompt(
@@ -94,7 +94,8 @@ describe('refinePrompt', () => {
 
     expect(result.text).toBeDefined();
     expect(result.text).toContain('jazz');
-    expect(result.title).toBe('Refined Title');
+    // Title is preserved (not refined by LLM) in deterministic mode
+    expect(result.title).toBe('Original Title');
   });
 
   test('includes debug info when debug mode is enabled', async () => {
@@ -256,7 +257,7 @@ describe('refinePrompt with local LLM (offline mode)', () => {
     expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
-  test('uses combined LLM refinement for cloud providers', async () => {
+  test('uses deterministic style + cloud LLM lyrics for cloud providers', async () => {
     const config = createMockConfig({
       isUseLocalLLM: () => false,
       isLyricsMode: () => true,
@@ -272,13 +273,15 @@ describe('refinePrompt with local LLM (offline mode)', () => {
       config
     );
 
-    // Cloud: uses combined LLM refinement for everything
+    // Cloud: uses deterministic style + cloud LLM for lyrics (unified architecture)
     expect(result.text).toBeDefined();
-    expect(result.title).toBeDefined();
+    expect(result.text).toContain('with remixed style tags'); // Deterministic style
+    expect(result.title).toBe('Rock Ballad'); // Title preserved (not from LLM)
+    expect(result.lyrics).toBeDefined();
     
-    // Should call cloud generateText
+    // Should call cloud generateText for lyrics only
     expect(mockGenerateText).toHaveBeenCalled();
-    // Should NOT use Ollama client
+    // Should NOT use Ollama client for cloud mode
     expect(mockGenerateWithOllama).not.toHaveBeenCalled();
   });
 });

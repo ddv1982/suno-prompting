@@ -2,35 +2,27 @@
  * Prompt Refinement Module
  *
  * Handles refinement of existing prompts based on user feedback.
- * Uses LLM to apply feedback while maintaining prompt structure.
- * Supports both cloud providers and local Ollama for offline mode.
+ * 
+ * Architecture (unified for all providers):
+ * - Style refinement: Always deterministic (no LLM calls, <50ms)
+ * - Lyrics refinement: Uses LLM (cloud or Ollama based on settings)
  *
- * Extracted from AIEngine for single responsibility and testability.
+ * This ensures fast, consistent style refinement while leveraging
+ * LLM capabilities only for creative lyrics work.
  *
  * @module ai/refinement
  */
 
 import { callLLM } from '@bun/ai/llm-utils';
 import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
-import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
+import { cleanLyrics } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
-import {
-  buildCombinedSystemPrompt,
-  buildCombinedWithLyricsSystemPrompt,
-  buildSystemPrompt,
-  buildMaxModeSystemPrompt,
-  type RefinementContext,
-} from '@bun/prompt/builders';
-import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { APP_CONSTANTS } from '@shared/constants';
-import { AIGenerationError, OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
-import { cleanJsonResponse } from '@shared/prompt-utils';
+import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
-import type { GenerationResult, ParsedCombinedResponse, RefinementConfig } from '@bun/ai/types';
+import type { GenerationResult, RefinementConfig } from '@bun/ai/types';
 
 const log = createLogger('Refinement');
-
-const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 
 /**
  * Options for refining a prompt.
@@ -48,36 +40,6 @@ export interface RefinePromptOptions {
   lockedPhrase?: string;
   /** Topic for lyrics refinement */
   lyricsTopic?: string;
-}
-
-/**
- * Parse JSON response from LLM.
- */
-function parseJsonResponse(rawResponse: string, actionName: string): ParsedCombinedResponse | null {
-  try {
-    const cleaned = cleanJsonResponse(rawResponse);
-    const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
-    if (!parsed.prompt) {
-      throw new AIGenerationError('Missing prompt in response');
-    }
-    return parsed;
-  } catch (e) {
-    log.warn(`${actionName}:json_parse_failed`, {
-      error: e instanceof Error ? e.message : 'Unknown error',
-      rawResponse: rawResponse.slice(0, 200),
-    });
-    return null;
-  }
-}
-
-/**
- * Get system prompt based on mode.
- */
-function getSystemPrompt(isMaxMode: boolean, useSunoTags: boolean): string {
-  if (isMaxMode) {
-    return buildMaxModeSystemPrompt(MAX_CHARS);
-  }
-  return buildSystemPrompt(MAX_CHARS, useSunoTags);
 }
 
 /**
@@ -180,42 +142,52 @@ IMPORTANT: Return only the refined lyrics text, nothing else.`;
 
 /**
  * Refine only the lyrics using LLM, applying user feedback.
- * Used when local LLM is active and lyrics mode is ON.
  * Style fields remain unchanged (handled by deterministic refinement).
+ * 
+ * Works with both cloud providers and local Ollama:
+ * - Cloud: Uses configured AI provider (Groq/OpenAI/Anthropic)
+ * - Offline: Uses local Ollama with Gemma model
  *
  * @param currentLyrics - Current lyrics to refine
  * @param feedback - User feedback to apply
  * @param currentPrompt - Current prompt for genre/mood extraction
  * @param lyricsTopic - Optional topic for context
  * @param config - Configuration with dependencies
+ * @param ollamaEndpoint - Optional Ollama endpoint for offline mode
  * @returns Refined lyrics
  *
- * @throws {OllamaUnavailableError} When Ollama is not running
- * @throws {OllamaModelMissingError} When Gemma model is missing
+ * @throws {OllamaUnavailableError} When offline mode but Ollama is not running
+ * @throws {OllamaModelMissingError} When offline mode but Gemma model is missing
  */
 async function refineLyricsWithFeedback(
   currentLyrics: string,
   feedback: string,
   currentPrompt: string,
   lyricsTopic: string | undefined,
-  config: RefinementConfig
+  config: RefinementConfig,
+  ollamaEndpoint?: string
 ): Promise<{ lyrics: string }> {
   const { extractGenreFromPrompt, extractMoodFromPrompt } = await import('@bun/prompt/deterministic');
 
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
-  const ollamaEndpoint = config.getOllamaEndpoint();
-  const timeoutMs = APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
+  const isOffline = !!ollamaEndpoint;
+  const timeoutMs = isOffline
+    ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
+    : APP_CONSTANTS.AI.TIMEOUT_MS;
 
   log.info('refineLyricsWithFeedback:start', {
     genre,
     mood,
     feedbackLength: feedback.length,
     currentLyricsLength: currentLyrics.length,
+    isOffline,
   });
 
-  // Validate Ollama is available
-  await validateOllamaForRefinement(ollamaEndpoint);
+  // Validate Ollama is available (only for offline mode)
+  if (ollamaEndpoint) {
+    await validateOllamaForRefinement(ollamaEndpoint);
+  }
 
   const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags());
   const userPrompt = `Current lyrics:\n${currentLyrics}\n\nFeedback to apply:\n${feedback}${lyricsTopic ? `\n\nTopic/theme: ${lyricsTopic}` : ''}`;
@@ -231,6 +203,7 @@ async function refineLyricsWithFeedback(
 
   log.info('refineLyricsWithFeedback:complete', {
     outputLength: refinedLyrics.length,
+    isOffline,
   });
 
   return { lyrics: cleanLyrics(refinedLyrics) || currentLyrics };
@@ -257,33 +230,44 @@ async function validateOllamaForRefinement(endpoint: string): Promise<void> {
 }
 
 /**
- * Handle offline refinement: deterministic style + optional LLM lyrics.
- * Extracted to reduce complexity of main refinePrompt function.
+ * Unified refinement: deterministic style + optional LLM lyrics.
+ * 
+ * This is now the main refinement path for ALL providers (cloud and offline).
+ * Style refinement is always deterministic (no LLM calls).
+ * LLM is only used for lyrics refinement when lyrics mode is enabled.
+ * 
+ * @param options - Refinement options
+ * @param config - Configuration with dependencies
+ * @param ollamaEndpoint - Optional Ollama endpoint for offline mode
  */
-async function refinePromptOffline(
+async function refineWithDeterministicStyle(
   options: RefinePromptOptions,
-  config: RefinementConfig
+  config: RefinementConfig,
+  ollamaEndpoint?: string
 ): Promise<GenerationResult> {
   const { currentPrompt, feedback, currentLyrics, lyricsTopic } = options;
   const isLyricsMode = config.isLyricsMode();
+  const isOffline = !!ollamaEndpoint;
 
-  log.info('refinePrompt:offlineMode', {
+  log.info('refinePrompt:unified', {
     isLyricsMode,
     hasCurrentLyrics: !!currentLyrics,
-    reason: 'local LLM = style always deterministic, LLM for lyrics only',
+    isOffline,
+    reason: 'style always deterministic, LLM for lyrics only',
   });
 
-  // Step 1: ALWAYS do deterministic style refinement
+  // Step 1: ALWAYS do deterministic style refinement (no LLM)
   const styleResult = await refinePromptDeterministic(options, config);
 
-  // Step 2: If lyrics mode is ON and we have lyrics, refine them with local LLM
+  // Step 2: If lyrics mode is ON and we have lyrics, refine them with LLM
   if (isLyricsMode && currentLyrics) {
     const lyricsResult = await refineLyricsWithFeedback(
       currentLyrics,
       feedback,
       currentPrompt,
       lyricsTopic,
-      config
+      config,
+      ollamaEndpoint
     );
 
     return {
@@ -291,9 +275,9 @@ async function refinePromptOffline(
       lyrics: lyricsResult.lyrics,
       debugInfo: config.isDebugMode()
         ? config.buildDebugInfo(
-            'OFFLINE_REFINEMENT (style: deterministic, lyrics: LLM)',
+            `UNIFIED_REFINEMENT (style: deterministic, lyrics: ${isOffline ? 'Ollama' : 'Cloud LLM'})`,
             `Style feedback + lyrics feedback: ${feedback}`,
-            `Style: deterministic remix\nLyrics: local LLM refined`
+            `Style: deterministic remix\nLyrics: ${isOffline ? 'local' : 'cloud'} LLM refined`
           )
         : undefined,
     };
@@ -305,13 +289,12 @@ async function refinePromptOffline(
 /**
  * Refine an existing prompt based on user feedback.
  *
- * Uses combined system prompt that includes current prompt context,
- * expecting JSON response with refined prompt, title, and optional lyrics.
- * Falls back to simpler refinement if JSON parsing fails.
+ * Uses unified refinement strategy for ALL providers (cloud and offline):
+ * - Style refinement: Always deterministic (no LLM calls, <50ms)
+ * - Lyrics refinement: Uses LLM (cloud or Ollama based on settings)
  *
- * When offline mode is enabled:
- * - For style-only refinement (no lyrics): Uses deterministic style tag generation
- * - For lyrics refinement: Uses Ollama local LLM
+ * This architecture ensures fast, consistent style refinement while
+ * leveraging LLM capabilities only for creative lyrics work.
  *
  * @param options - Options for refinement
  * @param config - Configuration with dependencies
@@ -324,127 +307,12 @@ export async function refinePrompt(
   options: RefinePromptOptions,
   config: RefinementConfig
 ): Promise<GenerationResult> {
-  const { currentPrompt, currentTitle, feedback, currentLyrics, lockedPhrase, lyricsTopic } = options;
-
   // Determine offline mode and endpoint
   const isOffline = config.isUseLocalLLM();
-  const isLyricsMode = config.isLyricsMode();
   const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
-  const timeoutMs = isOffline
-    ? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
-    : APP_CONSTANTS.AI.TIMEOUT_MS;
 
-  // When local LLM is active: use extracted offline handler
-  if (isOffline) {
-    return refinePromptOffline(options, config);
-  }
-
-  // Remove locked phrase from prompt before sending to LLM
-  const promptForLLM = lockedPhrase
-    ? currentPrompt.replace(`, ${lockedPhrase}`, '').replace(`${lockedPhrase}, `, '').replace(lockedPhrase, '')
-    : currentPrompt;
-
-  const refinement: RefinementContext = {
-    currentPrompt: promptForLLM,
-    currentTitle: currentTitle || 'Untitled',
-    currentLyrics: currentLyrics,
-    lyricsTopic: lyricsTopic,
-  };
-
-  const systemPrompt = isLyricsMode
-    ? buildCombinedWithLyricsSystemPrompt(MAX_CHARS, config.getUseSunoTags(), config.isMaxMode(), refinement)
-    : buildCombinedSystemPrompt(MAX_CHARS, config.getUseSunoTags(), config.isMaxMode(), refinement);
-
-  const userPrompt = `Apply this feedback and return the refined JSON:\n\n${feedback}`;
-
-  const rawResponse = await callLLM({
-    getModel: config.getModel,
-    systemPrompt,
-    userPrompt,
-    errorContext: 'refine prompt (combined JSON)',
-    ollamaEndpoint,
-    timeoutMs,
-  });
-
-  const parsed = parseJsonResponse(rawResponse, 'refinePrompt');
-  if (!parsed) {
-    // Use fallback refinement with same provider routing
-    const fallbackResult = await refinePromptFallbackWithModel(
-      promptForLLM,
-      feedback,
-      lockedPhrase,
-      config,
-      timeoutMs,
-      ollamaEndpoint
-    );
-    return {
-      ...fallbackResult,
-      title: currentTitle,
-      lyrics: isLyricsMode ? currentLyrics : undefined,
-    };
-  }
-
-  let promptText = await config.postProcess(parsed.prompt);
-
-  if (lockedPhrase) {
-    promptText = injectLockedPhrase(promptText, lockedPhrase, config.isMaxMode());
-  }
-
-  return {
-    text: promptText,
-    title: cleanTitle(parsed.title, currentTitle),
-    lyrics: isLyricsMode ? (cleanLyrics(parsed.lyrics) || currentLyrics) : undefined,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
-      : undefined,
-  };
+  // Unified path: deterministic style + LLM lyrics (for all providers)
+  return refineWithDeterministicStyle(options, config, ollamaEndpoint);
 }
 
-/**
- * Fallback refinement when JSON parsing fails.
- */
-async function refinePromptFallbackWithModel(
-  currentPrompt: string,
-  feedback: string,
-  lockedPhrase: string | undefined,
-  config: RefinementConfig,
-  timeoutMs: number,
-  ollamaEndpoint?: string
-): Promise<GenerationResult> {
-  const systemPrompt = getSystemPrompt(config.isMaxMode(), config.getUseSunoTags());
-  const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
 
-  try {
-    const text = await callLLM({
-      getModel: config.getModel,
-      systemPrompt,
-      userPrompt,
-      errorContext: 'refine prompt (fallback)',
-      ollamaEndpoint,
-      timeoutMs,
-    });
-
-    if (!text?.trim()) {
-      throw new AIGenerationError('Empty response from AI model (refine prompt fallback)');
-    }
-
-    let result = await config.postProcess(text);
-
-    if (lockedPhrase) {
-      result = injectLockedPhrase(result, lockedPhrase, config.isMaxMode());
-    }
-
-    return {
-      text: result,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(systemPrompt, userPrompt, text)
-        : undefined,
-    };
-  } catch (error: unknown) {
-    if (error instanceof AIGenerationError) throw error;
-    throw new AIGenerationError(
-      `Failed to refine prompt fallback: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined
-    );
-  }
-}
