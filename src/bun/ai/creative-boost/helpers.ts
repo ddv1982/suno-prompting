@@ -57,13 +57,14 @@ export async function applyMaxModeConversion(
  */
 export async function enforceMaxLength(
   text: string,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  ollamaEndpoint?: string
 ): Promise<string> {
   if (text.length <= MAX_CHARS) {
     return text;
   }
   log.info('enforceMaxLength:processing', { originalLength: text.length, maxChars: MAX_CHARS });
-  const result = await enforceLengthLimit(text, MAX_CHARS, (t) => condense(t, getModel));
+  const result = await enforceLengthLimit(text, MAX_CHARS, (t) => condense(t, getModel, ollamaEndpoint));
   if (result.length < text.length) {
     log.info('enforceMaxLength:reduced', { newLength: result.length });
   }
@@ -128,11 +129,12 @@ export async function postProcessCreativeBoostResponse(
 ): Promise<GenerationResult> {
   const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = params;
 
+  const ollamaEndpoint = config.getOllamaEndpoint?.();
   const { styleResult, debugInfo: maxConversionDebugInfo } = await applyMaxModeConversion(
-    parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange }
+    parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint }
   );
 
-  const processedStyle = await enforceMaxLength(styleResult, config.getModel);
+  const processedStyle = await enforceMaxLength(styleResult, config.getModel, ollamaEndpoint);
 
   const lyricsResult = await generateLyricsForCreativeBoost(
     processedStyle,
@@ -142,7 +144,7 @@ export async function postProcessCreativeBoostResponse(
     withLyrics,
     config.getModel,
     config.getUseSunoTags?.() ?? false,
-    config.getOllamaEndpoint?.()
+    ollamaEndpoint
   );
 
   let debugInfo: DebugInfo | undefined;

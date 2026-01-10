@@ -7,8 +7,6 @@
  * @module ai/creative-boost/refine
  */
 
-import { generateText } from 'ai';
-
 import { isDirectMode } from '@bun/ai/direct-mode';
 import { callLLM } from '@bun/ai/llm-utils';
 import { createLogger } from '@bun/logger';
@@ -21,7 +19,6 @@ import {
 } from '@bun/prompt/creative-boost-builder';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
-import { APP_CONSTANTS } from '@shared/constants';
 
 import { DEFAULT_LYRICS_TOPIC, enforceGenreCount, generateLyricsForCreativeBoost, postProcessCreativeBoostResponse } from './helpers';
 
@@ -88,7 +85,8 @@ async function refineTitleWithFeedback(
   styleResult: string,
   lyricsTopic: string,
   feedback: string,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  ollamaEndpoint?: string
 ): Promise<string> {
   const titleSystemPrompt = `You are refining a song title based on user input.
 Current title: "${currentTitle}"
@@ -100,12 +98,12 @@ User feedback: ${feedback}
 Generate a new title that addresses the feedback while maintaining relevance to the style.
 Output ONLY the new title, nothing else. Do not include quotes around the title.`;
 
-  const { text: refinedTitle } = await generateText({
-    model: getModel(),
-    system: titleSystemPrompt,
-    prompt: feedback,
-    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-    abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+  const refinedTitle = await callLLM({
+    getModel,
+    systemPrompt: titleSystemPrompt,
+    userPrompt: feedback,
+    errorContext: 'refine Creative Boost title',
+    ollamaEndpoint,
   });
 
   return refinedTitle.trim().replace(/^["']|["']$/g, '');
@@ -149,7 +147,7 @@ async function refineDirectMode(
 
   if (hasFeedback) {
     try {
-      newTitle = await refineTitleWithFeedback(currentTitle, styleResult, lyricsTopic, feedback, config.getModel);
+      newTitle = await refineTitleWithFeedback(currentTitle, styleResult, lyricsTopic, feedback, config.getModel, config.getOllamaEndpoint?.());
     } catch (error: unknown) {
       log.warn('refineDirectMode:title:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     }

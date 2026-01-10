@@ -114,10 +114,11 @@ export class AIEngine {
 
   /**
    * Post-process generated text (condense, dedupe, remove meta).
-   * Wraps the standalone utility to inject model getter.
+   * Wraps the standalone utility to inject model getter and ollama endpoint.
    */
   private async postProcessInternal(text: string): Promise<string> {
-    return postProcess(text, this.getModel);
+    const ollamaEndpoint = this.config.isUseLocalLLM() ? this.config.getOllamaEndpoint() : undefined;
+    return postProcess(text, this.getModel, ollamaEndpoint);
   }
 
   // ==========================================================================

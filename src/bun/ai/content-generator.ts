@@ -1,49 +1,16 @@
-import { generateText, type LanguageModel } from 'ai';
-
-import { generateWithOllama } from '@bun/ai/ollama-client';
+import { callLLM } from '@bun/ai/llm-utils';
 import { GENRE_REGISTRY } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
 import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
 
+import type { LanguageModel } from 'ai';
+
 const log = createLogger('ContentGenerator');
 
 /** All available genre keys from the registry */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as Array<keyof typeof GENRE_REGISTRY>;
-
-/**
- * Generate text using either the AI SDK (cloud) or direct Ollama client (local).
- * This helper encapsulates the provider selection logic to avoid repetition.
- *
- * @param systemPrompt - System prompt for the model
- * @param userPrompt - User prompt for the model
- * @param getModel - Function to get the language model (for cloud providers)
- * @param timeoutMs - Timeout in milliseconds
- * @param ollamaEndpoint - Optional Ollama endpoint (when provided, uses direct Ollama client)
- * @returns Generated text
- */
-async function generateTextWithProvider(
-  systemPrompt: string,
-  userPrompt: string,
-  getModel: () => LanguageModel,
-  timeoutMs: number,
-  ollamaEndpoint?: string
-): Promise<string> {
-  if (ollamaEndpoint) {
-    // Use direct Ollama client to bypass Bun fetch empty body bug
-    return generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeoutMs);
-  }
-  // Use AI SDK for cloud providers
-  const result = await generateText({
-    model: getModel(),
-    system: systemPrompt,
-    prompt: userPrompt,
-    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-    abortSignal: AbortSignal.timeout(timeoutMs),
-  });
-  return result.text;
-}
 
 export type ContentDebugInfo = {
   systemPrompt: string;
@@ -93,7 +60,14 @@ export async function generateTitle(
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const text = await generateTextWithProvider(systemPrompt, userPrompt, getModel, timeoutMs, ollamaEndpoint);
+    const text = await callLLM({
+      getModel,
+      systemPrompt,
+      userPrompt,
+      errorContext: 'generate title',
+      ollamaEndpoint,
+      timeoutMs,
+    });
 
     return {
       title: text.trim().replace(/^["']|["']$/g, ''),
@@ -132,7 +106,14 @@ export async function generateLyrics(
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const text = await generateTextWithProvider(systemPrompt, userPrompt, getModel, timeoutMs, ollamaEndpoint);
+    const text = await callLLM({
+      getModel,
+      systemPrompt,
+      userPrompt,
+      errorContext: 'generate lyrics',
+      ollamaEndpoint,
+      timeoutMs,
+    });
 
     return { lyrics: text.trim(), debugInfo };
   } catch (error: unknown) {
@@ -180,7 +161,14 @@ RULES:
 Which genre fits best? Return only the genre key.`;
 
   try {
-    const text = await generateTextWithProvider(systemPrompt, userPrompt, getModel, timeoutMs, ollamaEndpoint);
+    const text = await callLLM({
+      getModel,
+      systemPrompt,
+      userPrompt,
+      errorContext: 'detect genre from topic',
+      ollamaEndpoint,
+      timeoutMs,
+    });
 
     const genre = text.trim().toLowerCase();
     // Validate the returned genre exists in registry

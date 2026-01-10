@@ -16,6 +16,10 @@ export type CallLLMOptions = {
   errorContext: string;
   /** Optional Ollama endpoint - when provided, uses direct Ollama client to bypass Bun fetch bug */
   ollamaEndpoint?: string;
+  /** Optional timeout in ms (defaults to OLLAMA.GENERATION_TIMEOUT_MS for Ollama, AI.TIMEOUT_MS for cloud) */
+  timeoutMs?: number;
+  /** Optional max retries for cloud providers (defaults to AI.MAX_RETRIES) */
+  maxRetries?: number;
 };
 
 /**
@@ -26,30 +30,32 @@ export type CallLLMOptions = {
  * empty body bug (#6932).
  */
 export async function callLLM(options: CallLLMOptions): Promise<string> {
-  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint } = options;
+  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries } = options;
 
   try {
     let rawResponse: string;
 
     if (ollamaEndpoint) {
       // Use direct Ollama client to bypass Bun fetch empty body bug
-      // Uses longer timeout (90s) for local models which can be slower
-      log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint });
+      const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
+      log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout });
       rawResponse = await generateWithOllama(
         ollamaEndpoint,
         systemPrompt,
         userPrompt,
-        APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS
+        timeout
       );
     } else {
       // Use AI SDK for cloud providers
-      log.info('callLLM:cloud', { errorContext });
+      const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
+      const retries = maxRetries ?? APP_CONSTANTS.AI.MAX_RETRIES;
+      log.info('callLLM:cloud', { errorContext, timeout, retries });
       const { text } = await generateText({
         model: getModel(),
         system: systemPrompt,
         prompt: userPrompt,
-        maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+        maxRetries: retries,
+        abortSignal: AbortSignal.timeout(timeout),
       });
       rawResponse = text;
     }

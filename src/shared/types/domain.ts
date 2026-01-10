@@ -142,4 +142,6 @@ export type ConversionOptions = {
   readonly chordProgression?: string;
   /** Pre-computed BPM range string (e.g., "between 80 and 160") - takes priority over genre inference */
   readonly bpmRange?: string;
+  /** Ollama endpoint for local LLM mode */
+  readonly ollamaEndpoint?: string;
 };

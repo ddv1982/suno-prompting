@@ -6,11 +6,9 @@
  * @module prompt/conversion/non-max
  */
 
-import { generateText } from 'ai';
-
+import { callLLM } from '@bun/ai/llm-utils';
 import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
-import { APP_CONSTANTS } from '@shared/constants';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
 
@@ -123,17 +121,18 @@ function parseNonMaxAIResponse(text: string): NonMaxSectionContent {
  */
 async function generateSectionContent(
   parsed: ParsedStyleDescription,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  ollamaEndpoint?: string
 ): Promise<{ sections: NonMaxSectionContent; debugInfo?: Partial<DebugInfo> }> {
   const systemPrompt = buildNonMaxConversionSystemPrompt();
   const userPrompt = buildNonMaxConversionUserPrompt(parsed);
 
-  const { text } = await generateText({
-    model: getModel(),
-    system: systemPrompt,
-    prompt: userPrompt,
-    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-    abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+  const text = await callLLM({
+    getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext: 'non-max section content',
+    ollamaEndpoint,
   });
 
   const sections = parseNonMaxAIResponse(text);
@@ -223,7 +222,7 @@ export async function convertToNonMaxFormat(
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
 ): Promise<NonMaxConversionResult> {
-  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = options;
+  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint } = options;
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
 
@@ -234,7 +233,7 @@ export async function convertToNonMaxFormat(
   const bpm = bpmRange ?? inferBpm(genre.forLookup);
 
   // Generate section content using AI
-  const { sections, debugInfo } = await generateSectionContent(parsed, getModel);
+  const { sections, debugInfo } = await generateSectionContent(parsed, getModel, ollamaEndpoint);
 
   // Build instruments string with articulations (with non-max fallback)
   const baseInstruments = enhanceInstruments(

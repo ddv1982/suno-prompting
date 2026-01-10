@@ -108,16 +108,18 @@ export function buildDebugInfo(
  *
  * @param text - The raw text to post-process
  * @param getModel - Function to get the language model for LLM-based cleanup
+ * @param ollamaEndpoint - Optional Ollama endpoint for local LLM mode
  */
 export async function postProcess(
   text: string,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  ollamaEndpoint?: string
 ): Promise<string> {
   return postProcessPrompt(text, {
     maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS,
     minChars: APP_CONSTANTS.MIN_PROMPT_CHARS,
-    rewriteWithoutMeta: (t) => rewriteWithoutMeta(t, getModel),
-    condense: (t) => condense(t, getModel),
-    condenseWithDedup: (t, repeated) => condenseWithDedup(t, repeated, getModel),
+    rewriteWithoutMeta: (t) => rewriteWithoutMeta(t, getModel, ollamaEndpoint),
+    condense: (t) => condense(t, getModel, ollamaEndpoint),
+    condenseWithDedup: (t, repeated) => condenseWithDedup(t, repeated, getModel, ollamaEndpoint),
   });
 }

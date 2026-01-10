@@ -6,11 +6,9 @@
  * @module prompt/conversion/max
  */
 
-import { generateText } from 'ai';
-
+import { callLLM } from '@bun/ai/llm-utils';
 import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
-import { APP_CONSTANTS } from '@shared/constants';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 import { nowISO } from '@shared/utils';
@@ -136,17 +134,18 @@ function parseAIEnhancementResponse(text: string): AIEnhancementResult {
  */
 export async function enhanceWithAI(
   parsed: ParsedMaxPrompt,
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  ollamaEndpoint?: string
 ): Promise<AIEnhancementResult> {
   const systemPrompt = buildMaxConversionSystemPrompt();
   const userPrompt = buildMaxConversionUserPrompt(parsed);
 
-  const { text } = await generateText({
-    model: getModel(),
-    system: systemPrompt,
-    prompt: userPrompt,
-    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-    abortSignal: AbortSignal.timeout(APP_CONSTANTS.AI.TIMEOUT_MS),
+  const text = await callLLM({
+    getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext: 'max mode conversion',
+    ollamaEndpoint,
   });
 
   const result = parseAIEnhancementResponse(text);
@@ -198,7 +197,7 @@ export async function convertToMaxFormat(
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
 ): Promise<MaxConversionResult> {
-  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = options;
+  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint } = options;
   // Check if already in max format
   if (isMaxFormat(text)) {
     return { convertedPrompt: text, wasConverted: false };
@@ -214,7 +213,7 @@ export async function convertToMaxFormat(
   const bpm = bpmRange ?? inferBpm(genre.forLookup);
 
   // Enhance with AI (generate style tags and recording)
-  const aiResult = await enhanceWithAI(parsed, getModel);
+  const aiResult = await enhanceWithAI(parsed, getModel, ollamaEndpoint);
 
   // Build instruments string with articulations (genre-aware defaults)
   const baseInstruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);

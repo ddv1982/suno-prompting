@@ -10,10 +10,8 @@
  * @module ai/refinement
  */
 
-import { generateText, type LanguageModel } from 'ai';
-
+import { callLLM } from '@bun/ai/llm-utils';
 import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
-import { generateWithOllama } from '@bun/ai/ollama-client';
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import {
@@ -222,12 +220,14 @@ async function refineLyricsWithFeedback(
   const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags());
   const userPrompt = `Current lyrics:\n${currentLyrics}\n\nFeedback to apply:\n${feedback}${lyricsTopic ? `\n\nTopic/theme: ${lyricsTopic}` : ''}`;
 
-  const refinedLyrics = await generateWithOllama(
-    ollamaEndpoint,
+  const refinedLyrics = await callLLM({
+    getModel: config.getModel,
     systemPrompt,
     userPrompt,
-    timeoutMs
-  );
+    errorContext: 'refine lyrics with feedback',
+    ollamaEndpoint,
+    timeoutMs,
+  });
 
   log.info('refineLyricsWithFeedback:complete', {
     outputLength: refinedLyrics.length,
@@ -254,32 +254,6 @@ async function validateOllamaForRefinement(endpoint: string): Promise<void> {
   }
 
   log.info('refinePrompt:usingOllama', { endpoint });
-}
-
-/**
- * Generate text using either the AI SDK (cloud) or direct Ollama client (local).
- * Uses direct Ollama client for offline mode to bypass Bun fetch empty body bug.
- */
-async function generateTextForRefinement(
-  systemPrompt: string,
-  userPrompt: string,
-  getModel: () => LanguageModel,
-  timeoutMs: number,
-  ollamaEndpoint?: string
-): Promise<string> {
-  if (ollamaEndpoint) {
-    // Use direct Ollama client to bypass Bun fetch empty body bug
-    return generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeoutMs);
-  }
-  // Use AI SDK for cloud providers
-  const result = await generateText({
-    model: getModel(),
-    system: systemPrompt,
-    prompt: userPrompt,
-    maxRetries: APP_CONSTANTS.AI.MAX_RETRIES,
-    abortSignal: AbortSignal.timeout(timeoutMs),
-  });
-  return result.text;
 }
 
 /**
@@ -377,14 +351,14 @@ export async function refinePrompt(
 
   const userPrompt = `Apply this feedback and return the refined JSON:\n\n${feedback}`;
 
-  // Use direct Ollama client for offline mode to bypass Bun fetch bug
-  const rawResponse = await generateTextForRefinement(
+  const rawResponse = await callLLM({
+    getModel: config.getModel,
     systemPrompt,
     userPrompt,
-    config.getModel,
+    errorContext: 'refine prompt (combined JSON)',
+    ollamaEndpoint,
     timeoutMs,
-    ollamaEndpoint
-  );
+  });
 
   const parsed = parseJsonResponse(rawResponse, 'refinePrompt');
   if (!parsed) {
@@ -422,7 +396,6 @@ export async function refinePrompt(
 
 /**
  * Fallback refinement when JSON parsing fails.
- * Uses direct Ollama client for offline mode to bypass Bun fetch bug.
  */
 async function refinePromptFallbackWithModel(
   currentPrompt: string,
@@ -436,14 +409,14 @@ async function refinePromptFallbackWithModel(
   const userPrompt = `Previous prompt:\n${currentPrompt}\n\nFeedback:\n${feedback}`;
 
   try {
-    // Use direct Ollama client for offline mode to bypass Bun fetch bug
-    const text = await generateTextForRefinement(
+    const text = await callLLM({
+      getModel: config.getModel,
       systemPrompt,
       userPrompt,
-      config.getModel,
+      errorContext: 'refine prompt (fallback)',
+      ollamaEndpoint,
       timeoutMs,
-      ollamaEndpoint
-    );
+    });
 
     if (!text?.trim()) {
       throw new AIGenerationError('Empty response from AI model (refine prompt fallback)');
