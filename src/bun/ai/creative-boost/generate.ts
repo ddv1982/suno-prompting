@@ -17,7 +17,7 @@ import {
 } from '@bun/ai/creative-boost/helpers';
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
 import { createLogger } from '@bun/logger';
-import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
+import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost';
 
 
 import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';

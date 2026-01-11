@@ -8,7 +8,7 @@ import {
   getInstrumentsForGenre,
   generateCreativeBoostTitle,
   getCreativityPool,
-} from '@bun/prompt/creative-boost-templates';
+} from '@bun/prompt/creative-boost';
 
 // =============================================================================
 // Test Constants
