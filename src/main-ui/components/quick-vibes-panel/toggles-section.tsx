@@ -39,12 +39,11 @@ export function TogglesSection({
         id="qv-max-mode"
         icon={<Zap className="w-3.5 h-3.5" />}
         label="Max Mode"
-        checked={isDirectMode ? false : maxMode}
+        checked={maxMode}
         onChange={onMaxModeChange}
-        disabled={isGenerating || isDirectMode}
-        showNaBadge={isDirectMode}
+        disabled={isGenerating}
       />
-      <p className="ui-helper pl-6">{getMaxModeHelperText(isDirectMode, maxMode)}</p>
+      <p className="ui-helper pl-6">{getMaxModeHelperText(maxMode)}</p>
     </div>
   );
 }
