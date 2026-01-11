@@ -94,7 +94,13 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode(), loadUseLocalLLM()]);
   }, [loadModel, loadMaxMode, loadLyricsMode, loadUseLocalLLM]);
 
-  // Load settings on mount and reload when settings modal closes
+  // Load settings on initial mount
+  useEffect(() => {
+    void reloadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps = run once on mount
+
+  // Reload settings when settings modal closes
   useEffect(() => {
     if (!settingsOpen) {
       void reloadSettings();
