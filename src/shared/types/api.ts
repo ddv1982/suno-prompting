@@ -11,6 +11,8 @@ export type GenerateInitialParams = {
   lockedPhrase?: string; 
   lyricsTopic?: string;
   genreOverride?: string;
+  /** Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
+  sunoStyles?: string[];
 };
 export type GenerateInitialResponse = { 
   prompt: string;
@@ -29,6 +31,8 @@ export type RefinePromptParams = {
   currentLyrics?: string;
   lyricsTopic?: string;
   genreOverride?: string;
+  /** Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
+  sunoStyles?: string[];
 };
 export type RefinePromptResponse = { 
   prompt: string; 

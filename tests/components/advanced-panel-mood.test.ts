@@ -11,6 +11,7 @@ describe("AdvancedPanel - Mood Selector", () => {
     // Verify TypeScript compilation with mood props
     const mockSelection = {
       seedGenres: [],
+      sunoStyles: [],
       harmonicStyle: null,
       harmonicCombination: null,
       polyrhythmCombination: null,
@@ -36,6 +37,7 @@ describe("AdvancedPanel - Mood Selector", () => {
   test("mood props handle null values", async () => {
     const mockSelection = {
       seedGenres: [],
+      sunoStyles: [],
       harmonicStyle: null,
       harmonicCombination: null,
       polyrhythmCombination: null,
@@ -61,6 +63,7 @@ describe("AdvancedPanel - Mood Selector", () => {
   test("mood props handle undefined values", async () => {
     const mockSelection = {
       seedGenres: [],
+      sunoStyles: [],
       harmonicStyle: null,
       harmonicCombination: null,
       polyrhythmCombination: null,

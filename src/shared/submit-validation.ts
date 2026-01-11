@@ -14,16 +14,18 @@ export type FullPromptSubmitInput = {
   lyricsTopic: string;
   lyricsMode: boolean;
   hasAdvancedSelection: boolean;
+  sunoStyles: string[];
 };
 
 /**
  * Determines if Full Prompt mode can submit.
- * User can submit with ANY of: description, advanced selections, or song topic.
+ * User can submit with ANY of: description, advanced selections, song topic, or suno styles.
  */
 export function canSubmitFullPrompt(input: FullPromptSubmitInput): boolean {
   const hasDescription = !!input.description.trim();
   const hasLyricsTopic = input.lyricsMode && !!input.lyricsTopic.trim();
-  return hasDescription || input.hasAdvancedSelection || hasLyricsTopic;
+  const hasSunoStyles = input.sunoStyles.length > 0;
+  return hasDescription || input.hasAdvancedSelection || hasLyricsTopic || hasSunoStyles;
 }
 
 // ============================================

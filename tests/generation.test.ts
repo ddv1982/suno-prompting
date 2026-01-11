@@ -37,6 +37,15 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
     getOllamaEndpoint: () => 'http://127.0.0.1:11434',
+    buildDebugInfo: (systemPrompt: string, userPrompt: string, rawResponse: string) => ({
+      systemPrompt,
+      userPrompt,
+      model: 'test-model',
+      provider: 'groq',
+      timestamp: new Date().toISOString(),
+      requestBody: userPrompt,
+      responseBody: rawResponse,
+    }),
     ...overrides,
   };
 }

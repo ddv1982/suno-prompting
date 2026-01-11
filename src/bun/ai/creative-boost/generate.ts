@@ -82,6 +82,14 @@ export async function generateCreativeBoost(
 ): Promise<GenerationResult> {
   const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, withWordlessVocals, maxMode, withLyrics, config } = options;
 
+  // Validate input (styles limit + mutual exclusivity)
+  if (sunoStyles.length > 4) {
+    throw new Error('Maximum 4 Suno V5 styles allowed');
+  }
+  if (seedGenres.length > 0 && sunoStyles.length > 0) {
+    throw new Error('Cannot use both Seed Genres and Suno V5 Styles. Please choose one approach.');
+  }
+
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
     return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, maxMode, config);

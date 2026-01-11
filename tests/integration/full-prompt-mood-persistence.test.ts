@@ -31,6 +31,7 @@ describe("Full Prompt Mode - Mood State Persistence", () => {
 
     const mockSelection = {
       seedGenres: [],
+      sunoStyles: [],
       harmonicStyle: null,
       harmonicCombination: null,
       polyrhythmCombination: null,
@@ -67,6 +68,7 @@ describe("Full Prompt Mode - Mood State Persistence", () => {
 
     const mockSelection = {
       seedGenres: [],
+      sunoStyles: [],
       harmonicStyle: null,
       harmonicCombination: null,
       polyrhythmCombination: null,

@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
+import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import {
@@ -64,6 +65,21 @@ export function AdvancedPanel({
   isGenerating,
 }: AdvancedPanelProps): ReactElement {
   const hasAnySelection = hasAdvancedSelection(selection);
+  const isDirectMode = selection.sunoStyles.length > 0;
+  const hasGenres = selection.seedGenres.length > 0;
+  
+  // Pre-calculate helper text and badge text for cleaner JSX
+  const genresDisabled = isDirectMode;
+  const genresHelperText = genresDisabled ? "Disabled when Suno styles are selected" : undefined;
+  const genresBadgeText = genresDisabled ? "disabled" : "optional";
+  
+  const stylesDisabled = hasGenres;
+  const stylesHelperText = stylesDisabled 
+    ? "Disabled when Seed Genres are selected" 
+    : isDirectMode 
+      ? "Selected styles will be used exactly as-is" 
+      : undefined;
+  const stylesBadgeText = stylesDisabled ? "disabled" : "optional";
 
   return (
     <div className="space-y-[var(--space-5)] p-[var(--space-panel)] panel">
@@ -82,6 +98,15 @@ export function AdvancedPanel({
         )}
       </div>
 
+      {/* Direct Mode Indicator */}
+      {isDirectMode && (
+        <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
+          <p className="text-xs text-primary font-medium">
+            Direct Mode: Styles will be used exactly as selected
+          </p>
+        </div>
+      )}
+
       {/* Mood Category - First item in advanced panel */}
       <MoodCategoryCombobox
         value={moodCategory ?? null}
@@ -96,6 +121,19 @@ export function AdvancedPanel({
         selected={selection.seedGenres}
         onChange={(genres) => { onUpdate({ seedGenres: genres }); }}
         maxSelections={4}
+        disabled={isGenerating || genresDisabled}
+        helperText={genresHelperText}
+        badgeText={genresBadgeText}
+      />
+
+      {/* Suno V5 Styles Multi-Select - spans full width */}
+      <SunoStylesMultiSelect
+        selected={selection.sunoStyles}
+        onChange={(styles) => { onUpdate({ sunoStyles: styles }); }}
+        maxSelections={4}
+        disabled={isGenerating || stylesDisabled}
+        helperText={stylesHelperText}
+        badgeText={stylesBadgeText}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)]">

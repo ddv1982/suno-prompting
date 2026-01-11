@@ -14,6 +14,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: '',
       lyricsMode: false,
       hasAdvancedSelection: false,
+      sunoStyles: [],
     })).toBe(false);
   });
 
@@ -23,6 +24,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: '',
       lyricsMode: false,
       hasAdvancedSelection: false,
+      sunoStyles: [],
     })).toBe(true);
   });
 
@@ -32,6 +34,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: '',
       lyricsMode: false,
       hasAdvancedSelection: true,
+      sunoStyles: [],
     })).toBe(true);
   });
 
@@ -41,6 +44,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: '',
       lyricsMode: true,
       hasAdvancedSelection: true,
+      sunoStyles: [],
     })).toBe(true);
   });
 
@@ -50,6 +54,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: 'Love and heartbreak',
       lyricsMode: true,
       hasAdvancedSelection: false,
+      sunoStyles: [],
     })).toBe(true);
   });
 
@@ -59,6 +64,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: 'Love and heartbreak',
       lyricsMode: false,
       hasAdvancedSelection: false,
+      sunoStyles: [],
     })).toBe(false);
   });
 
@@ -68,6 +74,7 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: '',
       lyricsMode: false,
       hasAdvancedSelection: false,
+      sunoStyles: [],
     })).toBe(false);
   });
 
@@ -77,7 +84,18 @@ describe('canSubmitFullPrompt', () => {
       lyricsTopic: '   ',
       lyricsMode: true,
       hasAdvancedSelection: false,
+      sunoStyles: [],
     })).toBe(false);
+  });
+
+  test('returns true with suno styles only', () => {
+    expect(canSubmitFullPrompt({
+      description: '',
+      lyricsTopic: '',
+      lyricsMode: false,
+      hasAdvancedSelection: false,
+      sunoStyles: ['dream-pop'],
+    })).toBe(true);
   });
 });
 

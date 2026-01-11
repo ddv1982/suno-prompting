@@ -83,6 +83,14 @@ export async function generateQuickVibes(
 ): Promise<GenerationResult> {
   const { category, customDescription, withWordlessVocals, sunoStyles } = options;
 
+  // Validate input (styles limit + mutual exclusivity with category)
+  if (sunoStyles.length > 4) {
+    throw new Error('Maximum 4 Suno V5 styles allowed');
+  }
+  if (category !== null && sunoStyles.length > 0) {
+    throw new Error('Cannot use both Category and Suno V5 Styles. Please select only one.');
+  }
+
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
     log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription, maxMode: config.isMaxMode() });

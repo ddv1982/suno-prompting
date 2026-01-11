@@ -42,6 +42,8 @@ export interface GenerateInitialOptions {
   lyricsTopic?: string;
   /** Optional genre override from Advanced Mode */
   genreOverride?: string;
+  /** Optional Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
+  sunoStyles?: string[];
 }
 
 /**
@@ -223,7 +225,8 @@ async function generateInitialWithOfflineLyrics(
 /**
  * Generate initial prompt.
  *
- * Branches based on lyrics and offline mode:
+ * Branches based on Direct Mode, lyrics, and offline mode:
+ * - Direct Mode (sunoStyles provided): Uses Suno V5 styles as-is with enrichment
  * - Lyrics OFF: Fully deterministic path (<50ms, no LLM calls)
  * - Lyrics ON + Offline: Ollama-assisted path (local Gemma 3 4B)
  * - Lyrics ON + Cloud: LLM-assisted path (genre detection, title, lyrics generation)
@@ -236,6 +239,35 @@ export async function generateInitial(
   options: GenerateInitialOptions,
   config: GenerationConfig
 ): Promise<GenerationResult> {
+  // Direct Mode: Use sunoStyles as-is (bypasses deterministic genre logic)
+  if (options.sunoStyles && options.sunoStyles.length > 0) {
+    const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
+    const { buildDirectModePrompt } = await import('@bun/ai/direct-mode');
+    
+    const title = await generateDirectModeTitle(
+      options.description || '',
+      options.sunoStyles,
+      config.getModel
+    );
+    
+    // Use centralized prompt building
+    const { text, enriched } = buildDirectModePrompt(options.sunoStyles, config.isMaxMode());
+    
+    const debugInfo = config.isDebugMode()
+      ? config.buildDebugInfo(
+          'DIRECT_MODE (Full Prompt Advanced): Styles preserved, prompt enriched.',
+          `Suno V5 Styles: ${options.sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${options.description || '(none)'}`,
+          text
+        )
+      : undefined;
+    
+    return {
+      text,
+      title,
+      debugInfo,
+    };
+  }
+  
   if (!config.isLyricsMode()) {
     return generateInitialDeterministic(options, config);
   }

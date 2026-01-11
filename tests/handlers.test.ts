@@ -122,6 +122,8 @@ describe("RPC Handlers", () => {
         currentLyrics: "Old lyrics",
         lockedPhrase: "locked",
         lyricsTopic: "topic",
+        genreOverride: "jazz",
+        sunoStyles: [],
       });
     });
   });

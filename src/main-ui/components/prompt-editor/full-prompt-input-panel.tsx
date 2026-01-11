@@ -26,6 +26,7 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactNod
     lyricsTopic,
     lyricsMode,
     hasAdvancedSelection,
+    sunoStyles: advancedSelection.sunoStyles,
   });
 
   const canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && canSubmitContent;

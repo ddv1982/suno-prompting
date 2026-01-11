@@ -121,6 +121,8 @@ export interface GenerationConfig {
   getProvider: () => AIProvider;
   /** Returns the Ollama endpoint URL */
   getOllamaEndpoint: () => string;
+  /** Builds debug info from prompts and response */
+  buildDebugInfo: DebugInfoBuilder;
 }
 
 /**

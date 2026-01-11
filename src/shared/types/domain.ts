@@ -69,6 +69,8 @@ export type AdvancedSelection = {
   timeSignature: string | null;
   timeSignatureJourney: string | null;
   seedGenres: string[];  // 0-4 genres or genre combinations
+  /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
+  sunoStyles: string[];
 };
 
 export const EMPTY_ADVANCED_SELECTION = {
@@ -78,6 +80,7 @@ export const EMPTY_ADVANCED_SELECTION = {
   timeSignature: null,
   timeSignatureJourney: null,
   seedGenres: [],
+  sunoStyles: [],
 } as const satisfies AdvancedSelection;
 
 export type PromptVersion = {

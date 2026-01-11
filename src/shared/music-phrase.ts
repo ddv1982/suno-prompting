@@ -48,6 +48,7 @@ export function buildMusicPhrase(selection: AdvancedSelection): string {
 export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
     return !!(
         selection.seedGenres.length > 0 ||
+        selection.sunoStyles.length > 0 ||
         selection.harmonicStyle ||
         selection.harmonicCombination ||
         selection.polyrhythmCombination ||
@@ -63,6 +64,7 @@ export function hasAdvancedSelection(selection: AdvancedSelection): boolean {
 export function countSelections(selection: AdvancedSelection): number {
     let count = 0;
     if (selection.seedGenres.length > 0) count++;
+    if (selection.sunoStyles.length > 0) count++;
     if (selection.harmonicStyle || selection.harmonicCombination) count++;
     if (selection.polyrhythmCombination) count++;
     if (selection.timeSignature || selection.timeSignatureJourney) count++;

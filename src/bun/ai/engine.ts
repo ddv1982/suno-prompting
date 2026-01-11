@@ -140,6 +140,7 @@ export class AIEngine {
       getModelName: this.config.getModelName.bind(this.config),
       getProvider: this.config.getProvider.bind(this.config),
       getOllamaEndpoint: this.config.getOllamaEndpoint.bind(this.config),
+      buildDebugInfo: this.buildDebugInfoInternal.bind(this),
     };
   }
 
