@@ -95,9 +95,9 @@ export function CreativeBoostPanel({
         <MoodCategoryCombobox
           value={input.moodCategory}
           onChange={handleMoodCategoryChange}
-          disabled={isGenerating || isDirectMode}
-          helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
-          badgeText={isDirectMode ? "disabled" : "optional"}
+          disabled={isGenerating}
+          helperText="Influences the emotional tone of enrichment"
+          badgeText="optional"
         />
       )}
 

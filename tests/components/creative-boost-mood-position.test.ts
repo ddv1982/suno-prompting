@@ -9,36 +9,37 @@ describe("CreativeBoostPanel - Mood Selector Position", () => {
     expect(typeof CreativeBoostPanel).toBe("function");
   });
 
-  test("mood selector maintains existing disabled logic", async () => {
+  test("mood selector is enabled in both simple and advanced modes", async () => {
     const { CreativeBoostPanel } = await import(
       "@/components/creative-boost-panel/creative-boost-panel"
     );
     const componentString = CreativeBoostPanel.toString();
 
-    // Should have disabled logic for mood
-    expect(componentString).toContain("isGenerating || isDirectMode");
+    // Should have MoodCategoryCombobox in both simple and advanced modes
     expect(componentString).toContain("MoodCategoryCombobox");
+    expect(componentString).toContain("isSimpleMode");
+    expect(componentString).toContain("!isSimpleMode");
   });
 
-  test("helper text logic includes direct mode check", async () => {
+  test("helper text is consistent regardless of direct mode", async () => {
     const { CreativeBoostPanel } = await import(
       "@/components/creative-boost-panel/creative-boost-panel"
     );
     const componentString = CreativeBoostPanel.toString();
 
-    // Verify conditional helper text
-    expect(componentString).toContain("Disabled when using direct Suno styles");
+    // Verify helper text is always the same (not conditional on Direct Mode)
     expect(componentString).toContain("Influences the emotional tone of enrichment");
+    // Should NOT have Direct Mode disabled message
+    expect(componentString).not.toContain("Disabled when using direct Suno styles");
   });
 
-  test("badge text logic includes direct mode check", async () => {
+  test("badge text is always optional", async () => {
     const { CreativeBoostPanel } = await import(
       "@/components/creative-boost-panel/creative-boost-panel"
     );
     const componentString = CreativeBoostPanel.toString();
 
-    // Verify conditional badge text (check for the values in minified output)
-    expect(componentString).toContain("disabled");
+    // Verify badge text is always "optional" (not conditional)
     expect(componentString).toContain("optional");
     expect(componentString).toContain("badgeText");
   });
