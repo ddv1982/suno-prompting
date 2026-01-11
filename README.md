@@ -97,7 +97,7 @@ The app automatically detects Ollama and switches to local mode.
 - **Max Mode**: Community-discovered format for higher quality output
 - **Dynamic instrument selection** from curated pools with exclusion rules
 - **Genre detection**: Keyword matching → spelling correction → LLM analysis
-- **Mood categories**: 20 mood categories with ~150 unique moods for targeted emotional direction
+- **Mood selector**: Choose from 20 mood categories (~150 unique moods) to guide emotional tone across all modes (Full Prompt, Quick Vibes, Creative Boost)
 - **Quick remix buttons** for mood/genre/instruments/style/recording
 - **Lyrics Mode**: Optional AI-generated structured lyrics
 - **1000-character limit** validation + contradictory tag warnings
@@ -134,6 +134,11 @@ Searchable dropdowns for precise selection:
 | Modal Combination | Journeys (Major-Minor, Lydian-Minor, etc.) |
 | Polyrhythm | Rhythmic patterns |
 | Time Signature | Standard and odd meters (7/8, 5/4, etc.) |
+
+**Mood Selector:**
+- Available in both Simple and Advanced modes
+- Override default mood selection with specific category (Energetic, Calm, Dark, etc.)
+- Works independently of genre and style selections
 
 </details>
 
@@ -172,6 +177,7 @@ Experimental genre exploration with creativity slider (0-100%).
 | Feature | Simple | Advanced |
 |---------|--------|----------|
 | Creativity Slider | ✅ | ✅ |
+| Mood Selector | ✅ | ✅ |
 | Description Input | ✅ | ✅ |
 | Toggles (Lyrics, Wordless, Max) | ✅ | ✅ |
 | Seed Genres (up to 4) | ❌ | ✅ |
@@ -183,6 +189,13 @@ Experimental genre exploration with creativity slider (0-100%).
 |----------|--------|--------|
 | Seed Genres | App registry (<!-- SINGLE_GENRE_COUNT -->35<!-- /SINGLE_GENRE_COUNT --> + <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos) | Title Case |
 | Suno V5 Styles | Official Suno V5 (~900+) | lowercase as-is |
+
+**Note:** When Suno V5 Styles are selected ("Direct Mode"), Seed Genres are disabled (mutual exclusion). However, all other features remain fully functional:
+- ✅ Mood Selector works with any style combination
+- ✅ Max Mode toggle available
+- ✅ Can switch between Simple/Advanced modes freely
+- ❌ Creativity Slider disabled (styles override creativity)
+- ❌ Seed Genres disabled (mutual exclusion with Suno Styles)
 
 </details>
 
