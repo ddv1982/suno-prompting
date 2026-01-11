@@ -16,6 +16,12 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Smooth {nature}',
     '{time} Session',
     'Cool {emotion}',
+    // New patterns
+    'The {emotion} of {time}',
+    '{nature} and {emotion}',
+    'Between {time} and {nature}',
+    '{emotion}\'s {action}',
+    '{action} Through {nature}',
   ],
   blues: [
     '{emotion} Blues',
@@ -32,6 +38,12 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Rise of {abstract}',
     '{action} Free',
     '{time} Rebel',
+    // New patterns
+    'Born to {action}',
+    'When {nature} {action}s',
+    '{emotion} Never Dies',
+    'The {action} {emotion}',
+    '{nature}\'s {emotion}',
   ],
   metal: [
     '{nature} of {abstract}',
@@ -48,6 +60,11 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Feel the {nature}',
     '{emotion} Vibes',
     'Sweet {emotion}',
+    // New patterns
+    'All the {emotion}',
+    '{action} With Me',
+    'My {nature}',
+    '{emotion} Forever',
   ],
   electronic: [
     '{abstract} State',
@@ -56,6 +73,12 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Neon {emotion}',
     'Synthetic {nature}',
     '{time} Pulse',
+    // New patterns
+    '{emotion}.exe',
+    'System {abstract}',
+    '{action} Protocol',
+    'Cyber {nature}',
+    '{abstract} Algorithm',
   ],
   ambient: [
     '{nature} Drift',
@@ -64,6 +87,11 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Ethereal {nature}',
     '{abstract} Space',
     'Gentle {nature}',
+    // New patterns
+    '{emotion} in the {abstract}',
+    'Whispers of {nature}',
+    '{time}\'s {emotion}',
+    'The {action} {abstract}',
   ],
   classical: [
     '{nature} Sonata',
@@ -173,10 +201,24 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
 
 /** Default patterns for unknown genres */
 export const DEFAULT_PATTERNS: readonly string[] = [
+  // Original 2-word patterns
   '{emotion} {nature}',
   '{time} {emotion}',
   '{action} {nature}',
   '{nature} of {abstract}',
   '{emotion} Journey',
   '{time} Tale',
+  // New 3-word patterns
+  '{emotion} of the {nature}',
+  '{action} Through {nature}',
+  'The {emotion} {action}',
+  '{time} in {abstract}',
+  // Possessive patterns
+  '{nature}\'s {emotion}',
+  '{time}\'s {action}',
+  '{emotion}\'s {nature}',
+  // Additional patterns
+  'When {nature} {action}s',
+  '{emotion} and {nature}',
+  'Between {time} and {emotion}',
 ];
