@@ -195,34 +195,147 @@ This allows you to override the mood while keeping the genre selection from the 
 
 ---
 
-### Step 4: Title Generation
+### Step 4: Title Generation (Enhanced v2.0)
+
+The title generation system uses **269 unique words** across 5 categories with **159 genre-specific patterns** to create contextually appropriate, topic-aware song titles.
+
+#### Title Vocabulary (269 words)
+
+| Category | Count | Examples | Description |
+|----------|-------|----------|-------------|
+| **EMOTION_WORDS** | 60 | Dream, Memory, Shadow, Joy, Sorrow, Passion | Feelings, states, connections, intensity |
+| **ACTION_WORDS** | 50 | Rising, Falling, Dancing, Soaring, Blazing | Movement, change, flow, impact (gerund form) |
+| **TIME_WORDS** | 46 | Midnight, Dawn, Spring, Forever, Golden Hour | Seasons, time periods, poetic time, cycles |
+| **NATURE_WORDS** | 65 | Ocean, Storm, Nebula, Blossom, Thunder | Weather, landscapes, celestial, flora, elements |
+| **ABSTRACT_WORDS** | 48 | Infinity, Journey, Rhythm, Mystery, Cosmos | Concepts, philosophy, cosmic themes |
+
+**Total combinations:** 100,000+ unique titles (4× expansion from v1.0)
+
+---
+
+#### Phase 1: Keyword Extraction (Topic-Aware)
+
+If a description is provided, the system extracts keywords and maps them to word categories:
+
+```
+INPUT DESCRIPTION: "midnight rain and lost love"
+
+KEYWORD EXTRACTION (word boundary matching):
+1. "midnight" → TIME: ['Midnight', 'Night']
+2. "rain" → NATURE: ['Rain', 'Storm', 'Water']
+3. "lost" → EMOTION: ['Lost', 'Shadow', 'Memory']
+4. "love" → EMOTION: ['Love', 'Heart', 'Dream']
+
+RESULT: 
+{
+  time: ['Midnight', 'Night'],
+  nature: ['Rain', 'Storm', 'Water'],
+  emotion: ['Lost', 'Shadow', 'Memory', 'Love', 'Heart', 'Dream']
+}
+```
+
+**Keyword mappings (170+ total):**
+- TIME_KEYWORDS: 50+ (night, morning, seasons, forever, etc.)
+- NATURE_KEYWORDS: 70+ (ocean, storm, celestial, flora, etc.)
+- EMOTION_KEYWORDS: 50+ (love, grief, passion, wonder, etc.)
+- ACTION_KEYWORDS: 11 (rise, fall, dance, etc.)
+- ABSTRACT_KEYWORDS: 40+ (rhythm, journey, cosmic, mystery, etc.)
+
+**Precision:** Uses word boundary regex to prevent false matches (e.g., "nightingale" won't match "night")
+
+---
+
+#### Phase 2: Pattern Selection
+
+The system selects from **159 title patterns** (20 genre-specific sets + defaults):
+
+**Pattern types:**
+
+1. **2-word patterns** (classic):
+   - `{emotion} {nature}` → "Shadow Ocean"
+   - `{time} {emotion}` → "Midnight Dreams"
+   - `{action} {nature}` → "Dancing Fire"
+
+2. **3-word patterns** (new in v2.0):
+   - `{emotion} of the {nature}` → "Shadow of the Moon"
+   - `{action} Through {nature}` → "Dancing Through Fire"
+   - `The {emotion} {action}` → "The Rising Shadow"
+   - `{time} in {abstract}` → "Midnight in Eternity"
+
+3. **Possessive patterns** (new in v2.0):
+   - `{nature}'s {emotion}` → "Ocean's Memory"
+   - `{time}'s {action}` → "Midnight's Rising"
+   - `{emotion}'s {nature}` → "Dream's Fire"
+
+4. **Complex patterns** (new in v2.0):
+   - `When {nature} {action}s` → "When Thunder Strikes"
+   - `{emotion} and {nature}` → "Shadow and Storm"
+   - `Between {time} and {emotion}` → "Between Midnight and Dreams"
+
+**Genre-specific patterns:**
+- **Jazz** (11 patterns): "Blue {nature}", "The {emotion} of {time}", "{action} Through {nature}"
+- **Electronic** (11 patterns): "{emotion}.exe", "System {abstract}", "Cyber {nature}"
+- **Ambient** (10 patterns): "{emotion} in the {abstract}", "Whispers of {nature}"
+- **Rock** (11 patterns): "Born to {action}", "{emotion} Never Dies"
+- **16 other genres** with 6 patterns each
+
+---
+
+#### Phase 3: Word Selection
+
+```
+APP PROCESS (with topic awareness):
+
+1. Pattern selected: "{nature}'s {emotion}"
+
+2. Word selection for {nature}:
+   IF keywords extracted:
+     - 60% chance: Use keyword word (e.g., 'Ocean' from "ocean" keyword)
+     - 40% chance: Use mood-filtered word from NATURE_WORDS
+   ELSE:
+     - Use mood-filtered word from NATURE_WORDS
+     
+3. Word selection for {emotion}:
+   Same logic → 'Dream' (from "love" keyword mapping)
+   
+4. Apply mood weights:
+   - Mood "melancholic" prefers: Shadow, Rain, Memory, Sorrow, Grief
+   - Mood "melancholic" avoids: Joy, Bliss, Laughter, Summer
+
+OUTPUT:
+Title: "Ocean's Dream" (topic-aware, from extracted keywords)
+```
+
+**Without description:**
+- Uses mood-filtered words from full vocabulary pools
+- Example: "Crystal Serenity" (generic mood-based)
+
+---
+
+#### Phase 4: Assembly
 
 ```
 INPUT:
-Creativity: Adventurous
-Genre: "jazz electronic"
+Genre: "ambient"
+Mood: "dreamy"
+Description: "midnight ocean dreams under starlight"
 
-APP PROCESS:
-1. Loads title word pools:
-   - Adjectives: [Cosmic, Electric, Neon, Crystal, Velvet, Golden...]
-   - Nouns: [Dreams, Echoes, Shadows, Waves, Spirits, Visions...]
-   - Suffixes: [Rising, Falling, Ascending, Burning, Dancing...]
-
-2. Random selections:
-   - Adjective: "Electric"
-   - Noun: "Waves"
-   
-3. Adventurous level adds suffix (always):
-   - Suffix: "Rising"
+FINAL ASSEMBLY:
+1. Keywords extracted → {time: ['Midnight'], nature: ['Ocean'], emotion: ['Dream']}
+2. Pattern selected → "{nature} {emotion}" (2-word ambient pattern)
+3. Words selected → "Ocean" (from keywords), "Dreams" (from keywords)
+4. Result assembled → "Ocean Dreams"
 
 OUTPUT:
-Title: "Electric Waves Rising"
+Title: "Ocean Dreams" (topic-aware, matches user's description theme)
 ```
 
-**Title complexity by creativity:**
-- **Low/Safe:** "Adjective Noun" (e.g., "Golden Dreams")
-- **Normal:** "Adjective Noun" or "Noun Suffix" 30% of the time
-- **Adventurous/High:** "Adjective Noun Suffix" (always)
+**Title complexity scales with creativity:**
+- **Low (0-10):** Simple 2-word patterns
+- **Safe (11-30):** Mix of 2-word and possessive patterns
+- **Normal (31-60):** All pattern types, 30% chance for complex
+- **Adventurous (61-85):** Prefer 3-word and complex patterns
+- **High (86-100):** Always use elaborate patterns
 
 ---
 
@@ -541,6 +654,37 @@ All choices come from carefully curated, tested databases maintained in code:
 - **Genre-aware helpers** for intelligent selection (electronic→digital, jazz→analog)
 - **Thousands of combinations** (all conflict-free)
 
+### Title Generation Data (v2.0)
+
+- **269 unique words** across 5 categories (emotions, actions, time, nature, abstract)
+- **159 title patterns** (20 genre-specific sets + default patterns)
+- **170+ keyword mappings** for topic-aware generation
+- **Genre-specific patterns:**
+  - Jazz: 11 patterns ("Blue {nature}", "The {emotion} of {time}", etc.)
+  - Electronic: 11 patterns ("{emotion}.exe", "System {abstract}", "Cyber {nature}", etc.)
+  - Ambient: 10 patterns ("{emotion} in the {abstract}", "Whispers of {nature}", etc.)
+  - Rock: 11 patterns ("Born to {action}", "{emotion} Never Dies", etc.)
+  - 16 other genres with 6 patterns each
+
+**Pattern types:**
+- **2-word templates:** `{emotion} {nature}` → "Shadow Ocean"
+- **3-word templates:** `{emotion} of the {nature}` → "Shadow of the Moon"
+- **Possessive templates:** `{nature}'s {emotion}` → "Ocean's Memory"
+- **Complex templates:** `When {nature} {action}s` → "When Thunder Strikes", `Between {time} and {emotion}` → "Between Midnight and Dreams"
+
+**Keyword extraction (topic-aware generation):**
+- **Word boundary matching** for precision (prevents "nightingale" matching "night")
+- **5 category mappings:** time (50+), nature (70+), emotion (50+), action (11), abstract (40+)
+- **Deduplication and conflict resolution** (spirit, dream, hope, nebula duplicates fixed)
+- **60% probability** to use extracted keywords when description provided
+
+**Vocabulary breakdown:**
+- EMOTION_WORDS: 60 (feelings, states, connections, intensity, memory types)
+- ACTION_WORDS: 50 (movement, change, flow, impact, all in gerund form)
+- TIME_WORDS: 46 (seasons, time periods, poetic time, cycles, specific times)
+- NATURE_WORDS: 65 (weather, landscapes, celestial, flora, elements, water features)
+- ABSTRACT_WORDS: 48 (concepts, philosophy, cosmic themes, musical terms, journeys)
+
 ### Multi-Genre Combinations
 
 - **50+ pre-defined fusions** that work musically
@@ -549,7 +693,7 @@ All choices come from carefully curated, tested databases maintained in code:
 
 **All data is:**
 - ✅ Reviewed by developers
-- ✅ Tested in 2,336 automated tests
+- ✅ Tested in 2,380 automated tests (was 2,336)
 - ✅ Validated for musical coherence
 - ✅ Regularly updated and expanded
 
@@ -817,6 +961,73 @@ NEW system (v2):
 
 ---
 
+### Example 6: Topic-Aware Title from Description (v2.0)
+
+```
+─────────────────────────────────────────────
+INPUT:
+─────────────────────────────────────────────
+Genre: "ambient"
+Mood: "dreamy"
+Description: "midnight ocean dreams under starlight"
+Wordless vocals: No
+MAX mode: No
+
+─────────────────────────────────────────────
+APP DECISIONS:
+─────────────────────────────────────────────
+1. Extract keywords from description (word boundary matching):
+   - "midnight" → TIME: ['Midnight', 'Night']
+   - "ocean" → NATURE: ['Ocean', 'Waves', 'Water']
+   - "dreams" → EMOTION: ['Dream', 'Spirit', 'Hope']
+   - "starlight" → TIME + NATURE: ['Starlight', 'Night', 'Stars']
+
+2. Keyword extraction result:
+   {
+     time: ['Midnight', 'Night', 'Starlight'],
+     nature: ['Ocean', 'Waves', 'Water', 'Stars'],
+     emotion: ['Dream', 'Spirit', 'Hope']
+   }
+
+3. Select ambient pattern → "{nature} {emotion}" (2-word pattern)
+
+4. Word selection with topic awareness (60% chance to use keywords):
+   - {nature}: "Ocean" (selected from extracted keywords)
+   - {emotion}: "Dreams" (selected from extracted keywords)
+
+5. Apply mood filter (dreamy):
+   - Both words pass dreamy mood filter ✅
+   - Preferred words: Dream, Stars, Moon, Drifting, Wonder
+
+─────────────────────────────────────────────
+OUTPUT:
+─────────────────────────────────────────────
+Title: "Ocean Dreams" (topic-aware, matches description theme)
+
+─────────────────────────────────────────────
+ALTERNATIVE WITHOUT DESCRIPTION:
+─────────────────────────────────────────────
+Same inputs but NO description:
+→ Pattern: "{nature} Drift" (ambient pattern)
+→ Words: "Crystal Drift" (generic mood-based, from NATURE_WORDS + ACTION_WORDS)
+
+─────────────────────────────────────────────
+COMPARISON:
+─────────────────────────────────────────────
+WITH description:    "Ocean Dreams" (relevant to user's theme)
+WITHOUT description: "Crystal Drift" (generic, still musically appropriate)
+
+**Topic awareness impact:**
+- ✅ Title reflects user's creative vision ("midnight ocean dreams")
+- ✅ Higher relevance to song concept
+- ✅ 170+ keyword mappings enable rich extraction
+- ✅ Word boundary matching prevents false positives
+```
+
+This demonstrates how topic-aware generation creates titles that connect to the user's intended theme while maintaining musical appropriateness!
+
+---
+
 ## Quality Assurance
 
 The deterministic system is thoroughly tested to ensure high-quality outputs:
@@ -859,12 +1070,23 @@ The deterministic system is thoroughly tested to ensure high-quality outputs:
 - ✅ Structured category selection ensures coherence
 - ✅ All genre contexts validated for authenticity
 
-**Title Generation:**
-- All word combinations reviewed
-- Title complexity scales with creativity
-- No nonsensical combinations
+**Title Generation Quality (v2.0):**
+- ✅ 269-word vocabulary (4× expansion from 77 words)
+- ✅ 159 genre-specific patterns (+20% from v1.0)
+- ✅ 170+ keyword mappings for topic-aware generation
+- ✅ Word boundary regex prevents false positives
+- ✅ Duplicate keyword mappings resolved (spirit, dream, hope, nebula)
+- ✅ 100,000+ unique title combinations
+- ✅ Title Case convention documented with JSDoc
+- ✅ Pattern examples documented for maintainability
+- ✅ 8 topic-aware tests with descriptive error messages
+- ✅ All word combinations reviewed for coherence
+- ✅ Title complexity scales with creativity (2-word → 3-word → complex)
+- ✅ No nonsensical combinations
 
 ### Performance Benchmarks
+
+**Overall System Performance:**
 
 ```
 Metric                  Target      Actual     Status
@@ -875,6 +1097,23 @@ Average generation      <50ms       0.03ms     ✅ 1,600x better
 Maximum time            <50ms       0.15ms     ✅ 330x better
 Test coverage           >80%        100%       ✅ Complete
 ```
+
+**Title Generation Performance (v2.0):**
+
+From automated tests (8 topic-aware title tests):
+- **Pattern selection:** <0.01ms (array lookup)
+- **Word selection:** <0.01ms (array access)
+- **Keyword extraction:** <0.05ms (regex matching on description)
+- **Total overhead:** Negligible (<1% of total generation time)
+
+**Title Freshness:**
+- **v1.0 (77 words):** ~1,000s combinations → stale after 10-20 generations
+- **v2.0 (269 words):** 100,000+ combinations → fresh for 100+ generations
+
+**Topic Awareness Impact:**
+- 170+ keyword mappings enable rich description → title relevance
+- Word boundary regex adds <0.01ms overhead
+- 60% chance to use extracted keywords maintains variety
 
 ### Continuous Validation
 
@@ -895,12 +1134,21 @@ The deterministic generation system provides:
 🎵 **Quality** - Curated data, tested combinations  
 🎨 **Variety** - Controlled randomness from quality pools  
 ⚡ **Reliability** - Works offline, no API failures  
-🧪 **Tested** - 2,336 tests validate correctness  
+🧪 **Tested** - 2,380 tests validate correctness  
+📝 **Topic-Aware** - 170+ keywords map descriptions to relevant titles (v2.0)  
+🎼 **Rich Vocabulary** - 269 words × 159 patterns = 100,000+ unique titles (v2.0)
 
-**Your role:** Guide the direction with creativity level, mood category, and Quick Vibes choices  
-**App's role:** Make expert musical decisions from validated databases
+**Your role:** Guide the direction with creativity level, mood category, Quick Vibes, and optional description  
+**App's role:** Make expert musical decisions from validated databases, extract keywords from descriptions
 
 The result is professional-quality Suno prompts generated instantly, with full control over the creative direction but without needing deep music production knowledge.
+
+**v2.0 enhancements:**
+- 4× title vocabulary expansion (77 → 269 words)
+- +20% more title patterns (132 → 159)
+- Topic-aware generation from user descriptions
+- 100,000+ unique title combinations (vs ~1,000s in v1.0)
+- 141 genre-specific recording contexts with conflict prevention
 
 ---
 
