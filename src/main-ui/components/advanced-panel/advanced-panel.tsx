@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 
 import { GenreMultiSelect } from "@/components/genre-multi-select";
+import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import {
@@ -15,6 +16,7 @@ import { hasAdvancedSelection } from "@shared/music-phrase";
 import { AdvancedOption } from "./advanced-option";
 import { PhrasePreview } from "./phrase-preview";
 
+import type { MoodCategory } from "@bun/mood";
 import type { AdvancedSelection } from "@shared/types";
 
 type AdvancedPanelProps = {
@@ -22,6 +24,9 @@ type AdvancedPanelProps = {
   onUpdate: (updates: Partial<AdvancedSelection>) => void;
   onClear: () => void;
   computedPhrase: string;
+  moodCategory?: MoodCategory | null;
+  onMoodCategoryChange: (category: MoodCategory | null) => void;
+  isGenerating: boolean;
 };
 
 // All options for Combobox (sorted alphabetically by label)
@@ -45,7 +50,15 @@ const TIME_JOURNEY_OPTIONS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES)
   .map(([value, label]) => ({ value, label }))
   .sort((a, b) => a.label.localeCompare(b.label));
 
-export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: AdvancedPanelProps): React.JSX.Element {
+export function AdvancedPanel({ 
+  selection, 
+  onUpdate, 
+  onClear, 
+  computedPhrase,
+  moodCategory,
+  onMoodCategoryChange,
+  isGenerating,
+}: AdvancedPanelProps): React.JSX.Element {
   const hasAnySelection = hasAdvancedSelection(selection);
 
   return (
@@ -64,6 +77,15 @@ export function AdvancedPanel({ selection, onUpdate, onClear, computedPhrase }: 
           </Button>
         )}
       </div>
+
+      {/* Mood Category - First item in advanced panel */}
+      <MoodCategoryCombobox
+        value={moodCategory ?? null}
+        onChange={onMoodCategoryChange}
+        disabled={isGenerating}
+        helperText="Influences the emotional tone of enrichment"
+        badgeText="optional"
+      />
 
       {/* Genre Multi-Select - spans full width */}
       <GenreMultiSelect

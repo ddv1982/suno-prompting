@@ -57,6 +57,9 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactNod
           onUpdate={onAdvancedSelectionUpdate}
           onClear={onAdvancedSelectionClear}
           computedPhrase={computedMusicPhrase}
+          moodCategory={moodCategory}
+          onMoodCategoryChange={onMoodCategoryChange}
+          isGenerating={isGenerating}
         />
       )}
 

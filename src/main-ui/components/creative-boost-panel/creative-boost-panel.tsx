@@ -92,6 +92,16 @@ export function CreativeBoostPanel({
       )}
 
       {!isSimpleMode && (
+        <MoodCategoryCombobox
+          value={input.moodCategory}
+          onChange={handleMoodCategoryChange}
+          disabled={isGenerating || isDirectMode}
+          helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
+          badgeText={isDirectMode ? "disabled" : "optional"}
+        />
+      )}
+
+      {!isSimpleMode && (
         <GenreMultiSelect
           selected={input.seedGenres} onChange={handleGenresChange} maxSelections={4}
           disabled={isGenerating || input.sunoStyles.length > 0}
@@ -106,16 +116,6 @@ export function CreativeBoostPanel({
           disabled={isGenerating || input.seedGenres.length > 0}
           helperText={input.seedGenres.length > 0 ? "Disabled when Seed Genres are selected" : isDirectMode ? "Selected styles will be used exactly as-is" : undefined}
           badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
-        />
-      )}
-
-      {!isSimpleMode && (
-        <MoodCategoryCombobox
-          value={input.moodCategory}
-          onChange={handleMoodCategoryChange}
-          disabled={isGenerating || isDirectMode}
-          helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
-          badgeText={isDirectMode ? "disabled" : "optional"}
         />
       )}
 
