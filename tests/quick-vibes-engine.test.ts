@@ -132,20 +132,25 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
     const sunoStyles = ["lo-fi jazz", "dark goa trance"];
     const result = await engine.generateQuickVibes(null, "", false, sunoStyles);
 
-    expect(result.text).toBe("lo-fi jazz, dark goa trance");
+    // Styles are preserved in enriched prompt
+    expect(result.text).toContain("lo-fi jazz, dark goa trance");
+    expect(result.text).toContain("Genre:");
   });
 
   it("handles single style selection", async () => {
     const result = await engine.generateQuickVibes(null, "", false, ["jazz"]);
 
-    expect(result.text).toBe("jazz");
+    // Style preserved in enriched prompt
+    expect(result.text).toContain("jazz");
+    expect(result.text).toContain("Genre:");
   });
 
   it("handles maximum 4 styles", async () => {
     const sunoStyles = ["rock", "pop", "jazz", "blues"];
     const result = await engine.generateQuickVibes(null, "", false, sunoStyles);
 
-    expect(result.text).toBe("rock, pop, jazz, blues");
+    // All styles preserved in enriched prompt
+    expect(result.text).toContain("rock, pop, jazz, blues");
   });
 
   it("calls LLM only for title generation in direct mode", async () => {
@@ -157,8 +162,9 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
 
     // Direct mode calls generateText for title generation only
     expect(mockGenerateText).toHaveBeenCalled();
-    // Styles are still exact (not transformed by LLM)
-    expect(result.text).toBe("synthwave");
+    // Styles are preserved in enriched prompt
+    expect(result.text).toContain("synthwave");
+    expect(result.text).toContain("Genre:");
     // Title is generated
     expect(result.title).toBeDefined();
   });
@@ -190,9 +196,8 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
   });
 
   it("keeps styles unchanged when refining in direct mode", async () => {
-    const currentPrompt = "lo-fi jazz, dark goa trance";
     const result = await engine.refineQuickVibes({
-      currentPrompt,
+      currentPrompt: "lo-fi jazz, dark goa trance",
       currentTitle: "Current Title",
       description: "some description",
       feedback: "make it darker",
@@ -201,8 +206,9 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       sunoStyles: ["lo-fi jazz", "dark goa trance"],
     });
 
-    // Styles should remain unchanged in direct mode
-    expect(result.text).toBe(currentPrompt);
+    // Styles should be preserved in enriched prompt
+    expect(result.text).toContain("lo-fi jazz, dark goa trance");
+    expect(result.text).toContain("Genre:");
   });
 
   it("updates styles when refining with different sunoStyles", async () => {
@@ -216,7 +222,8 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       sunoStyles: ["ambient", "drone"],
     });
 
-    expect(result.text).toBe("ambient, drone");
+    // New styles preserved in enriched prompt
+    expect(result.text).toContain("ambient, drone");
     expect(mockGenerateText).toHaveBeenCalled();
     const calls = mockGenerateText.mock.calls as unknown as Array<[{ prompt?: string }]>;
     expect(String(calls[0]?.[0]?.prompt)).toContain("Suno V5 styles: ambient, drone");
@@ -337,8 +344,9 @@ describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
 
     // Should have fallback title
     expect(result.title).toBe("Untitled");
-    // Styles should still be correct
-    expect(result.text).toBe("ambient");
+    // Styles should be preserved in enriched prompt
+    expect(result.text).toContain("ambient");
+    expect(result.text).toContain("Genre:");
   });
 
   it("regenerates title on refine with new description", async () => {
@@ -353,7 +361,8 @@ describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
     });
 
     expect(result.title).toBeDefined();
-    expect(result.text).toBe("lo-fi jazz"); // Styles unchanged
+    // Styles preserved in enriched prompt
+    expect(result.text).toContain("lo-fi jazz");
     expect(mockGenerateText).toHaveBeenCalled(); // Called for title
     const calls = mockGenerateText.mock.calls as unknown as Array<[{ prompt?: string }]>;
     expect(String(calls[0]?.[0]?.prompt)).toContain("dreamy coffee shop morning");

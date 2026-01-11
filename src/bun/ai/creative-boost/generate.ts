@@ -26,17 +26,18 @@ import type { GenerationResult } from '@bun/ai/types';
 const log = createLogger('CreativeBoostGenerate');
 
 /**
- * Direct Mode generation - bypasses LLM for styles
- * Styles are returned exactly as selected, title generated via LLM
+ * Direct Mode generation - Suno V5 styles preserved as-is, prompt enriched
+ * Styles are preserved exactly, but instruments, moods, production are added
  */
 export async function generateDirectMode(
   sunoStyles: string[],
   lyricsTopic: string,
   description: string,
   withLyrics: boolean,
+  maxMode: boolean,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics });
+  log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics, maxMode });
 
   const ollamaEndpoint = config.getOllamaEndpoint?.();
 
@@ -45,6 +46,7 @@ export async function generateDirectMode(
       sunoStyles,
       description,
       lyricsTopic,
+      maxMode,
       withLyrics,
       generateLyrics: (styleResult, topic, desc) =>
         generateLyricsForCreativeBoost(
@@ -80,9 +82,9 @@ export async function generateCreativeBoost(
 ): Promise<GenerationResult> {
   const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, withWordlessVocals, maxMode, withLyrics, config } = options;
 
-  // Direct Mode: styles passed through as-is
+  // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
-    return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, config);
+    return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, maxMode, config);
   }
 
   log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals, withLyrics });

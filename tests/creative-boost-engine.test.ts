@@ -287,7 +287,7 @@ Let the rhythm flow`,
     });
   });
 
-  // Task 4.1: Test direct mode returns exact styles
+  // Task 4.1: Test direct mode preserves styles in genre field and enriches prompt
   it("returns exact styles when sunoStyles provided (direct mode)", async () => {
     const result = await engine.generateCreativeBoost(
       50, // creativityLevel (ignored in direct mode)
@@ -296,11 +296,14 @@ Let the rhythm flow`,
       "", // description (ignored in direct mode)
       "", // lyricsTopic
       false, // withWordlessVocals
-      true, // maxMode (ignored in direct mode)
+      true, // maxMode
       false // withLyrics
     );
 
-    expect(result.text).toBe("lo-fi jazz, dark goa trance");
+    // Styles are preserved exactly in genre field, prompt is enriched
+    expect(result.text).toContain("lo-fi jazz, dark goa trance");
+    // MAX mode uses lowercase "genre:"
+    expect(result.text).toContain("genre:");
   });
 
   // Task 4.4: Test single style selection
@@ -309,7 +312,9 @@ Let the rhythm flow`,
       50, [], ["k-pop"], "", "", false, false, false
     );
 
-    expect(result.text).toBe("k-pop");
+    // Style preserved in enriched prompt
+    expect(result.text).toContain("k-pop");
+    expect(result.text).toContain("Genre:");
   });
 
   // Task 4.4: Test maximum 4 styles
@@ -319,7 +324,8 @@ Let the rhythm flow`,
       50, [], styles, "", "", false, false, false
     );
 
-    expect(result.text).toBe("style1, style2, style3, style4");
+    // All styles preserved in enriched prompt
+    expect(result.text).toContain("style1, style2, style3, style4");
   });
 
   // Task 4.2: Test direct mode bypasses LLM for styles
@@ -427,16 +433,26 @@ Let the rhythm flow`,
     expect(result.title).toBe("Neon Dreams");
   });
 
-  it("ignores maxMode parameter in direct mode (always non-max output)", async () => {
-    // Even with maxMode=true, direct mode should return raw styles
-    const result = await engine.generateCreativeBoost(
+  it("respects maxMode parameter in direct mode (enriched output)", async () => {
+    // With maxMode=true, direct mode returns MAX mode enriched prompt
+    const resultMax = await engine.generateCreativeBoost(
       50, [], ["ambient", "chillwave"], "", "", false, true, false
     );
 
-    // Should NOT contain max mode signature
-    expect(result.text).not.toContain(MAX_MODE_SIGNATURE);
-    // Should be exactly the joined styles
-    expect(result.text).toBe("ambient, chillwave");
+    // Should contain MAX mode headers when maxMode=true
+    expect(resultMax.text).toContain("[Is_MAX_MODE: MAX]");
+    // Should preserve styles in genre field
+    expect(resultMax.text).toContain("ambient, chillwave");
+
+    // With maxMode=false, direct mode returns standard enriched prompt
+    const resultStd = await engine.generateCreativeBoost(
+      50, [], ["ambient", "chillwave"], "", "", false, false, false
+    );
+
+    // Should NOT contain MAX mode headers
+    expect(resultStd.text).not.toContain("[Is_MAX_MODE: MAX]");
+    // Should still preserve styles
+    expect(resultStd.text).toContain("ambient, chillwave");
   });
 });
 

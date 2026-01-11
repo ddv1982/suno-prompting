@@ -15,6 +15,12 @@ export const MOOD_POOL = [
   'ethereal', 'dreamy', 'mysterious', 'hypnotic', 'otherworldly', 'cosmic',
   // Additional variety
   'introspective', 'defiant', 'hopeful', 'rebellious', 'contemplative', 'cinematic',
+  // Atmosphere (research-backed for Suno V5)
+  'atmospheric', 'surreal', 'luminous', 'shimmering', 'immersive',
+  // Texture
+  'layered', 'textured', 'dense', 'crisp', 'airy', 'fluid',
+  // Movement
+  'flowing', 'pulsating', 'evolving', 'building', 'swelling',
 ] as const;
 
 export type Mood = typeof MOOD_POOL[number];

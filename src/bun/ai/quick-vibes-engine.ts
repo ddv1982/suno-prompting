@@ -83,10 +83,10 @@ export async function generateQuickVibes(
 ): Promise<GenerationResult> {
   const { category, customDescription, withWordlessVocals, sunoStyles } = options;
 
-  // Direct Mode: styles passed through as-is
+  // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
-    log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription });
-    return generateDirectModeResult({ sunoStyles, description: customDescription }, config);
+    log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription, maxMode: config.isMaxMode() });
+    return generateDirectModeResult({ sunoStyles, description: customDescription, maxMode: config.isMaxMode() }, config);
   }
 
   // Category-based generation: fully deterministic (no LLM)
@@ -264,12 +264,12 @@ export async function refineQuickVibes(
 ): Promise<GenerationResult> {
   const { currentPrompt, description, feedback, withWordlessVocals, category, sunoStyles } = options;
 
-  // Direct Mode: styles updated, title regenerated
+  // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
-    log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description });
+    log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description, maxMode: config.isMaxMode() });
     const titleSource = (description?.trim() || feedback.trim() || '').trim();
     return generateDirectModeResult(
-      { sunoStyles, description: titleSource, debugLabel: 'DIRECT_MODE_REFINE: Styles updated, title regenerated.' },
+      { sunoStyles, description: titleSource, maxMode: config.isMaxMode(), debugLabel: 'DIRECT_MODE_REFINE: Styles preserved, prompt enriched.' },
       config
     );
   }
