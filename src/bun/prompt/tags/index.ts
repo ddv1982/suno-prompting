@@ -15,11 +15,11 @@ export {
   selectRecordingDescriptors,
   GENRE_RECORDING_CONTEXTS,
   selectRecordingContext,
-} from './recording-context';
+} from './recording-context/index';
 
 // Legacy export (deprecated - kept for backward compatibility, will be removed in v3.0.0)
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export { RECORDING_DESCRIPTORS } from './recording-context';
+export { RECORDING_DESCRIPTORS } from './recording-context/index';
 
 // Vocal performance tags
 export {
@@ -67,7 +67,7 @@ export {
 import { DYNAMIC_RANGE_TAGS as DYNAMIC_TAGS } from './dynamic';
 import { GENRE_ELECTRONIC_RATIO as ELECTRONIC_RATIO } from './genre-mappings';
 import { HARMONIC_DESCRIPTORS as HARMONIC_DESC } from './harmonic';
-import { GENRE_RECORDING_CONTEXTS as RECORDING_CONTEXTS } from './recording-context';
+import { GENRE_RECORDING_CONTEXTS as RECORDING_CONTEXTS } from './recording-context/index';
 import { SPATIAL_AUDIO_TAGS as SPATIAL_TAGS } from './spatial';
 import { TEMPORAL_EFFECT_TAGS as TEMPORAL_TAGS } from './temporal';
 import { TEXTURE_DESCRIPTORS as TEXTURE_DESC } from './texture';
