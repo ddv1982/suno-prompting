@@ -21,6 +21,60 @@ import type { StyleTagsResult } from './types';
 import type { GenreType } from '@bun/instruments/genres';
 
 /**
+ * Weighted tag category configuration for deterministic selection.
+ * Defines probability thresholds and max counts for each category.
+ * 
+ * Probabilities are tuned based on musical production best practices:
+ * - **Vocal (60%):** High probability for vocal-forward genres, skipped for instrumental
+ * - **Spatial (50%):** Balanced to add depth without overwhelming
+ * - **Harmonic (40%):** Selective enrichment of tonal character
+ * - **Dynamic (40%):** Controlled dynamics for production polish
+ * - **Temporal (30%):** Subtle timing/groove hints without over-emphasis
+ * 
+ * Adjust these values to tune overall tag distribution across all prompts.
+ * 
+ * @since v2.0.0
+ */
+const TAG_CATEGORY_WEIGHTS = {
+  vocal: { probability: 0.6, maxCount: 2 },
+  spatial: { probability: 0.5, maxCount: 1 },
+  harmonic: { probability: 0.4, maxCount: 1 },
+  dynamic: { probability: 0.4, maxCount: 1 },
+  temporal: { probability: 0.3, maxCount: 1 },
+} as const;
+
+/**
+ * Apply weighted tag selection with probability threshold.
+ * Reduces code duplication and cyclomatic complexity.
+ * 
+ * @param probability - Selection probability (0.0-1.0)
+ * @param selector - Function to select tags
+ * @param addUnique - Function to add tags to collection
+ * @param rng - Random number generator
+ * 
+ * @example
+ * applyWeightedSelection(
+ *   0.6,
+ *   () => selectVocalTags('jazz', 2, rng),
+ *   addUnique,
+ *   rng
+ * );
+ */
+function applyWeightedSelection(
+  probability: number,
+  selector: () => string[],
+  addUnique: (tag: string) => void,
+  rng: () => number
+): void {
+  if (rng() >= probability) return;
+  
+  const tags = selector();
+  for (const tag of tags) {
+    addUnique(tag);
+  }
+}
+
+/**
  * Select random moods from a genre's mood pool.
  *
  * @param genre - Target genre
@@ -71,6 +125,14 @@ function selectMoodsForGenre(
  * assembleStyleTags(['jazz', 'rock'], Math.random)
  * // Blends moods and production from both genres
  */
+/**
+ * Apply weighted tag selection with probability threshold.
+ * Exported for testing purposes.
+ * 
+ * @internal
+ */
+export { applyWeightedSelection };
+
 export function assembleStyleTags(
   components: GenreType[],
   rng: () => number = Math.random
@@ -97,45 +159,45 @@ export function assembleStyleTags(
 
   // 2. Weighted independent selection for new tag categories
   
-  // Vocal: 60% probability, max 2 tags (genre-aware via GENRE_VOCAL_PROBABILITY)
-  if (rng() < 0.6) {
-    const vocalTags = selectVocalTags(primaryGenre, 2, rng);
-    for (const tag of vocalTags) {
-      addUnique(tag);
-    }
-  }
+  // Vocal: genre-aware via GENRE_VOCAL_PROBABILITY
+  applyWeightedSelection(
+    TAG_CATEGORY_WEIGHTS.vocal.probability,
+    () => selectVocalTags(primaryGenre, TAG_CATEGORY_WEIGHTS.vocal.maxCount, rng),
+    addUnique,
+    rng
+  );
 
-  // Spatial: 50% probability, max 1 tag
-  if (rng() < 0.5) {
-    const spatialTags = selectSpatialTags(1, rng);
-    for (const tag of spatialTags) {
-      addUnique(tag);
-    }
-  }
+  // Spatial: stereo imaging and reverb
+  applyWeightedSelection(
+    TAG_CATEGORY_WEIGHTS.spatial.probability,
+    () => selectSpatialTags(TAG_CATEGORY_WEIGHTS.spatial.maxCount, rng),
+    addUnique,
+    rng
+  );
 
-  // Harmonic: 40% probability, max 1 tag
-  if (rng() < 0.4) {
-    const harmonicTags = selectHarmonicTags(1, rng);
-    for (const tag of harmonicTags) {
-      addUnique(tag);
-    }
-  }
+  // Harmonic: tonal character
+  applyWeightedSelection(
+    TAG_CATEGORY_WEIGHTS.harmonic.probability,
+    () => selectHarmonicTags(TAG_CATEGORY_WEIGHTS.harmonic.maxCount, rng),
+    addUnique,
+    rng
+  );
 
-  // Dynamic: 40% probability, max 1 tag
-  if (rng() < 0.4) {
-    const dynamicTags = selectDynamicTags(1, rng);
-    for (const tag of dynamicTags) {
-      addUnique(tag);
-    }
-  }
+  // Dynamic: compression and loudness
+  applyWeightedSelection(
+    TAG_CATEGORY_WEIGHTS.dynamic.probability,
+    () => selectDynamicTags(TAG_CATEGORY_WEIGHTS.dynamic.maxCount, rng),
+    addUnique,
+    rng
+  );
 
-  // Temporal: 30% probability, max 1 tag
-  if (rng() < 0.3) {
-    const temporalTags = selectTemporalTags(1, rng);
-    for (const tag of temporalTags) {
-      addUnique(tag);
-    }
-  }
+  // Temporal: timing and groove
+  applyWeightedSelection(
+    TAG_CATEGORY_WEIGHTS.temporal.probability,
+    () => selectTemporalTags(TAG_CATEGORY_WEIGHTS.temporal.maxCount, rng),
+    addUnique,
+    rng
+  );
 
   // 3. Texture tags (replaces some old realism tag selection)
   const textureTags = selectTextureTags(2, rng);

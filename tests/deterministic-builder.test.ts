@@ -7,6 +7,7 @@ import {
   _testHelpers,
 } from '@bun/prompt/deterministic';
 import { selectRecordingContext } from '@bun/prompt/realism-tags';
+import { applyWeightedSelection } from '@bun/prompt/deterministic/styles';
 import { APP_CONSTANTS } from '@shared/constants';
 
 const {
@@ -1070,5 +1071,83 @@ describe('deterministic-builder', () => {
         expect(verseLine).not.toBe(chorusLine);
       });
     });
+  });
+});
+
+// =============================================================================
+// applyWeightedSelection Helper Tests
+// =============================================================================
+
+describe('applyWeightedSelection helper', () => {
+  /**
+   * Creates a seeded RNG for deterministic tests.
+   */
+  function seedRng(seed: number): () => number {
+    let state = seed;
+    return () => {
+      state = (state * 1664525 + 1013904223) % 2**32;
+      return state / 2**32;
+    };
+  }
+
+  it('should select tags when RNG passes probability threshold', () => {
+    const tags: string[] = [];
+    const addUnique = (tag: string) => tags.push(tag);
+    const selector = () => ['tag1', 'tag2'];
+    const rng = seedRng(42);
+    
+    // First call: rng() = 0.2946 < 0.5 (passes)
+    applyWeightedSelection(0.5, selector, addUnique, rng);
+    
+    expect(tags).toEqual(['tag1', 'tag2']);
+  });
+  
+  it('should skip selection when RNG fails probability threshold', () => {
+    const tags: string[] = [];
+    const addUnique = (tag: string) => tags.push(tag);
+    const selector = () => ['tag1', 'tag2'];
+    const rng = seedRng(999);
+    
+    // First call: rng() > 0.5 (fails threshold)
+    applyWeightedSelection(0.5, selector, addUnique, rng);
+    
+    expect(tags).toEqual([]);
+  });
+  
+  it('should not call selector when probability fails', () => {
+    let selectorCalled = false;
+    const selector = () => { 
+      selectorCalled = true; 
+      return ['tag1']; 
+    };
+    const addUnique = () => {};
+    const rng = seedRng(999); // Will fail 0.5 threshold
+    
+    applyWeightedSelection(0.5, selector, addUnique, rng);
+    
+    expect(selectorCalled).toBe(false);
+  });
+  
+  it('should handle empty tag array from selector', () => {
+    const tags: string[] = [];
+    const addUnique = (tag: string) => tags.push(tag);
+    const selector = () => []; // Empty result
+    const rng = seedRng(42);
+    
+    applyWeightedSelection(0.5, selector, addUnique, rng);
+    
+    expect(tags).toEqual([]);
+  });
+  
+  it('should work with different probability thresholds', () => {
+    const tags: string[] = [];
+    const addUnique = (tag: string) => tags.push(tag);
+    const selector = () => ['vocal1'];
+    const rng = seedRng(50);
+    
+    // rng() = 0.5349 
+    // Should pass 0.6 threshold: 0.5349 < 0.6 ✓
+    applyWeightedSelection(0.6, selector, addUnique, rng);
+    expect(tags.length).toBeGreaterThan(0);
   });
 });
