@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 interface FormLabelProps {
   children: React.ReactNode;
   charCount?: number;
@@ -19,7 +21,7 @@ export function FormLabel({
   className,
   icon,
   badge
-}: FormLabelProps): React.JSX.Element {
+}: FormLabelProps): ReactElement {
   const showCharCount = charCount !== undefined && maxChars !== undefined;
   
   return (

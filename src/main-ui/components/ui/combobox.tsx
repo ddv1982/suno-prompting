@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 interface ComboboxProps {
   options: { value: string; label: string }[];
   value: string | null;
@@ -39,7 +41,7 @@ export function Combobox({
   disabled = false,
   className,
   "aria-label": ariaLabel,
-}: ComboboxProps): React.JSX.Element {
+}: ComboboxProps): ReactElement {
   const [open, setOpen] = React.useState(false);
 
   const selectedOption = options.find((opt) => opt.value === value);

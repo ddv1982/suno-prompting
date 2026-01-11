@@ -5,6 +5,7 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { APP_CONSTANTS } from "@shared/constants";
 
 import type { AIProvider, APIKeys } from "@shared/types";
+import type { ReactElement } from "react";
 
 const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
 const selectClassName = "border-border data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-[var(--height-control-md)] w-full min-w-0 rounded-md border bg-input/30 px-[var(--space-3)] py-[var(--space-1)] text-[length:var(--text-footnote)] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
@@ -29,7 +30,7 @@ export function ApiKeySection({
   onProviderChange,
   onApiKeyChange,
   onToggleShowKey,
-}: ApiKeySectionProps): React.JSX.Element {
+}: ApiKeySectionProps): ReactElement {
   const currentProvider = PROVIDERS.find(p => p.id === provider) ?? PROVIDERS[0];
   const currentApiKey = apiKeys[provider] || '';
 

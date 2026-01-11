@@ -3,6 +3,8 @@ import { Bug, FileText, Music, Zap } from "lucide-react";
 import { SectionLabel } from "@/components/ui/section-label";
 import { ToggleRow } from "@/components/ui/toggle-row";
 
+import type { ReactElement } from "react";
+
 type FeatureTogglesProps = {
   useSunoTags: boolean;
   maxMode: boolean;
@@ -25,7 +27,7 @@ export function FeatureToggles({
   onMaxModeChange,
   onLyricsModeChange,
   onDebugModeChange,
-}: FeatureTogglesProps): React.JSX.Element {
+}: FeatureTogglesProps): ReactElement {
   return (
     <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
       <SectionLabel>Feature Settings</SectionLabel>

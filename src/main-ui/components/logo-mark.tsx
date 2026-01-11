@@ -1,9 +1,11 @@
+import type { ReactElement } from "react";
+
 type LogoMarkProps = {
   size?: number;
   className?: string;
 };
 
-export function LogoMark({ size = 32, className }: LogoMarkProps): React.JSX.Element {
+export function LogoMark({ size = 32, className }: LogoMarkProps): ReactElement {
   return (
     <svg
       width={size}

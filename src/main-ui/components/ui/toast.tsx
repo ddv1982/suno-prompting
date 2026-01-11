@@ -5,6 +5,8 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { APP_CONSTANTS } from "@shared/constants"
 
+import type { ReactElement } from "react";
+
 // Toast variant styles using CVA
 const toastVariants = cva(
   "flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] rounded-lg shadow-soft text-[length:var(--text-body)] font-medium animate-in fade-in-0 slide-in-from-bottom-2 duration-200",
@@ -50,7 +52,7 @@ interface ToastProps extends React.ComponentProps<"div">, VariantProps<typeof to
   message: string
 }
 
-function ToastItem({ message, variant, className, ...props }: ToastProps): React.JSX.Element {
+function ToastItem({ message, variant, className, ...props }: ToastProps): ReactElement {
   const Icon = toastIcons[variant ?? "success"]
 
   return (
@@ -98,7 +100,7 @@ function truncateMessage(message: string): string {
 }
 
 // ToastProvider component
-export function ToastProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
+export function ToastProvider({ children }: { children: React.ReactNode }): ReactElement {
   const [toasts, setToasts] = React.useState<ToastWithMeta[]>([])
 
   const showToast = React.useCallback((message: string, type: Toast["type"] = "success"): void => {

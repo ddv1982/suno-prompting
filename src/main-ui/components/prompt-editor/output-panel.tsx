@@ -8,6 +8,7 @@ import { SectionLabel } from "@/components/ui/section-label";
 
 import type { GeneratingAction } from "@/context/app-context";
 import type { DebugInfo } from "@shared/types";
+import type { ReactElement } from "react";
 
 type OutputPanelProps = {
   promptMode: 'full' | 'quickVibes' | 'creativeBoost';
@@ -59,7 +60,7 @@ export function OutputPanel({
   onRemix,
   onCopy,
   onDebugOpen,
-}: OutputPanelProps): React.JSX.Element | null {
+}: OutputPanelProps): ReactElement | null {
   if (!currentPrompt) return null;
 
   if (promptMode === 'quickVibes') {

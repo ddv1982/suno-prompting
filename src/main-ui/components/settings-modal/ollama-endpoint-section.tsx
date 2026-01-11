@@ -3,6 +3,8 @@ import { Server } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/section-label";
 
+import type { ReactElement } from "react";
+
 interface OllamaEndpointSectionProps {
   endpoint: string;
   onChange: (value: string) => void;
@@ -11,7 +13,7 @@ interface OllamaEndpointSectionProps {
 export function OllamaEndpointSection({
   endpoint,
   onChange,
-}: OllamaEndpointSectionProps): React.JSX.Element {
+}: OllamaEndpointSectionProps): ReactElement {
   return (
     <div className="space-y-2">
       <SectionLabel>

@@ -4,7 +4,9 @@ import { OllamaAdvancedSection } from "./ollama-advanced-section";
 import { OllamaEndpointSection } from "./ollama-endpoint-section";
 import { OllamaModelSection } from "./ollama-model-section";
 
-export function OllamaSettings(): React.JSX.Element {
+import type { ReactElement } from "react";
+
+export function OllamaSettings(): ReactElement {
   const {
     settings,
     updateEndpoint,

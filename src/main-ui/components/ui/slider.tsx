@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 interface SliderProps {
   value: number[];
   onValueChange: (value: number[]) => void;
@@ -22,7 +24,7 @@ export function Slider({
   className,
   "aria-label": ariaLabel,
   showTicks = false,
-}: SliderProps): React.JSX.Element {
+}: SliderProps): ReactElement {
   const currentValue = value[0] ?? min;
   const percentage = ((currentValue - min) / (max - min)) * 100;
 

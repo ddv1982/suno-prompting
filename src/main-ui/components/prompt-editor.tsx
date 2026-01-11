@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { ChatHistorySection } from "@/components/chat-history-section";
 import { CreativeBoostPanel } from "@/components/creative-boost-panel";
@@ -15,7 +15,9 @@ import { APP_CONSTANTS } from "@shared/constants";
 import { hasAdvancedSelection } from "@shared/music-phrase";
 import { validateLockedPhrase } from "@shared/validation";
 
-export function PromptEditor({ output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config }: PromptEditorProps): React.JSX.Element {
+import type { ReactElement } from "react";
+
+export function PromptEditor({ output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config }: PromptEditorProps): ReactElement {
   const { currentPrompt, currentTitle, currentLyrics } = output;
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
   const { isGenerating, generatingAction, validation, debugInfo, chatMessages } = generation;

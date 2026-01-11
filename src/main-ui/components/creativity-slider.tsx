@@ -7,6 +7,7 @@ import { CREATIVITY_LEVEL_HELPER_TEXT, CREATIVITY_LEVEL_DISPLAY_NAMES } from "@s
 import { getCreativityLevel } from "@shared/creative-boost-utils";
 
 import type { CreativitySliderValue } from "@shared/types";
+import type { ReactElement } from "react";
 
 type CreativitySliderProps = {
   value: CreativitySliderValue;
@@ -14,7 +15,7 @@ type CreativitySliderProps = {
   disabled?: boolean;
 };
 
-export function CreativitySlider({ value, onChange, disabled }: CreativitySliderProps): React.JSX.Element {
+export function CreativitySlider({ value, onChange, disabled }: CreativitySliderProps): ReactElement {
   const level = getCreativityLevel(value);
   const helperText = CREATIVITY_LEVEL_HELPER_TEXT[level];
 

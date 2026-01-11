@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 interface SwitchProps {
   id?: string;
   checked: boolean;
@@ -22,7 +24,7 @@ const sizeStyles = {
   }
 };
 
-export function Switch({ id, checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps): React.JSX.Element {
+export function Switch({ id, checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps): ReactElement {
   const styles = sizeStyles[size];
   
   return (

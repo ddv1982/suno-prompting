@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 type StatusType = "ready" | "working" | "error" | "local";
 
 interface StatusIndicatorProps {
@@ -23,7 +25,7 @@ const statusLabels: Record<StatusType, string> = {
   local: "Local",
 };
 
-export function StatusIndicator({ status, label, showLabel = true, className }: StatusIndicatorProps): React.JSX.Element {
+export function StatusIndicator({ status, label, showLabel = true, className }: StatusIndicatorProps): ReactElement {
   const displayLabel = label ?? statusLabels[status];
   
   return (

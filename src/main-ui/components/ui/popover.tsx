@@ -3,15 +3,17 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+import type { ReactElement } from "react";
+
 function Popover({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Root>): React.JSX.Element {
+}: React.ComponentProps<typeof PopoverPrimitive.Root>): ReactElement {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
 function PopoverTrigger({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Trigger>): React.JSX.Element {
+}: React.ComponentProps<typeof PopoverPrimitive.Trigger>): ReactElement {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
@@ -20,7 +22,7 @@ function PopoverContent({
   align = "center",
   sideOffset = 4,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>): React.JSX.Element {
+}: React.ComponentProps<typeof PopoverPrimitive.Content>): ReactElement {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
@@ -39,7 +41,7 @@ function PopoverContent({
 
 function PopoverAnchor({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Anchor>): React.JSX.Element {
+}: React.ComponentProps<typeof PopoverPrimitive.Anchor>): ReactElement {
   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />
 }
 

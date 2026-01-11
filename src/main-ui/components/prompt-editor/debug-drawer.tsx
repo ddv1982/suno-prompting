@@ -1,5 +1,7 @@
 import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
-import { useState } from "react";
+import { useState } from "react"
+
+;
 
 import { RequestInspector } from "@/components/prompt-editor/request-inspector";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
 import type { DebugInfo } from "@shared/types";
+import type { ReactElement } from "react";
 
 // =============================================================================
 // Constants
@@ -62,7 +65,7 @@ function LLMCallSection({
   onCopy,
   copiedSection,
   sectionKey,
-}: LLMCallSectionProps): React.JSX.Element {
+}: LLMCallSectionProps): ReactElement {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
 
@@ -75,7 +78,7 @@ function LLMCallSection({
     });
   };
 
-  const renderPromptCard = (role: string, content: string, key: string): React.JSX.Element => {
+  const renderPromptCard = (role: string, content: string, key: string): ReactElement => {
     const lines = content.split('\n');
     const needsTruncation = lines.length > PROMPT_PREVIEW_MAX_LINES || content.length > PROMPT_PREVIEW_MAX_CHARS;
     const preview = lines.slice(0, PROMPT_PREVIEW_MAX_LINES).join('\n');
@@ -147,7 +150,7 @@ interface DebugMetadataHeaderProps {
  * Displays timestamp, provider, and model info for debug inspection.
  * Extracted to reduce complexity of parent component.
  */
-function DebugMetadataHeader({ debugInfo }: DebugMetadataHeaderProps): React.JSX.Element {
+function DebugMetadataHeader({ debugInfo }: DebugMetadataHeaderProps): ReactElement {
   return (
     <div className="ui-helper flex items-center gap-3">
       <span className="font-mono text-foreground">
@@ -173,7 +176,7 @@ interface LLMCallsSectionProps {
  * Renders collapsible sections for each LLM call (genre, title, lyrics, max).
  * Returns null when no LLM calls exist to avoid empty container.
  */
-function LLMCallsSection({ debugInfo, onCopy, copiedSection }: LLMCallsSectionProps): React.JSX.Element | null {
+function LLMCallsSection({ debugInfo, onCopy, copiedSection }: LLMCallsSectionProps): ReactElement | null {
   const hasLLMCalls = debugInfo.genreDetection || debugInfo.titleGeneration || debugInfo.lyricsGeneration || debugInfo.maxConversion;
   
   if (!hasLLMCalls) return null;
@@ -237,7 +240,7 @@ function LLMCallsSection({ debugInfo, onCopy, copiedSection }: LLMCallsSectionPr
 // Main Component
 // =============================================================================
 
-export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps): React.JSX.Element {
+export function DebugDrawerBody({ debugInfo }: DebugDrawerBodyProps): ReactElement {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, section: string): void => {
