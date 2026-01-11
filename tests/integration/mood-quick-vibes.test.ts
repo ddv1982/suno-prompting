@@ -16,7 +16,7 @@ import {
   buildDeterministicQuickVibes,
   QUICK_VIBES_TEMPLATES,
   type QuickVibesTemplate,
-} from '@bun/prompt/quick-vibes-templates';
+} from '@bun/prompt/quick-vibes';
 
 import type { QuickVibesCategory } from '@shared/types';
 

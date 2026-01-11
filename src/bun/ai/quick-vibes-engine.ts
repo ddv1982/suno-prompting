@@ -1,17 +1,17 @@
 import { createLogger } from '@bun/logger';
 import {
+  buildDeterministicQuickVibes,
+  getQuickVibesTemplate,
+  generateQuickVibesTitle,
+  type QuickVibesTemplate,
+} from '@bun/prompt/quick-vibes';
+import {
   applyQuickVibesMaxMode,
   stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt,
 } from '@bun/prompt/quick-vibes-builder';
 import { postProcessQuickVibes } from '@bun/prompt/quick-vibes-builder';
-import {
-  buildDeterministicQuickVibes,
-  getQuickVibesTemplate,
-  generateQuickVibesTitle,
-  type QuickVibesTemplate,
-} from '@bun/prompt/quick-vibes-templates';
 import { InvariantError } from '@shared/errors';
 
 import { isDirectMode, generateDirectModeResult } from './direct-mode';

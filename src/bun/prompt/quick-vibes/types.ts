@@ -1,0 +1,38 @@
+/**
+ * Quick Vibes Types
+ *
+ * Type definitions for Quick Vibes templates.
+ *
+ * @module prompt/quick-vibes/types
+ */
+
+import type { MoodCategory } from '@bun/mood';
+import type { QuickVibesCategory } from '@shared/types';
+
+export type QuickVibesTemplate = {
+  /** Genre options for this category */
+  genres: readonly string[];
+  /** Instrument combination options */
+  instruments: readonly (readonly string[])[];
+  /** Mood options */
+  moods: readonly string[];
+  /** Title word pools by position */
+  titleWords: {
+    adjectives: readonly string[];
+    nouns: readonly string[];
+    contexts: readonly string[];
+  };
+};
+
+export interface BuildQuickVibesOptions {
+  /** Whether to include wordless vocals in instruments */
+  withWordlessVocals: boolean;
+  /** Whether to use MAX mode format (quoted fields) or standard */
+  maxMode: boolean;
+  /** Optional mood category to override template moods */
+  moodCategory?: MoodCategory;
+  /** Random number generator for deterministic testing (defaults to Math.random) */
+  rng?: () => number;
+}
+
+export type { MoodCategory, QuickVibesCategory };
