@@ -5,7 +5,7 @@
  */
 
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
-import { RECORDING_DESCRIPTORS } from '@bun/prompt/realism-tags';
+import { RECORDING_DESCRIPTORS } from '@bun/prompt/tags';
 
 import { MAX_CHARS, DEFAULT_BPM_RANGE, MUSICAL_KEYS, MUSICAL_MODES } from './constants';
 

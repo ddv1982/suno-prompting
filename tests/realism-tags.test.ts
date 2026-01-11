@@ -9,7 +9,7 @@ import {
   selectTextureTags,
   selectRecordingContext,
   _testHelpers,
-} from '@bun/prompt/realism-tags';
+} from '@bun/prompt/tags';
 
 const {
   VOCAL_PERFORMANCE_TAGS,

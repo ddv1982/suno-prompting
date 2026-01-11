@@ -15,7 +15,7 @@ import {
   selectTemporalTags,
   selectTextureTags,
   selectRecordingContext,
-} from '@bun/prompt/realism-tags';
+} from '@bun/prompt/tags';
 
 import type { StyleTagsResult } from './types';
 import type { GenreType } from '@bun/instruments/genres';

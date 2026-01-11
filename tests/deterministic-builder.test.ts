@@ -7,7 +7,7 @@ import {
   _testHelpers,
 } from '@bun/prompt/deterministic';
 import { applyWeightedSelection } from '@bun/prompt/deterministic/styles';
-import { selectRecordingContext } from '@bun/prompt/realism-tags';
+import { selectRecordingContext } from '@bun/prompt/tags';
 import { APP_CONSTANTS } from '@shared/constants';
 
 const {

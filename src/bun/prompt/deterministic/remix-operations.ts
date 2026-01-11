@@ -20,16 +20,16 @@ import { MOOD_POOL } from '@bun/instruments/datasets';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
 import { selectInstrumentsForMultiGenre } from '@bun/prompt/genre-parser';
 import {
-  selectVocalTags,
-  selectTextureTags,
-  selectRecordingContext,
-  selectRecordingDescriptors,
-} from '@bun/prompt/realism-tags';
-import {
   replaceFieldLine,
   replaceStyleTagsLine,
   replaceRecordingLine,
 } from '@bun/prompt/remix';
+import {
+  selectVocalTags,
+  selectTextureTags,
+  selectRecordingContext,
+  selectRecordingDescriptors,
+} from '@bun/prompt/tags';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { DEFAULT_GENRE } from '@shared/constants';
 

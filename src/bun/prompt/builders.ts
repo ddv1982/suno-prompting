@@ -10,8 +10,8 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genre-parser';
-import { MAX_MODE_HEADER } from '@bun/prompt/realism-tags';
 import { CONTEXT_INTEGRATION_INSTRUCTIONS, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
+import { MAX_MODE_HEADER } from '@bun/prompt/tags';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 
 import type { ModeSelection } from '@bun/instruments/selection';
