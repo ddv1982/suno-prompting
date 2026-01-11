@@ -18,14 +18,18 @@ import { PhrasePreview } from "./phrase-preview";
 
 import type { MoodCategory } from "@bun/mood";
 import type { AdvancedSelection } from "@shared/types";
+import type { ReactElement } from "react";
 
 type AdvancedPanelProps = {
   selection: AdvancedSelection;
   onUpdate: (updates: Partial<AdvancedSelection>) => void;
   onClear: () => void;
   computedPhrase: string;
+  /** Current mood category selection (null if none selected) */
   moodCategory?: MoodCategory | null;
+  /** Callback when mood category changes */
   onMoodCategoryChange: (category: MoodCategory | null) => void;
+  /** Whether generation is in progress (disables mood selector) */
   isGenerating: boolean;
 };
 
@@ -58,7 +62,7 @@ export function AdvancedPanel({
   moodCategory,
   onMoodCategoryChange,
   isGenerating,
-}: AdvancedPanelProps): React.JSX.Element {
+}: AdvancedPanelProps): ReactElement {
   const hasAnySelection = hasAdvancedSelection(selection);
 
   return (
