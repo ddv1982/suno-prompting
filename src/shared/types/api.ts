@@ -1,5 +1,6 @@
 // API Request/Response types
 
+import type { MoodCategory } from '@bun/mood';
 import type { AIProvider, APIKeys } from '@shared/types/config';
 import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory, CreativeBoostMode } from '@shared/types/domain';
 import type { ValidationResult } from '@shared/validation';
@@ -114,6 +115,8 @@ export type GenerateQuickVibesParams = {
   withWordlessVocals: boolean;
   /** Suno V5 styles (0-4 selections, mutually exclusive with category) */
   sunoStyles: string[];
+  /** Optional mood category to influence prompt generation */
+  moodCategory?: MoodCategory | null;
 };
 
 export type GenerateQuickVibesResponse = {

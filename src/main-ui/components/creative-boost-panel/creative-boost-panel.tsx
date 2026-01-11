@@ -1,5 +1,6 @@
 import { CreativitySlider } from "@/components/creativity-slider";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
+import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { canSubmitCreativeBoost } from "@shared/submit-validation";
 
@@ -11,6 +12,7 @@ import { SubmitButton } from "./submit-button";
 import { TogglesSection } from "./toggles-section";
 import { useCreativeBoostHandlers } from "./use-creative-boost-handlers";
 
+import type { MoodCategory } from "@bun/mood";
 import type { CreativeBoostInput, CreativeBoostMode } from "@shared/types";
 import type { ReactNode } from "react";
 
@@ -54,6 +56,10 @@ export function CreativeBoostPanel({
     input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine,
   });
 
+  const handleMoodCategoryChange = (category: MoodCategory | null): void => {
+    onInputChange(prev => ({ ...prev, moodCategory: category }));
+  };
+
   return (
     <div className="space-y-[var(--space-5)]">
       <CreativeBoostModeToggle
@@ -76,6 +82,15 @@ export function CreativeBoostPanel({
         </p>
       )}
 
+      {isSimpleMode && (
+        <MoodCategoryCombobox
+          value={input.moodCategory}
+          onChange={handleMoodCategoryChange}
+          disabled={isGenerating}
+          helperText="Influences the emotional tone of your prompt"
+        />
+      )}
+
       {!isSimpleMode && (
         <GenreMultiSelect
           selected={input.seedGenres} onChange={handleGenresChange} maxSelections={4}
@@ -91,6 +106,16 @@ export function CreativeBoostPanel({
           disabled={isGenerating || input.seedGenres.length > 0}
           helperText={input.seedGenres.length > 0 ? "Disabled when Seed Genres are selected" : isDirectMode ? "Selected styles will be used exactly as-is" : undefined}
           badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
+        />
+      )}
+
+      {!isSimpleMode && (
+        <MoodCategoryCombobox
+          value={input.moodCategory}
+          onChange={handleMoodCategoryChange}
+          disabled={isGenerating || isDirectMode}
+          helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
+          badgeText={isDirectMode ? "disabled" : "optional"}
         />
       )}
 

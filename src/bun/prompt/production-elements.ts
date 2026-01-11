@@ -47,6 +47,12 @@ export const RECORDING_TEXTURES = [
   'Intimate Recording',
   'Live Room Sound',
   'Studio Polish',
+  // Research-backed textures for Suno V5
+  'Layered Depth',
+  'Atmospheric Space',
+  'Cinematic Width',
+  'Dynamic Presence',
+  'Rich Saturation',
 ] as const;
 
 export type RecordingTexture = typeof RECORDING_TEXTURES[number];

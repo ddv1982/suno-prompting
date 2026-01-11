@@ -20,6 +20,7 @@ const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostI
   description: input.description,
   lyricsTopic: input.lyricsTopic,
   withWordlessVocals: input.withWordlessVocals,
+  moodCategory: input.moodCategory,
 });
 
 const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {

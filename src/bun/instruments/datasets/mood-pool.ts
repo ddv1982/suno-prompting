@@ -1,20 +1,82 @@
 export const MOOD_POOL = [
   // Energetic
   'euphoric', 'explosive', 'triumphant', 'exhilarating', 'electrifying', 'uplifting',
+  'ecstatic', 'exuberant', 'effervescent', 'spirited', 'animated', 'lively',
+  'energetic', 'vibrant', 'dynamic', 'rousing', 'thrilling',
+
   // Calm
   'serene', 'peaceful', 'tranquil', 'meditative', 'soothing', 'gentle',
+  'calming', 'relaxed', 'mellow', 'languid', 'soft', 'quiet',
+
   // Dark
   'haunting', 'sinister', 'ominous', 'menacing', 'foreboding',
+  'brooding', 'gloomy', 'bleak', 'somber', 'grim', 'macabre',
+
   // Emotional
   'melancholic', 'wistful', 'bittersweet', 'yearning', 'nostalgic', 'tender',
+  'poignant', 'sentimental', 'mournful', 'longing', 'regretful',
+
   // Playful
   'whimsical', 'mischievous', 'carefree', 'lighthearted', 'jovial', 'quirky',
+  'playful', 'cheerful', 'silly', 'fun', 'gleeful', 'perky',
+
   // Intense
   'passionate', 'fierce', 'relentless', 'urgent', 'raw', 'visceral',
+  'aggressive', 'powerful', 'ferocious', 'savage', 'explosive', 'volatile',
+
   // Atmospheric
   'ethereal', 'dreamy', 'mysterious', 'hypnotic', 'otherworldly', 'cosmic',
-  // Additional variety
-  'introspective', 'defiant', 'hopeful', 'rebellious', 'contemplative', 'cinematic',
+  'atmospheric', 'surreal', 'luminous', 'shimmering', 'immersive',
+  'spacey', 'hazy', 'misty', 'vaporous',
+
+  // Seasonal/Temporal
+  'autumnal', 'wintry', 'summery', 'springlike', 'nocturnal', 'late-night',
+
+  // Social/Expressive
+  'celebratory', 'joyful', 'boisterous', 'rowdy', 'raucous', 'festive',
+
+  // Sophisticated/Refined
+  'sophisticated', 'elegant', 'refined', 'graceful', 'stately', 'opulent',
+  'majestic', 'regal', 'dignified', 'noble', 'classy',
+
+  // Raw/Gritty
+  'gritty', 'smoky', 'rough', 'rugged', 'earthy', 'organic',
+  'rustic', 'tough', 'street-smart', 'authentic', 'unpolished',
+
+  // Expansive/Epic
+  'epic', 'grand', 'monumental', 'sweeping', 'soaring', 'sprawling',
+  'bombastic', 'heroic', 'cinematic', 'anthemic',
+
+  // Vulnerable/Intimate
+  'vulnerable', 'intimate', 'confessional', 'heartfelt', 'honest', 'earnest',
+  'sincere', 'introspective', 'contemplative',
+
+  // Tense/Suspenseful
+  'tense', 'suspenseful', 'anxious', 'paranoid', 'unsettling', 'eerie',
+  'spooky', 'threatening', 'ominous',
+
+  // Groove/Rhythm
+  'groovy', 'funky', 'bouncy', 'tight', 'syncopated', 'swinging',
+  'danceable', 'rhythmic', 'pulsing',
+
+  // Spiritual/Transcendent
+  'spiritual', 'devotional', 'sacred', 'transcendent', 'reverent', 'healing',
+  'mystical', 'divine',
+
+  // Eclectic/Quirky
+  'eccentric', 'offbeat', 'unconventional', 'experimental', 'abstract', 'avant-garde',
+
+  // Attitude
+  'defiant', 'hopeful', 'rebellious', 'confident', 'bold', 'assertive',
+  'determined', 'resolute',
+
+  // Texture
+  'layered', 'textured', 'dense', 'crisp', 'airy', 'fluid',
+  'lush', 'rich', 'sparse', 'minimal',
+
+  // Movement
+  'flowing', 'pulsating', 'evolving', 'building', 'swelling',
+  'driving', 'propulsive', 'kinetic',
 ] as const;
 
 export type Mood = typeof MOOD_POOL[number];

@@ -1,4 +1,5 @@
 import type { ChatMessage } from '@/lib/chat-utils';
+import type { MoodCategory } from '@bun/mood';
 import type { DebugInfo, PromptSession, QuickVibesCategory } from '@shared/types';
 import type { ValidationResult } from '@shared/validation';
 
@@ -75,7 +76,8 @@ export interface GenerationContextType
     category: QuickVibesCategory | null,
     customDescription: string,
     withWordlessVocals: boolean,
-    sunoStyles: string[]
+    sunoStyles: string[],
+    moodCategory?: MoodCategory | null
   ) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
   handleRefineQuickVibes: (feedback: string) => Promise<void>;

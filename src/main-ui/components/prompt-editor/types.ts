@@ -1,5 +1,6 @@
 import { type GeneratingAction } from "@/context/generation";
 import { type ChatMessage } from "@/lib/chat-utils";
+import { type MoodCategory } from "@bun/mood";
 import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
 import { type ValidationResult } from "@shared/validation";
 
@@ -25,6 +26,8 @@ export type InputState = {
   advancedSelection: AdvancedSelection;
   /** Computed music phrase from advanced selection */
   computedMusicPhrase: string;
+  /** Selected mood category for simple mode (null = auto) */
+  moodCategory: MoodCategory | null;
 };
 
 /** State for generation/loading status */
@@ -89,6 +92,7 @@ export type EditorHandlers = {
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onLyricsTopicChange: (topic: string) => void;
+  onMoodCategoryChange: (category: MoodCategory | null) => void;
   onEditorModeChange: (mode: EditorMode) => void;
   onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
   onAdvancedSelectionClear: () => void;
@@ -100,7 +104,7 @@ export type EditorHandlers = {
   onWordlessVocalsChange: (value: boolean) => void;
   onCreativeBoostInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onGenerate: (input: string) => void;
-  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[]) => void;
+  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[], moodCategory: MoodCategory | null) => void;
   onRefineQuickVibes: (feedback: string) => void;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => void;

@@ -2,6 +2,7 @@ import { Sparkles } from "lucide-react";
 import { useCallback, type ReactNode } from "react";
 
 import { CategorySelector } from "@/components/category-selector";
+import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { FormLabel } from "@/components/ui/form-label";
 import { canSubmitQuickVibes, canRefineQuickVibes } from "@shared/submit-validation";
@@ -11,6 +12,7 @@ import { DescriptionInput } from "./description-input";
 import { SubmitButton } from "./submit-button";
 import { TogglesSection } from "./toggles-section";
 
+import type { MoodCategory } from "@bun/mood";
 import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 
 function getCanSubmit(input: QuickVibesInput, originalInput: QuickVibesInput | null | undefined, isRefineMode: boolean): boolean {
@@ -51,6 +53,10 @@ export function QuickVibesPanel({
   }, [input, onInputChange]);
 
   const handleDescriptionChange = useCallback((value: string): void => { onInputChange({ ...input, customDescription: value }); }, [input, onInputChange]);
+
+  const handleMoodCategoryChange = useCallback((category: MoodCategory | null): void => {
+    onInputChange({ ...input, moodCategory: category });
+  }, [input, onInputChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey && canSubmit && !isGenerating) {
@@ -97,6 +103,14 @@ export function QuickVibesPanel({
               : undefined
         }
         badgeText={input.category !== null ? "disabled" : "optional"}
+      />
+
+      {/* Mood Category Selection */}
+      <MoodCategoryCombobox
+        value={input.moodCategory}
+        onChange={handleMoodCategoryChange}
+        disabled={isGenerating}
+        helperText="Injects moods from this category into your prompt"
       />
 
       <DescriptionInput

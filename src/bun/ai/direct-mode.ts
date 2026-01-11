@@ -1,7 +1,10 @@
 /**
  * Direct Mode utilities for bypassing LLM style generation.
- * When Suno V5 Styles are selected, they are output exactly as-is.
+ * When Suno V5 Styles are selected, styles are preserved exactly as-is
+ * but the prompt is enriched with instruments, moods, and production.
  */
+
+import { enrichSunoStyles, buildMaxModeEnrichedLines, buildStandardModeEnrichedLines } from '@bun/prompt/enrichment';
 
 import { generateDirectModeTitle } from './llm-utils';
 
@@ -10,8 +13,13 @@ import type { DebugInfo } from '@shared/types';
 
 export type DirectModeConfig = EngineConfig;
 
+export type DirectModeBuildOptions = {
+  maxMode?: boolean;
+};
+
 /**
- * Build a Direct Mode result where styles are passed through as-is.
+ * Build a Direct Mode result where styles are preserved as-is but
+ * the prompt is enriched with instruments, moods, and production.
  * Title is generated via LLM based on the description and styles.
  */
 export function buildDirectModeResult(
@@ -19,14 +27,28 @@ export function buildDirectModeResult(
   title: string,
   description: string | undefined,
   debugLabel: string,
-  config: DirectModeConfig
+  config: DirectModeConfig,
+  options: DirectModeBuildOptions = {}
 ): GenerationResult {
-  const styleResult = sunoStyles.join(', ');
+  const { maxMode = false } = options;
+
+  // Enrich the prompt while preserving styles exactly as-is
+  const enriched = enrichSunoStyles(sunoStyles);
+  const lines = maxMode
+    ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
+    : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
+
+  const enrichedPrompt = lines.join('\n');
+
   return {
-    text: styleResult,
+    text: enrichedPrompt,
     title,
     debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(debugLabel, `Styles: ${styleResult}\nDescription: ${description || '(none)'}`, styleResult)
+      ? config.buildDebugInfo(
+          debugLabel,
+          `Suno V5 Styles: ${sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${description || '(none)'}`,
+          enrichedPrompt
+        )
       : undefined,
   };
 }
@@ -35,19 +57,20 @@ export type DirectModeGenerateOptions = {
   sunoStyles: string[];
   description?: string;
   debugLabel?: string;
+  maxMode?: boolean;
 };
 
 /**
  * Generate a Direct Mode result.
- * Styles are output exactly as selected, title generated via LLM.
+ * Styles are preserved as-is, prompt is enriched, title generated via LLM.
  */
 export async function generateDirectModeResult(
   options: DirectModeGenerateOptions,
   config: DirectModeConfig
 ): Promise<GenerationResult> {
-  const { sunoStyles, description, debugLabel = 'DIRECT_MODE: Styles passed through, title generated.' } = options;
+  const { sunoStyles, description, maxMode, debugLabel = 'DIRECT_MODE: Styles preserved, prompt enriched.' } = options;
   const title = await generateDirectModeTitle(description || '', sunoStyles, config.getModel);
-  return buildDirectModeResult(sunoStyles, title, description, debugLabel, config);
+  return buildDirectModeResult(sunoStyles, title, description, debugLabel, config, { maxMode });
 }
 
 export type DirectModeWithLyricsOptions = DirectModeGenerateOptions & {
@@ -62,39 +85,47 @@ export type DirectModeWithLyricsOptions = DirectModeGenerateOptions & {
 
 /**
  * Generate a Direct Mode result with optional lyrics.
+ * Styles are preserved as-is, prompt is enriched with instruments, moods, production.
  * Used by Creative Boost Direct Mode.
  */
 export async function generateDirectModeWithLyrics(
   options: DirectModeWithLyricsOptions,
   config: DirectModeConfig
 ): Promise<GenerationResult> {
-  const { sunoStyles, description, lyricsTopic, withLyrics, generateLyrics, debugLabel = 'DIRECT_MODE' } = options;
-  const styleResult = sunoStyles.join(', ');
-  
+  const { sunoStyles, description, lyricsTopic, maxMode, withLyrics, generateLyrics, debugLabel = 'DIRECT_MODE' } = options;
+
+  // Enrich the prompt while preserving styles exactly as-is
+  const enriched = enrichSunoStyles(sunoStyles);
+  const lines = maxMode
+    ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
+    : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
+
+  const enrichedPrompt = lines.join('\n');
+
   // Generate title
   const titleContext = description?.trim() || lyricsTopic?.trim() || '';
   const title = await generateDirectModeTitle(titleContext, sunoStyles, config.getModel);
-  
-  // Generate lyrics if requested
+
+  // Generate lyrics if requested (pass enriched prompt for context)
   const lyricsResult = withLyrics
-    ? await generateLyrics(styleResult, lyricsTopic, description || '')
+    ? await generateLyrics(enrichedPrompt, lyricsTopic, description || '')
     : { lyrics: undefined };
-  
+
   // Build debug info
   let debugInfo: DebugInfo | undefined;
   if (config.isDebugMode()) {
     debugInfo = config.buildDebugInfo(
-      `${debugLabel}: No system prompt - styles passed through as-is`,
-      `Suno V5 Styles: ${sunoStyles.join(', ')}`,
-      styleResult
+      `${debugLabel}: Styles preserved, prompt enriched`,
+      `Suno V5 Styles: ${sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}`,
+      enrichedPrompt
     );
     if (lyricsResult.debugInfo) {
       debugInfo.lyricsGeneration = lyricsResult.debugInfo;
     }
   }
-  
+
   return {
-    text: styleResult,
+    text: enrichedPrompt,
     title,
     lyrics: lyricsResult.lyrics,
     debugInfo,

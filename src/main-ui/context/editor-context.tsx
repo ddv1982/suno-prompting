@@ -2,11 +2,12 @@ import { createContext, useContext, useState, useCallback, useMemo, useEffect, u
 
 import { createLogger } from '@/lib/logger';
 import { api } from '@/services/rpc';
+import { type MoodCategory } from '@bun/mood';
 import { buildMusicPhrase } from '@shared/music-phrase';
 import { type EditorMode, type AdvancedSelection, type QuickVibesInput, type PromptMode, type CreativeBoostInput, type CreativeBoostMode, EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types';
 
 const log = createLogger('Editor');
-const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = { category: null, customDescription: '', withWordlessVocals: false, sunoStyles: [] };
+const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = { category: null, customDescription: '', withWordlessVocals: false, sunoStyles: [], moodCategory: null };
 
 type NullableAdvancedField = 'harmonicStyle' | 'harmonicCombination' | 'polyrhythmCombination' | 'timeSignature' | 'timeSignatureJourney';
 const MUTUALLY_EXCLUSIVE_FIELDS: [NullableAdvancedField, NullableAdvancedField][] = [
@@ -22,6 +23,7 @@ export interface EditorContextType {
   lockedPhrase: string;
   pendingInput: string;
   lyricsTopic: string;
+  moodCategory: MoodCategory | null;
   computedMusicPhrase: string;
   quickVibesInput: QuickVibesInput;
   getQuickVibesInput: () => QuickVibesInput;
@@ -36,6 +38,7 @@ export interface EditorContextType {
   setLockedPhrase: (phrase: string) => void;
   setPendingInput: (input: string) => void;
   setLyricsTopic: (topic: string) => void;
+  setMoodCategory: (category: MoodCategory | null) => void;
   setQuickVibesInput: (input: QuickVibesInput) => void;
   setWithWordlessVocals: (value: boolean) => void;
   setCreativeBoostInput: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
@@ -62,6 +65,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode
   const [lockedPhrase, setLockedPhrase] = useState("");
   const [pendingInput, setPendingInput] = useState("");
   const [lyricsTopic, setLyricsTopic] = useState("");
+  const [moodCategory, setMoodCategory] = useState<MoodCategory | null>(null);
   const [quickVibesInput, setQuickVibesInputState] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
   const quickVibesInputRef = useRef<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
   const [withWordlessVocals, setWithWordlessVocals] = useState(false);
@@ -114,15 +118,15 @@ export const EditorProvider = ({ children }: { children: ReactNode }): ReactNode
 
   const resetEditor = useCallback(() => {
     setAdvancedSelection(EMPTY_ADVANCED_SELECTION); setLockedPhrase(""); setPendingInput(""); setLyricsTopic("");
-    setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT); setWithWordlessVocals(false); resetCreativeBoostInput();
+    setMoodCategory(null); setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT); setWithWordlessVocals(false); resetCreativeBoostInput();
   }, [resetCreativeBoostInput, setQuickVibesInput]);
 
   return (
     <EditorContext.Provider value={{
       editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic,
-      computedMusicPhrase, quickVibesInput, getQuickVibesInput, withWordlessVocals, creativeBoostInput,
+      moodCategory, computedMusicPhrase, quickVibesInput, getQuickVibesInput, withWordlessVocals, creativeBoostInput,
       setEditorMode, setPromptMode, setCreativeBoostMode, setAdvancedSelection, updateAdvancedSelection,
-      clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setQuickVibesInput,
+      clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setMoodCategory, setQuickVibesInput,
       setWithWordlessVocals, setCreativeBoostInput, updateCreativeBoostInput, resetCreativeBoostInput,
       getEffectiveLockedPhrase, resetEditor, resetQuickVibesInput,
     }}>

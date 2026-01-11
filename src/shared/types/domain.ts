@@ -1,5 +1,6 @@
 // Domain types - core business entities
 
+import type { MoodCategory } from '@bun/mood';
 import type { AIProvider } from '@shared/types/config';
 
 // Prompt generation mode
@@ -27,6 +28,8 @@ export type QuickVibesInput = {
   withWordlessVocals: boolean;
   /** 0-4 Suno V5 style keys (mutually exclusive with category) */
   sunoStyles: string[];
+  /** Optional mood category to influence prompt generation */
+  moodCategory: MoodCategory | null;
 };
 
 // Creative Boost input state
@@ -39,6 +42,8 @@ export type CreativeBoostInput = {
   description: string;                     // Optional text description
   lyricsTopic: string;                     // Topic for lyrics (when lyrics enabled)
   withWordlessVocals: boolean;             // Humming, oohs
+  /** Optional mood category to influence prompt generation */
+  moodCategory: MoodCategory | null;
 };
 
 export const EMPTY_CREATIVE_BOOST_INPUT = {
@@ -48,6 +53,7 @@ export const EMPTY_CREATIVE_BOOST_INPUT = {
   description: '',
   lyricsTopic: '',
   withWordlessVocals: false,
+  moodCategory: null,
 } as const satisfies CreativeBoostInput;
 
 // Editor mode types

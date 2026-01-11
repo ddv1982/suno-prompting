@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
 import { api } from '@/services/rpc';
+import { type MoodCategory } from '@bun/mood';
 import { type QuickVibesInput, type QuickVibesCategory } from '@shared/types';
 
 import {
@@ -24,7 +25,8 @@ export interface QuickVibesActionsResult {
     category: QuickVibesCategory | null,
     customDescription: string,
     wordlessVocals: boolean,
-    sunoStyles?: string[]
+    sunoStyles?: string[],
+    moodCategory?: MoodCategory | null
   ) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
   handleRefineQuickVibes: (input: string) => Promise<void>;
@@ -47,7 +49,8 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     category: QuickVibesCategory | null,
     customDescription: string,
     wordlessVocals: boolean,
-    sunoStyles: string[] = []
+    sunoStyles: string[] = [],
+    moodCategory: MoodCategory | null = null
   ) => {
     const originalInput = sunoStyles.length > 0
       ? `[Suno V5] ${sunoStyles.join(', ')}`
@@ -57,10 +60,10 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     await execute(
       {
         action: 'quickVibes',
-        apiCall: () => api.generateQuickVibes(category, customDescription, wordlessVocals, sunoStyles),
+        apiCall: () => api.generateQuickVibes(category, customDescription, wordlessVocals, sunoStyles, moodCategory),
         originalInput,
         promptMode: 'quickVibes',
-        modeInput: { quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles } },
+        modeInput: { quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles, moodCategory } },
         successMessage: "Quick Vibes prompt generated.",
         errorContext: "generate Quick Vibes",
         log,
