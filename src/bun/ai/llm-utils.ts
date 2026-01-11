@@ -75,6 +75,37 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
 }
 
 /**
+ * Infer mood from Suno V5 styles based on keyword matching.
+ * Used when generating titles in Direct Mode to provide better context.
+ */
+function inferMoodFromStyles(styles: string[]): string {
+  const stylesLower = styles.map(s => s.toLowerCase()).join(' ');
+
+  // Check for mood keywords in styles
+  if (/(dark|heavy|intense|aggressive|brutal|chaotic|doom)/i.test(stylesLower)) {
+    return 'dark';
+  }
+  if (/(upbeat|energetic|fast|driving|vibrant|electric)/i.test(stylesLower)) {
+    return 'energetic';
+  }
+  if (/(calm|peaceful|ambient|ethereal|atmospheric|gentle|soft)/i.test(stylesLower)) {
+    return 'calm';
+  }
+  if (/(romantic|love|sweet|tender|intimate)/i.test(stylesLower)) {
+    return 'romantic';
+  }
+  if (/(melanchol|sad|emotional|nostalgic|wistful)/i.test(stylesLower)) {
+    return 'melancholic';
+  }
+  if (/(dreamy|psychedelic|surreal|hypnotic|spacey)/i.test(stylesLower)) {
+    return 'dreamy';
+  }
+
+  // Default to 'creative' if no specific mood detected
+  return 'creative';
+}
+
+/**
  * Generate a title for Direct Mode (Suno V5 Styles)
  * Used by both Quick Vibes and Creative Boost engines
  */
@@ -88,12 +119,25 @@ export async function generateDirectModeTitle(
 
     const cleanDescription = description.trim();
     const styleText = styles.join(', ');
+    
+    // Infer mood from styles instead of hardcoding 'creative'
+    const mood = inferMoodFromStyles(styles);
+    
+    // Build enhanced description that includes all styles context
     const titleDescription = cleanDescription
-      ? `${cleanDescription}\nSuno V5 styles: ${styleText}`
-      : `Suno V5 styles: ${styleText}`;
+      ? `${cleanDescription}\n\nSuno V5 styles: ${styleText}`
+      : `Song with Suno V5 styles: ${styleText}`;
 
+    // Use first style as genre hint, but pass full context in description
     const genre = styles[0] || 'music';
-    const result = await generateTitle(titleDescription, genre, 'creative', getModel);
+    
+    log.info('generateDirectModeTitle', { 
+      stylesCount: styles.length, 
+      inferredMood: mood, 
+      hasDescription: !!cleanDescription 
+    });
+    
+    const result = await generateTitle(titleDescription, genre, mood, getModel);
     return result.title;
   } catch (error: unknown) {
     log.warn('generateDirectModeTitle:failed', {
