@@ -4,6 +4,8 @@
  * @module prompt/deterministic/types
  */
 
+import { z } from 'zod';
+
 import type { GenreType } from '@bun/instruments/genres';
 import type { MoodCategory } from '@bun/mood';
 
@@ -88,3 +90,51 @@ export type StyleTagsResult = {
 export type RemixResult = {
   readonly text: string;
 };
+
+/**
+ * Multi-dimensional production descriptor for Suno V5.
+ *
+ * Separates production into 4 independent dimensions for greater variety
+ * and more precise control over sonic characteristics. This structured
+ * approach replaces blended string descriptors and enables 30,600 unique
+ * combinations (15 × 17 × 10 × 12) compared to 204 from blended strings.
+ *
+ * @since v2.0.0
+ * @example
+ * {
+ *   reverb: 'hall reverb',
+ *   texture: 'warm character',
+ *   stereo: 'wide stereo',
+ *   dynamic: 'punchy mix'
+ * }
+ */
+export type ProductionDescriptor = {
+  /** Reverb type describing spatial audio processing (e.g., 'hall reverb', 'plate reverb') */
+  readonly reverb: string;
+  /** Recording texture describing overall sonic character (e.g., 'warm character', 'polished production') */
+  readonly texture: string;
+  /** Stereo imaging describing spatial width and positioning (e.g., 'wide stereo', 'centered focus') */
+  readonly stereo: string;
+  /** Dynamic descriptor describing compression and loudness control (e.g., 'punchy mix', 'natural dynamics') */
+  readonly dynamic: string;
+};
+
+/**
+ * Zod validation schema for ProductionDescriptor.
+ *
+ * Validates all four production dimensions are non-empty strings.
+ * Use this schema at API boundaries and when validating external data.
+ *
+ * @since v2.0.0
+ * @example
+ * const result = ProductionDescriptorSchema.safeParse(data);
+ * if (result.success) {
+ *   const descriptor = result.data;
+ * }
+ */
+export const ProductionDescriptorSchema = z.object({
+  reverb: z.string().min(1, 'Reverb type is required'),
+  texture: z.string().min(1, 'Recording texture is required'),
+  stereo: z.string().min(1, 'Stereo imaging is required'),
+  dynamic: z.string().min(1, 'Dynamic descriptor is required'),
+});

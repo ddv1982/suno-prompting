@@ -6,6 +6,7 @@ import {
   buildDeterministicStandardPrompt,
   _testHelpers,
 } from '@bun/prompt/deterministic';
+import { selectRecordingContext } from '@bun/prompt/realism-tags';
 import { APP_CONSTANTS } from '@shared/constants';
 
 const {
@@ -14,7 +15,6 @@ const {
   parseMultiGenre,
   assembleInstruments,
   assembleStyleTags,
-  selectRecordingContext,
   selectMusicalKey,
   selectMusicalMode,
   selectKeyAndMode,
@@ -184,7 +184,8 @@ describe('deterministic-builder', () => {
     it('limits tags to reasonable count', () => {
       const rng = createSeededRng(12345);
       const result = assembleStyleTags(['jazz'], rng);
-      expect(result.tags.length).toBeLessThanOrEqual(6);
+      expect(result.tags.length).toBeLessThanOrEqual(10);
+      expect(result.tags.length).toBeGreaterThanOrEqual(6);
     });
 
     it('formatted string is comma-separated', () => {
@@ -219,7 +220,7 @@ describe('deterministic-builder', () => {
   describe('selectRecordingContext', () => {
     it('returns non-empty string', () => {
       const rng = createSeededRng(12345);
-      const result = selectRecordingContext(rng);
+      const result = selectRecordingContext('jazz', rng);
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
     });
@@ -227,7 +228,107 @@ describe('deterministic-builder', () => {
     it('produces deterministic output with same seed', () => {
       const rng1 = createSeededRng(42);
       const rng2 = createSeededRng(42);
-      expect(selectRecordingContext(rng1)).toBe(selectRecordingContext(rng2));
+      expect(selectRecordingContext('jazz', rng1)).toBe(selectRecordingContext('jazz', rng2));
+    });
+  });
+
+  // =============================================================================
+  // Tests: Task Group 3.5 - Integration Tests for Recording Contexts
+  // =============================================================================
+
+  describe('Recording Context Integration', () => {
+    it('assembleStyleTags includes recording context across multiple runs', () => {
+      // Test with multiple seeds to ensure recording contexts appear
+      const jazzContexts = [
+        'intimate jazz club',
+        'small jazz ensemble',
+        'live jazz session',
+        'acoustic jazz space',
+        'trio recording',
+        'blue note studio vibe',
+        'bebop era recording',
+        'jazz quartet intimacy',
+        'smoky club atmosphere',
+      ];
+      
+      let foundCount = 0;
+      const totalRuns = 10;
+      
+      for (let seed = 0; seed < totalRuns; seed++) {
+        const result = assembleStyleTags(['jazz'], createSeededRng(seed));
+        const hasRecordingContext = result.tags.some(tag => 
+          jazzContexts.includes(tag)
+        );
+        if (hasRecordingContext) {
+          foundCount++;
+        }
+      }
+      
+      // At least 2 out of 10 runs should have jazz-specific context
+      expect(foundCount).toBeGreaterThanOrEqual(2);
+    });
+
+    it('uses genre-specific contexts for known genres', () => {
+      const genres: Array<[string, string[]]> = [
+        ['jazz', [
+          'intimate jazz club',
+          'small jazz ensemble',
+          'live jazz session',
+          'acoustic jazz space',
+          'trio recording',
+          'blue note studio vibe',
+          'bebop era recording',
+          'jazz quartet intimacy',
+          'smoky club atmosphere',
+        ]],
+        ['rock', [
+          'live room tracking',
+          'vintage rock studio',
+          'analog rock recording',
+          'garage band setup',
+          'stadium rock production',
+          'rehearsal room energy',
+          'basement rock session',
+          'classic rock studio',
+          'power trio setup',
+        ]],
+        ['pop', [
+          'modern pop studio',
+          'professional vocal booth',
+          'digital pop production',
+          'radio-ready mix',
+          'contemporary pop sound',
+          'multitrack pop recording',
+          'polished pop production',
+          'commercial studio sound',
+        ]],
+      ];
+      
+      for (const [genre, contexts] of genres) {
+        let foundCount = 0;
+        const totalRuns = 20;
+        
+        for (let seed = 0; seed < totalRuns; seed++) {
+          const result = assembleStyleTags([genre as any], createSeededRng(seed));
+          const hasGenreContext = result.tags.some(tag => contexts.includes(tag));
+          if (hasGenreContext) {
+            foundCount++;
+          }
+        }
+        
+        // At least 3 out of 20 runs should have genre-specific context (15% minimum)
+        expect(foundCount).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('falls back to generic context for unknown genres', () => {
+      const result = assembleStyleTags(['unknown-xyz-genre' as any], createSeededRng(42));
+      // Should still return tags (with fallback context)
+      expect(result.tags.length).toBeGreaterThan(0);
+      // Tags should be all lowercase
+      for (const tag of result.tags) {
+        expect(tag).toBe(tag.toLowerCase());
+      }
     });
   });
 
