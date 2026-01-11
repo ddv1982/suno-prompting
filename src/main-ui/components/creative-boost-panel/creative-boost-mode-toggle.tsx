@@ -24,7 +24,7 @@ export function CreativeBoostModeToggle({
         variant={mode === 'simple' ? 'default' : 'outline'}
         size="xs"
         onClick={() => { onModeChange('simple'); }}
-        disabled={isDirectMode || isGenerating}
+        disabled={isGenerating}
         className="font-semibold"
       >
         Simple
@@ -42,11 +42,6 @@ export function CreativeBoostModeToggle({
       {mode === 'simple' && !isDirectMode && (
         <span className="ui-helper ml-2 hidden sm:inline">
           AI auto-selects genres and styles
-        </span>
-      )}
-      {isDirectMode && (
-        <span className="ui-helper ml-2 text-amber-600 hidden sm:inline">
-          Simple mode disabled in Direct Mode
         </span>
       )}
     </div>
