@@ -2,6 +2,8 @@
 
 This guide explains how the app generates Suno prompts **instantly without AI**, making smart choices based on your inputs using curated databases of genres, instruments, moods, and production styles.
 
+> **✨ v2.0.0 Update (Phase 6):** Recording context system now includes conflict prevention, genre-aware selection, and 141 genre-specific contexts for authentic production environments! See [Recording Context](#1-recording-context) and [Genre-Specific Recording Contexts](#1a-genre-specific-recording-contexts-v200) for details.
+
 ## Table of Contents
 
 1. [What is Deterministic Generation?](#what-is-deterministic-generation)
@@ -230,18 +232,62 @@ When **MAX mode** is enabled, the app enriches your prompt with production descr
 
 ### 1. Recording Context
 
-**What it adds:** Production environment and recording technique
+**What it adds:** Production environment and recording technique with conflict prevention
 
-**Genre-based probabilities:**
-- Electronic genres → 70% digital production, 30% analog
-- Acoustic genres → 90% analog recording, 10% digital
-- Jazz/Classical → High probability of "live" descriptors
+**How it works (NEW in v2):**
+
+1. **Genre-specific contexts**: 18 genres have authentic recording environments
+   - Example: jazz → "intimate jazz club", "bebop era recording", "smoky club atmosphere"
+   - Example: electronic → "modular synth setup", "professional edm studio", "hybrid analog-digital rig"
+   - Example: rock → "live room tracking", "vintage rock studio", "garage band setup"
+   - 141 unique genre-specific descriptors total
+
+2. **Structured selection with conflict prevention**:
+   - ONE production quality (professional/demo/raw)
+   - ONE environment (studio/live/home/rehearsal/outdoor)
+   - ONE technique (analog/digital/hybrid)
+   - Optional characteristics (intimate/spacious/vintage/modern)
+
+3. **Genre-aware intelligence**:
+   - Electronic → digital production, studio environments
+   - Jazz/blues → analog warmth, live venues
+   - Lo-fi/bedroom pop → home recording, DIY aesthetic
+   - Punk/garage → rehearsal space energy
+
+**Benefits:**
+- ✅ No more conflicting tags ("professional" + "demo")
+- ✅ Genre-appropriate techniques (electronic gets digital, jazz gets analog)
+- ✅ Musically coherent combinations
+- ✅ Authentic production environments per genre
 
 **Examples:**
-- "live studio recording"
-- "digital production"
-- "analog tape warmth"
-- "bedroom production"
+- Jazz: "intimate jazz club" or "raw performance energy, live venue capture, warm analog console"
+- Electronic: "digital production studio" or "professional polish, studio warmth, digital production clarity"
+- Lo-fi: "bedroom r&b session" or "demo roughness, intimate bedroom recording, cassette tape saturation"
+
+---
+
+### 1a. Genre-Specific Recording Contexts (v2.0.0)
+
+**NEW**: Each genre has 5-10 authentic recording environment descriptors:
+
+| Genre | Example Contexts |
+|-------|------------------|
+| **Jazz** | "intimate jazz club", "blue note studio vibe", "smoky club atmosphere", "bebop era recording" |
+| **Electronic** | "modular synth setup", "digital production studio", "hybrid analog-digital rig", "professional edm studio" |
+| **Rock** | "live room tracking", "vintage rock studio", "garage band setup", "classic rock recording booth" |
+| **Blues** | "delta blues porch recording", "juke joint atmosphere", "one-mic blues capture", "mississippi delta field recording" |
+| **Classical** | "concert hall recording", "symphonic venue capture", "cathedral recording", "chamber music setting" |
+| **Hip Hop** | "underground hip hop studio", "basement rap session", "boom bap production setup", "modern trap studio" |
+| **Country** | "nashville studio session", "honky tonk recording", "country barn recording", "texas studio sound" |
+| **Metal** | "metal studio production", "underground metal recording", "doom metal cave", "black metal forest session" |
+
+**How selection works:**
+1. If genre has specific contexts (jazz, rock, electronic, etc.) → picks from genre pool
+2. If no genre-specific contexts → uses structured category selection
+3. Result: Authentic production environments that match the musical style
+
+**Total variety:** 141 genre-specific contexts + structured combinations = thousands of conflict-free possibilities
 
 ---
 
@@ -484,6 +530,17 @@ All choices come from carefully curated, tested databases maintained in code:
 - Acoustic → analog descriptors
 - Jazz → live/improvisation descriptors
 
+### Recording Context Data
+
+- **141 genre-specific contexts** across 18 genres (jazz, rock, electronic, blues, classical, hip hop, country, metal, etc.)
+- **4 structured categories** with conflict prevention:
+  - Production Quality: 3 subcategories × 3 descriptors = 9 options
+  - Environment: 5 subcategories × 3 descriptors = 15 options  
+  - Technique: 3 subcategories × 2-6 descriptors = 11 options
+  - Character: 5 subcategories × 2-3 descriptors = 13 options
+- **Genre-aware helpers** for intelligent selection (electronic→digital, jazz→analog)
+- **Thousands of combinations** (all conflict-free)
+
 ### Multi-Genre Combinations
 
 - **50+ pre-defined fusions** that work musically
@@ -702,6 +759,64 @@ This is an example of high creativity producing unexpected but musically interes
 
 ---
 
+### Example 5: Genre-Aware Recording Context (v2.0.0)
+
+```
+─────────────────────────────────────────────
+INPUT:
+─────────────────────────────────────────────
+Genre: "jazz"
+MAX mode: Yes
+
+─────────────────────────────────────────────
+APP DECISIONS:
+─────────────────────────────────────────────
+1. Detect jazz genre
+2. Check for genre-specific recording contexts
+3. GENRE_RECORDING_CONTEXTS['jazz'] found → 10 authentic jazz contexts available:
+   → "intimate jazz club"
+   → "blue note studio vibe"
+   → "smoky club atmosphere"
+   → "bebop era recording"
+   → "live jazz performance"
+   → (and 5 more...)
+4. Random selection → "intimate jazz club"
+
+5. Genre-aware production tags (jazz preferences):
+   → Jazz genres prefer: analog warmth, live venues
+6. Structured selection with conflict prevention:
+   → Quality: "raw performance energy" (authentic jazz feel)
+   → Environment: "live venue capture" (jazz preference for live settings)
+   → Technique: "warm analog console" (jazz prefers analog over digital)
+
+─────────────────────────────────────────────
+OUTPUT:
+─────────────────────────────────────────────
+PROMPT (MAX mode):
+Genre: "jazz"
+Recording: "intimate jazz club"
+Additional tags: "raw performance energy, live venue capture, warm analog console"
+
+─────────────────────────────────────────────
+COMPARISON: v1 vs v2
+─────────────────────────────────────────────
+OLD system (v1):
+→ "live studio recording, analog tape warmth"
+→ Generic, could conflict ("studio" + "tape")
+
+NEW system (v2):
+→ "intimate jazz club" + conflict-free structured tags
+→ Authentic, genre-appropriate, no conflicts! ✅
+```
+
+**Why v2 is Better:**
+- ✅ Genre-specific contexts add authenticity ("intimate jazz club" vs generic "studio")
+- ✅ Conflict prevention ensures coherent combinations (no "analog" + "digital")
+- ✅ Genre-aware selection matches musical style (jazz → analog, electronic → digital)
+- ✅ 141 genre contexts + structured categories = thousands of unique combinations
+
+---
+
 ## Quality Assurance
 
 The deterministic system is thoroughly tested to ensure high-quality outputs:
@@ -736,6 +851,13 @@ The deterministic system is thoroughly tested to ensure high-quality outputs:
 - Electronic genres get digital tags
 - Acoustic genres get analog tags
 - Probabilities tuned for genre appropriateness
+
+**Recording Context Quality (v2.0.0):**
+- ✅ Genre-specific context selection (141 contexts across 18 genres)
+- ✅ Conflict prevention (no "analog" + "digital", no "professional" + "demo")
+- ✅ Genre-aware selection (electronic → digital, jazz → analog + live)
+- ✅ Structured category selection ensures coherence
+- ✅ All genre contexts validated for authenticity
 
 **Title Generation:**
 - All word combinations reviewed
