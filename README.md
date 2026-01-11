@@ -97,6 +97,7 @@ The app automatically detects Ollama and switches to local mode.
 - **Max Mode**: Community-discovered format for higher quality output
 - **Dynamic instrument selection** from curated pools with exclusion rules
 - **Genre detection**: Keyword matching → spelling correction → LLM analysis
+- **Mood categories**: 20 mood categories with ~150 unique moods for targeted emotional direction
 - **Quick remix buttons** for mood/genre/instruments/style/recording
 - **Lyrics Mode**: Optional AI-generated structured lyrics
 - **1000-character limit** validation + contradictory tag warnings
@@ -351,6 +352,36 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 | Soul | 96 | 80-110 |
 | Synthwave | 115 | 100-130 |
 | Trap | 145 | 130-170 |
+
+</details>
+
+<details>
+<summary><strong>Mood Categories (20 categories, ~150 moods)</strong></summary>
+
+Optional mood category selector available in Full Mode, Quick Vibes, and Creative Boost. Select a category to guide mood selection, or leave as "None (Auto)" for genre-based defaults.
+
+| Category | Example Moods |
+|----------|---------------|
+| Energetic | euphoric, explosive, triumphant, uplifting, vibrant |
+| Calm | serene, peaceful, tranquil, meditative, soothing |
+| Dark | haunting, sinister, ominous, menacing, brooding |
+| Emotional | melancholic, wistful, bittersweet, nostalgic, tender |
+| Playful | whimsical, mischievous, carefree, lighthearted, quirky |
+| Intense | passionate, fierce, relentless, urgent, raw |
+| Atmospheric | ethereal, dreamy, mysterious, hypnotic, cosmic |
+| Seasonal | autumnal, wintry, summery, springlike, nocturnal |
+| Social | celebratory, joyful, boisterous, rowdy, festive |
+| Sophisticated | elegant, refined, graceful, stately, opulent |
+| Gritty | smoky, rough, rugged, earthy, authentic |
+| Epic | grand, monumental, sweeping, soaring, heroic |
+| Vulnerable | intimate, confessional, heartfelt, honest, introspective |
+| Tense | suspenseful, anxious, paranoid, unsettling, eerie |
+| Groove | groovy, funky, bouncy, tight, syncopated |
+| Spiritual | devotional, sacred, transcendent, reverent, mystical |
+| Eclectic | eccentric, offbeat, unconventional, experimental, avant-garde |
+| Attitude | defiant, hopeful, rebellious, confident, bold |
+| Texture | layered, textured, dense, crisp, airy |
+| Movement | flowing, pulsating, evolving, building, driving |
 
 </details>
 
