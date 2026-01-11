@@ -7,7 +7,12 @@
  * @module prompt/title/datasets/emotions
  */
 
-/** Emotion-based words */
+/**
+ * Emotion-based words for title generation
+ *
+ * Convention: All entries use Title Case, including multi-word phrases
+ * Examples: 'Dream', 'Memory', 'Lost'
+ */
 export const EMOTION_WORDS: readonly string[] = [
   // Original words (15)
   'Dream',
@@ -79,7 +84,12 @@ export const EMOTION_WORDS: readonly string[] = [
   'Solitude',
 ];
 
-/** Action/movement words */
+/**
+ * Action/movement words for title generation
+ *
+ * Convention: All entries use Title Case gerund form (-ing)
+ * Examples: 'Rising', 'Falling', 'Dancing'
+ */
 export const ACTION_WORDS: readonly string[] = [
   // Original words (10)
   'Rising',

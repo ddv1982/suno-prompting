@@ -19,6 +19,9 @@ describe('Topic-Aware Title Generation', () => {
       }
       
       // At least one of the 10 attempts should use topic keywords
+      if (!foundTopicAware) {
+        throw new Error('Expected at least one of 10 attempts to use midnight-related keywords from description');
+      }
       expect(foundTopicAware).toBe(true);
     });
 
@@ -37,6 +40,9 @@ describe('Topic-Aware Title Generation', () => {
       }
       
       // At least one of the 10 attempts should use topic keywords
+      if (!foundTopicAware) {
+        throw new Error('Expected at least one of 10 attempts to use ocean-related keywords from description');
+      }
       expect(foundTopicAware).toBe(true);
     });
 
@@ -61,6 +67,9 @@ describe('Topic-Aware Title Generation', () => {
       }
       
       // At least one of the 15 attempts should use love-related keywords
+      if (!foundLoveTheme) {
+        throw new Error('Expected at least one of 15 attempts to use love-related keywords from description');
+      }
       expect(foundLoveTheme).toBe(true);
     });
 

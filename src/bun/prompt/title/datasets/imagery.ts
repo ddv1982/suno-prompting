@@ -7,7 +7,12 @@
  * @module prompt/title/datasets/imagery
  */
 
-/** Time-based words for atmospheric titles */
+/**
+ * Time-based words for atmospheric titles
+ *
+ * Convention: All entries use Title Case, including multi-word phrases
+ * Examples: 'Midnight', 'Golden Hour', 'Witching Hour'
+ */
 export const TIME_WORDS: readonly string[] = [
   // Original words (10)
   'Midnight',
@@ -64,7 +69,12 @@ export const TIME_WORDS: readonly string[] = [
   'Interval',
 ];
 
-/** Nature-based words */
+/**
+ * Nature-based words for title generation
+ *
+ * Convention: All entries use Title Case
+ * Examples: 'Ocean', 'Mountain', 'Thunder'
+ */
 export const NATURE_WORDS: readonly string[] = [
   // Original words (15)
   'Ocean',
@@ -140,7 +150,12 @@ export const NATURE_WORDS: readonly string[] = [
   'Seed',
 ];
 
-/** Abstract concept words */
+/**
+ * Abstract concept words for title generation
+ *
+ * Convention: All entries use Title Case
+ * Examples: 'Infinity', 'Eternity', 'Journey'
+ */
 export const ABSTRACT_WORDS: readonly string[] = [
   // Original words (10)
   'Infinity',

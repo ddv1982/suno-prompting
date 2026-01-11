@@ -199,7 +199,16 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
   ],
 };
 
-/** Default patterns for unknown genres */
+/**
+ * Default patterns for unknown genres
+ *
+ * Pattern examples:
+ * - '{emotion} of the {nature}' → "Shadow of the Moon"
+ * - '{action} Through {nature}' → "Dancing Through Fire"
+ * - '{nature}'s {emotion}' → "Ocean's Memory"
+ * - 'When {nature} {action}s' → "When Thunder Strikes"
+ * - 'Between {time} and {emotion}' → "Between Midnight and Dreams"
+ */
 export const DEFAULT_PATTERNS: readonly string[] = [
   // Original 2-word patterns
   '{emotion} {nature}',

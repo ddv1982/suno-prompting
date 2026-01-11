@@ -111,7 +111,7 @@ const NATURE_KEYWORDS: Record<string, string[]> = {
   // Celestial
   comet: ['Comet', 'Stars', 'Sky'],
   meteor: ['Meteor', 'Stars', 'Fire'],
-  nebula: ['Nebula', 'Stars', 'Cosmos'],
+  nebula: ['Nebula', 'Stars', 'Cosmos', 'Galaxy'],
   // Elements
   earth: ['Earth', 'Stone', 'Mountain'],
   air: ['Air', 'Wind', 'Sky'],
@@ -151,7 +151,6 @@ const EMOTION_KEYWORDS: Record<string, string[]> = {
   pain: ['Cry', 'Shadow', 'Lost'],
   joy: ['Light', 'Hope', 'Dream'],
   soul: ['Soul', 'Spirit', 'Heart'],
-  spirit: ['Spirit', 'Soul', 'Dream'],
   // Compound emotion words
   heartbreak: ['Heart', 'Cry', 'Lost', 'Shadow'],
   heartache: ['Heart', 'Cry', 'Lost'],
@@ -248,7 +247,6 @@ const ABSTRACT_KEYWORDS: Record<string, string[]> = {
   cosmic: ['Cosmos', 'Universe', 'Galaxy'],
   universe: ['Universe', 'Cosmos', 'Infinity'],
   galaxy: ['Galaxy', 'Cosmos', 'Universe'],
-  nebula: ['Nebula', 'Cosmos', 'Galaxy'],
   cosmos: ['Cosmos', 'Universe', 'Galaxy'],
   void: ['Void', 'Abyss', 'Nothingness'],
   abyss: ['Abyss', 'Void', 'Nothingness'],
@@ -256,15 +254,13 @@ const ABSTRACT_KEYWORDS: Record<string, string[]> = {
   mystery: ['Mystery', 'Enigma', 'Riddle'],
   enigma: ['Enigma', 'Mystery', 'Paradox'],
   magic: ['Mystery', 'Illusion', 'Wonder'],
-  spirit: ['Spirit', 'Soul', 'Essence'],
+  spirit: ['Spirit', 'Soul', 'Essence', 'Dream'],
   divine: ['Transcendence', 'Nirvana', 'Serenity'],
   transcend: ['Transcendence', 'Ascension'],
   // Additional concepts
   battle: ['Chaos', 'Storm', 'Thunder'],
   war: ['Chaos', 'Storm', 'Fury'],
   fight: ['Chaos', 'Fury', 'Rage'],
-  hope: ['Hope', 'Light', 'Dream'],
-  dream: ['Dream', 'Illusion', 'Mystery'],
   reality: ['Reality', 'Truth', 'Existence'],
   illusion: ['Illusion', 'Dream', 'Mystery'],
   time: ['Eternity', 'Infinity', 'Timeless'],
