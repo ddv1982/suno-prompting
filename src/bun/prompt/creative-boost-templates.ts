@@ -8,8 +8,10 @@
  */
 
 import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS, type GenreType, selectInstrumentsForGenre as selectInstruments } from '@bun/instruments';
+import { filterSunoStylesByMoodCategory, selectMoodsForCategory } from '@bun/mood';
 import { InvariantError } from '@shared/errors';
 
+import type { MoodCategory } from '@bun/mood';
 import type { CreativityLevel } from '@shared/types';
 
 // =============================================================================
@@ -385,6 +387,10 @@ const MOOD_POOLS: Record<CreativityLevel, readonly string[]> = {
 /**
  * Select mood appropriate for creativity level.
  *
+ * When moodCategory is provided, uses moods from that category instead of
+ * level-based pools. Falls back to level-based pools if category selection
+ * returns empty.
+ *
  * Mood intensity scales with creativity level:
  * - low: Calm, peaceful moods
  * - safe: Dreamy, nostalgic moods
@@ -394,6 +400,7 @@ const MOOD_POOLS: Record<CreativityLevel, readonly string[]> = {
  *
  * @param level - Creativity level to select mood for
  * @param rng - Random number generator for deterministic selection
+ * @param moodCategory - Optional mood category to override level-based selection
  * @returns Selected mood string
  *
  * @example
@@ -403,11 +410,25 @@ const MOOD_POOLS: Record<CreativityLevel, readonly string[]> = {
  * @example
  * selectMoodForLevel('high', () => 0.5);
  * // "psychedelic"
+ *
+ * @example
+ * selectMoodForLevel('normal', () => 0.5, 'calm');
+ * // Uses a mood from 'calm' category instead of 'normal' pool
  */
 export function selectMoodForLevel(
   level: CreativityLevel,
-  rng: () => number
+  rng: () => number,
+  moodCategory?: MoodCategory,
 ): string {
+  // If mood category provided, use moods from that category
+  if (moodCategory) {
+    const categoryMoods = selectMoodsForCategory(moodCategory, 1, rng);
+    if (categoryMoods[0]) {
+      return categoryMoods[0];
+    }
+    // Fall through to level-based selection if category returns empty
+  }
+
   const pool = MOOD_POOLS[level];
   return selectRandom(pool, rng);
 }
@@ -455,13 +476,35 @@ export function getInstrumentsForGenre(
 // =============================================================================
 
 /**
+ * Options for building a deterministic Creative Boost prompt.
+ */
+export interface BuildCreativeBoostOptions {
+  /** Creativity level (0-100, mapped to CreativityLevel) */
+  creativityLevel: number;
+  /** User-provided seed genres */
+  seedGenres: string[];
+  /** Include wordless vocals */
+  withWordlessVocals: boolean;
+  /** Use MAX mode format */
+  maxMode: boolean;
+  /** Optional mood category to override mood selection */
+  moodCategory?: MoodCategory;
+  /** Random number generator (defaults to Math.random) */
+  rng?: () => number;
+}
+
+/**
  * Build a deterministic Creative Boost prompt.
+ *
+ * When moodCategory is provided:
+ * - Mood is selected from the category instead of level-based pools
+ * - This affects the mood in the generated prompt
  *
  * @param creativityLevel - Creativity level (0-100, mapped to CreativityLevel)
  * @param seedGenres - User-provided seed genres
  * @param withWordlessVocals - Include wordless vocals
  * @param maxMode - Use MAX mode format
- * @param rng - Random number generator
+ * @param rngOrOptions - Random number generator OR full options object
  * @returns Generated prompt, title, and genre
  */
 export function buildDeterministicCreativeBoost(
@@ -469,14 +512,23 @@ export function buildDeterministicCreativeBoost(
   seedGenres: string[],
   withWordlessVocals: boolean,
   maxMode: boolean,
-  rng: () => number = Math.random
+  rngOrOptions: (() => number) | BuildCreativeBoostOptions = Math.random,
 ): { text: string; title: string; genre: string } {
+  // Handle both old function signature and new options object
+  const options: BuildCreativeBoostOptions =
+    typeof rngOrOptions === 'function'
+      ? { creativityLevel, seedGenres, withWordlessVocals, maxMode, rng: rngOrOptions }
+      : rngOrOptions;
+
+  const rng = options.rng ?? Math.random;
+  const moodCategory = options.moodCategory;
+
   // Map slider value to creativity level
   const level = mapSliderToLevel(creativityLevel);
 
   // Select genre based on creativity level and seeds
   const genre = selectGenreForLevel(level, seedGenres, rng);
-  const mood = selectMoodForLevel(level, rng);
+  const mood = selectMoodForLevel(level, rng, moodCategory);
   const title = generateCreativeBoostTitle(level, genre, rng);
   const instruments = getInstrumentsForGenre(genre, rng);
 
@@ -527,4 +579,41 @@ export function mapSliderToLevel(value: number): CreativityLevel {
  */
 export function getCreativityPool(level: CreativityLevel): CreativityPool {
   return CREATIVITY_POOLS[level];
+}
+
+/**
+ * Get Suno V5 styles filtered by mood category.
+ *
+ * When a mood category is provided, returns only styles compatible with
+ * that category. Falls back to the full style list if the filter returns
+ * empty results.
+ *
+ * @param moodCategory - Optional mood category to filter by
+ * @param allStyles - Full list of Suno V5 styles
+ * @returns Filtered or full style list
+ *
+ * @example
+ * const styles = getSunoStylesForMoodCategory('groove', ALL_SUNO_STYLES);
+ * // Returns styles like 'funk', 'disco', etc.
+ *
+ * @example
+ * const styles = getSunoStylesForMoodCategory(undefined, ALL_SUNO_STYLES);
+ * // Returns all styles unchanged
+ */
+export function getSunoStylesForMoodCategory(
+  moodCategory: MoodCategory | undefined,
+  allStyles: readonly string[],
+): readonly string[] {
+  if (!moodCategory) {
+    return allStyles;
+  }
+
+  const filtered = filterSunoStylesByMoodCategory(moodCategory);
+
+  // Fall back to full list if filter returns empty
+  if (filtered.length === 0) {
+    return allStyles;
+  }
+
+  return filtered;
 }

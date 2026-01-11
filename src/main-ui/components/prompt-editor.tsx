@@ -79,7 +79,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
             <QuickVibesPanel input={quickVibes.input} originalInput={quickVibes.originalInput} withWordlessVocals={quickVibes.withWordlessVocals} maxMode={maxMode}
               isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} onInputChange={handlers.onQuickVibesInputChange}
               onWordlessVocalsChange={handlers.onWordlessVocalsChange} onMaxModeChange={handlers.onMaxModeChange}
-              onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.withWordlessVocals, quickVibes.input.sunoStyles); }}
+              onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.withWordlessVocals, quickVibes.input.sunoStyles, quickVibes.input.moodCategory); }}
               onRefine={handlers.onRefineQuickVibes} />
           ) : promptMode === 'creativeBoost' ? (
             <CreativeBoostPanel input={creativeBoost.input} maxMode={maxMode} lyricsMode={lyricsMode}
@@ -89,12 +89,13 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
               onGenerate={handlers.onGenerateCreativeBoost} onRefine={handlers.onRefineCreativeBoost} />
           ) : (
             <FullPromptInputPanel currentPrompt={currentPrompt} pendingInput={pendingInput} lockedPhrase={lockedPhrase}
-              lyricsTopic={lyricsTopic} editorMode={editorMode} advancedSelection={advancedSelection}
+              lyricsTopic={lyricsTopic} moodCategory={input.moodCategory} editorMode={editorMode} advancedSelection={advancedSelection}
               computedMusicPhrase={computedMusicPhrase} maxMode={maxMode} lyricsMode={lyricsMode} isGenerating={isGenerating}
               maxChars={maxChars} lockedPhraseValidation={lockedPhraseValidation} inputOverLimit={inputOverLimit}
               lyricsTopicOverLimit={lyricsTopicOverLimit} hasAdvancedSelection={isAdvancedModeActive}
               onPendingInputChange={handlers.onPendingInputChange} onLockedPhraseChange={handlers.onLockedPhraseChange}
-              onLyricsTopicChange={handlers.onLyricsTopicChange} onEditorModeChange={handlers.onEditorModeChange}
+              onLyricsTopicChange={handlers.onLyricsTopicChange} onMoodCategoryChange={handlers.onMoodCategoryChange}
+              onEditorModeChange={handlers.onEditorModeChange}
               onAdvancedSelectionUpdate={handlers.onAdvancedSelectionUpdate} onAdvancedSelectionClear={handlers.onAdvancedSelectionClear}
               onMaxModeChange={handlers.onMaxModeChange} onLyricsModeChange={handlers.onLyricsModeChange}
               onGenerate={handlers.onGenerate} onConversionComplete={handlers.onConversionComplete} />

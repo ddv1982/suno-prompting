@@ -4,6 +4,7 @@
  * @module prompt/deterministic/max-builder
  */
 
+import { selectMoodsForCategory } from '@bun/mood';
 import { MAX_MODE_HEADER } from '@shared/max-format';
 
 import { resolveGenre } from './genre';
@@ -19,7 +20,10 @@ import type { DeterministicOptions, DeterministicResult } from './types';
  * Uses pre-defined templates and random selection to build a complete
  * prompt without any LLM calls. Supports compound genres like "jazz rock".
  *
- * @param options - Generation options including description and optional genre override
+ * When moodCategory is provided, moods in style tags are selected from that
+ * category instead of being derived from genre.
+ *
+ * @param options - Generation options including description, genre override, and mood category
  * @returns DeterministicResult with formatted MAX MODE prompt
  *
  * @example
@@ -37,24 +41,54 @@ import type { DeterministicOptions, DeterministicResult } from './types';
  * // bpm: "between 80 and 160"
  * // instruments: "Rhodes, tenor sax, upright bass..."
  * ```
+ *
+ * @example
+ * ```typescript
+ * // With mood category override
+ * const result = buildDeterministicMaxPrompt({
+ *   description: 'jazz session',
+ *   moodCategory: 'calm',
+ * });
+ * // Style tags will include moods from 'calm' category
+ * ```
  */
 export function buildDeterministicMaxPrompt(
-  options: DeterministicOptions
+  options: DeterministicOptions,
 ): DeterministicResult {
-  const { description, genreOverride, rng = Math.random } = options;
+  const { description, genreOverride, moodCategory, rng = Math.random } = options;
 
   // 1. Resolve genre - supports compound genres like "jazz rock" (up to 4)
   const { detected, displayGenre, primaryGenre, components } = resolveGenre(
     description,
     genreOverride,
-    rng
+    rng,
   );
 
   // 2. Assemble instruments - blends from all genre components
   const instrumentsResult = assembleInstruments(components, rng);
 
   // 3. Assemble style tags - blends moods from all genre components
+  // If moodCategory is provided, we'll override the moods
   const styleResult = assembleStyleTags(components, rng);
+
+  // 3b. Override style tags if mood category is provided
+  let styleTags: string;
+  let styleTagsArray: readonly string[];
+  if (moodCategory) {
+    const categoryMoods = selectMoodsForCategory(moodCategory, 3, rng);
+    if (categoryMoods.length > 0) {
+      // Combine category moods with non-mood style tags from genre
+      // Style result includes moods and other descriptors, so we prepend category moods
+      styleTags = [...categoryMoods, ...styleResult.tags.slice(categoryMoods.length)].join(', ');
+      styleTagsArray = [...categoryMoods, ...styleResult.tags.slice(categoryMoods.length)];
+    } else {
+      styleTags = styleResult.formatted;
+      styleTagsArray = styleResult.tags;
+    }
+  } else {
+    styleTags = styleResult.formatted;
+    styleTagsArray = styleResult.tags;
+  }
 
   // 4. Get recording context
   const recordingContext = selectRecordingContext(rng);
@@ -68,7 +102,7 @@ export function buildDeterministicMaxPrompt(
 genre: "${displayGenre}"
 bpm: "${bpmRange}"
 instruments: "${instrumentsResult.formatted}"
-style tags: "${styleResult.formatted}"
+style tags: "${styleTags}"
 recording: "${recordingContext}"`;
 
   // 7. Enforce MAX_CHARS limit
@@ -83,7 +117,7 @@ recording: "${recordingContext}"`;
       instruments: instrumentsResult.instruments,
       chordProgression: instrumentsResult.chordProgression,
       vocalStyle: instrumentsResult.vocalStyle,
-      styleTags: styleResult.tags,
+      styleTags: styleTagsArray,
       recordingContext,
     },
   };

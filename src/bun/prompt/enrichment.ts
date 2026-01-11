@@ -8,6 +8,7 @@
  */
 
 import { createLogger } from '@bun/logger';
+import { selectMoodsForCategory } from '@bun/mood';
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import { SUNO_STYLE_GENRE_MAP } from '@bun/prompt/datasets/suno-style-mappings';
 import { assembleInstruments } from '@bun/prompt/deterministic/instruments';
@@ -16,6 +17,7 @@ import { buildBlendedProductionDescriptor, buildBlendedVocalDescriptor } from '@
 
 import type { GenreType } from '@bun/instruments/genres';
 import type { Rng } from '@bun/instruments/services/random';
+import type { MoodCategory } from '@bun/mood';
 
 const log = createLogger('Enrichment');
 
@@ -42,19 +44,33 @@ export interface EnrichmentResult {
 }
 
 /**
+ * Options for enrichment functions.
+ */
+export interface EnrichmentOptions {
+  /** Random number generator for selections (defaults to Math.random) */
+  rng?: Rng;
+  /** Optional mood category to override genre-based mood selection */
+  moodCategory?: MoodCategory;
+}
+
+/**
  * Default enrichment for when no genres are extracted.
  */
-function getDefaultEnrichment(rng: Rng): EnrichmentResult {
+function getDefaultEnrichment(rng: Rng, moodCategory?: MoodCategory): EnrichmentResult {
   const defaultGenres: GenreType[] = ['pop'];
-  return enrichFromGenresInternal(defaultGenres, rng);
+  return enrichFromGenresInternal(defaultGenres, rng, moodCategory);
 }
 
 /**
  * Internal enrichment logic without logging (to avoid recursion).
+ *
+ * When moodCategory is provided, moods are selected from that category
+ * instead of being derived from genre style tags.
  */
 function enrichFromGenresInternal(
   genres: GenreType[],
-  rng: Rng
+  rng: Rng,
+  moodCategory?: MoodCategory,
 ): EnrichmentResult {
   // Use existing pipeline functions - no duplication
   const styleResult = assembleStyleTags(genres, rng);
@@ -72,8 +88,18 @@ function enrichFromGenresInternal(
 
   const bpmRange = bpmResult ? formatBpmRange(bpmResult) : 'between 90 and 120';
 
+  // Select moods: use mood category if provided, otherwise use style tags
+  let moods: string[];
+  if (moodCategory) {
+    const categoryMoods = selectMoodsForCategory(moodCategory, 3, rng);
+    // Fall back to style tags if category selection returns empty
+    moods = categoryMoods.length > 0 ? categoryMoods : [...styleResult.tags.slice(0, 3)];
+  } else {
+    moods = [...styleResult.tags.slice(0, 3)];
+  }
+
   return {
-    moods: [...styleResult.tags.slice(0, 3)],
+    moods,
     instruments: [...instrumentResult.instruments],
     instrumentsFormatted: instrumentResult.formatted,
     vocalStyle,
@@ -88,21 +114,41 @@ function enrichFromGenresInternal(
  * Enrich prompt metadata from genre components.
  * Used by both seed genres and Suno V5 styles paths.
  *
+ * When moodCategory is provided, moods are selected from that category
+ * instead of being derived from genre style tags.
+ *
  * @param genres - Array of recognized genre types
- * @param rng - Random number generator for selections
+ * @param rngOrOptions - Random number generator OR options object
  * @returns Complete enrichment result with all metadata
+ *
+ * @example
+ * // Basic usage
+ * enrichFromGenres(['jazz', 'soul']);
+ *
+ * @example
+ * // With mood category override
+ * enrichFromGenres(['jazz', 'soul'], { moodCategory: 'calm' });
  */
 export function enrichFromGenres(
   genres: GenreType[],
-  rng: Rng = Math.random
+  rngOrOptions: Rng | EnrichmentOptions = Math.random,
 ): EnrichmentResult {
+  // Handle both old function signature (rng only) and new options object
+  const options: EnrichmentOptions =
+    typeof rngOrOptions === 'function'
+      ? { rng: rngOrOptions }
+      : rngOrOptions;
+
+  const rng = options.rng ?? Math.random;
+  const moodCategory = options.moodCategory;
+
   if (genres.length === 0) {
     log.info('enrichFromGenres:empty', { fallback: 'pop' });
-    return getDefaultEnrichment(rng);
+    return getDefaultEnrichment(rng, moodCategory);
   }
 
-  log.info('enrichFromGenres', { genreCount: genres.length, genres });
-  return enrichFromGenresInternal(genres, rng);
+  log.info('enrichFromGenres', { genreCount: genres.length, genres, moodCategory });
+  return enrichFromGenresInternal(genres, rng, moodCategory);
 }
 
 /**
@@ -150,17 +196,37 @@ export interface EnrichedSunoStyleResult {
  * Build enriched metadata for Suno V5 styles.
  * Preserves styles as-is, enriches everything else based on extracted genres.
  *
+ * When moodCategory is provided, moods are selected from that category
+ * instead of being derived from genre style tags.
+ *
  * @param sunoStyles - Array of Suno V5 style names (passed through unchanged)
- * @param rng - Random number generator for selections
+ * @param rngOrOptions - Random number generator OR options object
  * @returns Enriched result with raw styles and metadata
+ *
+ * @example
+ * // Basic usage
+ * enrichSunoStyles(['dreamy shoegaze', 'ambient']);
+ *
+ * @example
+ * // With mood category override
+ * enrichSunoStyles(['funk', 'disco'], { moodCategory: 'groove' });
  */
 export function enrichSunoStyles(
   sunoStyles: string[],
-  rng: Rng = Math.random
+  rngOrOptions: Rng | EnrichmentOptions = Math.random,
 ): EnrichedSunoStyleResult {
+  // Handle both old function signature (rng only) and new options object
+  const options: EnrichmentOptions =
+    typeof rngOrOptions === 'function'
+      ? { rng: rngOrOptions }
+      : rngOrOptions;
+
+  const rng = options.rng ?? Math.random;
+  const moodCategory = options.moodCategory;
+
   // Input validation: filter out empty/invalid entries
   const validStyles = sunoStyles.filter(
-    (s): s is string => typeof s === 'string' && s.trim().length > 0
+    (s): s is string => typeof s === 'string' && s.trim().length > 0,
   );
 
   // Extract genres for enrichment (styles stay as-is)
@@ -171,13 +237,14 @@ export function enrichSunoStyles(
     validCount: validStyles.length,
     extractedCount: extractedGenres.length,
     genres: extractedGenres,
+    moodCategory,
   });
 
   // Get enrichment from extracted genres (or default if none found)
   const enrichment =
     extractedGenres.length > 0
-      ? enrichFromGenresInternal(extractedGenres, rng)
-      : getDefaultEnrichment(rng);
+      ? enrichFromGenresInternal(extractedGenres, rng, moodCategory)
+      : getDefaultEnrichment(rng, moodCategory);
 
   return {
     rawStyles: validStyles,

@@ -1,5 +1,6 @@
 import { Electroview } from 'electrobun/view';
 
+import { type MoodCategory } from '@bun/mood';
 import { APP_CONSTANTS } from '@shared/constants';
 import { type SunoRPCSchema, type PromptSession, type PromptMode, type QuickVibesCategory, type CreativeBoostMode } from '@shared/types';
 
@@ -149,9 +150,10 @@ export const api = {
         category: QuickVibesCategory | null,
         customDescription: string,
         withWordlessVocals: boolean,
-        sunoStyles: string[] = []
+        sunoStyles: string[] = [],
+        moodCategory: MoodCategory | null = null
     ): Promise<BunRequests['generateQuickVibes']['response']> {
-        return await rpc.request.generateQuickVibes({ category, customDescription, withWordlessVocals, sunoStyles });
+        return await rpc.request.generateQuickVibes({ category, customDescription, withWordlessVocals, sunoStyles, moodCategory });
     },
 
     async refineQuickVibes(options: {

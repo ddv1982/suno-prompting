@@ -1,3 +1,4 @@
+import type { MoodCategory } from "@bun/mood";
 import type { AdvancedSelection, DebugInfo, EditorMode } from "@shared/types";
 
 /** Input state and handlers */
@@ -8,6 +9,12 @@ export type InputState = {
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onLyricsTopicChange: (topic: string) => void;
+};
+
+/** Mood category state and handlers (for simple mode) */
+export type MoodCategoryState = {
+  moodCategory: MoodCategory | null;
+  onMoodCategoryChange: (category: MoodCategory | null) => void;
 };
 
 /** Mode state and handlers */
@@ -52,6 +59,7 @@ export type GenerationState = {
 
 /** Combined props for FullPromptInputPanel component */
 export type FullPromptInputPanelProps = InputState &
+  MoodCategoryState &
   ModeState &
   AdvancedState &
   ValidationState &

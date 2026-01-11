@@ -5,6 +5,7 @@
  */
 
 import type { GenreType } from '@bun/instruments/genres';
+import type { MoodCategory } from '@bun/mood';
 
 /**
  * Options for deterministic prompt generation.
@@ -14,6 +15,8 @@ export type DeterministicOptions = {
   readonly description: string;
   /** Genre override from Advanced Mode selector */
   readonly genreOverride?: string;
+  /** Optional mood category to override genre-based mood selection */
+  readonly moodCategory?: MoodCategory;
   /** Random number generator for deterministic testing */
   readonly rng?: () => number;
 };

@@ -7,8 +7,10 @@
  * @module prompt/quick-vibes-templates
  */
 
+import { selectMoodsForCategory } from '@bun/mood';
 import { InvariantError } from '@shared/errors';
 
+import type { MoodCategory } from '@bun/mood';
 import type { QuickVibesCategory } from '@shared/types';
 
 // =============================================================================
@@ -326,15 +328,32 @@ export function generateQuickVibesTitle(
 }
 
 /**
+ * Options for building a deterministic Quick Vibes prompt.
+ */
+export interface BuildQuickVibesOptions {
+  /** Whether to include wordless vocals in instruments */
+  withWordlessVocals: boolean;
+  /** Whether to use MAX mode format (quoted fields) or standard */
+  maxMode: boolean;
+  /** Optional mood category to override template moods */
+  moodCategory?: MoodCategory;
+  /** Random number generator for deterministic testing (defaults to Math.random) */
+  rng?: () => number;
+}
+
+/**
  * Build a deterministic Quick Vibes prompt from templates.
  *
  * Selects genre, instruments, and mood from category-specific pools,
  * then formats as either MAX mode or standard mode prompt.
  *
+ * When moodCategory is provided, uses moods from that category instead of
+ * template moods. Falls back to template moods if category selection returns empty.
+ *
  * @param category - Quick Vibes category (e.g., 'lofi-study', 'cafe-coffeeshop')
  * @param withWordlessVocals - Whether to include wordless vocals in instruments
  * @param maxMode - Whether to use MAX mode format (quoted fields) or standard
- * @param rng - Random number generator for deterministic testing (defaults to Math.random)
+ * @param rngOrOptions - Random number generator OR options object
  * @returns Object with generated prompt text and title
  *
  * @example
@@ -347,18 +366,45 @@ export function generateQuickVibesTitle(
  * // Generate with wordless vocals in standard mode
  * const result = buildDeterministicQuickVibes('ambient-focus', true, false);
  * // result.text: 'meditative ambient\nInstruments: synthesizer pad, reverb textures, soft drones, wordless vocals'
+ *
+ * @example
+ * // Generate with mood category override
+ * const result = buildDeterministicQuickVibes('lofi-study', false, true, {
+ *   moodCategory: 'calm',
+ *   rng: () => 0.5,
+ * });
+ * // Mood will be selected from 'calm' category instead of template moods
  */
 export function buildDeterministicQuickVibes(
   category: QuickVibesCategory,
   withWordlessVocals: boolean,
   maxMode: boolean,
-  rng: () => number = Math.random
+  rngOrOptions: (() => number) | BuildQuickVibesOptions = Math.random,
 ): { text: string; title: string } {
+  // Handle both old function signature (rng only) and new options object
+  const options: BuildQuickVibesOptions =
+    typeof rngOrOptions === 'function'
+      ? { withWordlessVocals, maxMode, rng: rngOrOptions }
+      : rngOrOptions;
+
+  const rng = options.rng ?? Math.random;
+  const moodCategory = options.moodCategory;
+
   const template = QUICK_VIBES_TEMPLATES[category];
 
   const genre = selectRandom(template.genres, rng);
   const instruments = selectRandom(template.instruments, rng);
-  const mood = selectRandom(template.moods, rng);
+
+  // Select mood: use mood category if provided, otherwise use template moods
+  let mood: string;
+  if (moodCategory) {
+    const categoryMoods = selectMoodsForCategory(moodCategory, 1, rng);
+    // Fall back to template mood if category selection returns empty
+    mood = categoryMoods[0] ?? selectRandom(template.moods, rng);
+  } else {
+    mood = selectRandom(template.moods, rng);
+  }
+
   const title = generateQuickVibesTitle(template, rng);
 
   // Build instrument list

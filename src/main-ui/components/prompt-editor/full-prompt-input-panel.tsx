@@ -1,6 +1,7 @@
 import { useCallback, type ReactNode } from "react";
 
 import { AdvancedPanel } from "@/components/advanced-panel";
+import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { canSubmitFullPrompt } from "@shared/submit-validation";
 
 import { FullWidthSubmitButton } from "./full-width-submit-button";
@@ -15,8 +16,8 @@ export type { FullPromptInputPanelProps };
 
 export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactNode {
   const { currentPrompt, pendingInput, lockedPhrase, lyricsTopic, editorMode, advancedSelection, computedMusicPhrase,
-    maxMode, lyricsMode, isGenerating, maxChars, lockedPhraseValidation, inputOverLimit, lyricsTopicOverLimit,
-    hasAdvancedSelection, onPendingInputChange, onLockedPhraseChange, onLyricsTopicChange, onEditorModeChange,
+    moodCategory, maxMode, lyricsMode, isGenerating, maxChars, lockedPhraseValidation, inputOverLimit, lyricsTopicOverLimit,
+    hasAdvancedSelection, onPendingInputChange, onLockedPhraseChange, onLyricsTopicChange, onMoodCategoryChange, onEditorModeChange,
     onAdvancedSelectionUpdate, onAdvancedSelectionClear, onMaxModeChange, onLyricsModeChange, onGenerate, onConversionComplete } = props;
 
   // Use centralized validation for submit eligibility
@@ -66,6 +67,15 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactNod
         validation={lockedPhraseValidation}
         onChange={onLockedPhraseChange}
       />
+
+      {editorMode === 'simple' && (
+        <MoodCategoryCombobox
+          value={moodCategory}
+          onChange={onMoodCategoryChange}
+          disabled={isGenerating}
+          helperText="Influences the emotional tone of your prompt"
+        />
+      )}
 
       <MainInput
         value={pendingInput}
