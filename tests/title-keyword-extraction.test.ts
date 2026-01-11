@@ -103,5 +103,46 @@ describe('Keyword Extraction for Topic-Aware Titles', () => {
       expect(result.nature).toContain('Sky');
       expect(result.nature).toContain('Fire');
     });
+
+    test('does not match partial words (no false positives)', () => {
+      const result = extractKeywords('The nightingale sings');
+      // Should NOT extract 'Night' or 'Midnight' since "nightingale" doesn't have word boundary
+      expect(result.time).toBeUndefined();
+    });
+
+    test('matches compound words - heartbreak', () => {
+      const result = extractKeywords('Dealing with heartbreak');
+      expect(result.emotion).toBeDefined();
+      expect(result.emotion).toContain('Heart');
+      expect(result.emotion).toContain('Cry');
+      expect(result.emotion).toContain('Lost');
+    });
+
+    test('matches compound words - rainfall', () => {
+      const result = extractKeywords('Walking in the rainfall');
+      expect(result.nature).toBeDefined();
+      expect(result.nature).toContain('Rain');
+      expect(result.nature).toContain('Water');
+    });
+
+    test('matches compound words - moonlight', () => {
+      const result = extractKeywords('Dancing in the moonlight');
+      expect(result.time).toBeDefined();
+      expect(result.time).toContain('Moon');
+      expect(result.time).toContain('Night');
+    });
+
+    test('does not match when word is part of different word', () => {
+      const result = extractKeywords('The story continues');
+      // Should not match "story" to "storm"
+      expect(result.nature).toBeUndefined();
+    });
+
+    test('matches exact words in compound phrases', () => {
+      const result = extractKeywords('A night to remember under the star');
+      expect(result.time).toBeDefined();
+      expect(result.time).toContain('Night');
+      expect(result.time).toContain('Starlight');
+    });
   });
 });

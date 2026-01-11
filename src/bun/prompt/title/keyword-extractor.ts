@@ -23,6 +23,13 @@ const TIME_KEYWORDS: Record<string, string[]> = {
   evening: ['Evening', 'Dusk', 'Twilight'],
   star: ['Starlight', 'Night', 'Stars'],
   moon: ['Moon', 'Night', 'Midnight'],
+  // Compound time words
+  nightfall: ['Night', 'Dusk', 'Evening'],
+  nighttime: ['Night', 'Midnight'],
+  sunrise: ['Morning', 'Dawn', 'Sun'],
+  moonlight: ['Moon', 'Night', 'Starlight'],
+  moonrise: ['Moon', 'Evening', 'Dusk'],
+  starlight: ['Starlight', 'Night', 'Stars'],
 };
 
 /** Maps description keywords to NATURE_WORDS */
@@ -44,6 +51,15 @@ const NATURE_KEYWORDS: Record<string, string[]> = {
   desert: ['Sun', 'Fire', 'Sand'],
   city: ['Sky', 'Fire', 'Thunder'],
   urban: ['Sky', 'Fire', 'Thunder'],
+  // Compound nature words
+  rainfall: ['Rain', 'Water', 'Storm'],
+  rainstorm: ['Rain', 'Storm', 'Thunder'],
+  snowfall: ['Snow', 'Wind'],
+  snowstorm: ['Snow', 'Storm', 'Wind'],
+  windstorm: ['Wind', 'Storm', 'Thunder'],
+  riverside: ['River', 'Water'],
+  waterfall: ['Water', 'River'],
+  wildfire: ['Fire', 'Storm'],
 };
 
 /** Maps description keywords to EMOTION_WORDS */
@@ -68,6 +84,12 @@ const EMOTION_KEYWORDS: Record<string, string[]> = {
   joy: ['Light', 'Hope', 'Dream'],
   soul: ['Soul', 'Spirit', 'Heart'],
   spirit: ['Spirit', 'Soul', 'Dream'],
+  // Compound emotion words
+  heartbreak: ['Heart', 'Cry', 'Lost', 'Shadow'],
+  heartache: ['Heart', 'Cry', 'Lost'],
+  loneliness: ['Silence', 'Lost', 'Shadow'],
+  happiness: ['Light', 'Hope', 'Found'],
+  sadness: ['Shadow', 'Lost', 'Cry'],
 };
 
 /** Maps description keywords to ACTION_WORDS */
@@ -117,8 +139,36 @@ const ABSTRACT_KEYWORDS: Record<string, string[]> = {
 // =============================================================================
 
 /**
+ * Helper function to extract keywords from a single category.
+ * Uses word boundary regex for precise matching to avoid false positives.
+ *
+ * @param descLower - Lowercased description text
+ * @param categoryKeywords - Keyword mappings for this category
+ * @param categoryName - Name of the category (e.g., 'time', 'nature')
+ * @param result - Result object to accumulate keywords into
+ */
+function extractCategoryKeywords(
+  descLower: string,
+  categoryKeywords: Record<string, string[]>,
+  categoryName: string,
+  result: Record<string, string[]>
+): void {
+  for (const [keyword, words] of Object.entries(categoryKeywords)) {
+    // Use word boundary regex for precise matching
+    // This prevents false positives like "nightingale" matching "night"
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(descLower)) {
+      result[categoryName] = [...(result[categoryName] || []), ...words];
+    }
+  }
+}
+
+/**
  * Extract keywords from description and map to word categories.
  * Returns a map of category -> preferred words based on description content.
+ *
+ * Uses word boundary matching for precise keyword detection, avoiding false positives
+ * like "nightingale" matching "night".
  *
  * @param description - User's song description
  * @returns Map of category names to arrays of preferred words
@@ -137,40 +187,12 @@ export function extractKeywords(description?: string): Record<string, string[]> 
   const descLower = description.toLowerCase();
   const keywords: Record<string, string[]> = {};
 
-  // Extract time-related keywords
-  for (const [keyword, words] of Object.entries(TIME_KEYWORDS)) {
-    if (descLower.includes(keyword)) {
-      keywords.time = [...(keywords.time || []), ...words];
-    }
-  }
-
-  // Extract nature-related keywords
-  for (const [keyword, words] of Object.entries(NATURE_KEYWORDS)) {
-    if (descLower.includes(keyword)) {
-      keywords.nature = [...(keywords.nature || []), ...words];
-    }
-  }
-
-  // Extract emotion-related keywords
-  for (const [keyword, words] of Object.entries(EMOTION_KEYWORDS)) {
-    if (descLower.includes(keyword)) {
-      keywords.emotion = [...(keywords.emotion || []), ...words];
-    }
-  }
-
-  // Extract action-related keywords
-  for (const [keyword, words] of Object.entries(ACTION_KEYWORDS)) {
-    if (descLower.includes(keyword)) {
-      keywords.action = [...(keywords.action || []), ...words];
-    }
-  }
-
-  // Extract abstract-related keywords
-  for (const [keyword, words] of Object.entries(ABSTRACT_KEYWORDS)) {
-    if (descLower.includes(keyword)) {
-      keywords.abstract = [...(keywords.abstract || []), ...words];
-    }
-  }
+  // Extract keywords for each category using helper function
+  extractCategoryKeywords(descLower, TIME_KEYWORDS, 'time', keywords);
+  extractCategoryKeywords(descLower, NATURE_KEYWORDS, 'nature', keywords);
+  extractCategoryKeywords(descLower, EMOTION_KEYWORDS, 'emotion', keywords);
+  extractCategoryKeywords(descLower, ACTION_KEYWORDS, 'action', keywords);
+  extractCategoryKeywords(descLower, ABSTRACT_KEYWORDS, 'abstract', keywords);
 
   // Deduplicate arrays
   for (const category in keywords) {
@@ -180,45 +202,4 @@ export function extractKeywords(description?: string): Record<string, string[]> 
   return keywords;
 }
 
-/**
- * Check if a word is available in the topic-aware keywords.
- *
- * @param word - Word to check
- * @param category - Word category
- * @param keywords - Extracted keywords map
- * @returns True if word matches topic keywords
- */
-export function isTopicRelevant(
-  word: string,
-  category: string,
-  keywords: Record<string, string[]>
-): boolean {
-  const categoryKeywords = keywords[category];
-  if (!categoryKeywords || categoryKeywords.length === 0) return false;
-  return categoryKeywords.includes(word);
-}
 
-/**
- * Get topic-relevant words from a category, or fall back to full category.
- *
- * @param category - Word category
- * @param keywords - Extracted keywords map
- * @param allWords - Full word pool for the category
- * @returns Filtered words relevant to topic, or full pool if no matches
- */
-export function getTopicRelevantWords(
-  category: string,
-  keywords: Record<string, string[]>,
-  allWords: readonly string[]
-): readonly string[] {
-  const categoryKeywords = keywords[category];
-  if (!categoryKeywords || categoryKeywords.length === 0) {
-    return allWords;
-  }
-
-  // Filter to topic-relevant words
-  const relevant = allWords.filter(word => categoryKeywords.includes(word));
-  
-  // Return relevant words if found, otherwise full pool
-  return relevant.length > 0 ? relevant : allWords;
-}
