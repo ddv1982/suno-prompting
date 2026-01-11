@@ -12,7 +12,7 @@ import { buildAllSections } from '@bun/prompt/sections';
 import { resolveGenre } from './genre';
 import {
   truncatePrompt,
-  selectRecordingContext,
+  joinRecordingDescriptors,
   getBpmRangeForGenre,
   selectKeyAndMode,
 } from './helpers';
@@ -119,7 +119,7 @@ export function buildDeterministicStandardPrompt(
   );
 
   // 10. Get recording context (same as MAX MODE for remix compatibility)
-  const recordingContext = selectRecordingContext(rng);
+  const recordingContext = joinRecordingDescriptors(rng);
 
   // 11. Format the STANDARD MODE prompt
   const rawPrompt = `[${capitalizedMood}, ${genreDisplayName}, ${keyMode}]

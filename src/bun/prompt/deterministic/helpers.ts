@@ -39,22 +39,22 @@ export function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): s
 }
 
 /**
- * Select recording context descriptor.
+ * Join recording descriptors into a comma-separated string.
  * Uses structured categories with conflict prevention.
  *
  * @param rng - Random number generator
  * @param count - Number of descriptors to select
- * @returns Recording context string
+ * @returns Recording context string (comma-separated)
  *
  * @example
- * selectRecordingContext(Math.random)
+ * joinRecordingDescriptors(Math.random)
  * // "professional mastering polish, studio session warmth"
  */
-export function selectRecordingContext(
+export function joinRecordingDescriptors(
   rng: () => number = Math.random,
   count: number = 2
 ): string {
-  const selected = selectRecordingDescriptorsNew(count, rng);
+  const selected = selectRecordingDescriptorsNew(rng, count);
   return selected.join(', ');
 }
 

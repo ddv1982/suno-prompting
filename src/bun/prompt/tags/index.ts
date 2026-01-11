@@ -17,7 +17,8 @@ export {
   selectRecordingContext,
 } from './recording-context';
 
-// Legacy export (deprecated - kept for backward compatibility, will be removed in future version)
+// Legacy export (deprecated - kept for backward compatibility, will be removed in v3.0.0)
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export { RECORDING_DESCRIPTORS } from './recording-context';
 
 // Vocal performance tags

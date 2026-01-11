@@ -171,7 +171,7 @@ export function injectStyleTags(prompt: string, genre: string): string {
 
   // Fallback if no tags selected
   if (styleTags.length === 0) {
-    const fallback = selectRecordingDescriptors(1, Math.random);
+    const fallback = selectRecordingDescriptors(Math.random, 1);
     styleTags.push(...fallback);
   }
 
@@ -335,6 +335,6 @@ export function remixStyleTags(currentPrompt: string): RemixResult {
  * that helps Suno understand the desired sonic character independent of genre.
  */
 export function remixRecording(currentPrompt: string): RemixResult {
-  const descriptors = selectRecordingDescriptors(3);
+  const descriptors = selectRecordingDescriptors(Math.random, 3);
   return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
 }

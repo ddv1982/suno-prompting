@@ -8,6 +8,12 @@
 // =============================================================================
 
 /**
+ * Maximum number of recording descriptors (one from each category)
+ * Categories: quality + environment + technique + character = 4 max
+ */
+const MAX_RECORDING_DESCRIPTORS = 4;
+
+/**
  * Production quality levels (mutually exclusive - pick ONE)
  */
 const RECORDING_PRODUCTION_QUALITY = {
@@ -112,8 +118,13 @@ const RECORDING_CHARACTER = {
 } as const;
 
 /**
- * Legacy: All recording descriptors (for backward compatibility)
- * Note: Kept for existing usage, but prefer selectRecordingDescriptors()
+ * @deprecated Will be removed in v3.0.0 - Use selectRecordingDescriptors() instead
+ * 
+ * Legacy: All recording descriptors kept for backward compatibility.
+ * New code should use selectRecordingDescriptors() which provides:
+ * - Conflict prevention (no "analog" + "digital")
+ * - Genre-aware selection (electronic → digital, jazz → analog)
+ * - Structured categories for musical coherence
  */
 export const RECORDING_DESCRIPTORS = [
   'live symphonic venue capture with atmospheric miking',
@@ -269,33 +280,33 @@ function getPreferredEnvironment(genre?: string): keyof typeof RECORDING_ENVIRON
  * 3. Pick ONE technique (analog/digital/hybrid) - genre-aware
  * 4. Optionally add characteristics (intimate/spacious/vintage/modern)
  * 
- * @param count - Number of descriptors to return (1-4)
  * @param rng - Random number generator for deterministic selection
+ * @param count - Number of descriptors to return (1-4)
  * @param genre - Optional genre for genre-aware selection
  * @returns Array of compatible recording descriptors
  * 
  * @example
  * // Basic usage
- * selectRecordingDescriptors(2)
+ * selectRecordingDescriptors(Math.random, 2)
  * // ["professional mastering polish", "studio session warmth"]
  * 
  * @example
  * // Genre-aware (electronic gets digital)
- * selectRecordingDescriptors(3, Math.random, 'electronic')
+ * selectRecordingDescriptors(Math.random, 3, 'electronic')
  * // ["professional mastering polish", "studio session warmth", "digital production clarity"]
  * 
  * @example
  * // Genre-aware (jazz gets analog + live)
- * selectRecordingDescriptors(3, Math.random, 'jazz')
+ * selectRecordingDescriptors(Math.random, 3, 'jazz')
  * // ["raw performance energy", "live venue capture", "warm analog console"]
  */
 export function selectRecordingDescriptors(
-  count: number = 3,
   rng: () => number = Math.random,
+  count: number = 3,
   genre?: string
 ): string[] {
   const selected: string[] = [];
-  const clampedCount = Math.max(1, Math.min(4, count));
+  const clampedCount = Math.max(1, Math.min(MAX_RECORDING_DESCRIPTORS, count));
   
   // 1. Pick ONE production quality
   const qualityKey = selectRandomKey(RECORDING_PRODUCTION_QUALITY, rng);
@@ -586,7 +597,7 @@ export function selectRecordingContext(
   }
   
   // Fallback to generic recording descriptor
-  const fallback = selectRecordingDescriptors(1, rng);
+  const fallback = selectRecordingDescriptors(rng, 1);
   const selected = fallback[0];
   return selected ?? 'studio recording';
 }
