@@ -12,11 +12,13 @@ export { MAX_MODE_HEADER } from '@shared/max-format';
 
 // Recording context tags
 export {
-  RECORDING_DESCRIPTORS,
   selectRecordingDescriptors,
   GENRE_RECORDING_CONTEXTS,
   selectRecordingContext,
 } from './recording-context';
+
+// Legacy export (deprecated - kept for backward compatibility, will be removed in future version)
+export { RECORDING_DESCRIPTORS } from './recording-context';
 
 // Vocal performance tags
 export {

@@ -3,8 +3,117 @@
  * @module prompt/tags/recording-context
  */
 
+// =============================================================================
+// Structured Recording Context Categories (Conflict Prevention)
+// =============================================================================
+
 /**
- * Generic recording context descriptors for max mode
+ * Production quality levels (mutually exclusive - pick ONE)
+ */
+const RECORDING_PRODUCTION_QUALITY = {
+  professional: [
+    'professional mastering polish',
+    'studio-grade production',
+    'commercial studio sound',
+  ],
+  demo: [
+    'demo tape roughness',
+    'rough mix aesthetic',
+    'unpolished demo vibe',
+  ],
+  raw: [
+    'bootleg live recording character',
+    'raw performance energy',
+    'unedited authenticity',
+  ],
+} as const;
+
+/**
+ * Recording environment types (mutually exclusive - pick ONE)
+ */
+const RECORDING_ENVIRONMENT = {
+  studio: [
+    'studio session warmth',
+    'recording studio precision',
+    'controlled studio environment',
+  ],
+  live: [
+    'live venue capture',
+    'concert hall natural acoustics',
+    'live performance energy',
+  ],
+  home: [
+    'intimate bedroom recording',
+    'home studio intimacy',
+    'DIY home production',
+  ],
+  rehearsal: [
+    'rehearsal room authenticity',
+    'jam session energy',
+    'practice space vibe',
+  ],
+  outdoor: [
+    'outdoor field recording ambience',
+    'natural environment capture',
+    'open-air recording',
+  ],
+} as const;
+
+/**
+ * Recording technique (analog/digital) (mutually exclusive - pick ONE)
+ */
+const RECORDING_TECHNIQUE = {
+  analog: [
+    'warm analog console',
+    'tape recorder warmth',
+    'analog four-track character',
+    'cassette tape saturation',
+    'vintage vinyl warmth',
+    'direct-to-disc recording',
+  ],
+  digital: [
+    'digital production clarity',
+    'modern DAW precision',
+    'digital multitrack recording',
+  ],
+  hybrid: [
+    'hybrid analog-digital chain',
+    'mixed recording techniques',
+  ],
+} as const;
+
+/**
+ * Recording characteristics (can combine multiple)
+ */
+const RECORDING_CHARACTER = {
+  intimate: [
+    'intimate close-micd sound',
+    'close-up performance texture',
+    'single microphone capture',
+  ],
+  spacious: [
+    'atmospheric miking',
+    'room ambience capture',
+    'spacious reverb character',
+  ],
+  vintage: [
+    'vintage recording aesthetic',
+    'retro production character',
+    'classic recording vibe',
+  ],
+  modern: [
+    'contemporary production sound',
+    'modern recording techniques',
+  ],
+  compressed: [
+    'radio broadcast compression',
+    'tight dynamic control',
+  ],
+} as const;
+
+/**
+ * Legacy: All recording descriptors (for backward compatibility)
+ * Note: Kept for existing usage, but prefer selectRecordingDescriptors()
  */
 export const RECORDING_DESCRIPTORS = [
   'live symphonic venue capture with atmospheric miking',
@@ -28,12 +137,195 @@ export const RECORDING_DESCRIPTORS = [
   'single microphone capture',
 ] as const;
 
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
 /**
- * Select generic recording descriptors
+ * Select random item from a category subcategory
  */
-export function selectRecordingDescriptors(count: number = 3, rng: () => number = Math.random): string[] {
-  const shuffled = [...RECORDING_DESCRIPTORS].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+function selectFromSubcategory<T extends Record<string, readonly string[]>>(
+  category: T,
+  subcategory: keyof T,
+  rng: () => number
+): string {
+  const items = category[subcategory];
+  if (!items || items.length === 0) return '';
+  const index = Math.floor(rng() * items.length);
+  return items[index] ?? '';
+}
+
+/**
+ * Select random subcategory key from category
+ */
+function selectRandomKey<T extends Record<string, unknown>>(
+  obj: T,
+  rng: () => number
+): keyof T {
+  const keys = Object.keys(obj) as Array<keyof T>;
+  const index = Math.floor(rng() * keys.length);
+  const selected = keys[index];
+  if (selected !== undefined) return selected;
+  // Fallback to first key (should never happen with non-empty objects)
+  return keys[0] as keyof T;
+}
+
+// =============================================================================
+// Genre-Aware Selection Helpers
+// =============================================================================
+
+/**
+ * Check if genre matches electronic patterns
+ */
+function isElectronic(normalized: string): boolean {
+  return normalized.includes('electronic') || normalized.includes('edm') || 
+         normalized.includes('house') || normalized.includes('techno') ||
+         normalized.includes('trap') || normalized.includes('dubstep');
+}
+
+/**
+ * Check if genre matches acoustic/vintage patterns
+ */
+function isAcousticVintage(normalized: string): boolean {
+  return normalized.includes('folk') || normalized.includes('blues') ||
+         normalized.includes('jazz') || normalized.includes('soul') ||
+         normalized.includes('vintage') || normalized.includes('retro');
+}
+
+/**
+ * Check if genre matches modern pop/rock patterns
+ */
+function isModernPopRock(normalized: string): boolean {
+  return normalized.includes('pop') || normalized.includes('rock') ||
+         normalized.includes('indie');
+}
+
+/**
+ * Determine preferred recording technique based on genre
+ */
+function getPreferredTechnique(genre?: string): 'analog' | 'digital' | 'hybrid' | null {
+  if (!genre) return null;
+  
+  const normalized = genre.toLowerCase();
+  
+  // Electronic genres prefer digital
+  if (isElectronic(normalized)) return 'digital';
+  
+  // Vintage/acoustic genres prefer analog
+  if (isAcousticVintage(normalized)) return 'analog';
+  
+  // Modern pop/rock can use hybrid
+  if (isModernPopRock(normalized)) return 'hybrid';
+  
+  return null;
+}
+
+/**
+ * Determine preferred environment based on genre
+ */
+function getPreferredEnvironment(genre?: string): keyof typeof RECORDING_ENVIRONMENT | null {
+  if (!genre) return null;
+  
+  const normalized = genre.toLowerCase();
+  
+  // Classical/orchestral prefer live venues
+  if (normalized.includes('classical') || normalized.includes('orchestral') ||
+      normalized.includes('symphonic')) {
+    return 'live';
+  }
+  
+  // Jazz/blues often recorded live
+  if (normalized.includes('jazz') || normalized.includes('blues')) {
+    return 'live';
+  }
+  
+  // Lo-fi/bedroom pop prefer home
+  if (normalized.includes('lofi') || normalized.includes('lo-fi') ||
+      normalized.includes('bedroom')) {
+    return 'home';
+  }
+  
+  // Punk/garage prefer rehearsal
+  if (normalized.includes('punk') || normalized.includes('garage')) {
+    return 'rehearsal';
+  }
+  
+  return null;
+}
+
+// =============================================================================
+// Public API
+// =============================================================================
+
+/**
+ * Select recording descriptors with conflict prevention.
+ * 
+ * Structured selection ensures no conflicting tags (e.g., "professional" + "demo",
+ * "analog" + "digital", "concert hall" + "bedroom").
+ * 
+ * Strategy:
+ * 1. Pick ONE production quality (professional/demo/raw)
+ * 2. Pick ONE environment (studio/live/home/rehearsal/outdoor) - genre-aware
+ * 3. Pick ONE technique (analog/digital/hybrid) - genre-aware
+ * 4. Optionally add characteristics (intimate/spacious/vintage/modern)
+ * 
+ * @param count - Number of descriptors to return (1-4)
+ * @param rng - Random number generator for deterministic selection
+ * @param genre - Optional genre for genre-aware selection
+ * @returns Array of compatible recording descriptors
+ * 
+ * @example
+ * // Basic usage
+ * selectRecordingDescriptors(2)
+ * // ["professional mastering polish", "studio session warmth"]
+ * 
+ * @example
+ * // Genre-aware (electronic gets digital)
+ * selectRecordingDescriptors(3, Math.random, 'electronic')
+ * // ["professional mastering polish", "studio session warmth", "digital production clarity"]
+ * 
+ * @example
+ * // Genre-aware (jazz gets analog + live)
+ * selectRecordingDescriptors(3, Math.random, 'jazz')
+ * // ["raw performance energy", "live venue capture", "warm analog console"]
+ */
+export function selectRecordingDescriptors(
+  count: number = 3,
+  rng: () => number = Math.random,
+  genre?: string
+): string[] {
+  const selected: string[] = [];
+  const clampedCount = Math.max(1, Math.min(4, count));
+  
+  // 1. Pick ONE production quality
+  const qualityKey = selectRandomKey(RECORDING_PRODUCTION_QUALITY, rng);
+  const quality = selectFromSubcategory(RECORDING_PRODUCTION_QUALITY, qualityKey, rng);
+  selected.push(quality);
+  
+  if (clampedCount >= 2) {
+    // 2. Pick ONE environment (genre-aware)
+    const preferredEnv = getPreferredEnvironment(genre);
+    const envKey = preferredEnv ?? selectRandomKey(RECORDING_ENVIRONMENT, rng);
+    const environment = selectFromSubcategory(RECORDING_ENVIRONMENT, envKey, rng);
+    selected.push(environment);
+  }
+  
+  if (clampedCount >= 3) {
+    // 3. Pick ONE technique (genre-aware)
+    const preferredTech = getPreferredTechnique(genre);
+    const techKey = preferredTech ?? selectRandomKey(RECORDING_TECHNIQUE, rng);
+    const technique = selectFromSubcategory(RECORDING_TECHNIQUE, techKey, rng);
+    selected.push(technique);
+  }
+  
+  if (clampedCount >= 4) {
+    // 4. Optionally add character
+    const charKey = selectRandomKey(RECORDING_CHARACTER, rng);
+    const character = selectFromSubcategory(RECORDING_CHARACTER, charKey, rng);
+    selected.push(character);
+  }
+  
+  return selected;
 }
 
 /**
