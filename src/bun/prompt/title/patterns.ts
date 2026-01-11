@@ -71,17 +71,19 @@ function filterByMood(words: readonly string[], mood: string, rng: () => number)
 }
 
 /**
- * Get a word from a category, filtered by mood.
+ * Get a word from a category, filtered by mood and optional topic keywords.
  *
  * @param category - Word category
  * @param mood - Current mood
  * @param rng - Random number generator
+ * @param topicKeywords - Optional topic-specific keywords to prioritize
  * @returns Selected word
  */
 export function getWord(
   category: 'time' | 'nature' | 'emotion' | 'action' | 'abstract',
   mood: string,
-  rng: () => number
+  rng: () => number,
+  topicKeywords?: Record<string, string[]>
 ): string {
   const pools: Record<string, readonly string[]> = {
     time: TIME_WORDS,
@@ -92,6 +94,18 @@ export function getWord(
   };
 
   const pool = pools[category] ?? EMOTION_WORDS;
+
+  // If topic keywords are available, prioritize them OVER mood filtering
+  if (topicKeywords && topicKeywords[category] && topicKeywords[category].length > 0) {
+    const topicRelevant = pool.filter(word => topicKeywords[category]?.includes(word));
+    if (topicRelevant.length > 0) {
+      // Use topic keywords directly without mood filtering
+      // (topic relevance is more important than mood filtering)
+      return selectRandom(topicRelevant, rng);
+    }
+  }
+
+  // No topic keywords, so apply mood filtering as usual
   const filtered = filterByMood(pool, mood, rng);
   return selectRandom(filtered, rng);
 }
@@ -102,17 +116,27 @@ export function getWord(
  * @param pattern - Pattern string with placeholders
  * @param mood - Current mood for word selection
  * @param rng - Random number generator
+ * @param topicKeywords - Optional topic-specific keywords to prioritize
  * @returns Interpolated title
  *
  * @example
  * interpolatePattern('{time} {emotion}', 'melancholic', Math.random)
  * // "Midnight Shadow"
+ *
+ * @example
+ * interpolatePattern('{time} {emotion}', 'melancholic', Math.random, {time: ['Midnight'], emotion: ['Lost']})
+ * // "Midnight Lost" (prioritizes topic keywords)
  */
-export function interpolatePattern(pattern: string, mood: string, rng: () => number): string {
+export function interpolatePattern(
+  pattern: string,
+  mood: string,
+  rng: () => number,
+  topicKeywords?: Record<string, string[]>
+): string {
   return pattern
-    .replace('{time}', getWord('time', mood, rng))
-    .replace('{nature}', getWord('nature', mood, rng))
-    .replace('{emotion}', getWord('emotion', mood, rng))
-    .replace('{action}', getWord('action', mood, rng))
-    .replace('{abstract}', getWord('abstract', mood, rng));
+    .replace('{time}', getWord('time', mood, rng, topicKeywords))
+    .replace('{nature}', getWord('nature', mood, rng, topicKeywords))
+    .replace('{emotion}', getWord('emotion', mood, rng, topicKeywords))
+    .replace('{action}', getWord('action', mood, rng, topicKeywords))
+    .replace('{abstract}', getWord('abstract', mood, rng, topicKeywords));
 }

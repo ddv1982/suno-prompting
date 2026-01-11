@@ -73,7 +73,7 @@ function generateInitialDeterministic(
   // 3. Generate deterministic title from extracted genre/mood
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
-  const title = generateDeterministicTitle(genre, mood);
+  const title = generateDeterministicTitle(genre, mood, Math.random, description);
 
   // 4. Build debug info if debug mode enabled
   const debugInfo = config.isDebugMode()

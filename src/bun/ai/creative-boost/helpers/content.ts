@@ -114,7 +114,9 @@ export async function generateCreativeBoostTitle(
     return { title: result.title, debugInfo: result.debugInfo };
   }
 
-  return { title: generateDeterministicTitle(genre, mood) };
+  // Use description for topic-aware deterministic title generation
+  const topicDescription = description?.trim();
+  return { title: generateDeterministicTitle(genre, mood, Math.random, topicDescription) };
 }
 
 /**

@@ -8,6 +8,7 @@
  */
 
 import { GENRE_TITLE_PATTERNS, DEFAULT_PATTERNS } from './datasets/modifiers';
+import { extractKeywords } from './keyword-extractor';
 import { selectRandom, interpolatePattern } from './patterns';
 
 // =============================================================================
@@ -29,6 +30,7 @@ const MAX_ATTEMPTS_MULTIPLIER = 3;
  *
  * @param genre - Target genre (e.g., "jazz", "rock", "electronic")
  * @param mood - Current mood (e.g., "melancholic", "upbeat", "dark")
+ * @param description - Optional song description for topic-aware word selection
  * @param rng - Random number generator for deterministic output
  * @returns Generated title string
  *
@@ -41,13 +43,14 @@ const MAX_ATTEMPTS_MULTIPLIER = 3;
  * // "Rising Thunder"
  *
  * @example
- * generateDeterministicTitle('ambient', 'calm', Math.random)
- * // "Ocean Drift"
+ * generateDeterministicTitle('ambient', 'calm', Math.random, 'ocean waves at sunset')
+ * // "Ocean Dream" (prioritizes topic keywords)
  */
 export function generateDeterministicTitle(
   genre: string,
   mood: string,
-  rng: () => number = Math.random
+  rng: () => number = Math.random,
+  description?: string
 ): string {
   // Get genre-specific patterns or fall back to defaults
   const genreLower = genre.toLowerCase().split(' ')[0] ?? 'pop';
@@ -56,8 +59,11 @@ export function generateDeterministicTitle(
   // Select a random pattern
   const pattern = selectRandom(patterns, rng);
 
-  // Interpolate with mood-filtered words
-  return interpolatePattern(pattern, mood, rng);
+  // Extract topic keywords if description provided
+  const topicKeywords = description ? extractKeywords(description) : undefined;
+
+  // Interpolate with mood-filtered and topic-aware words
+  return interpolatePattern(pattern, mood, rng, topicKeywords);
 }
 
 /**
@@ -67,17 +73,23 @@ export function generateDeterministicTitle(
  * @param mood - Current mood
  * @param count - Number of titles to generate
  * @param rng - Random number generator
+ * @param description - Optional song description for topic-aware word selection
  * @returns Array of generated titles
  *
  * @example
  * generateTitleOptions('jazz', 'smooth', 3, Math.random)
  * // ["Blue Moon", "Midnight Session", "Cool Echo"]
+ *
+ * @example
+ * generateTitleOptions('jazz', 'smooth', 3, Math.random, 'midnight love song')
+ * // ["Midnight Love", "Night Heart", "Evening Dream"] (topic-aware)
  */
 export function generateTitleOptions(
   genre: string,
   mood: string,
   count: number = 3,
-  rng: () => number = Math.random
+  rng: () => number = Math.random,
+  description?: string
 ): string[] {
   const titles: string[] = [];
   const seen = new Set<string>();
@@ -86,7 +98,7 @@ export function generateTitleOptions(
   let attempts = 0;
   const maxAttempts = count * MAX_ATTEMPTS_MULTIPLIER;
   while (titles.length < count && attempts < maxAttempts) {
-    const title = generateDeterministicTitle(genre, mood, rng);
+    const title = generateDeterministicTitle(genre, mood, rng, description);
     if (!seen.has(title.toLowerCase())) {
       seen.add(title.toLowerCase());
       titles.push(title);
