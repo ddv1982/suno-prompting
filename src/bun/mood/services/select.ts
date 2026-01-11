@@ -9,11 +9,11 @@
 
 
 
-import { MOOD_CATEGORIES } from '../categories';
-import { getGenresForCategory } from '../mappings/category-to-genres';
+import { MOOD_CATEGORIES } from '@bun/mood/categories';
+import { getGenresForCategory } from '@bun/mood/mappings/category-to-genres';
 
-import type { MoodCategory } from '../types';
 import type { GenreType } from '@bun/instruments';
+import type { MoodCategory } from '@bun/mood/types';
 
 /**
  * Fisher-Yates shuffle algorithm.

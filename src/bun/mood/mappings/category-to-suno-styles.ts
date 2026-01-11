@@ -7,13 +7,12 @@
  * @module mood/mappings/category-to-suno-styles
  */
 
+
+import { MOOD_CATEGORY_KEYS } from '@bun/mood/categories';
+import { getGenresForCategory } from '@bun/mood/mappings/category-to-genres';
 import { SUNO_V5_STYLES } from '@shared/suno-v5-styles';
 
-
-import { MOOD_CATEGORY_KEYS } from '../categories';
-import { getGenresForCategory } from './category-to-genres';
-
-import type { MoodCategory } from '../types';
+import type { MoodCategory } from '@bun/mood/types';
 
 /** Cached mapping of categories to compatible styles */
 let categoryToStylesCache: Map<MoodCategory, string[]> | null = null;

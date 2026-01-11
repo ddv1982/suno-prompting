@@ -8,10 +8,9 @@
  */
 
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments';
+import { MOOD_CATEGORIES, MOOD_CATEGORY_KEYS } from '@bun/mood/categories';
 
-import { MOOD_CATEGORIES, MOOD_CATEGORY_KEYS } from '../categories';
-
-import type { MoodCategory } from '../types';
+import type { MoodCategory } from '@bun/mood/types';
 
 
 /** Cached mapping of categories to compatible genres */
