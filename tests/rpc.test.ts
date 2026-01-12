@@ -37,7 +37,8 @@ describe("RPC Handlers", () => {
             description: "Test description",
             lockedPhrase: undefined,
             lyricsTopic: undefined,
-            genreOverride: undefined
+            genreOverride: undefined,
+            sunoStyles: [],
         });
     });
 
@@ -67,7 +68,9 @@ describe("RPC Handlers", () => {
             feedback: "Make it louder",
             currentLyrics: undefined,
             lockedPhrase: undefined,
-            lyricsTopic: undefined
+            lyricsTopic: undefined,
+            genreOverride: undefined,
+            sunoStyles: [],
         });
     });
 
@@ -109,7 +112,9 @@ describe("RPC Handlers", () => {
             feedback: "Make it louder",
             currentLyrics: "[VERSE]\nOld lyrics",
             lockedPhrase: undefined,
-            lyricsTopic: undefined
+            lyricsTopic: undefined,
+            genreOverride: undefined,
+            sunoStyles: [],
         });
     });
 
@@ -161,7 +166,9 @@ describe("RPC Handlers", () => {
             feedback: "Make the lyrics more emotional",
             currentLyrics: "[VERSE]\nOld lyrics",
             lockedPhrase: undefined,
-            lyricsTopic: "A story about lost love"
+            lyricsTopic: "A story about lost love",
+            genreOverride: undefined,
+            sunoStyles: [],
         });
     });
 

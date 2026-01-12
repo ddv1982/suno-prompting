@@ -1,6 +1,8 @@
 import { SectionLabel } from "@/components/ui/section-label";
 
-export function OllamaModelSection(): React.JSX.Element {
+import type { ReactElement } from "react";
+
+export function OllamaModelSection(): ReactElement {
   return (
     <div className="space-y-2">
       <SectionLabel>Required Model</SectionLabel>

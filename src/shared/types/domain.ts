@@ -12,14 +12,26 @@ export type CreativityLevel = 'low' | 'safe' | 'normal' | 'adventurous' | 'high'
 // Valid slider positions for creativity (5 discrete values)
 export type CreativitySliderValue = 0 | 25 | 50 | 75 | 100;
 
-// Quick Vibes category presets
-export type QuickVibesCategory = 
+// Quick Vibes category presets - 16 total categories
+export type QuickVibesCategory =
+  // Existing 6 categories
   | 'lofi-study'
   | 'cafe-coffeeshop'
   | 'ambient-focus'
   | 'latenight-chill'
   | 'cozy-rainy'
-  | 'lofi-chill';
+  | 'lofi-chill'
+  // New 10 categories (v3.0)
+  | 'workout-energy'
+  | 'morning-sunshine'
+  | 'sunset-golden'
+  | 'dinner-party'
+  | 'road-trip'
+  | 'gaming-focus'
+  | 'romantic-evening'
+  | 'meditation-zen'
+  | 'creative-flow'
+  | 'party-night';
 
 // Quick Vibes input state
 export type QuickVibesInput = {
@@ -69,6 +81,8 @@ export type AdvancedSelection = {
   timeSignature: string | null;
   timeSignatureJourney: string | null;
   seedGenres: string[];  // 0-4 genres or genre combinations
+  /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
+  sunoStyles: string[];
 };
 
 export const EMPTY_ADVANCED_SELECTION = {
@@ -78,6 +92,7 @@ export const EMPTY_ADVANCED_SELECTION = {
   timeSignature: null,
   timeSignatureJourney: null,
   seedGenres: [],
+  sunoStyles: [],
 } as const satisfies AdvancedSelection;
 
 export type PromptVersion = {

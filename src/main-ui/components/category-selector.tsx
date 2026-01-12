@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { QUICK_VIBES_CATEGORY_LIST } from "@shared/quick-vibes-categories";
 
 import type { QuickVibesCategory } from "@shared/types";
+import type { ReactElement } from "react";
 
 type CategorySelectorProps = {
   selectedCategory: QuickVibesCategory | null;
@@ -13,7 +14,7 @@ export function CategorySelector({
   selectedCategory,
   onSelect,
   disabled = false,
-}: CategorySelectorProps): React.JSX.Element {
+}: CategorySelectorProps): ReactElement {
   return (
     <div className="flex flex-wrap gap-2">
       <Button

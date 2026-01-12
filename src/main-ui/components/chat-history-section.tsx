@@ -1,4 +1,4 @@
-import { Loader2, ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -6,6 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionLabel } from "@/components/ui/section-label";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { cn } from "@/lib/utils";
+
+import type { ReactElement } from "react";
 
 type ChatHistorySectionProps = {
   chatMessages: ChatMessage[];
@@ -19,7 +21,7 @@ export function ChatHistorySection({
   isGenerating,
   expanded,
   onExpandedChange,
-}: ChatHistorySectionProps): React.JSX.Element {
+}: ChatHistorySectionProps): ReactElement {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export function ChatHistorySection({
   );
 }
 
-function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }): React.JSX.Element {
+function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }): ReactElement {
   return (
     <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
       <div

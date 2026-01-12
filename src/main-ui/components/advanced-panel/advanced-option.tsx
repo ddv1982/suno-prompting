@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 type AdvancedOptionProps = {
   label: string;
   options: { value: string; label: string }[];
@@ -26,7 +28,7 @@ export function AdvancedOption({
   searchPlaceholder = "Search...",
   emptyText = "No option found.",
   className,
-}: AdvancedOptionProps): React.JSX.Element {
+}: AdvancedOptionProps): ReactElement {
   const isDisabled = disabled || disabledByMutualExclusion;
 
   return (

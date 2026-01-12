@@ -1,5 +1,7 @@
 import { Plus, Search, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState } from "react"
+
+;
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -9,6 +11,8 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { type PromptSession } from "@shared/types";
+
+import type { ReactElement } from "react";
 
 const log = createLogger('HistorySidebar');
 
@@ -26,7 +30,7 @@ export function HistorySidebar({
   onSelectSession,
   onDeleteSession,
   onNewProject,
-}: HistorySidebarProps): React.JSX.Element {
+}: HistorySidebarProps): ReactElement {
   const [query, setQuery] = useState("");
 
   const q = query.trim().toLowerCase();
@@ -104,7 +108,7 @@ type HistoryItemProps = {
   onDelete: () => Promise<void>;
 };
 
-function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps): React.JSX.Element {
+function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps): ReactElement {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const date = new Date(session.updatedAt);

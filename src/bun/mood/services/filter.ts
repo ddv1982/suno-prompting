@@ -7,13 +7,11 @@
  * @module mood/services/filter
  */
 
+import { getGenresForCategory } from '@bun/mood/mappings/category-to-genres';
+import { getSunoStylesForCategory } from '@bun/mood/mappings/category-to-suno-styles';
 
-
-import { getGenresForCategory } from '../mappings/category-to-genres';
-import { getSunoStylesForCategory } from '../mappings/category-to-suno-styles';
-
-import type { MoodCategory } from '../types';
 import type { GenreType } from '@bun/instruments';
+import type { MoodCategory } from '@bun/mood/types';
 
 /**
  * Filter Suno V5 styles by mood category.

@@ -69,3 +69,29 @@ export type { InstrumentSelectionOptions, ModeSelectionInput } from '@bun/instru
 // Selection exports
 export { selectModes } from '@bun/instruments/selection';
 export type { ModeSelection } from '@bun/instruments/selection';
+
+// Era-tagged instruments exports
+export {
+  ERA_INSTRUMENTS,
+  INSTRUMENT_ERAS,
+  selectEraInstruments,
+  getEraInstruments,
+  isEraInstrument,
+  getInstrumentEras,
+} from '@bun/instruments/eras';
+export type { InstrumentEra } from '@bun/instruments/eras';
+
+// Ensemble presets exports
+export {
+  ENSEMBLE_PRESETS,
+  ENSEMBLE_NAMES,
+  expandEnsemble,
+  getEnsemblesForGenre,
+  isEnsemble,
+  getEnsemble,
+  selectEnsembleForGenre,
+} from '@bun/instruments/ensembles';
+export type { EnsemblePreset } from '@bun/instruments/ensembles';
+
+// Genre-era mapping for era-appropriate instrument selection
+export { getEraForGenre } from '@bun/instruments/genre-era-mapping';

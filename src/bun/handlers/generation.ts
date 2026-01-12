@@ -4,6 +4,7 @@ import { validatePrompt } from '@shared/validation';
 
 import { withErrorHandling, log, type ActionMeta } from './utils';
 import { validate } from './validated';
+import { validateSunoStylesLimit, validateGenreStylesMutualExclusivity } from './validation';
 
 import type { RPCHandlers } from '@shared/types';
 
@@ -33,14 +34,32 @@ async function runAndValidate(
 export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers {
   return {
     generateInitial: async (params) => {
-      const { description, lockedPhrase, lyricsTopic, genreOverride } = validate(GenerateInitialSchema, params);
-      return runAndValidate('generateInitial', { description, genreOverride }, () =>
-        aiEngine.generateInitial({ description, lockedPhrase, lyricsTopic, genreOverride })
+      const { description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles = [] } = validate(GenerateInitialSchema, params);
+      
+      // Validate Suno styles limit
+      validateSunoStylesLimit(sunoStyles);
+      
+      // Validate mutual exclusivity: genreOverride and sunoStyles cannot both be present
+      if (genreOverride && sunoStyles.length > 0) {
+        validateGenreStylesMutualExclusivity([genreOverride], sunoStyles);
+      }
+      
+      return runAndValidate('generateInitial', { description, genreOverride, sunoStylesCount: sunoStyles.length }, () =>
+        aiEngine.generateInitial({ description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles })
       );
     },
     refinePrompt: async (params) => {
-      const { currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic } = validate(RefinePromptSchema, params);
-      return runAndValidate('refinePrompt', { feedback }, () =>
+      const { currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride, sunoStyles = [] } = validate(RefinePromptSchema, params);
+      
+      // Validate Suno styles limit
+      validateSunoStylesLimit(sunoStyles);
+      
+      // Validate mutual exclusivity: genreOverride and sunoStyles cannot both be present
+      if (genreOverride && sunoStyles.length > 0) {
+        validateGenreStylesMutualExclusivity([genreOverride], sunoStyles);
+      }
+      
+      return runAndValidate('refinePrompt', { feedback, sunoStylesCount: sunoStyles.length }, () =>
         aiEngine.refinePrompt({
           currentPrompt,
           currentTitle: currentTitle ?? 'Untitled',
@@ -48,6 +67,8 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
           currentLyrics,
           lockedPhrase,
           lyricsTopic,
+          genreOverride,
+          sunoStyles,
         })
       );
     },

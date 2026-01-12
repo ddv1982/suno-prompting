@@ -8,6 +8,8 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
+import type { ReactElement } from "react";
+
 type OutputSectionProps = {
   label: string;
   content: string;
@@ -26,7 +28,7 @@ export function OutputSection({
   isGenerating = false,
   isRemixing = false,
   scrollable = false,
-}: OutputSectionProps): React.JSX.Element {
+}: OutputSectionProps): ReactElement {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (): void => {

@@ -2,6 +2,8 @@ import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
 
+import type { ReactElement } from "react";
+
 // =============================================================================
 // Line Detection Patterns
 // =============================================================================
@@ -44,7 +46,7 @@ type PromptOutputProps = {
  * Renders prompt text with syntax highlighting for different line types.
  * Styles sections, fields, and headers differently for visual clarity.
  */
-export function PromptOutput({ text }: PromptOutputProps): React.JSX.Element {
+export function PromptOutput({ text }: PromptOutputProps): ReactElement {
   const lines = useMemo(() => text.split('\n'), [text]);
 
   return (

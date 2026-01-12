@@ -17,7 +17,7 @@ import {
   buildDeterministicCreativeBoost,
   selectMoodForLevel,
   getSunoStylesForMoodCategory,
-} from '@bun/prompt/creative-boost-templates';
+} from '@bun/prompt/creative-boost';
 import {
   enrichFromGenres,
   enrichSunoStyles,

@@ -137,10 +137,18 @@ export function buildTitleSystemPrompt(): string {
 RULES:
 - Output ONLY the title, nothing else
 - Keep it short (1-5 words typically)
+- Be UNIQUE and CREATIVE - avoid overused patterns like "Midnight [X]", "Shadow [Y]", or "[Z] Dreams"
+- Capture the SPECIFIC topic or theme from the description, not just generic genre imagery
 - Make it evocative and memorable
+- The title should hint at the song's specific story or emotion
 - Match the mood and genre of the song
 - No quotation marks around the title
-- No explanations or additional text`;
+- No explanations or additional text
+
+CREATIVITY PRIORITY:
+1. Reflect the unique story/topic in the description
+2. Use unexpected word combinations
+3. Avoid clichéd music-related metaphors unless they serve the topic`;
 }
 
 export function buildTitleUserPrompt(description: string, genre: string, mood: string): string {
@@ -149,6 +157,9 @@ export function buildTitleUserPrompt(description: string, genre: string, mood: s
 Description: ${description}
 Genre: ${genre}
 Mood: ${mood}
+
+Focus on capturing what makes THIS song unique based on the description above.
+Avoid generic music imagery that could apply to any song.
 
 Output only the title.`;
 }

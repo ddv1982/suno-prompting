@@ -3,11 +3,13 @@ import { Settings } from "lucide-react";
 import { LogoMark } from "@/components/logo-mark";
 import { Button } from "@/components/ui/button";
 
+import type { ReactElement } from "react";
+
 type HeaderProps = {
   onOpenSettings: () => void;
 };
 
-export function Header({ onOpenSettings }: HeaderProps): React.JSX.Element {
+export function Header({ onOpenSettings }: HeaderProps): ReactElement {
   return (
     <header className="h-14 border-b flex items-center justify-between px-6 bg-surface sticky top-0 z-10 shrink-0">
       <div className="flex items-center gap-3">

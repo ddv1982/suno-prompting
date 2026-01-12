@@ -7,8 +7,14 @@
  * @module prompt/title/datasets/emotions
  */
 
-/** Emotion-based words */
+/**
+ * Emotion-based words for title generation
+ *
+ * Convention: All entries use Title Case, including multi-word phrases
+ * Examples: 'Dream', 'Memory', 'Lost'
+ */
 export const EMOTION_WORDS: readonly string[] = [
+  // Original words (15)
   'Dream',
   'Memory',
   'Echo',
@@ -24,10 +30,68 @@ export const EMOTION_WORDS: readonly string[] = [
   'Love',
   'Lost',
   'Found',
+  // Feelings (9)
+  'Joy',
+  'Sorrow',
+  'Grief',
+  'Bliss',
+  'Rage',
+  'Fear',
+  'Courage',
+  'Pride',
+  'Shame',
+  // States (8)
+  'Solace',
+  'Peace',
+  'Calm',
+  'Chaos',
+  'Wonder',
+  'Awe',
+  'Dread',
+  'Longing',
+  // Connections (7)
+  'Bond',
+  'Trust',
+  'Betrayal',
+  'Faith',
+  'Doubt',
+  'Desire',
+  'Yearning',
+  // Intensity (6)
+  'Passion',
+  'Fury',
+  'Ecstasy',
+  'Agony',
+  'Rapture',
+  'Torment',
+  // Memory types (5)
+  'Nostalgia',
+  'Regret',
+  'Remorse',
+  'Remembrance',
+  'Recollection',
+  // Abstract emotions (6)
+  'Melancholy',
+  'Euphoria',
+  'Serenity',
+  'Anguish',
+  'Elation',
+  'Despair',
+  // Additional emotions (4)
+  'Tears',
+  'Laughter',
+  'Pain',
+  'Solitude',
 ];
 
-/** Action/movement words */
+/**
+ * Action/movement words for title generation
+ *
+ * Convention: All entries use Title Case gerund form (-ing)
+ * Examples: 'Rising', 'Falling', 'Dancing'
+ */
 export const ACTION_WORDS: readonly string[] = [
+  // Original words (10)
   'Rising',
   'Falling',
   'Burning',
@@ -38,40 +102,86 @@ export const ACTION_WORDS: readonly string[] = [
   'Drifting',
   'Breaking',
   'Chasing',
+  // Movement (8)
+  'Crawling',
+  'Leaping',
+  'Soaring',
+  'Diving',
+  'Sliding',
+  'Gliding',
+  'Spinning',
+  'Twisting',
+  // Change (6)
+  'Transforming',
+  'Evolving',
+  'Shifting',
+  'Morphing',
+  'Blooming',
+  'Withering',
+  // Intensity (6)
+  'Crashing',
+  'Exploding',
+  'Shattering',
+  'Blazing',
+  'Flickering',
+  'Shimmering',
+  // Flow (6)
+  'Flowing',
+  'Streaming',
+  'Pouring',
+  'Dripping',
+  'Cascading',
+  'Surging',
+  // Impact (6)
+  'Striking',
+  'Piercing',
+  'Cutting',
+  'Tearing',
+  'Healing',
+  'Mending',
+  // Additional actions (8)
+  'Wandering',
+  'Seeking',
+  'Calling',
+  'Screaming',
+  'Whispering',
+  'Echoing',
+  'Trembling',
+  'Shaking',
 ];
 
 /** Mood-based word preferences */
 export const MOOD_WORD_WEIGHTS: Record<string, { preferred: readonly string[]; avoid: readonly string[] }> = {
   melancholic: {
-    preferred: ['Shadow', 'Rain', 'Memory', 'Echo', 'Fading', 'Lost', 'Silence', 'Twilight'],
-    avoid: ['Joy', 'Bright', 'Happy', 'Dancing'],
+    preferred: ['Shadow', 'Rain', 'Memory', 'Echo', 'Fading', 'Lost', 'Silence', 'Twilight', 'Sorrow', 'Grief', 'Tears', 'Nostalgia', 'Melancholy', 'Despair', 'Regret', 'Anguish', 'Autumn', 'Dusk', 'Mist'],
+    avoid: ['Joy', 'Bliss', 'Laughter', 'Dancing', 'Euphoria', 'Elation', 'Summer', 'Sun'],
   },
   upbeat: {
-    preferred: ['Sun', 'Light', 'Rising', 'Dancing', 'Hope', 'Morning', 'Fire', 'Flying'],
-    avoid: ['Shadow', 'Lost', 'Falling', 'Cry'],
+    preferred: ['Sun', 'Light', 'Rising', 'Dancing', 'Hope', 'Morning', 'Fire', 'Flying', 'Joy', 'Bliss', 'Laughter', 'Elation', 'Euphoria', 'Spring', 'Summer', 'Soaring', 'Leaping'],
+    avoid: ['Shadow', 'Lost', 'Falling', 'Cry', 'Grief', 'Despair', 'Sorrow', 'Tears'],
   },
   aggressive: {
-    preferred: ['Thunder', 'Storm', 'Fire', 'Breaking', 'Burning', 'Chaos', 'Rising'],
-    avoid: ['Gentle', 'Soft', 'Whisper', 'Floating'],
+    preferred: ['Thunder', 'Storm', 'Fire', 'Breaking', 'Burning', 'Chaos', 'Rising', 'Rage', 'Fury', 'Crashing', 'Exploding', 'Shattering', 'Blazing', 'Hurricane', 'Tornado', 'Striking'],
+    avoid: ['Serenity', 'Peace', 'Calm', 'Whisper', 'Drifting', 'Gentle', 'Breeze'],
   },
   calm: {
-    preferred: ['Ocean', 'Moon', 'Silence', 'Drifting', 'Serenity', 'Gentle', 'Stars'],
-    avoid: ['Thunder', 'Breaking', 'Burning', 'Chaos'],
+    preferred: ['Ocean', 'Moon', 'Silence', 'Drifting', 'Serenity', 'Stars', 'Peace', 'Solace', 'Calm', 'Lake', 'Pond', 'Stream', 'Brook', 'Mist', 'Gliding', 'Floating'],
+    avoid: ['Thunder', 'Breaking', 'Burning', 'Chaos', 'Crashing', 'Exploding', 'Rage', 'Fury'],
   },
   romantic: {
-    preferred: ['Heart', 'Love', 'Moon', 'Stars', 'Dream', 'Whisper', 'Evening'],
-    avoid: ['Chaos', 'Breaking', 'Thunder', 'Lost'],
+    preferred: ['Heart', 'Love', 'Moon', 'Stars', 'Dream', 'Whisper', 'Evening', 'Passion', 'Desire', 'Yearning', 'Blossom', 'Petal', 'Moonrise', 'Starlight', 'Bond'],
+    avoid: ['Chaos', 'Breaking', 'Thunder', 'Rage', 'Fury', 'Betrayal', 'Despair'],
   },
   dark: {
-    preferred: ['Shadow', 'Night', 'Midnight', 'Storm', 'Thunder', 'Chaos', 'Silence'],
-    avoid: ['Sun', 'Morning', 'Light', 'Hope'],
+    preferred: ['Shadow', 'Night', 'Midnight', 'Storm', 'Thunder', 'Chaos', 'Silence', 'Void', 'Abyss', 'Dread', 'Fear', 'Witching Hour', 'Eclipse', 'Ash', 'Thorn'],
+    avoid: ['Sun', 'Morning', 'Light', 'Hope', 'Joy', 'Summer', 'Golden Hour', 'Blossom'],
   },
   energetic: {
-    preferred: ['Fire', 'Rising', 'Running', 'Dancing', 'Thunder', 'Burning', 'Flying'],
-    avoid: ['Silence', 'Drifting', 'Fading', 'Floating'],
+    preferred: ['Fire', 'Rising', 'Running', 'Dancing', 'Thunder', 'Burning', 'Flying', 'Soaring', 'Leaping', 'Blazing', 'Surging', 'Pulse', 'Beat', 'Rhythm', 'Lightning'],
+    avoid: ['Silence', 'Drifting', 'Fading', 'Calm', 'Peace', 'Serenity', 'Mist'],
   },
   dreamy: {
-    preferred: ['Dream', 'Stars', 'Moon', 'Floating', 'Drifting', 'Ethereal', 'Twilight'],
-    avoid: ['Thunder', 'Breaking', 'Burning', 'Chaos'],
+    preferred: ['Dream', 'Stars', 'Moon', 'Drifting', 'Twilight', 'Wonder', 'Nebula', 'Galaxy', 'Cosmos', 'Ethereal', 'Fleeting', 'Ephemeral', 'Illusion', 'Mystery'],
+    avoid: ['Thunder', 'Breaking', 'Burning', 'Chaos', 'Rage', 'Crashing', 'Reality'],
   },
 };

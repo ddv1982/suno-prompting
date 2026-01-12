@@ -1,6 +1,8 @@
 import { SectionLabel } from "@/components/ui/section-label";
 import { Slider } from "@/components/ui/slider";
 
+import type { ReactElement } from "react";
+
 interface OllamaAdvancedSectionProps {
   temperature: number;
   maxTokens: number;
@@ -17,7 +19,7 @@ export function OllamaAdvancedSection({
   onTemperatureChange,
   onMaxTokensChange,
   onContextLengthChange,
-}: OllamaAdvancedSectionProps): React.JSX.Element {
+}: OllamaAdvancedSectionProps): ReactElement {
   return (
     <div className="space-y-4">
       <SectionLabel>Advanced Settings</SectionLabel>

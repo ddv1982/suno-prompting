@@ -40,6 +40,10 @@ export interface RefinePromptOptions {
   lockedPhrase?: string;
   /** Topic for lyrics refinement */
   lyricsTopic?: string;
+  /** Optional genre override from Advanced Mode */
+  genreOverride?: string;
+  /** Optional Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
+  sunoStyles?: string[];
 }
 
 /**

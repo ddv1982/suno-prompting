@@ -40,7 +40,7 @@ export {
 
 // Re-export test helpers
 import { detectGenreKeywordsOnly, selectRandomGenre, parseMultiGenre } from './genre';
-import { selectRecordingContext, selectMusicalKey, selectMusicalMode, selectKeyAndMode } from './helpers';
+import { joinRecordingDescriptors, selectMusicalKey, selectMusicalMode, selectKeyAndMode } from './helpers';
 import { assembleInstruments } from './instruments';
 import { assembleStyleTags } from './styles';
 
@@ -55,7 +55,7 @@ export const _testHelpers = {
   parseMultiGenre,
   assembleInstruments,
   assembleStyleTags,
-  selectRecordingContext,
+  joinRecordingDescriptors,
   selectMusicalKey,
   selectMusicalMode,
   selectKeyAndMode,

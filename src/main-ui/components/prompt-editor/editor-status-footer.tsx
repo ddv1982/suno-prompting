@@ -2,6 +2,8 @@ import { useMemo } from "react";
 
 import { StatusIndicator } from "@/components/ui/status-indicator";
 
+import type { ReactElement } from "react";
+
 type StatusType = "working" | "ready" | "local";
 
 type EditorStatusFooterProps = {
@@ -14,7 +16,7 @@ export function EditorStatusFooter({
   isGenerating, 
   currentModel, 
   useLocalLLM = false 
-}: EditorStatusFooterProps): React.JSX.Element {
+}: EditorStatusFooterProps): ReactElement {
   // Determine status: working takes precedence, then local/ready
   const status: StatusType = useMemo(() => {
     if (isGenerating) return "working";

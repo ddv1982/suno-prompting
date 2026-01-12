@@ -42,6 +42,8 @@ export interface GenerateInitialOptions {
   lyricsTopic?: string;
   /** Optional genre override from Advanced Mode */
   genreOverride?: string;
+  /** Optional Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
+  sunoStyles?: string[];
 }
 
 /**
@@ -71,7 +73,7 @@ function generateInitialDeterministic(
   // 3. Generate deterministic title from extracted genre/mood
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
-  const title = generateDeterministicTitle(genre, mood);
+  const title = generateDeterministicTitle(genre, mood, Math.random, description);
 
   // 4. Build debug info if debug mode enabled
   const debugInfo = config.isDebugMode()
@@ -223,7 +225,8 @@ async function generateInitialWithOfflineLyrics(
 /**
  * Generate initial prompt.
  *
- * Branches based on lyrics and offline mode:
+ * Branches based on Direct Mode, lyrics, and offline mode:
+ * - Direct Mode (sunoStyles provided): Uses Suno V5 styles as-is with enrichment
  * - Lyrics OFF: Fully deterministic path (<50ms, no LLM calls)
  * - Lyrics ON + Offline: Ollama-assisted path (local Gemma 3 4B)
  * - Lyrics ON + Cloud: LLM-assisted path (genre detection, title, lyrics generation)
@@ -236,6 +239,71 @@ export async function generateInitial(
   options: GenerateInitialOptions,
   config: GenerationConfig
 ): Promise<GenerationResult> {
+  // Direct Mode: Use sunoStyles as-is (bypasses deterministic genre logic)
+  if (options.sunoStyles && options.sunoStyles.length > 0) {
+    const { buildDirectModePrompt } = await import('@bun/ai/direct-mode');
+    
+    // Use centralized prompt building
+    const { text, enriched } = buildDirectModePrompt(options.sunoStyles, config.isMaxMode());
+    
+    // Extract genre/mood for title generation
+    const genre = enriched.extractedGenres[0] || 'pop';
+    const mood = enriched.enrichment.moods[0] || 'energetic';
+    
+    // Generate title and lyrics based on lyrics mode
+    let title: string;
+    let lyrics: string | undefined;
+    let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
+    
+    if (config.isLyricsMode()) {
+      // LLM-based title and lyrics generation
+      const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
+      const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
+      
+      title = await generateDirectModeTitle(
+        options.description || '',
+        options.sunoStyles,
+        config.getModel,
+        ollamaEndpoint
+      );
+      
+      const topicForLyrics = options.lyricsTopic?.trim() || options.description;
+      const lyricsResult = await generateLyrics(
+        topicForLyrics,
+        genre,
+        mood,
+        config.isMaxMode(),
+        config.getModel,
+        config.getUseSunoTags(),
+        undefined,
+        ollamaEndpoint
+      );
+      lyrics = cleanLyrics(lyricsResult.lyrics);
+      lyricsDebugInfo = lyricsResult.debugInfo;
+    } else {
+      // Deterministic title when lyrics mode is off
+      title = generateDeterministicTitle(genre, mood, Math.random, options.description);
+    }
+    
+    const debugInfo = config.isDebugMode()
+      ? {
+          ...config.buildDebugInfo(
+            'DIRECT_MODE (Full Prompt Advanced): Styles preserved, prompt enriched.',
+            `Suno V5 Styles: ${options.sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${options.description || '(none)'}`,
+            text
+          ),
+          lyricsGeneration: lyricsDebugInfo,
+        }
+      : undefined;
+    
+    return {
+      text,
+      title,
+      lyrics,
+      debugInfo,
+    };
+  }
+  
   if (!config.isLyricsMode()) {
     return generateInitialDeterministic(options, config);
   }

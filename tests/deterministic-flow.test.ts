@@ -13,7 +13,7 @@ import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
 } from '@bun/prompt/deterministic';
-import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes-templates';
+import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 
 describe('Deterministic Generation Flow', () => {

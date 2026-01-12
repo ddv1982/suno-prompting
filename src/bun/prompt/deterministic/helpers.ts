@@ -5,7 +5,7 @@
  */
 
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
-import { RECORDING_DESCRIPTORS } from '@bun/prompt/realism-tags';
+import { selectRecordingDescriptors as selectRecordingDescriptorsNew } from '@bun/prompt/tags';
 
 import { MAX_CHARS, DEFAULT_BPM_RANGE, MUSICAL_KEYS, MUSICAL_MODES } from './constants';
 
@@ -39,23 +39,22 @@ export function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): s
 }
 
 /**
- * Select recording context descriptor.
- * Uses provided RNG for deterministic shuffling.
+ * Join recording descriptors into a comma-separated string.
+ * Uses structured categories with conflict prevention.
  *
  * @param rng - Random number generator
  * @param count - Number of descriptors to select
- * @returns Recording context string
+ * @returns Recording context string (comma-separated)
  *
  * @example
- * selectRecordingContext(Math.random)
- * // "late night studio session vibe, analog four-track warmth"
+ * joinRecordingDescriptors(Math.random)
+ * // "professional mastering polish, studio session warmth"
  */
-export function selectRecordingContext(
+export function joinRecordingDescriptors(
   rng: () => number = Math.random,
   count: number = 2
 ): string {
-  const shuffled = [...RECORDING_DESCRIPTORS].sort(() => rng() - 0.5);
-  const selected = shuffled.slice(0, count);
+  const selected = selectRecordingDescriptorsNew(rng, count);
   return selected.join(', ');
 }
 

@@ -12,7 +12,7 @@ import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
-import { buildProductionDescriptor } from '@bun/prompt/production-elements';
+import { buildProductionDescriptorMulti } from '@bun/prompt/production-elements';
 import { buildVocalDescriptor } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
 
@@ -229,7 +229,8 @@ export function getGenreInstruments(
   lines.push(`Vocal style: ${vocalDesc}`);
 
   // Add production suggestions
-  const prodDesc = buildProductionDescriptor(genre, rng);
+  const prodMulti = buildProductionDescriptorMulti(rng);
+  const prodDesc = `${prodMulti.texture}, ${prodMulti.reverb}`;
   lines.push(`Production: ${prodDesc}`);
 
   // Add chord progression suggestion

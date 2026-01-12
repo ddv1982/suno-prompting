@@ -20,17 +20,16 @@ import { MOOD_POOL } from '@bun/instruments/datasets';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
 import { selectInstrumentsForMultiGenre } from '@bun/prompt/genre-parser';
 import {
-  selectRealismTags,
-  selectElectronicTags,
-  isElectronicGenre,
-  selectRecordingDescriptors,
-  selectGenericTags,
-} from '@bun/prompt/realism-tags';
-import {
   replaceFieldLine,
   replaceStyleTagsLine,
   replaceRecordingLine,
 } from '@bun/prompt/remix';
+import {
+  selectVocalTags,
+  selectTextureTags,
+  selectRecordingContext,
+  selectRecordingDescriptors,
+} from '@bun/prompt/tags';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { DEFAULT_GENRE } from '@shared/constants';
 
@@ -150,22 +149,30 @@ export function extractMoodFromPrompt(prompt: string): string {
 /**
  * Inject style tags appropriate for the given genre.
  *
- * Electronic and acoustic genres have fundamentally different production
- * aesthetics - electronic benefits from synthesis/processing tags while
- * acoustic genres benefit from recording realism tags. This branching
- * ensures style tags enhance rather than conflict with the genre.
+ * Uses modern tag selection approach with vocal, texture, and recording context.
+ * Provides better variety and consistency with main prompt generation.
+ * Falls back to recording descriptors if no tags are selected.
  *
- * Falls back to generic tags to ensure the style field is never empty,
- * which could cause Suno to apply unpredictable defaults.
+ * @since v2.0.0 - Updated to use new tag selection functions
  */
 export function injectStyleTags(prompt: string, genre: string): string {
-  const isElectronic = isElectronicGenre(genre);
-  let styleTags = isElectronic
-    ? selectElectronicTags(4)
-    : selectRealismTags(genre, 4);
+  const styleTags: string[] = [];
 
+  // Use new tag selection (simplified for remix - no weighted probability)
+  const vocalTags = selectVocalTags(genre, 1, Math.random);
+  styleTags.push(...vocalTags);
+
+  const textureTags = selectTextureTags(2, Math.random);
+  styleTags.push(...textureTags);
+
+  // Add recording context
+  const context = selectRecordingContext(genre, Math.random);
+  styleTags.push(context);
+
+  // Fallback if no tags selected
   if (styleTags.length === 0) {
-    styleTags = selectGenericTags(4);
+    const fallback = selectRecordingDescriptors(Math.random, 1);
+    styleTags.push(...fallback);
   }
 
   return replaceStyleTagsLine(prompt, styleTags.join(', '));
@@ -328,6 +335,6 @@ export function remixStyleTags(currentPrompt: string): RemixResult {
  * that helps Suno understand the desired sonic character independent of genre.
  */
 export function remixRecording(currentPrompt: string): RemixResult {
-  const descriptors = selectRecordingDescriptors(3);
+  const descriptors = selectRecordingDescriptors(Math.random, 3);
   return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
 }

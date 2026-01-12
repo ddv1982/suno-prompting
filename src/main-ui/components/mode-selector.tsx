@@ -3,6 +3,7 @@ import { Zap, FileText, Dice3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import type { PromptMode } from "@shared/types";
+import type { ReactElement } from "react";
 
 type ModeSelectorProps = {
   promptMode: PromptMode;
@@ -10,7 +11,7 @@ type ModeSelectorProps = {
   disabled?: boolean;
 };
 
-export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeSelectorProps): React.JSX.Element {
+export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeSelectorProps): ReactElement {
   const helperText = {
     full: 'Full-featured prompt generation with sections, instruments, and advanced options',
     quickVibes: 'Short, evocative prompts (≤400 chars) for ambient, lo-fi, and background music',

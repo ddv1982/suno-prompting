@@ -16,6 +16,12 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Smooth {nature}',
     '{time} Session',
     'Cool {emotion}',
+    // New patterns
+    'The {emotion} of {time}',
+    '{nature} and {emotion}',
+    'Between {time} and {nature}',
+    '{emotion}\'s {action}',
+    '{action} Through {nature}',
   ],
   blues: [
     '{emotion} Blues',
@@ -32,6 +38,15 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Rise of {abstract}',
     '{action} Free',
     '{time} Rebel',
+    // New patterns
+    'Born to {action}',
+    'When {nature} {action}s',
+    '{emotion} Never Dies',
+    'The {action} {emotion}',
+    '{nature}\'s {emotion}',
+    // Extended patterns
+    '{single}',
+    '{question}',
   ],
   metal: [
     '{nature} of {abstract}',
@@ -48,14 +63,34 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Feel the {nature}',
     '{emotion} Vibes',
     'Sweet {emotion}',
+    // New patterns
+    'All the {emotion}',
+    '{action} With Me',
+    'My {nature}',
+    '{emotion} Forever',
+    // Extended patterns
+    '{single}',
+    '{question}',
+    '{place} Love',
   ],
   electronic: [
     '{abstract} State',
     'Digital {nature}',
     '{action} Signal',
-    'Neon {emotion}',
+    'Electric {emotion}',
     'Synthetic {nature}',
     '{time} Pulse',
+    // New patterns
+    '{emotion}.exe',
+    'System {abstract}',
+    '{action} Protocol',
+    'Cyber {nature}',
+    '{abstract} Algorithm',
+    // Extended patterns
+    '{number}',
+    'Track {number}',
+    '{single}',
+    '{place} Nights',
   ],
   ambient: [
     '{nature} Drift',
@@ -64,6 +99,15 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Ethereal {nature}',
     '{abstract} Space',
     'Gentle {nature}',
+    // New patterns
+    '{emotion} in the {abstract}',
+    'Whispers of {nature}',
+    '{time}\'s {emotion}',
+    'The {action} {abstract}',
+    // Extended patterns
+    '{single}',
+    '{place} Dreams',
+    '{question}',
   ],
   classical: [
     '{nature} Sonata',
@@ -169,14 +213,76 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Soft {nature}',
     'Cozy {emotion}',
   ],
+  // Synthwave/Retro genres with extended patterns
+  synthwave: [
+    '{time} Drive',
+    'Chrome {nature}',
+    'Retro {emotion}',
+    'Chrome {nature}',
+    '{action} Machine',
+    'Digital {emotion}',
+    // Extended patterns
+    '{place} Nights',
+    '{number}',
+    '{single}',
+    'Lost in {place}',
+    'Escape from {place}',
+    '{emotion} Highway',
+  ],
+  outrun: [
+    '{time} Chase',
+    'Turbo {emotion}',
+    'Nighttime {action}',
+    '{nature} Runner',
+    'Speed {emotion}',
+    // Extended patterns
+    '{place} Drive',
+    '{number}',
+    '{single}',
+    'Escape from {place}',
+  ],
+  darksynth: [
+    'Dark {nature}',
+    '{emotion} Machine',
+    'Cyber {abstract}',
+    '{action} Destroyer',
+    'Synth {emotion}',
+    // Extended patterns
+    '{number}',
+    '{single}',
+    '{place} Shadows',
+  ],
 };
 
-/** Default patterns for unknown genres */
+/**
+ * Default patterns for unknown genres
+ *
+ * Pattern examples:
+ * - '{emotion} of the {nature}' → "Shadow of the Moon"
+ * - '{action} Through {nature}' → "Dancing Through Fire"
+ * - '{nature}'s {emotion}' → "Ocean's Memory"
+ * - 'When {nature} {action}s' → "When Thunder Strikes"
+ * - 'Between {time} and {emotion}' → "Between Midnight and Dreams"
+ */
 export const DEFAULT_PATTERNS: readonly string[] = [
+  // Original 2-word patterns
   '{emotion} {nature}',
   '{time} {emotion}',
   '{action} {nature}',
   '{nature} of {abstract}',
   '{emotion} Journey',
   '{time} Tale',
+  // New 3-word patterns
+  '{emotion} of the {nature}',
+  '{action} Through {nature}',
+  'The {emotion} {action}',
+  '{time} in {abstract}',
+  // Possessive patterns
+  '{nature}\'s {emotion}',
+  '{time}\'s {action}',
+  '{emotion}\'s {nature}',
+  // Additional patterns
+  'When {nature} {action}s',
+  '{emotion} and {nature}',
+  'Between {time} and {emotion}',
 ];

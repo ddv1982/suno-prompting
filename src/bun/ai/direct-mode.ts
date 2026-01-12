@@ -18,6 +18,30 @@ export type DirectModeBuildOptions = {
 };
 
 /**
+ * Build enriched prompt for Direct Mode (styles preserved as-is).
+ * Shared by Full Prompt, Creative Boost, and Quick Vibes.
+ * 
+ * @returns Enriched prompt text and enrichment metadata
+ */
+export function buildDirectModePrompt(
+  sunoStyles: string[],
+  maxMode: boolean
+): { 
+  text: string; 
+  enriched: ReturnType<typeof enrichSunoStyles>;
+} {
+  const enriched = enrichSunoStyles(sunoStyles);
+  const lines = maxMode
+    ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
+    : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
+  
+  return {
+    text: lines.join('\n'),
+    enriched,
+  };
+}
+
+/**
  * Build a Direct Mode result where styles are preserved as-is but
  * the prompt is enriched with instruments, moods, and production.
  * Title is generated via LLM based on the description and styles.
@@ -32,22 +56,17 @@ export function buildDirectModeResult(
 ): GenerationResult {
   const { maxMode = false } = options;
 
-  // Enrich the prompt while preserving styles exactly as-is
-  const enriched = enrichSunoStyles(sunoStyles);
-  const lines = maxMode
-    ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
-    : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
-
-  const enrichedPrompt = lines.join('\n');
+  // Use centralized prompt building
+  const { text, enriched } = buildDirectModePrompt(sunoStyles, maxMode);
 
   return {
-    text: enrichedPrompt,
+    text,
     title,
     debugInfo: config.isDebugMode()
       ? config.buildDebugInfo(
           debugLabel,
           `Suno V5 Styles: ${sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${description || '(none)'}`,
-          enrichedPrompt
+          text
         )
       : undefined,
   };

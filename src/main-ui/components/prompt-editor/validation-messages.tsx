@@ -2,12 +2,14 @@ import { AlertCircle, AlertTriangle } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+import type { ReactElement } from "react";
+
 type ValidationMessagesProps = {
   errors: string[];
   warnings: string[];
 };
 
-export function ValidationMessages({ errors, warnings }: ValidationMessagesProps): React.JSX.Element | null {
+export function ValidationMessages({ errors, warnings }: ValidationMessagesProps): ReactElement | null {
   if (errors.length === 0 && warnings.length === 0) return null;
 
   return (

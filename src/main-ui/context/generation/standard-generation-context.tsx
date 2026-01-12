@@ -45,14 +45,33 @@ async function tryMaxConversion(input: string, cb: ConversionCallbacks): Promise
 interface GenerateParams { input: string; lockedPhrase?: string; topic?: string; genre?: string }
 interface RefineParams extends GenerateParams { currentPrompt: string; currentTitle?: string; currentLyrics?: string }
 
-async function callGenerateApi(isInitial: boolean, p: GenerateParams | RefineParams): ReturnType<typeof api.generateInitial> {
-  if (isInitial) return api.generateInitial(p.input, p.lockedPhrase, p.topic, p.genre);
-  const rp = p as RefineParams;
-  return api.refinePrompt(rp.currentPrompt, rp.input, rp.lockedPhrase, rp.currentTitle, rp.currentLyrics, rp.topic, rp.genre);
+type ApiParams = GenerateParams & { sunoStyles?: string[] };
+
+async function callGenerateApi(isInitial: boolean, p: ApiParams | (RefineParams & { sunoStyles?: string[] })): ReturnType<typeof api.generateInitial> {
+  if (isInitial) return api.generateInitial(p.input, p.lockedPhrase, p.topic, p.genre, p.sunoStyles);
+  const rp = p as RefineParams & { sunoStyles?: string[] };
+  return api.refinePrompt(rp.currentPrompt, rp.input, rp.lockedPhrase, rp.currentTitle, rp.currentLyrics, rp.topic, rp.genre, rp.sunoStyles);
 }
 
 function addUserMessageIfRefine(isInitial: boolean, setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>, input: string): void {
   if (!isInitial) addUserMessage(setChatMessages, input);
+}
+
+interface GenerateContext {
+  isInitial: boolean;
+  currentPrompt: string;
+  currentTitle?: string;
+  currentLyrics?: string;
+}
+
+function buildGenerateContext(currentSession: { currentPrompt?: string; currentTitle?: string; currentLyrics?: string } | null): GenerateContext {
+  const currentPrompt = currentSession?.currentPrompt || '';
+  return {
+    isInitial: !currentPrompt,
+    currentPrompt,
+    currentTitle: currentSession?.currentTitle,
+    currentLyrics: currentSession?.currentLyrics,
+  };
 }
 
 export function useStandardGenerationContext(): StandardGenerationContextValue {
@@ -92,15 +111,21 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
 
   const handleGenerate = useCallback(async (input: string) => {
     if (shouldSkipGeneration(isGenerating, promptMode, !!currentSession?.currentPrompt)) return;
-    const currentPrompt = currentSession?.currentPrompt || '', isInitial = !currentPrompt;
+    const ctx = buildGenerateContext(currentSession);
     setGeneratingAction('generate');
     try {
-      addUserMessageIfRefine(isInitial, setChatMessages, input);
-      if (shouldAttemptMaxConversion(isInitial, maxMode, input) && await tryMaxConversion(input, { createConversionSession, setPendingInput, setLyricsTopic, showToast })) return;
-      const lockedPhrase = getEffectiveLockedPhrase(), topic = lyricsTopic?.trim() || undefined, genre = advancedSelection.seedGenres[0];
-      const result = await callGenerateApi(isInitial, { input, lockedPhrase, topic, genre, currentPrompt, currentTitle: currentSession?.currentTitle, currentLyrics: currentSession?.currentLyrics });
+      addUserMessageIfRefine(ctx.isInitial, setChatMessages, input);
+      const conversionCallbacks = { createConversionSession, setPendingInput, setLyricsTopic, showToast };
+      if (shouldAttemptMaxConversion(ctx.isInitial, maxMode, input) && await tryMaxConversion(input, conversionCallbacks)) return;
+      const lockedPhrase = getEffectiveLockedPhrase();
+      const topic = lyricsTopic?.trim() || undefined;
+      const genre = advancedSelection.seedGenres[0];
+      const sunoStyles = advancedSelection.sunoStyles.length > 0 ? advancedSelection.sunoStyles : undefined;
+      const apiParams = { input, lockedPhrase, topic, genre, sunoStyles, ...ctx };
+      const result = await callGenerateApi(ctx.isInitial, apiParams);
       if (!result?.prompt) throw new Error('Invalid result received from generation');
-      await completeSessionUpdate(deps, result, buildFullPromptOriginalInput(input, genre, topic), 'full', {}, 'Updated prompt generated.', isInitial ? undefined : input);
+      const originalInput = buildFullPromptOriginalInput(input, genre, topic);
+      await completeSessionUpdate(deps, result, originalInput, 'full', {}, 'Updated prompt generated.', ctx.isInitial ? undefined : input);
       setPendingInput(''); setLyricsTopic('');
     } catch (e: unknown) { handleGenerationError(e, 'generate prompt', setChatMessages, showToast, log); }
     finally { setGeneratingAction('none'); }
@@ -112,7 +137,8 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     if (isGenerating || !currentSession?.originalInput) return;
     setGeneratingAction('remix');
     try {
-      const result = await api.generateInitial(currentSession.originalInput, getEffectiveLockedPhrase(), currentSession.lyricsTopic, advancedSelection.seedGenres[0]);
+      const sunoStyles = advancedSelection.sunoStyles.length > 0 ? advancedSelection.sunoStyles : undefined;
+      const result = await api.generateInitial(currentSession.originalInput, getEffectiveLockedPhrase(), currentSession.lyricsTopic, advancedSelection.seedGenres[0], sunoStyles);
       if (!result?.prompt) throw new Error('Invalid result received from remix');
       await completeSessionUpdate(deps, result, currentSession.originalInput, 'full', {}, 'Remixed prompt generated.', '[remix]');
     } catch (e: unknown) { handleGenerationError(e, 'remix prompt', setChatMessages, showToast, log); }

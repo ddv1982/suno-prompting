@@ -8,3 +8,6 @@
 
 // Public API - Generation functions
 export { generateDeterministicTitle, generateTitleOptions } from './generator';
+
+// Public API - Keyword extraction
+export { extractKeywords } from './keyword-extractor';

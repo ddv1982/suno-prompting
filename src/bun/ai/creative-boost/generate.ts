@@ -17,7 +17,7 @@ import {
 } from '@bun/ai/creative-boost/helpers';
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
 import { createLogger } from '@bun/logger';
-import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost-templates';
+import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost';
 
 
 import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
@@ -81,6 +81,14 @@ export async function generateCreativeBoost(
   options: GenerateCreativeBoostOptions
 ): Promise<GenerationResult> {
   const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, withWordlessVocals, maxMode, withLyrics, config } = options;
+
+  // Validate input (styles limit + mutual exclusivity)
+  if (sunoStyles.length > 4) {
+    throw new Error('Maximum 4 Suno V5 styles allowed');
+  }
+  if (seedGenres.length > 0 && sunoStyles.length > 0) {
+    throw new Error('Cannot use both Seed Genres and Suno V5 Styles. Please choose one approach.');
+  }
 
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {

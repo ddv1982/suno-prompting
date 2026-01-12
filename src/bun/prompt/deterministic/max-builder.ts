@@ -8,7 +8,7 @@ import { selectMoodsForCategory } from '@bun/mood';
 import { MAX_MODE_HEADER } from '@shared/max-format';
 
 import { resolveGenre } from './genre';
-import { truncatePrompt, selectRecordingContext, getBpmRangeForGenre } from './helpers';
+import { truncatePrompt, joinRecordingDescriptors, getBpmRangeForGenre } from './helpers';
 import { assembleInstruments } from './instruments';
 import { assembleStyleTags } from './styles';
 
@@ -91,7 +91,7 @@ export function buildDeterministicMaxPrompt(
   }
 
   // 4. Get recording context
-  const recordingContext = selectRecordingContext(rng);
+  const recordingContext = joinRecordingDescriptors(rng);
 
   // 5. Get BPM range - uses blended range for multi-genre
   const bpmRange = getBpmRangeForGenre(displayGenre);

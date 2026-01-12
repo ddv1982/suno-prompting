@@ -8,6 +8,25 @@
  */
 
 /**
+ * Intensity level for moods.
+ * Controls the strength/expressiveness of the mood.
+ */
+export type MoodIntensity = 'mild' | 'moderate' | 'intense';
+
+/**
+ * Mood with intensity scaling applied.
+ * Combines base category, selected mood word, and intensity level.
+ */
+export interface IntensifiedMood {
+  /** Base mood category */
+  readonly category: MoodCategory;
+  /** Selected mood word (with intensity applied) */
+  readonly mood: string;
+  /** Intensity level applied */
+  readonly intensity: MoodIntensity;
+}
+
+/**
  * Mood category identifiers.
  * Derived from semantic groupings in MOOD_POOL comments.
  */

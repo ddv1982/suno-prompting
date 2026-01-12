@@ -5,7 +5,7 @@ import {
   buildDeterministicQuickVibes,
   generateQuickVibesTitle,
   getQuickVibesTemplate,
-} from '@bun/prompt/quick-vibes-templates';
+} from '@bun/prompt/quick-vibes';
 
 // =============================================================================
 // Test Constants - RNG values for deterministic testing

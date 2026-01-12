@@ -23,7 +23,7 @@ import {
   RECORDING_TEXTURES,
   GENRE_PRODUCTION_STYLES,
   getProductionSuggestionsForGenre,
-  buildProductionDescriptor,
+  buildProductionDescriptorMulti,
 } from '@bun/prompt/production-elements';
 import {
   VOCAL_RANGES,
@@ -380,18 +380,21 @@ describe('Production Elements', () => {
     });
   });
 
-  describe('buildProductionDescriptor', () => {
+  describe('buildProductionDescriptor (deprecated - use buildProductionDescriptorMulti)', () => {
     it('returns formatted descriptor string', () => {
       const rng = createRng(42);
-      const result = buildProductionDescriptor('jazz', rng);
+      const multi = buildProductionDescriptorMulti(rng);
+      const result = `${multi.texture}, ${multi.reverb}`;
       expect(result).toContain(',');
       expect(result.length).toBeGreaterThan(10);
     });
 
-    it('includes texture and reverb', () => {
-      const result = buildProductionDescriptor('rock');
-      // Should have format "Texture, Reverb"
-      expect(result.split(', ').length).toBe(2);
+    it('includes all 4 production dimensions via buildProductionDescriptorMulti', () => {
+      const result = buildProductionDescriptorMulti();
+      expect(result.reverb).toBeTruthy();
+      expect(result.texture).toBeTruthy();
+      expect(result.stereo).toBeTruthy();
+      expect(result.dynamic).toBeTruthy();
     });
   });
 });

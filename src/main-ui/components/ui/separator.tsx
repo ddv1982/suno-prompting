@@ -3,12 +3,14 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+import type { ReactElement } from "react";
+
 function Separator({
   className,
   orientation = "horizontal",
   decorative = true,
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive.Root>): React.JSX.Element {
+}: React.ComponentProps<typeof SeparatorPrimitive.Root>): ReactElement {
   return (
     <SeparatorPrimitive.Root
       data-slot="separator"
