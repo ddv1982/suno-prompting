@@ -2,7 +2,7 @@
 
 This guide explains how the app generates Suno prompts **instantly without AI**, making smart choices based on your inputs using curated databases of genres, instruments, moods, and production styles.
 
-> **✨ v2.0.0 Update (Phase 6):** Recording context system now includes conflict prevention, genre-aware selection, and 141 genre-specific contexts for authentic production environments! See [Recording Context](#1-recording-context) and [Genre-Specific Recording Contexts](#1a-genre-specific-recording-contexts-v200) for details.
+> **✨ v3.0.0 Update:** Major expansion with compound moods, mood intensity scaling, era-based instruments, ensemble presets, 16 Quick Vibes categories, and 25 new genre definitions! See new sections for [Compound Moods](#compound-moods-v30), [Mood Intensity](#mood-intensity-v30), [Era-Based Instruments](#era-based-instruments-v30), and [Ensemble Presets](#ensemble-presets-v30).
 
 ## Table of Contents
 
@@ -12,11 +12,15 @@ This guide explains how the app generates Suno prompts **instantly without AI**,
 4. [Style Tags (MAX Mode)](#style-tags-max-mode)
 5. [Randomness with Control](#randomness-with-control)
 6. [Mood Category Integration](#mood-category-integration)
-7. [Performance: Why It's Instant](#performance-why-its-instant)
-8. [Data Sources](#data-sources)
-9. [User Control vs Automation](#user-control-vs-automation)
-10. [Examples: Input → Output](#examples-input--output)
-11. [Quality Assurance](#quality-assurance)
+7. [Compound Moods (v3.0)](#compound-moods-v30)
+8. [Mood Intensity (v3.0)](#mood-intensity-v30)
+9. [Era-Based Instruments (v3.0)](#era-based-instruments-v30)
+10. [Ensemble Presets (v3.0)](#ensemble-presets-v30)
+11. [Performance: Why It's Instant](#performance-why-its-instant)
+12. [Data Sources](#data-sources)
+13. [User Control vs Automation](#user-control-vs-automation)
+14. [Examples: Input → Output](#examples-input--output)
+15. [Quality Assurance](#quality-assurance)
 
 ---
 
@@ -98,11 +102,23 @@ When you pick a **Quick Vibes category**, you get a pre-configured template opti
 | **latenight-chill** | downtempo, chillout, nu jazz | nocturnal, smooth, sultry | electric piano, bass synth, soft drums | Late night listening, unwinding |
 | **cozy-rainy** | acoustic, folk, indie folk | cozy, nostalgic, peaceful | acoustic guitar, piano, strings | Rainy days, comfort |
 | **lofi-chill** | lo-fi chill, bedroom pop | chill, laid-back, dreamy | lo-fi piano, tape saturation, mellow drums | Easy listening, relaxation |
+| **workout-energy** | EDM, trap, electronic | powerful, intense, driving | synth, 808, heavy drums | Workouts, high energy |
+| **morning-sunshine** | indie pop, acoustic, folk | bright, fresh, optimistic | acoustic guitar, piano, bells | Morning routines, positivity |
+| **sunset-golden** | chillwave, indie, downtempo | warm, nostalgic, peaceful | synth pad, guitar, soft drums | Golden hour, relaxation |
+| **dinner-party** | jazz, bossa nova, soul | elegant, sophisticated, smooth | piano, upright bass, saxophone | Dinner parties, entertaining |
+| **road-trip** | rock, indie, americana | free, adventurous, anthemic | electric guitar, drums, bass | Road trips, driving |
+| **gaming-focus** | electronic, synthwave, cinematic | epic, immersive, intense | synth, orchestra, drums | Gaming sessions, immersion |
+| **romantic-evening** | R&B, soul, smooth jazz | intimate, sensual, tender | Rhodes, strings, soft drums | Romance, intimacy |
+| **meditation-zen** | ambient, new age, drone | peaceful, calm, healing | singing bowls, pads, nature sounds | Meditation, relaxation |
+| **creative-flow** | ambient, electronic, lo-fi | inspired, focused, flowing | synth pad, piano, soft beats | Creative work, productivity |
+| **party-night** | house, EDM, disco | energetic, fun, celebratory | synth, drums, bass | Parties, celebrations |
 
 Each category has:
 - **6-8 genre options** to randomly select from
 - **6 instrument combinations** that fit the vibe
 - **8 mood descriptors** aligned with the category feel
+
+**v3.0 expansion:** 16 total categories (up from 6), covering diverse use cases from workouts to meditation.
 
 ---
 
@@ -570,6 +586,228 @@ SCENARIO 2: With Mood Category
 
 ---
 
+## Compound Moods (v3.0)
+
+**NEW in v3.0:** Compound moods blend two emotional qualities for richer, more nuanced prompts.
+
+### What Are Compound Moods?
+
+Instead of simple moods like "happy" or "sad", compound moods combine contrasting or complementary emotions:
+
+| Type | Examples | Effect |
+|------|----------|--------|
+| **Contrasting** | bittersweet nostalgia, dark euphoria, chaotic joy | Emotional complexity |
+| **Complex states** | melancholic triumph, restless serenity, gentle fury | Depth and nuance |
+| **Atmospheric** | ethereal darkness, warm desolation, bright sorrow | Rich sonic texture |
+| **Textural** | rough tenderness, sharp comfort, raw elegance | Unique character |
+
+### Available Compound Moods (25 total)
+
+```
+bittersweet nostalgia    dark euphoria           aggressive hope
+tender melancholy        chaotic joy             peaceful intensity
+wistful optimism         haunting beauty         fierce tenderness
+quiet desperation        melancholic triumph     restless serenity
+gentle fury              luminous grief          defiant vulnerability
+ethereal darkness        warm desolation         bright sorrow
+somber celebration       anxious bliss           rough tenderness
+sharp comfort            soft rage               delicate power
+raw elegance
+```
+
+### How Selection Works
+
+```
+INPUT:
+Genre: "jazz"
+
+APP PROCESS:
+1. Check genre-specific affinities
+2. Jazz prefers: tender melancholy, wistful optimism, quiet desperation
+3. Random selection from jazz-appropriate compound moods
+
+OUTPUT:
+Mood: "tender melancholy" (genre-appropriate compound mood)
+```
+
+### Genre Affinities
+
+| Genre | Preferred Compound Moods |
+|-------|-------------------------|
+| **Jazz** | tender melancholy, wistful optimism, quiet desperation |
+| **Electronic** | dark euphoria, chaotic joy, ethereal darkness |
+| **Metal** | aggressive hope, fierce tenderness, raw elegance |
+| **Ambient** | peaceful intensity, ethereal darkness, luminous grief |
+| **Rock** | defiant vulnerability, restless serenity, raw elegance |
+
+---
+
+## Mood Intensity (v3.0)
+
+**NEW in v3.0:** 3-level intensity scaling for mood words, allowing fine-tuned emotional expression.
+
+### Intensity Levels
+
+| Level | Description | Example (euphoric) |
+|-------|-------------|-------------------|
+| **Mild** | Subtle, understated | uplifted |
+| **Moderate** | Standard, balanced | euphoric |
+| **Intense** | Strong, powerful | ecstatic |
+
+### How It Works
+
+```
+INPUT:
+Base mood: "peaceful"
+Intensity: "intense"
+
+APP PROCESS:
+1. Look up "peaceful" in MOOD_INTENSITY_MAP
+2. Get intense variant: "blissful"
+
+OUTPUT:
+Mood: "blissful" (intense variant of peaceful)
+```
+
+### Intensity Mappings (60+ moods)
+
+| Base Mood | Mild | Moderate | Intense |
+|-----------|------|----------|---------|
+| euphoric | uplifted | euphoric | ecstatic |
+| peaceful | gentle | peaceful | blissful |
+| haunting | mysterious | haunting | terrifying |
+| melancholic | wistful | melancholic | devastated |
+| passionate | ardent | passionate | fiercely passionate |
+| ethereal | airy | ethereal | otherworldly |
+| groovy | rhythmic | groovy | funky as hell |
+| epic | grand | epic | monumental |
+
+### Categories Covered
+
+- **Energetic:** euphoric, energetic, uplifting, vibrant, dynamic
+- **Calm:** serene, peaceful, relaxed, tranquil, calm
+- **Dark:** haunting, dark, ominous, brooding, sinister
+- **Emotional:** melancholic, sad, nostalgic, tender, bittersweet
+- **Playful:** whimsical, playful, cheerful, fun, carefree
+- **Intense:** passionate, fierce, aggressive, powerful, raw
+- **Atmospheric:** ethereal, dreamy, mysterious, hypnotic, cosmic
+- **And 13 more categories...**
+
+---
+
+## Era-Based Instruments (v3.0)
+
+**NEW in v3.0:** Period-specific instrument selection for authentic decade-based sounds.
+
+### Available Eras
+
+| Era | Signature Instruments | Character |
+|-----|----------------------|-----------|
+| **70s** | Moog, Rhodes, clavinet, Mellotron, ARP Odyssey, Prophet-5 | Analog warmth, funk |
+| **80s** | DX7, LinnDrum, Juno pads, Fairlight CMI, Jupiter-8, Simmons drums | Digital clarity, gated reverb |
+| **90s** | TB-303, breakbeats, TR-909, Supersaw, Korg M1, Amen break | Dance, grunge, big beat |
+| **Modern** | Serum, Omnisphere, Massive X, Kontakt, Vital, granular synth | Software synthesis, hybrid |
+
+### Era Instruments (12 per era)
+
+**70s:**
+```
+Moog synthesizer, Rhodes, disco strings, funk bass, wah guitar,
+clavinet, Fender Rhodes, ARP Odyssey, Mellotron, Hohner clavinet,
+analog strings, Prophet-5
+```
+
+**80s:**
+```
+DX7, LinnDrum, Juno pads, gated reverb drums, Simmons drums,
+Fairlight CMI, Oberheim OB-X, Roland Jupiter-8, PPG Wave,
+synth brass, Roland D-50, E-mu Emulator
+```
+
+**90s:**
+```
+TB-303, breakbeats, grunge distortion, jungle breaks, Roland TR-909,
+Supersaw, Korg M1, sampled vocals, big beat drums, trip hop beats,
+Roland JV-1080, Amen break
+```
+
+**Modern:**
+```
+Serum, Omnisphere, Massive X, Kontakt, Analog Lab, neural amp,
+granular synth, wavetable, Vital, Splice samples,
+Arturia V Collection, Plugin Alliance
+```
+
+### How Selection Works
+
+```
+INPUT:
+Era: "80s"
+Count: 3
+
+APP PROCESS:
+1. Load 80s instrument pool (12 instruments)
+2. Fisher-Yates shuffle for fair selection
+3. Pick first 3 from shuffled array
+
+OUTPUT:
+Instruments: ["DX7", "Juno pads", "LinnDrum"]
+```
+
+---
+
+## Ensemble Presets (v3.0)
+
+**NEW in v3.0:** Pre-defined instrument groupings that automatically expand to individual instruments with genre compatibility.
+
+### Available Ensembles (10 presets)
+
+| Ensemble | Instruments | Compatible Genres |
+|----------|-------------|-------------------|
+| **String Quartet** | violin, viola, cello, double bass | classical, cinematic, jazz, ambient, symphonic, folk |
+| **Horn Section** | trumpet, trombone, saxophone | jazz, funk, soul, disco, rnb, latin, afrobeat |
+| **Gospel Choir** | gospel vocals, Hammond organ, claps | gospel, soul, rnb, blues |
+| **Brass Band** | trumpet, trombone, tuba, French horn | jazz, classical, cinematic, symphonic, latin |
+| **Jazz Combo** | piano, upright bass, drums, saxophone | jazz, blues, lofi, soul, downtempo |
+| **Rock Band** | electric guitar, bass guitar, drums | rock, punk, metal, indie, blues |
+| **Chamber Orchestra** | strings, woodwinds, French horn | classical, cinematic, ambient, symphonic, newage |
+| **Synth Stack** | lead synth, pad synth, bass synth | electronic, synthwave, house, trance, melodictechno, hyperpop |
+| **World Percussion** | djembe, congas, shaker, tambourine | afrobeat, latin, reggae, folk, funk |
+| **Electronic Kit** | 808, hi-hats, claps, snare | trap, drill, electronic, hyperpop, house, rnb |
+
+### How Expansion Works
+
+```
+INPUT:
+Ensemble: "horn section"
+Genre: "jazz"
+
+APP PROCESS:
+1. Look up "horn section" in presets
+2. Check genre compatibility (jazz ✓)
+3. Expand to individual instruments
+
+OUTPUT:
+Instruments: ["trumpet", "trombone", "saxophone"]
+```
+
+### Genre-Based Selection
+
+```
+INPUT:
+Genre: "funk"
+
+APP PROCESS:
+1. Find ensembles compatible with funk
+2. Matches: horn section, world percussion
+3. Random selection
+
+OUTPUT:
+Ensemble: "horn section" → ["trumpet", "trombone", "saxophone"]
+```
+
+---
+
 ## Performance: Why It's Instant
 
 ### Traditional AI Approach
@@ -615,7 +853,7 @@ All choices come from carefully curated, tested databases maintained in code:
 
 ### Genre Registry
 
-- **60+ genres** with authentic instrument pools
+- **60 genres** with authentic instrument pools (25 new in v3.0)
 - Each genre defines:
   - Core instruments (Rhodes for jazz, synth for electronic)
   - Secondary instruments (alternatives and variations)
@@ -691,9 +929,35 @@ All choices come from carefully curated, tested databases maintained in code:
 - Examples: "jazz fusion", "trip hop", "electro pop"
 - Used at "safe" creativity level (established combos)
 
+### Compound Moods (v3.0)
+
+- **25 compound moods** combining contrasting/complementary emotions
+- **Genre affinities** for contextually appropriate mood selection
+- Categories: contrasting, complex states, atmospheric, textural
+
+### Mood Intensity (v3.0)
+
+- **60+ base moods** with 3-level intensity scaling
+- Levels: mild (subtle), moderate (standard), intense (powerful)
+- Example: peaceful → gentle / peaceful / blissful
+
+### Era-Based Instruments (v3.0)
+
+- **4 eras** with 12 period-specific instruments each
+- 70s: analog warmth (Moog, Rhodes, Mellotron)
+- 80s: digital clarity (DX7, LinnDrum, Fairlight)
+- 90s: dance/grunge (TB-303, breakbeats, Supersaw)
+- Modern: software synthesis (Serum, Omnisphere, Vital)
+
+### Ensemble Presets (v3.0)
+
+- **10 ensembles** with genre compatibility mappings
+- Auto-expansion to individual instruments
+- Examples: string quartet, horn section, jazz combo, synth stack
+
 **All data is:**
 - ✅ Reviewed by developers
-- ✅ Tested in 2,380 automated tests (was 2,336)
+- ✅ Tested in 2,886 automated tests
 - ✅ Validated for musical coherence
 - ✅ Regularly updated and expanded
 
@@ -1034,8 +1298,8 @@ The deterministic system is thoroughly tested to ensure high-quality outputs:
 
 ### Automated Testing
 
-✅ **2,336 tests** verify all combinations work correctly  
-✅ **19,093 assertions** validate expected behavior  
+✅ **2,886 tests** verify all combinations work correctly  
+✅ **22,805 assertions** validate expected behavior  
 ✅ **100% pass rate** maintained across all refactoring
 
 ### Test Categories
@@ -1134,7 +1398,7 @@ The deterministic generation system provides:
 🎵 **Quality** - Curated data, tested combinations  
 🎨 **Variety** - Controlled randomness from quality pools  
 ⚡ **Reliability** - Works offline, no API failures  
-🧪 **Tested** - 2,380 tests validate correctness  
+🧪 **Tested** - 2,886 tests validate correctness  
 📝 **Topic-Aware** - 170+ keywords map descriptions to relevant titles (v2.0)  
 🎼 **Rich Vocabulary** - 269 words × 159 patterns = 100,000+ unique titles (v2.0)
 
@@ -1149,6 +1413,15 @@ The result is professional-quality Suno prompts generated instantly, with full c
 - Topic-aware generation from user descriptions
 - 100,000+ unique title combinations (vs ~1,000s in v1.0)
 - 141 genre-specific recording contexts with conflict prevention
+
+**v3.0 enhancements:**
+- 25 new genre definitions (35 → 60 total)
+- 16 Quick Vibes categories (up from 6)
+- Compound moods system (25 blended emotions)
+- Mood intensity scaling (mild/moderate/intense)
+- Era-based instruments (70s/80s/90s/modern)
+- 10 ensemble presets with genre compatibility
+- 550 additional tests (2,336 → 2,886)
 
 ---
 
