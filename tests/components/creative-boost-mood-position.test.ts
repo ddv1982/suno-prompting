@@ -10,22 +10,22 @@ describe("CreativeBoostPanel - Mood Selector Position", () => {
   });
 
   test("mood selector is enabled in both simple and advanced modes", async () => {
-    const { CreativeBoostPanel } = await import(
-      "@/components/creative-boost-panel/creative-boost-panel"
+    // ModeSpecificInputs handles mood display for both modes
+    const { ModeSpecificInputs } = await import(
+      "@/components/creative-boost-panel/mode-specific-inputs"
     );
-    const componentString = CreativeBoostPanel.toString();
+    const componentString = ModeSpecificInputs.toString();
 
     // Should have MoodCategoryCombobox in both simple and advanced modes
     expect(componentString).toContain("MoodCategoryCombobox");
     expect(componentString).toContain("isSimpleMode");
-    expect(componentString).toContain("!isSimpleMode");
   });
 
   test("helper text is consistent regardless of direct mode", async () => {
-    const { CreativeBoostPanel } = await import(
-      "@/components/creative-boost-panel/creative-boost-panel"
+    const { ModeSpecificInputs } = await import(
+      "@/components/creative-boost-panel/mode-specific-inputs"
     );
-    const componentString = CreativeBoostPanel.toString();
+    const componentString = ModeSpecificInputs.toString();
 
     // Verify helper text is always the same (not conditional on Direct Mode)
     expect(componentString).toContain("Influences the emotional tone of enrichment");
@@ -34,10 +34,10 @@ describe("CreativeBoostPanel - Mood Selector Position", () => {
   });
 
   test("badge text is always optional", async () => {
-    const { CreativeBoostPanel } = await import(
-      "@/components/creative-boost-panel/creative-boost-panel"
+    const { ModeSpecificInputs } = await import(
+      "@/components/creative-boost-panel/mode-specific-inputs"
     );
-    const componentString = CreativeBoostPanel.toString();
+    const componentString = ModeSpecificInputs.toString();
 
     // Verify badge text is always "optional" (not conditional)
     expect(componentString).toContain("optional");
@@ -48,19 +48,18 @@ describe("CreativeBoostPanel - Mood Selector Position", () => {
     const { CreativeBoostPanel } = await import(
       "@/components/creative-boost-panel/creative-boost-panel"
     );
-    const componentString = CreativeBoostPanel.toString();
+    const { ModeSpecificInputs } = await import(
+      "@/components/creative-boost-panel/mode-specific-inputs"
+    );
+    const panelString = CreativeBoostPanel.toString();
+    const modeInputsString = ModeSpecificInputs.toString();
 
-    // Verify mood appears in component
-    expect(componentString).toContain("CreativitySlider");
-    expect(componentString).toContain("MoodCategoryCombobox");
-    expect(componentString).toContain("GenreMultiSelect");
+    // CreativeBoostPanel should use CreativitySlider and ModeSpecificInputs
+    expect(panelString).toContain("CreativitySlider");
+    expect(panelString).toContain("ModeSpecificInputs");
 
-    // Mood should appear in advanced mode (!isSimpleMode)
-    const moodIndex = componentString.indexOf("MoodCategoryCombobox");
-    const genreIndex = componentString.indexOf("GenreMultiSelect");
-
-    // There should be at least one MoodCategoryCombobox before GenreMultiSelect in advanced mode
-    expect(moodIndex).toBeGreaterThan(-1);
-    expect(genreIndex).toBeGreaterThan(-1);
+    // ModeSpecificInputs should contain mood and genre components
+    expect(modeInputsString).toContain("MoodCategoryCombobox");
+    expect(modeInputsString).toContain("GenreMultiSelect");
   });
 });

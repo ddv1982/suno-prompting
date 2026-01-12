@@ -241,29 +241,65 @@ export async function generateInitial(
 ): Promise<GenerationResult> {
   // Direct Mode: Use sunoStyles as-is (bypasses deterministic genre logic)
   if (options.sunoStyles && options.sunoStyles.length > 0) {
-    const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
     const { buildDirectModePrompt } = await import('@bun/ai/direct-mode');
-    
-    const title = await generateDirectModeTitle(
-      options.description || '',
-      options.sunoStyles,
-      config.getModel
-    );
     
     // Use centralized prompt building
     const { text, enriched } = buildDirectModePrompt(options.sunoStyles, config.isMaxMode());
     
+    // Extract genre/mood for title generation
+    const genre = enriched.extractedGenres[0] || 'pop';
+    const mood = enriched.enrichment.moods[0] || 'energetic';
+    
+    // Generate title and lyrics based on lyrics mode
+    let title: string;
+    let lyrics: string | undefined;
+    let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
+    
+    if (config.isLyricsMode()) {
+      // LLM-based title and lyrics generation
+      const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
+      const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
+      
+      title = await generateDirectModeTitle(
+        options.description || '',
+        options.sunoStyles,
+        config.getModel,
+        ollamaEndpoint
+      );
+      
+      const topicForLyrics = options.lyricsTopic?.trim() || options.description;
+      const lyricsResult = await generateLyrics(
+        topicForLyrics,
+        genre,
+        mood,
+        config.isMaxMode(),
+        config.getModel,
+        config.getUseSunoTags(),
+        undefined,
+        ollamaEndpoint
+      );
+      lyrics = cleanLyrics(lyricsResult.lyrics);
+      lyricsDebugInfo = lyricsResult.debugInfo;
+    } else {
+      // Deterministic title when lyrics mode is off
+      title = generateDeterministicTitle(genre, mood, Math.random, options.description);
+    }
+    
     const debugInfo = config.isDebugMode()
-      ? config.buildDebugInfo(
-          'DIRECT_MODE (Full Prompt Advanced): Styles preserved, prompt enriched.',
-          `Suno V5 Styles: ${options.sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${options.description || '(none)'}`,
-          text
-        )
+      ? {
+          ...config.buildDebugInfo(
+            'DIRECT_MODE (Full Prompt Advanced): Styles preserved, prompt enriched.',
+            `Suno V5 Styles: ${options.sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${options.description || '(none)'}`,
+            text
+          ),
+          lyricsGeneration: lyricsDebugInfo,
+        }
       : undefined;
     
     return {
       text,
       title,
+      lyrics,
       debugInfo,
     };
   }

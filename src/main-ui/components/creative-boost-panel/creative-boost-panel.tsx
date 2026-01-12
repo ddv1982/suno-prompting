@@ -1,13 +1,10 @@
 import { CreativitySlider } from "@/components/creativity-slider";
-import { GenreMultiSelect } from "@/components/genre-multi-select";
-import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
-import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { canSubmitCreativeBoost } from "@shared/submit-validation";
 
 import { CreativeBoostModeToggle } from "./creative-boost-mode-toggle";
 import { DescriptionInput } from "./description-input";
-import { DirectModeIndicator } from "./direct-mode-indicator";
 import { LyricsTopicInput } from "./lyrics-topic-input";
+import { ModeSpecificInputs } from "./mode-specific-inputs";
 import { SubmitButton } from "./submit-button";
 import { TogglesSection } from "./toggles-section";
 import { useCreativeBoostHandlers } from "./use-creative-boost-handlers";
@@ -69,8 +66,6 @@ export function CreativeBoostPanel({
         onModeChange={onCreativeBoostModeChange}
       />
 
-      {!isSimpleMode && <DirectModeIndicator isDirectMode={isDirectMode} />}
-
       <CreativitySlider
         value={input.creativityLevel}
         onChange={handleCreativityChange}
@@ -82,42 +77,15 @@ export function CreativeBoostPanel({
         </p>
       )}
 
-      {isSimpleMode && (
-        <MoodCategoryCombobox
-          value={input.moodCategory}
-          onChange={handleMoodCategoryChange}
-          disabled={isGenerating}
-          helperText="Influences the emotional tone of your prompt"
-        />
-      )}
-
-      {!isSimpleMode && (
-        <MoodCategoryCombobox
-          value={input.moodCategory}
-          onChange={handleMoodCategoryChange}
-          disabled={isGenerating}
-          helperText="Influences the emotional tone of enrichment"
-          badgeText="optional"
-        />
-      )}
-
-      {!isSimpleMode && (
-        <GenreMultiSelect
-          selected={input.seedGenres} onChange={handleGenresChange} maxSelections={4}
-          disabled={isGenerating || input.sunoStyles.length > 0}
-          helperText={input.sunoStyles.length > 0 ? "Disabled when Suno styles are selected" : undefined}
-          badgeText={input.sunoStyles.length > 0 ? "disabled" : "optional"}
-        />
-      )}
-
-      {!isSimpleMode && (
-        <SunoStylesMultiSelect
-          selected={input.sunoStyles} onChange={handleSunoStylesChange} maxSelections={4}
-          disabled={isGenerating || input.seedGenres.length > 0}
-          helperText={input.seedGenres.length > 0 ? "Disabled when Seed Genres are selected" : isDirectMode ? "Selected styles will be used exactly as-is" : undefined}
-          badgeText={input.seedGenres.length > 0 ? "disabled" : "optional"}
-        />
-      )}
+      <ModeSpecificInputs
+        input={input}
+        isSimpleMode={isSimpleMode}
+        isDirectMode={isDirectMode}
+        isGenerating={isGenerating}
+        onMoodCategoryChange={handleMoodCategoryChange}
+        onGenresChange={handleGenresChange}
+        onSunoStylesChange={handleSunoStylesChange}
+      />
 
       <DescriptionInput
         value={input.description}

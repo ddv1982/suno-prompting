@@ -14,7 +14,7 @@ import {
 } from "@shared/labels";
 import { hasAdvancedSelection } from "@shared/music-phrase";
 
-import { AdvancedOption } from "./advanced-option";
+import { AdvancedOptionsGrid } from "./advanced-options-grid";
 import { PhrasePreview } from "./phrase-preview";
 
 import type { MoodCategory } from "@bun/mood";
@@ -136,62 +136,15 @@ export function AdvancedPanel({
         badgeText={stylesBadgeText}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)]">
-        <AdvancedOption
-          label="Harmonic Style"
-          options={HARMONIC_OPTIONS}
-          value={selection.harmonicStyle}
-          onValueChange={(val) => { onUpdate({ harmonicStyle: val }); }}
-          disabledByMutualExclusion={!!selection.harmonicCombination}
-          placeholder="Select mode..."
-          searchPlaceholder="Search modes..."
-          emptyText="No mode found."
-        />
-
-        <AdvancedOption
-          label="Harmonic Combination"
-          options={HARMONIC_COMBINATION_OPTIONS}
-          value={selection.harmonicCombination}
-          onValueChange={(val) => { onUpdate({ harmonicCombination: val }); }}
-          disabledByMutualExclusion={!!selection.harmonicStyle}
-          placeholder="Select combination..."
-          searchPlaceholder="Search combinations..."
-          emptyText="No combination found."
-        />
-
-        <AdvancedOption
-          label="Polyrhythm"
-          options={POLYRHYTHM_OPTIONS}
-          value={selection.polyrhythmCombination}
-          onValueChange={(val) => { onUpdate({ polyrhythmCombination: val }); }}
-          placeholder="Select polyrhythm..."
-          searchPlaceholder="Search polyrhythms..."
-          emptyText="No polyrhythm found."
-        />
-
-        <AdvancedOption
-          label="Time Signature"
-          options={TIME_SIGNATURE_OPTIONS}
-          value={selection.timeSignature}
-          onValueChange={(val) => { onUpdate({ timeSignature: val }); }}
-          disabledByMutualExclusion={!!selection.timeSignatureJourney}
-          placeholder="Select time signature..."
-          searchPlaceholder="Search signatures..."
-          emptyText="No signature found."
-        />
-
-        <AdvancedOption
-          label="Time Signature Journey"
-          options={TIME_JOURNEY_OPTIONS}
-          value={selection.timeSignatureJourney}
-          onValueChange={(val) => { onUpdate({ timeSignatureJourney: val }); }}
-          disabledByMutualExclusion={!!selection.timeSignature}
-          placeholder="Select journey..."
-          searchPlaceholder="Search journeys..."
-          emptyText="No journey found."
-          className="md:col-span-2"
-        />
-      </div>
+      <AdvancedOptionsGrid
+        selection={selection}
+        onUpdate={onUpdate}
+        harmonicOptions={HARMONIC_OPTIONS}
+        harmonicCombinationOptions={HARMONIC_COMBINATION_OPTIONS}
+        polyrhythmOptions={POLYRHYTHM_OPTIONS}
+        timeSignatureOptions={TIME_SIGNATURE_OPTIONS}
+        timeJourneyOptions={TIME_JOURNEY_OPTIONS}
+      />
 
       <PhrasePreview phrase={computedPhrase} />
     </div>

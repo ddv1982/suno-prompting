@@ -106,13 +106,19 @@ function inferMoodFromStyles(styles: string[]): string {
 }
 
 /**
- * Generate a title for Direct Mode (Suno V5 Styles)
- * Used by both Quick Vibes and Creative Boost engines
+ * Generate a title for Direct Mode (Suno V5 Styles).
+ * Used by both Quick Vibes and Creative Boost engines.
+ * 
+ * @param description - User's description
+ * @param styles - Suno V5 styles array
+ * @param getModel - Function to get the language model
+ * @param ollamaEndpoint - Optional Ollama endpoint for offline mode
  */
 export async function generateDirectModeTitle(
   description: string,
   styles: string[],
-  getModel: () => LanguageModel
+  getModel: () => LanguageModel,
+  ollamaEndpoint?: string
 ): Promise<string> {
   try {
     const { generateTitle } = await import('./content-generator');
@@ -134,10 +140,11 @@ export async function generateDirectModeTitle(
     log.info('generateDirectModeTitle', { 
       stylesCount: styles.length, 
       inferredMood: mood, 
-      hasDescription: !!cleanDescription 
+      hasDescription: !!cleanDescription,
+      offline: !!ollamaEndpoint,
     });
     
-    const result = await generateTitle(titleDescription, genre, mood, getModel);
+    const result = await generateTitle(titleDescription, genre, mood, getModel, undefined, ollamaEndpoint);
     return result.title;
   } catch (error: unknown) {
     log.warn('generateDirectModeTitle:failed', {

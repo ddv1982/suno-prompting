@@ -12,6 +12,8 @@
  *   MOOD_CATEGORIES,
  *   getMoodCategoryOptions,
  *   selectMoodsForCategory,
+ *   selectMoodWithIntensity,
+ *   selectCompoundMood,
  *   filterSunoStylesByMoodCategory,
  *   initializeMoodMappings,
  * } from '@bun/mood';
@@ -25,6 +27,12 @@
  * // Select moods from a category
  * const moods = selectMoodsForCategory('energetic', 3);
  *
+ * // Select mood with intensity scaling
+ * const mood = selectMoodWithIntensity('emotional', 'intense');
+ *
+ * // Select compound mood for a genre
+ * const compound = selectCompoundMood('jazz');
+ *
  * // Filter Suno V5 styles by mood category
  * const styles = filterSunoStylesByMoodCategory('groove');
  */
@@ -35,6 +43,8 @@ export type {
   MoodCategoryDefinition,
   MoodCategoryOption,
   MoodCategoryRegistry,
+  MoodIntensity,
+  IntensifiedMood,
 } from './types';
 
 // Category registry
@@ -62,7 +72,17 @@ export {
   filterSunoStylesByMoodCategory,
   filterGenresByMoodCategory,
   isSunoStyleCompatibleWithCategory,
+  // Intensity services
+  selectMoodWithIntensity,
+  moodHasIntensityVariants,
+  // Compound mood services
+  selectCompoundMood,
+  getCompoundMoodsForGenre,
 } from './services';
+
+// Compound moods
+export { COMPOUND_MOODS } from './compound';
+export type { CompoundMood } from './compound';
 
 // Import initialization functions for the combined initializer
 import { initializeCategoryToGenresMappings } from './mappings/category-to-genres';

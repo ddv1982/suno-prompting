@@ -1,19 +1,18 @@
 /**
- * Quick Vibes Templates
+ * Existing Quick Vibes Templates
  *
- * Template data for each Quick Vibes category.
+ * Original 6 category templates from the initial Quick Vibes implementation.
  *
- * @module prompt/quick-vibes/templates
+ * @module prompt/quick-vibes/templates/existing
  */
 
-import type { QuickVibesTemplate } from './types';
-import type { QuickVibesCategory } from '@shared/types';
+import type { QuickVibesTemplate } from '../types';
 
 // =============================================================================
-// Category Templates
+// Original 6 Category Templates
 // =============================================================================
 
-const LOFI_STUDY_TEMPLATE: QuickVibesTemplate = {
+export const LOFI_STUDY_TEMPLATE: QuickVibesTemplate = {
   genres: [
     'lo-fi',
     'lo-fi hip hop',
@@ -49,7 +48,7 @@ const LOFI_STUDY_TEMPLATE: QuickVibesTemplate = {
   },
 };
 
-const CAFE_COFFEESHOP_TEMPLATE: QuickVibesTemplate = {
+export const CAFE_COFFEESHOP_TEMPLATE: QuickVibesTemplate = {
   genres: [
     'cafe jazz',
     'bossa nova',
@@ -85,7 +84,7 @@ const CAFE_COFFEESHOP_TEMPLATE: QuickVibesTemplate = {
   },
 };
 
-const AMBIENT_FOCUS_TEMPLATE: QuickVibesTemplate = {
+export const AMBIENT_FOCUS_TEMPLATE: QuickVibesTemplate = {
   genres: [
     'ambient',
     'atmospheric',
@@ -121,7 +120,7 @@ const AMBIENT_FOCUS_TEMPLATE: QuickVibesTemplate = {
   },
 };
 
-const LATENIGHT_CHILL_TEMPLATE: QuickVibesTemplate = {
+export const LATENIGHT_CHILL_TEMPLATE: QuickVibesTemplate = {
   genres: [
     'chill',
     'downtempo',
@@ -151,13 +150,13 @@ const LATENIGHT_CHILL_TEMPLATE: QuickVibesTemplate = {
     'laid-back',
   ],
   titleWords: {
-    adjectives: ['Late', 'Midnight', 'Night', 'Dark', 'Quiet', 'Neon', 'Cool', 'Slow'],
+    adjectives: ['Late', 'Midnight', 'Night', 'Dark', 'Quiet', 'Urban', 'Cool', 'Slow'],
     nouns: ['Drive', 'City', 'Streets', 'Lights', 'Hours', 'Moon', 'Shadows', 'Vibes'],
     contexts: ['at 2AM', 'Downtown', 'After Hours', 'in the City', 'on Empty Streets', 'Alone'],
   },
 };
 
-const COZY_RAINY_TEMPLATE: QuickVibesTemplate = {
+export const COZY_RAINY_TEMPLATE: QuickVibesTemplate = {
   genres: [
     'acoustic',
     'folk',
@@ -193,7 +192,7 @@ const COZY_RAINY_TEMPLATE: QuickVibesTemplate = {
   },
 };
 
-const LOFI_CHILL_TEMPLATE: QuickVibesTemplate = {
+export const LOFI_CHILL_TEMPLATE: QuickVibesTemplate = {
   genres: [
     'lo-fi chill',
     'lo-fi',
@@ -227,17 +226,4 @@ const LOFI_CHILL_TEMPLATE: QuickVibesTemplate = {
     nouns: ['Beats', 'Vibes', 'Days', 'Nights', 'Waves', 'Clouds', 'Dreams', 'Tapes'],
     contexts: ['at Sunset', 'on Repeat', 'Forever', 'for Days', 'All Night', 'Always'],
   },
-};
-
-// =============================================================================
-// Template Registry
-// =============================================================================
-
-export const QUICK_VIBES_TEMPLATES: Record<QuickVibesCategory, QuickVibesTemplate> = {
-  'lofi-study': LOFI_STUDY_TEMPLATE,
-  'cafe-coffeeshop': CAFE_COFFEESHOP_TEMPLATE,
-  'ambient-focus': AMBIENT_FOCUS_TEMPLATE,
-  'latenight-chill': LATENIGHT_CHILL_TEMPLATE,
-  'cozy-rainy': COZY_RAINY_TEMPLATE,
-  'lofi-chill': LOFI_CHILL_TEMPLATE,
 };

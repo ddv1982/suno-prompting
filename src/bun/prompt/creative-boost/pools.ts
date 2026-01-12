@@ -148,7 +148,7 @@ export const MOOD_POOLS: Record<CreativityLevel, readonly string[]> = {
 
 export const CREATIVE_TITLE_WORDS = {
   adjectives: [
-    'Cosmic', 'Electric', 'Neon', 'Crystal', 'Velvet', 'Golden', 'Silver',
+    'Cosmic', 'Electric', 'Vivid', 'Crystal', 'Velvet', 'Golden', 'Silver',
     'Midnight', 'Infinite', 'Ethereal', 'Wild', 'Savage', 'Gentle', 'Fierce',
     'Ancient', 'Future', 'Digital', 'Analog', 'Sacred', 'Mystic',
   ],

@@ -44,6 +44,9 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     '{emotion} Never Dies',
     'The {action} {emotion}',
     '{nature}\'s {emotion}',
+    // Extended patterns
+    '{single}',
+    '{question}',
   ],
   metal: [
     '{nature} of {abstract}',
@@ -65,12 +68,16 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     '{action} With Me',
     'My {nature}',
     '{emotion} Forever',
+    // Extended patterns
+    '{single}',
+    '{question}',
+    '{place} Love',
   ],
   electronic: [
     '{abstract} State',
     'Digital {nature}',
     '{action} Signal',
-    'Neon {emotion}',
+    'Electric {emotion}',
     'Synthetic {nature}',
     '{time} Pulse',
     // New patterns
@@ -79,6 +86,11 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     '{action} Protocol',
     'Cyber {nature}',
     '{abstract} Algorithm',
+    // Extended patterns
+    '{number}',
+    'Track {number}',
+    '{single}',
+    '{place} Nights',
   ],
   ambient: [
     '{nature} Drift',
@@ -92,6 +104,10 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Whispers of {nature}',
     '{time}\'s {emotion}',
     'The {action} {abstract}',
+    // Extended patterns
+    '{single}',
+    '{place} Dreams',
+    '{question}',
   ],
   classical: [
     '{nature} Sonata',
@@ -196,6 +212,45 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'Lazy {time}',
     'Soft {nature}',
     'Cozy {emotion}',
+  ],
+  // Synthwave/Retro genres with extended patterns
+  synthwave: [
+    '{time} Drive',
+    'Chrome {nature}',
+    'Retro {emotion}',
+    'Chrome {nature}',
+    '{action} Machine',
+    'Digital {emotion}',
+    // Extended patterns
+    '{place} Nights',
+    '{number}',
+    '{single}',
+    'Lost in {place}',
+    'Escape from {place}',
+    '{emotion} Highway',
+  ],
+  outrun: [
+    '{time} Chase',
+    'Turbo {emotion}',
+    'Nighttime {action}',
+    '{nature} Runner',
+    'Speed {emotion}',
+    // Extended patterns
+    '{place} Drive',
+    '{number}',
+    '{single}',
+    'Escape from {place}',
+  ],
+  darksynth: [
+    'Dark {nature}',
+    '{emotion} Machine',
+    'Cyber {abstract}',
+    '{action} Destroyer',
+    'Synth {emotion}',
+    // Extended patterns
+    '{number}',
+    '{single}',
+    '{place} Shadows',
   ],
 };
 

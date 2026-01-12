@@ -23,7 +23,7 @@ const SRC_DIR = join(import.meta.dir, '..', 'src');
 async function getAllTsxFiles(dir: string): Promise<string[]> {
   const files: string[] = [];
   
-  async function walk(currentDir: string) {
+  async function walk(currentDir: string): Promise<void> {
     const entries = await readdir(currentDir, { withFileTypes: true });
     
     for (const entry of entries) {
@@ -116,7 +116,7 @@ async function migrateFile(filePath: string): Promise<FileChange> {
   };
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🔍 Finding all TypeScript files...\n');
   const allFiles = await getAllTsxFiles(SRC_DIR);
   

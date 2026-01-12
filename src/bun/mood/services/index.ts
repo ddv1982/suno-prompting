@@ -19,3 +19,9 @@ export {
   filterGenresByMoodCategory,
   isSunoStyleCompatibleWithCategory,
 } from './filter';
+
+// Intensity services
+export { selectMoodWithIntensity, moodHasIntensityVariants } from './intensity';
+
+// Compound mood services
+export { selectCompoundMood, getCompoundMoodsForGenre } from './compound';

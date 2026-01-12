@@ -112,15 +112,27 @@ describe("Quick Vibes Builder", () => {
 });
 
 describe("Quick Vibes Categories", () => {
-  it("defines all 6 categories", () => {
+  it("defines all 16 categories", () => {
     const categories = Object.keys(QUICK_VIBES_CATEGORIES);
-    expect(categories).toHaveLength(6);
+    expect(categories).toHaveLength(16);
+    // Original 6 categories
     expect(categories).toContain("lofi-study");
     expect(categories).toContain("cafe-coffeeshop");
     expect(categories).toContain("ambient-focus");
     expect(categories).toContain("latenight-chill");
     expect(categories).toContain("cozy-rainy");
     expect(categories).toContain("lofi-chill");
+    // New v3.0 categories
+    expect(categories).toContain("workout-energy");
+    expect(categories).toContain("morning-sunshine");
+    expect(categories).toContain("sunset-golden");
+    expect(categories).toContain("dinner-party");
+    expect(categories).toContain("road-trip");
+    expect(categories).toContain("gaming-focus");
+    expect(categories).toContain("romantic-evening");
+    expect(categories).toContain("meditation-zen");
+    expect(categories).toContain("creative-flow");
+    expect(categories).toContain("party-night");
   });
 
   it("each category has required fields", () => {

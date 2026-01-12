@@ -1,7 +1,5 @@
 import { type AIEngine } from '@bun/ai';
 import {
-  extractGenreFromPrompt,
-  extractMoodFromPrompt,
   remixGenre,
   remixInstruments,
   remixMoodInPrompt,
@@ -9,7 +7,6 @@ import {
   remixStyleTags,
   type RemixResult,
 } from '@bun/prompt/deterministic';
-import { generateDeterministicTitle } from '@bun/prompt/title';
 import {
   RemixInstrumentsSchema,
   RemixGenreSchema,
@@ -71,13 +68,11 @@ export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
       const { currentPrompt } = validate(RemixRecordingSchema, params);
       return runRemixAction('remixRecording', () => remixRecording(currentPrompt));
     },
-    // Title uses deterministic generation
+    // Title uses LLM when lyrics mode is enabled, otherwise deterministic (via AIEngine)
     remixTitle: async (params) => {
-      const { currentPrompt } = validate(RemixTitleSchema, params);
+      const { currentPrompt, originalInput } = validate(RemixTitleSchema, params);
       return runSingleFieldRemix('remixTitle', async () => {
-        const genre = extractGenreFromPrompt(currentPrompt);
-        const mood = extractMoodFromPrompt(currentPrompt);
-        return { title: generateDeterministicTitle(genre, mood) };
+        return aiEngine.remixTitle(currentPrompt, originalInput);
       });
     },
     // Lyrics still uses LLM (via AIEngine)
