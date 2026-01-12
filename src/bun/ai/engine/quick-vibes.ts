@@ -24,7 +24,23 @@ export function createQuickVibesMethods(
   config: AIConfig,
   proxies: ConfigProxies,
   factories: ConfigFactories
-) {
+): {
+  generateQuickVibes: (
+    category: QuickVibesCategory | null,
+    customDescription: string,
+    withWordlessVocals: boolean,
+    sunoStyles: string[]
+  ) => Promise<GenerationResult>;
+  refineQuickVibes: (options: {
+    currentPrompt: string;
+    currentTitle?: string;
+    description?: string;
+    feedback: string;
+    withWordlessVocals: boolean;
+    category?: QuickVibesCategory | null;
+    sunoStyles?: string[];
+  }) => Promise<GenerationResult>;
+} {
   async function generateQuickVibes(
     category: QuickVibesCategory | null,
     customDescription: string,

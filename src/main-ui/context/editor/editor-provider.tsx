@@ -23,6 +23,14 @@ interface EditorProviderProps {
   children: ReactNode;
 }
 
+function loadPersistedModes(
+  setPromptModeState: (mode: PromptMode) => void,
+  setCreativeBoostModeState: (mode: CreativeBoostMode) => void
+): void {
+  void api.getPromptMode().then(setPromptModeState).catch((e: unknown) => { log.error('loadPromptMode:failed', e); });
+  void api.getCreativeBoostMode().then(setCreativeBoostModeState).catch((e: unknown) => { log.error('loadCreativeBoostMode:failed', e); });
+}
+
 /**
  * Combined provider that wraps children with both state and actions contexts.
  * This provides backward compatibility while enabling performance optimizations.
@@ -32,9 +40,9 @@ export function EditorProvider({ children }: EditorProviderProps): ReactElement 
   const [promptMode, setPromptModeState] = useState<PromptMode>('full');
   const [creativeBoostMode, setCreativeBoostModeState] = useState<CreativeBoostMode>('simple');
   const [advancedSelection, setAdvancedSelection] = useState<AdvancedSelection>(EMPTY_ADVANCED_SELECTION);
-  const [lockedPhrase, setLockedPhrase] = useState("");
-  const [pendingInput, setPendingInput] = useState("");
-  const [lyricsTopic, setLyricsTopic] = useState("");
+  const [lockedPhrase, setLockedPhrase] = useState('');
+  const [pendingInput, setPendingInput] = useState('');
+  const [lyricsTopic, setLyricsTopic] = useState('');
   const [moodCategory, setMoodCategory] = useState<MoodCategory | null>(null);
   const [quickVibesInput, setQuickVibesInputState] = useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
   const quickVibesInputRef = useRef<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
@@ -50,18 +58,17 @@ export function EditorProvider({ children }: EditorProviderProps): ReactElement 
 
   // Load persisted modes on mount
   useEffect(() => {
-    void api.getPromptMode().then(setPromptModeState).catch((e: unknown) => { log.error("loadPromptMode:failed", e); });
-    void api.getCreativeBoostMode().then(setCreativeBoostModeState).catch((e: unknown) => { log.error("loadCreativeBoostMode:failed", e); });
+    loadPersistedModes(setPromptModeState, setCreativeBoostModeState);
   }, []);
 
   // Fire-and-forget save setters (no rollback needed for UI preferences)
   const setPromptMode = useCallback((mode: PromptMode) => {
     setPromptModeState(mode);
-    void api.setPromptMode(mode).catch((e: unknown) => { log.error("setPromptMode:failed", e); });
+    void api.setPromptMode(mode).catch((e: unknown) => { log.error('setPromptMode:failed', e); });
   }, []);
   const setCreativeBoostMode = useCallback((mode: CreativeBoostMode) => {
     setCreativeBoostModeState(mode);
-    void api.setCreativeBoostMode(mode).catch((e: unknown) => { log.error("setCreativeBoostMode:failed", e); });
+    void api.setCreativeBoostMode(mode).catch((e: unknown) => { log.error('setCreativeBoostMode:failed', e); });
   }, []);
 
   const computedMusicPhrase = useMemo(() => buildMusicPhrase(advancedSelection), [advancedSelection]);
@@ -87,73 +94,15 @@ export function EditorProvider({ children }: EditorProviderProps): ReactElement 
   }, [editorMode, computedMusicPhrase, lockedPhrase]);
 
   const resetEditor = useCallback(() => {
-    setAdvancedSelection(EMPTY_ADVANCED_SELECTION); setLockedPhrase(""); setPendingInput(""); setLyricsTopic("");
+    setAdvancedSelection(EMPTY_ADVANCED_SELECTION); setLockedPhrase(''); setPendingInput(''); setLyricsTopic('');
     setMoodCategory(null); setQuickVibesInput(EMPTY_QUICK_VIBES_INPUT); setWithWordlessVocals(false); resetCreativeBoostInput();
   }, [resetCreativeBoostInput, setQuickVibesInput]);
 
   // Memoize state value separately - updates when state changes
-  const stateValue = useMemo<EditorStateContextType>(() => ({
-    editorMode,
-    promptMode,
-    creativeBoostMode,
-    advancedSelection,
-    lockedPhrase,
-    pendingInput,
-    lyricsTopic,
-    moodCategory,
-    computedMusicPhrase,
-    quickVibesInput,
-    withWordlessVocals,
-    creativeBoostInput,
-  }), [
-    editorMode,
-    promptMode,
-    creativeBoostMode,
-    advancedSelection,
-    lockedPhrase,
-    pendingInput,
-    lyricsTopic,
-    moodCategory,
-    computedMusicPhrase,
-    quickVibesInput,
-    withWordlessVocals,
-    creativeBoostInput,
-  ]);
+  const stateValue = useMemo<EditorStateContextType>(() => ({ editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic, moodCategory, computedMusicPhrase, quickVibesInput, withWordlessVocals, creativeBoostInput }), [editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic, moodCategory, computedMusicPhrase, quickVibesInput, withWordlessVocals, creativeBoostInput]);
 
   // Memoize actions value separately - stable reference, only updates when callbacks change
-  const actionsValue = useMemo<EditorActionsContextType>(() => ({
-    setEditorMode,
-    setPromptMode,
-    setCreativeBoostMode,
-    setAdvancedSelection,
-    updateAdvancedSelection,
-    clearAdvancedSelection,
-    setLockedPhrase,
-    setPendingInput,
-    setLyricsTopic,
-    setMoodCategory,
-    setQuickVibesInput,
-    setWithWordlessVocals,
-    setCreativeBoostInput,
-    updateCreativeBoostInput,
-    resetCreativeBoostInput,
-    getEffectiveLockedPhrase,
-    resetEditor,
-    resetQuickVibesInput,
-    getQuickVibesInput,
-  }), [
-    setPromptMode,
-    setCreativeBoostMode,
-    updateAdvancedSelection,
-    clearAdvancedSelection,
-    updateCreativeBoostInput,
-    resetCreativeBoostInput,
-    getEffectiveLockedPhrase,
-    resetEditor,
-    resetQuickVibesInput,
-    setQuickVibesInput,
-    getQuickVibesInput,
-  ]);
+  const actionsValue = useMemo<EditorActionsContextType>(() => ({ setEditorMode, setPromptMode, setCreativeBoostMode, setAdvancedSelection, updateAdvancedSelection, clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setMoodCategory, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput, updateCreativeBoostInput, resetCreativeBoostInput, getEffectiveLockedPhrase, resetEditor, resetQuickVibesInput, getQuickVibesInput }), [setPromptMode, setCreativeBoostMode, updateAdvancedSelection, clearAdvancedSelection, updateCreativeBoostInput, resetCreativeBoostInput, getEffectiveLockedPhrase, resetEditor, resetQuickVibesInput, setQuickVibesInput, getQuickVibesInput]);
 
   return (
     <EditorStateContext.Provider value={stateValue}>

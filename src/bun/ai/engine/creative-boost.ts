@@ -23,7 +23,32 @@ export function createCreativeBoostMethods(
   config: AIConfig,
   proxies: ConfigProxies,
   factories: ConfigFactories
-) {
+): {
+  generateCreativeBoost: (
+    creativityLevel: number,
+    seedGenres: string[],
+    sunoStyles: string[],
+    description: string,
+    lyricsTopic: string,
+    withWordlessVocals: boolean,
+    maxMode: boolean,
+    withLyrics: boolean
+  ) => Promise<GenerationResult>;
+  refineCreativeBoost: (
+    currentPrompt: string,
+    currentTitle: string,
+    currentLyrics: string | undefined,
+    feedback: string,
+    lyricsTopic: string,
+    description: string,
+    seedGenres: string[],
+    sunoStyles: string[],
+    withWordlessVocals: boolean,
+    maxMode: boolean,
+    withLyrics: boolean,
+    targetGenreCount?: number
+  ) => Promise<GenerationResult>;
+} {
   async function generateCreativeBoost(
     creativityLevel: number,
     seedGenres: string[],

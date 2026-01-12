@@ -66,17 +66,7 @@ export function OutputPanel({
   if (promptMode === 'quickVibes') {
     return (
       <div className="space-y-[var(--space-5)]">
-        <QuickVibesOutput
-          prompt={currentPrompt}
-          title={currentTitle}
-          lyrics={currentLyrics}
-          isGenerating={isGenerating}
-          hasDebugInfo={!!debugInfo}
-          onRemix={onRemixQuickVibes}
-          onCopy={onCopy}
-          onDebugOpen={onDebugOpen}
-          onRemixLyrics={onRemixLyrics}
-        />
+        <QuickVibesOutput prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics} isGenerating={isGenerating} hasDebugInfo={!!debugInfo} onRemix={onRemixQuickVibes} onCopy={onCopy} onDebugOpen={onDebugOpen} onRemixLyrics={onRemixLyrics} />
       </div>
     );
   }
