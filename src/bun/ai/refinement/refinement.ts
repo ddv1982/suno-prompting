@@ -25,6 +25,27 @@ import type { GenerationResult, RefinementConfig } from '@bun/ai/types';
 
 const log = createLogger('Refinement');
 
+type LyricsAction = 'none' | 'refineExisting' | 'bootstrap';
+
+function getLyricsAction(isLyricsMode: boolean, currentLyrics?: string): LyricsAction {
+  if (!isLyricsMode) return 'none';
+  return currentLyrics ? 'refineExisting' : 'bootstrap';
+}
+
+function getLyricsSeedInput(lyricsTopic: string | undefined, feedback: string): string {
+  return lyricsTopic?.trim() || feedback.trim() || 'Untitled';
+}
+
+function getOptionalLyricsTopic(lyricsTopic: string | undefined): string | undefined {
+  const topic = lyricsTopic?.trim();
+  return topic ? topic : undefined;
+}
+
+function isDirectModeRefinement(sunoStyles: string[] | undefined): sunoStyles is string[] {
+  if (!sunoStyles || sunoStyles.length === 0) return false;
+  return isDirectMode(sunoStyles);
+}
+
 /**
  * Refine prompt deterministically without LLM calls.
  * Used when local LLM is active and lyrics mode is disabled.
@@ -101,8 +122,9 @@ async function refineWithDeterministicStyle(
   // Step 1: ALWAYS do deterministic style refinement (no LLM)
   const styleResult = await refinePromptDeterministic(options, config);
 
-  // Step 2: If lyrics mode is ON and we have lyrics, refine them with LLM
-  if (isLyricsMode && currentLyrics) {
+  const lyricsAction = getLyricsAction(isLyricsMode, currentLyrics);
+  if (lyricsAction === 'refineExisting') {
+    if (!currentLyrics) return styleResult;
     const lyricsResult = await refineLyricsWithFeedback(
       currentLyrics,
       feedback,
@@ -125,11 +147,9 @@ async function refineWithDeterministicStyle(
     };
   }
 
-  // Step 3: If lyrics mode is ON but there are no lyrics yet, generate lyrics from scratch
-  // (common when switching from Quick Vibes sessions).
-  if (isLyricsMode && !currentLyrics) {
-    const seedInput = lyricsTopic?.trim() || feedback.trim() || 'Untitled';
-    const topic = lyricsTopic?.trim() ? lyricsTopic : undefined;
+  if (lyricsAction === 'bootstrap') {
+    const seedInput = getLyricsSeedInput(lyricsTopic, feedback);
+    const topic = getOptionalLyricsTopic(lyricsTopic);
 
     const lyricsResult = await remixLyrics(
       styleResult.text,
@@ -158,6 +178,47 @@ async function refineWithDeterministicStyle(
   return styleResult;
 }
 
+async function refinePromptDirectMode(
+  options: RefinePromptOptions & { sunoStyles: string[] },
+  config: RefinementConfig
+): Promise<GenerationResult> {
+  const { sunoStyles, feedback, lyricsTopic, currentLyrics } = options;
+
+  log.info('refinePrompt:directMode', { stylesCount: sunoStyles.length, maxMode: config.isMaxMode() });
+
+  const { text: enrichedPrompt } = buildDirectModePrompt(sunoStyles, config.isMaxMode());
+  const shouldBootstrapLyrics = config.isLyricsMode() && !currentLyrics;
+
+  const seedInput = getLyricsSeedInput(lyricsTopic, feedback);
+  const topic = getOptionalLyricsTopic(lyricsTopic);
+
+  const lyricsResult = shouldBootstrapLyrics
+    ? await remixLyrics(
+        enrichedPrompt,
+        seedInput,
+        topic,
+        config.isMaxMode(),
+        config.getModel,
+        config.getUseSunoTags?.() ?? false,
+        config.isUseLocalLLM(),
+        config.getOllamaEndpoint()
+      )
+    : null;
+
+  return {
+    text: enrichedPrompt,
+    title: options.currentTitle,
+    lyrics: lyricsResult?.lyrics ?? currentLyrics,
+    debugInfo: config.isDebugMode()
+      ? config.buildDebugInfo(
+          'DIRECT_MODE_REFINE',
+          `Styles: ${sunoStyles.join(', ')}\nFeedback: ${feedback}`,
+          enrichedPrompt
+        )
+      : undefined,
+  };
+}
+
 /**
  * Refine an existing prompt based on user feedback.
  *
@@ -180,45 +241,12 @@ export async function refinePrompt(
   options: RefinePromptOptions,
   config: RefinementConfig
 ): Promise<GenerationResult> {
-  const { sunoStyles, feedback, lyricsTopic, currentLyrics } = options;
+  const { sunoStyles } = options;
 
   // Direct Mode: Use shared enrichment (DRY - same as generation)
   // Title preserved (no LLM call) - only style prompt is enriched
-  if (sunoStyles && isDirectMode(sunoStyles)) {
-    log.info('refinePrompt:directMode', { stylesCount: sunoStyles.length, maxMode: config.isMaxMode() });
-    
-    const { text: enrichedPrompt } = buildDirectModePrompt(sunoStyles, config.isMaxMode());
-
-    // Lyrics bootstrap: if lyrics mode is ON but there are no lyrics yet, generate them.
-    const shouldBootstrapLyrics = config.isLyricsMode() && !currentLyrics;
-    const seedInput = lyricsTopic?.trim() || feedback.trim() || 'Untitled';
-    const topic = lyricsTopic?.trim() ? lyricsTopic : undefined;
-
-    const lyricsResult = shouldBootstrapLyrics
-      ? await remixLyrics(
-          enrichedPrompt,
-          seedInput,
-          topic,
-          config.isMaxMode(),
-          config.getModel,
-          config.getUseSunoTags?.() ?? false,
-          config.isUseLocalLLM(),
-          config.getOllamaEndpoint()
-        )
-      : null;
-    
-    return {
-      text: enrichedPrompt,
-      title: options.currentTitle,
-      lyrics: lyricsResult?.lyrics ?? currentLyrics,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(
-            'DIRECT_MODE_REFINE',
-            `Styles: ${sunoStyles.join(', ')}\nFeedback: ${feedback}`,
-            enrichedPrompt
-          )
-        : undefined,
-    };
+  if (isDirectModeRefinement(sunoStyles)) {
+    return refinePromptDirectMode({ ...options, sunoStyles }, config);
   }
 
   // Determine offline mode and endpoint

@@ -15,7 +15,26 @@ import { getOllamaModel } from '@bun/ai/ollama-provider';
 /**
  * Create configuration proxy methods bound to an AIConfig instance.
  */
-export function createConfigProxies(config: AIConfig) {
+export function createConfigProxies(config: AIConfig): {
+  setProvider: OmitThisParameter<typeof config.setProvider>;
+  setApiKey: OmitThisParameter<typeof config.setApiKey>;
+  setModel: OmitThisParameter<typeof config.setModel>;
+  setUseSunoTags: OmitThisParameter<typeof config.setUseSunoTags>;
+  setDebugMode: OmitThisParameter<typeof config.setDebugMode>;
+  setMaxMode: OmitThisParameter<typeof config.setMaxMode>;
+  setLyricsMode: OmitThisParameter<typeof config.setLyricsMode>;
+  setUseLocalLLM: OmitThisParameter<typeof config.setUseLocalLLM>;
+  initialize: OmitThisParameter<typeof config.initialize>;
+  isDebugMode: OmitThisParameter<typeof config.isDebugMode>;
+  isUseLocalLLM: OmitThisParameter<typeof config.isUseLocalLLM>;
+  setOllamaEndpoint: OmitThisParameter<typeof config.setOllamaEndpoint>;
+  setOllamaTemperature: OmitThisParameter<typeof config.setOllamaTemperature>;
+  setOllamaMaxTokens: OmitThisParameter<typeof config.setOllamaMaxTokens>;
+  setOllamaContextLength: OmitThisParameter<typeof config.setOllamaContextLength>;
+  getOllamaConfig: OmitThisParameter<typeof config.getOllamaConfig>;
+  getOllamaModel: () => LanguageModel;
+  getModel: () => LanguageModel;
+} {
   const proxies = {
     // Provider configuration
     setProvider: config.setProvider.bind(config),

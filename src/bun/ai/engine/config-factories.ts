@@ -19,7 +19,12 @@ import type { DebugInfo } from '@shared/types';
  * Build debug information from LLM interaction.
  * Wraps the standalone utility to inject model/provider context.
  */
-function createBuildDebugInfo(config: AIConfig) {
+function createBuildDebugInfo(config: AIConfig): (
+  systemPrompt: string,
+  userPrompt: string,
+  rawResponse: string,
+  messages?: Array<{ role: string; content: string }>
+) => DebugInfo {
   return (
     systemPrompt: string,
     userPrompt: string,
@@ -41,7 +46,10 @@ function createBuildDebugInfo(config: AIConfig) {
  * Post-process generated text (condense, dedupe, remove meta).
  * Wraps the standalone utility to inject model getter and ollama endpoint.
  */
-function createPostProcess(config: AIConfig, getModel: () => LanguageModel) {
+function createPostProcess(
+  config: AIConfig,
+  getModel: () => LanguageModel
+): (text: string) => Promise<string> {
   return async (text: string): Promise<string> => {
     const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
     return postProcess(text, getModel, ollamaEndpoint);
@@ -51,7 +59,20 @@ function createPostProcess(config: AIConfig, getModel: () => LanguageModel) {
 /**
  * Create configuration factories for generation and refinement modules.
  */
-export function createConfigFactories(config: AIConfig, proxies: ConfigProxies) {
+export function createConfigFactories(
+  config: AIConfig,
+  proxies: ConfigProxies
+): {
+  buildDebugInfo: (
+    systemPrompt: string,
+    userPrompt: string,
+    rawResponse: string,
+    messages?: Array<{ role: string; content: string }>
+  ) => DebugInfo;
+  postProcess: (text: string) => Promise<string>;
+  getGenerationConfig: () => GenerationConfig;
+  getRefinementConfig: () => RefinementConfig;
+} {
   const buildDebugInfoFn = createBuildDebugInfo(config);
   const postProcessFn = createPostProcess(config, proxies.getModel);
 

@@ -46,13 +46,7 @@ export function CreativeBoostPanel({
     seedGenres: input.seedGenres,
   });
 
-  const {
-    handleCreativityChange, handleGenresChange, handleSunoStylesChange,
-    handleDescriptionChange, handleLyricsTopicChange, handleWordlessVocalsChange,
-    handleLyricsToggleChange, handleKeyDown, handleSubmit,
-  } = useCreativeBoostHandlers({
-    input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine,
-  });
+  const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleWordlessVocalsChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine });
 
   const handleMoodCategoryChange = (category: MoodCategory | null): void => {
     onInputChange(prev => ({ ...prev, moodCategory: category }));
