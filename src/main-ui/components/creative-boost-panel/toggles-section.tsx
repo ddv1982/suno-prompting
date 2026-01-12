@@ -4,7 +4,7 @@ import { FileText, Mic, Zap } from "lucide-react";
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { getMaxModeHelperText } from "@shared/constants";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type TogglesSectionProps = {
   withWordlessVocals: boolean;
@@ -26,7 +26,7 @@ export function TogglesSection({
   onWordlessVocalsChange,
   onMaxModeChange,
   onLyricsModeChange,
-}: TogglesSectionProps): ReactNode {
+}: TogglesSectionProps): ReactElement {
   return (
     <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
       <ToggleRow

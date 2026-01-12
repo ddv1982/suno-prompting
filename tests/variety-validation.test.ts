@@ -91,7 +91,7 @@ describe('Statistical Variety Validation', () => {
     }
     
     const uniquePercentage = (combinations.size / iterations) * 100;
-    console.log(`Unique combinations: ${combinations.size}/${iterations} (${uniquePercentage.toFixed(1)}%)`);
+    console.info(`Unique combinations: ${combinations.size}/${iterations} (${uniquePercentage.toFixed(1)}%)`);
     
     expect(combinations.size).toBeGreaterThanOrEqual(700); // ≥70%
   });
@@ -110,7 +110,7 @@ describe('Statistical Variety Validation', () => {
       }
     }
     
-    console.log(`Unique jazz contexts seen: ${contexts.size}/${jazzContexts.length}`);
+    console.info(`Unique jazz contexts seen: ${contexts.size}/${jazzContexts.length}`);
     expect(contexts.size).toBeGreaterThan(3); // At least 3 different contexts
   });
 
@@ -128,7 +128,7 @@ describe('Statistical Variety Validation', () => {
       }
     }
     
-    console.log(`Unique rock contexts seen: ${contexts.size}/${rockContexts.length}`);
+    console.info(`Unique rock contexts seen: ${contexts.size}/${rockContexts.length}`);
     expect(contexts.size).toBeGreaterThan(3); // At least 3 different contexts
   });
 
@@ -146,7 +146,7 @@ describe('Statistical Variety Validation', () => {
       }
     }
     
-    console.log(`Unique electronic contexts seen: ${contexts.size}/${electronicContexts.length}`);
+    console.info(`Unique electronic contexts seen: ${contexts.size}/${electronicContexts.length}`);
     expect(contexts.size).toBeGreaterThan(3); // At least 3 different contexts
   });
 
@@ -165,7 +165,7 @@ describe('Statistical Variety Validation', () => {
     
     const totalRuns = genres.length * iterations;
     const uniquePercentage = (allCombinations.size / totalRuns) * 100;
-    console.log(`Total unique combinations across genres: ${allCombinations.size}/${totalRuns} (${uniquePercentage.toFixed(1)}%)`);
+    console.info(`Total unique combinations across genres: ${allCombinations.size}/${totalRuns} (${uniquePercentage.toFixed(1)}%)`);
     
     // Expect ≥70% unique across all genres
     expect(allCombinations.size).toBeGreaterThanOrEqual(totalRuns * 0.7);
@@ -184,7 +184,7 @@ describe('Statistical Variety Validation', () => {
     const maxTags = Math.max(...tagCounts);
     const avgTags = tagCounts.reduce((sum, count) => sum + count, 0) / tagCounts.length;
     
-    console.log(`Tag counts - Min: ${minTags}, Max: ${maxTags}, Avg: ${avgTags.toFixed(1)}`);
+    console.info(`Tag counts - Min: ${minTags}, Max: ${maxTags}, Avg: ${avgTags.toFixed(1)}`);
     
     // Verify tags are within expected range (6-10 based on assembleStyleTags implementation)
     expect(minTags).toBeGreaterThanOrEqual(6);
@@ -218,7 +218,7 @@ describe('Statistical Variety Validation', () => {
     }
     
     const appearanceRate = (appearanceCount / iterations) * 100;
-    console.log(`Recording context appearance rate: ${appearanceRate.toFixed(1)}%`);
+    console.info(`Recording context appearance rate: ${appearanceRate.toFixed(1)}%`);
     
     // Recording contexts should appear in reasonable number of prompts (≥15%)
     // Due to probabilistic tag selection and 10-tag limit, 15-30% is expected

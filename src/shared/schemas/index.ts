@@ -1,3 +1,16 @@
+// Common schemas - shared across features
+export {
+  MAX_SEED_GENRES,
+  MAX_SUNO_STYLES,
+  QUICK_VIBES_CATEGORIES,
+  QuickVibesCategorySchema,
+  QuickVibesCategoryValueSchema,
+  SeedGenresSchema,
+  SunoStylesSchema,
+  type QuickVibesCategory,
+  type QuickVibesCategoryNullable,
+} from './common';
+
 // Generation schemas
 export {
   GenerateInitialSchema,
@@ -46,6 +59,7 @@ export {
 export {
   GenerateQuickVibesSchema,
   RefineQuickVibesSchema,
+  QuickVibesCategorySchema as QuickVibesSchema,
   type GenerateQuickVibesInput,
   type RefineQuickVibesInput,
 } from './quick-vibes';

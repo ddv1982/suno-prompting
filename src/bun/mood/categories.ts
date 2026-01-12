@@ -5,6 +5,11 @@
  * Compatible genres are populated at initialization via reverse lookup.
  *
  * @module mood/categories
+ *
+ * @standards-exception
+ * This file intentionally exceeds the 300-line guideline.
+ * Reason: Pure data registry - contains static mood category definitions, not logic.
+ * Approved: 2026-01-12
  */
 
 import type {

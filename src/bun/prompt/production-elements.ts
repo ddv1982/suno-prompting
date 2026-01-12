@@ -1,5 +1,18 @@
-// Production elements based on professional prompt patterns
-// These add recording character, space, and texture descriptors
+/**
+ * Production Elements Registry
+ *
+ * Production elements based on professional prompt patterns.
+ * These add recording character, space, and texture descriptors.
+ *
+ * @module prompt/production-elements
+ *
+ * @standards-exception
+ * This file intentionally exceeds the 300-line guideline.
+ * Reason: Pure data registry - contains static production element definitions, not logic.
+ * Approved: 2026-01-12
+ */
+
+import { selectRandom } from '@shared/utils/random';
 
 import type { ProductionDescriptor } from './deterministic/types';
 
@@ -297,18 +310,6 @@ export function buildProductionDescriptor(
   const multi = buildProductionDescriptorMulti(rng);
   // Blend all 4 dimensions into a comma-separated string
   return `${multi.reverb}, ${multi.texture}, ${multi.stereo}, ${multi.dynamic}`;
-}
-
-/**
- * Helper function to select a single random item from an array.
- * 
- * @param items - Array to select from
- * @param rng - Random number generator for deterministic selection
- * @returns Single selected item
- */
-function selectRandom<T>(items: readonly T[], rng: () => number): T {
-  const idx = Math.floor(rng() * items.length);
-  return items[idx] as T;
 }
 
 /**

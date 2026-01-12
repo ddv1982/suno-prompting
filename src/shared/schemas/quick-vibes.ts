@@ -1,31 +1,10 @@
 import { z } from 'zod';
 
 import { APP_CONSTANTS } from '@shared/constants';
+import { QuickVibesCategorySchema, SunoStylesSchema } from '@shared/schemas/common';
 
-const MAX_SUNO_STYLES = 4;
-
-const QuickVibesCategorySchema = z.enum([
-  // Original 6 categories
-  'lofi-study',
-  'cafe-coffeeshop',
-  'ambient-focus',
-  'latenight-chill',
-  'cozy-rainy',
-  'lofi-chill',
-  // New 10 categories (v3.0)
-  'workout-energy',
-  'morning-sunshine',
-  'sunset-golden',
-  'dinner-party',
-  'road-trip',
-  'gaming-focus',
-  'romantic-evening',
-  'meditation-zen',
-  'creative-flow',
-  'party-night',
-]).nullable();
-
-const SunoStylesSchema = z.array(z.string()).max(MAX_SUNO_STYLES, `Maximum ${MAX_SUNO_STYLES} Suno V5 styles allowed`);
+// Re-export for convenience
+export { QuickVibesCategorySchema } from '@shared/schemas/common';
 
 export const GenerateQuickVibesSchema = z.object({
   category: QuickVibesCategorySchema,

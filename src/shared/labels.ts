@@ -124,35 +124,7 @@ export const GENRE_DISPLAY_NAMES = GENRE_LABELS;
 // Genre combination display names - generated from MULTI_GENRE_COMBINATIONS
 // Uses title case with special handling for common abbreviations
 import { MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres/combinations';
-
-function toTitleCase(str: string): string {
-  // Special cases for abbreviations and formatting
-  const specialCases: Record<string, string> = {
-    'r&b': 'R&B',
-    'lo-fi': 'Lo-Fi',
-    'nu-disco': 'Nu-Disco',
-    'uk': 'UK',
-    'dnb': 'DnB',
-    'g-funk': 'G-Funk',
-  };
-  
-  return str
-    .split(' ')
-    .map(word => {
-      const lower = word.toLowerCase();
-      if (specialCases[lower]) return specialCases[lower];
-      // Handle hyphenated words
-      if (word.includes('-')) {
-        return word.split('-').map(part => {
-          const lowerPart = part.toLowerCase();
-          if (specialCases[lowerPart]) return specialCases[lowerPart];
-          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-        }).join('-');
-      }
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(' ');
-}
+import { toTitleCase } from '@shared/text-utils';
 
 export const GENRE_COMBINATION_DISPLAY_NAMES: Record<string, string> = Object.fromEntries(
   MULTI_GENRE_COMBINATIONS.map(combo => [combo, toTitleCase(combo)])

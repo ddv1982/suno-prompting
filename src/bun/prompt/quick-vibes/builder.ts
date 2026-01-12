@@ -7,8 +7,7 @@
  */
 
 import { selectMoodsForCategory } from '@bun/mood';
-import { InvariantError } from '@shared/errors';
-
+import { selectRandom } from '@shared/utils/random';
 
 import { QUICK_VIBES_TEMPLATES } from './templates';
 
@@ -20,19 +19,6 @@ import type { QuickVibesCategory } from '@shared/types';
  * Set to 50% for balanced variety between short and contextual titles.
  */
 const TITLE_CONTEXT_PROBABILITY = 0.5;
-
-/**
- * Select a random item from an array using provided RNG.
- * Safe: All callers pass non-empty constant arrays defined in this module.
- */
-function selectRandom<T>(items: readonly T[], rng: () => number): T {
-  if (items.length === 0) {
-    throw new InvariantError('selectRandom called with empty array');
-  }
-  const idx = Math.floor(rng() * items.length);
-  // idx is always valid since 0 <= rng() < 1 and items.length > 0
-  return items[idx] as T;
-}
 
 /**
  * Generate a deterministic title from template word pools.

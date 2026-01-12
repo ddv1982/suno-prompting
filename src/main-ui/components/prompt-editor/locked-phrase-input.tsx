@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
 import type { EditorMode } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type LockedPhraseInputProps = {
   value: string;
@@ -23,7 +23,7 @@ export function LockedPhraseInput({
   isGenerating,
   validation,
   onChange,
-}: LockedPhraseInputProps): ReactNode {
+}: LockedPhraseInputProps): ReactElement {
   return (
     <div className="space-y-1">
       <FormLabel

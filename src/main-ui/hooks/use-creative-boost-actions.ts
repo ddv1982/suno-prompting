@@ -89,7 +89,7 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
     if (!currentSession?.currentPrompt || !currentSession?.currentTitle) return;
 
     // Extract for TypeScript narrowing
-    const { currentPrompt, currentTitle } = currentSession;
+    const { currentPrompt, currentTitle, currentLyrics } = currentSession;
 
     // Pass targetGenreCount to preserve genre count during refinement
     // Only pass when seedGenres.length > 0, otherwise omit (backend treats undefined as "no enforcement")
@@ -103,6 +103,7 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
         apiCall: () => api.refineCreativeBoost({
           currentPrompt,
           currentTitle,
+          currentLyrics,
           feedback,
           lyricsTopic: creativeBoostInput.lyricsTopic,
           description: creativeBoostInput.description,

@@ -188,6 +188,7 @@ export const api = {
     async refineCreativeBoost(params: {
         currentPrompt: string;
         currentTitle: string;
+        currentLyrics?: string;
         feedback: string;
         lyricsTopic: string;
         description: string;

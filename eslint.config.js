@@ -176,6 +176,8 @@ export default [
       '@typescript-eslint/no-non-null-assertion': 'off',
       // Return types on test helpers are not critical
       '@typescript-eslint/explicit-function-return-type': 'off',
+      // Allow console.info for benchmark and statistics output in tests
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     },
   },
 

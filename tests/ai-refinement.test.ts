@@ -145,6 +145,39 @@ describe('refinePrompt', () => {
     expect(result.lyrics).toBeDefined();
   });
 
+  test('bootstraps lyrics when lyrics mode is enabled but currentLyrics is missing', async () => {
+    const config = createMockConfig({ isLyricsMode: () => true });
+
+    const result = await refinePrompt(
+      {
+        currentPrompt: 'A ballad',
+        currentTitle: 'Love Song',
+        feedback: '',
+        lyricsTopic: 'rainy night',
+      },
+      config
+    );
+
+    expect(result.lyrics).toBeDefined();
+  });
+
+  test('bootstraps lyrics in direct mode when lyrics mode is enabled and currentLyrics is missing', async () => {
+    const config = createMockConfig({ isLyricsMode: () => true });
+
+    const result = await refinePrompt(
+      {
+        currentPrompt: 'old prompt',
+        currentTitle: 'Direct Mode Title',
+        feedback: '',
+        lyricsTopic: 'city lights',
+        sunoStyles: ['dream-pop'],
+      },
+      config
+    );
+
+    expect(result.lyrics).toBeDefined();
+  });
+
   test('re-injects locked phrase after refinement', async () => {
     const config = createMockConfig();
 

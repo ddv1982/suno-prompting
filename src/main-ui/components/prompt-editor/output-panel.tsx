@@ -69,11 +69,13 @@ export function OutputPanel({
         <QuickVibesOutput
           prompt={currentPrompt}
           title={currentTitle}
+          lyrics={currentLyrics}
           isGenerating={isGenerating}
           hasDebugInfo={!!debugInfo}
           onRemix={onRemixQuickVibes}
           onCopy={onCopy}
           onDebugOpen={onDebugOpen}
+          onRemixLyrics={onRemixLyrics}
         />
       </div>
     );

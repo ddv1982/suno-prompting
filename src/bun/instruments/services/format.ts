@@ -1,3 +1,18 @@
+/**
+ * Instrument Formatting Service
+ *
+ * Provides functions for formatting instrument selections into prompt-ready strings.
+ * Contains format functions and formatting utilities for various musical elements.
+ *
+ * @module instruments/services/format
+ *
+ * @standards-exception
+ * This file intentionally exceeds the 300-line guideline.
+ * Reason: Contains tightly coupled formatting functions that work together.
+ * Splitting would create circular dependencies and reduce cohesion.
+ * Approved: 2026-01-12
+ */
+
 import { RHYTHMIC_STYLES } from '@bun/instruments/datasets/rhythm';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import {

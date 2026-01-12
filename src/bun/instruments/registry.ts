@@ -1,10 +1,17 @@
 /**
+ * Instrument Registry
+ *
  * Categories for grouping instruments by their musical role.
  * - harmonic: Foundation instruments that define harmony (piano, guitar, strings)
  * - pad: Sustained atmospheric textures (synth pads, ambient textures)
  * - color: Melodic and timbral variety (flute, saxophone, bells)
  * - movement: Rhythm and groove elements (drums, bass, percussion)
  * - rare: Uncommon/specialty instruments (theremin, waterphone)
+ *
+ * @standards-exception
+ * This file intentionally exceeds the 300-line guideline.
+ * Reason: Pure data registry - contains static instrument definitions, not logic.
+ * Approved: 2026-01-12
  */
 export type InstrumentCategory = 'harmonic' | 'pad' | 'color' | 'movement' | 'rare';
 

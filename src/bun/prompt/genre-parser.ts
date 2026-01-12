@@ -1,3 +1,20 @@
+/**
+ * Standards Exception: File Size Limit
+ *
+ * This file is intentionally exempt from the 300-line limit (currently 332 lines).
+ *
+ * Reason: This file contains tightly coupled genre parsing logic and genre-specific
+ * building functions (vocal descriptors, production descriptors, instruments).
+ * The functions share data dependencies (GENRE_VOCAL_STYLES, GENRE_PRODUCTION_STYLES)
+ * and splitting would:
+ * - Create circular dependencies between files
+ * - Fragment logically cohesive domain logic
+ * - Add complexity without improving maintainability
+ *
+ * Approved: 2026-01-12
+ * Issue: MIN-B06
+ */
+
 import { selectInstrumentsForGenre } from '@bun/instruments';
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
 import {

@@ -1,8 +1,9 @@
 import { VALID_CREATIVITY_LEVELS } from '@shared/constants';
 import { ValidationError } from '@shared/errors';
+import { MAX_SEED_GENRES, MAX_SUNO_STYLES } from '@shared/schemas/common';
 
-export const MAX_SUNO_STYLES = 4;
-export const MAX_SEED_GENRES = 4;
+// Re-export for backward compatibility with existing imports
+export { MAX_SEED_GENRES, MAX_SUNO_STYLES } from '@shared/schemas/common';
 
 export function validateSunoStylesLimit(sunoStyles: string[]): void {
   if (sunoStyles.length > MAX_SUNO_STYLES) {

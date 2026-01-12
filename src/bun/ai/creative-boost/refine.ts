@@ -7,7 +7,8 @@
  * @module ai/creative-boost/refine
  */
 
-import { isDirectMode } from '@bun/ai/direct-mode';
+import { isDirectMode, buildDirectModePrompt } from '@bun/ai/direct-mode';
+import { generateDirectModeTitle } from '@bun/ai/llm-utils';
 import { callLLM } from '@bun/ai/llm-utils';
 import { createLogger } from '@bun/logger';
 import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
@@ -74,40 +75,8 @@ function buildPerformanceContext(seedGenres: string[]): PerformanceContext {
 }
 
 // =============================================================================
-// Title & Lyrics Helpers
+// Lyrics Helper
 // =============================================================================
-
-/**
- * Refine title based on feedback
- */
-async function refineTitleWithFeedback(
-  currentTitle: string,
-  styleResult: string,
-  lyricsTopic: string,
-  feedback: string,
-  getModel: () => LanguageModel,
-  ollamaEndpoint?: string
-): Promise<string> {
-  const titleSystemPrompt = `You are refining a song title based on user input.
-Current title: "${currentTitle}"
-Musical style: ${styleResult}
-${lyricsTopic?.trim() ? `Topic/Theme: ${lyricsTopic}` : ''}
-
-User feedback: ${feedback}
-
-Generate a new title that addresses the feedback while maintaining relevance to the style.
-Output ONLY the new title, nothing else. Do not include quotes around the title.`;
-
-  const refinedTitle = await callLLM({
-    getModel,
-    systemPrompt: titleSystemPrompt,
-    userPrompt: feedback,
-    errorContext: 'refine Creative Boost title',
-    ollamaEndpoint,
-  });
-
-  return refinedTitle.trim().replace(/^["']|["']$/g, '');
-}
 
 /**
  * Generate lyrics for Direct Mode refinement
@@ -129,53 +98,98 @@ async function generateLyricsForDirectMode(
 }
 
 /**
- * Direct Mode refinement - applies new styles and optionally refines title/lyrics.
- * Styles always updated; title/lyrics only change when feedback is provided.
+ * Attempt to regenerate title for Direct Mode refinement.
+ * Returns original title if generation fails.
+ */
+async function tryRefineDirectModeTitle(
+  currentTitle: string,
+  context: string,
+  sunoStyles: string[],
+  config: CreativeBoostEngineConfig
+): Promise<string> {
+  try {
+    return await generateDirectModeTitle(context, sunoStyles, config.getModel);
+  } catch (error: unknown) {
+    log.warn('refineDirectMode:title:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    return currentTitle;
+  }
+}
+
+/**
+ * Attempt to generate lyrics for Direct Mode refinement.
+ * Returns undefined if generation fails.
+ */
+async function tryRefineDirectModeLyrics(
+  enrichedPrompt: string,
+  lyricsTopic: string,
+  description: string,
+  feedback: string,
+  config: CreativeBoostEngineConfig
+): Promise<string | undefined> {
+  try {
+    return await generateLyricsForDirectMode(
+      enrichedPrompt,
+      lyricsTopic,
+      description,
+      feedback,
+      config.getModel,
+      config.getUseSunoTags?.() ?? false,
+      config.getOllamaEndpoint?.()
+    );
+  } catch (error: unknown) {
+    log.warn('refineDirectMode:lyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    return undefined;
+  }
+}
+
+/**
+ * Direct Mode refinement - uses shared enrichment and optionally generates lyrics.
+ * 
+ * Uses buildDirectModePrompt for enriched prompt (DRY - same as generation).
+ * Title only regenerated when feedback is provided (preserves original otherwise).
+ * Lyrics only generated when feedback is provided and withLyrics is true.
  */
 async function refineDirectMode(
   options: RefineDirectModeOptions,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  const { currentTitle, feedback, lyricsTopic, description, sunoStyles, withLyrics } = options;
+  const { currentTitle, currentLyrics, feedback, lyricsTopic, description, sunoStyles, withLyrics, maxMode } = options;
   const hasFeedback = Boolean(feedback?.trim());
-  const styleResult = sunoStyles.join(', ');
 
-  log.info('refineDirectMode:start', { stylesCount: sunoStyles.length, hasFeedback, withLyrics });
+  log.info('refineDirectMode:start', { stylesCount: sunoStyles.length, hasFeedback, withLyrics, maxMode });
 
-  let newTitle = currentTitle;
-  let lyrics: string | undefined;
+  const { text: enrichedPrompt } = buildDirectModePrompt(sunoStyles, maxMode);
 
-  if (hasFeedback) {
-    try {
-      newTitle = await refineTitleWithFeedback(currentTitle, styleResult, lyricsTopic, feedback, config.getModel, config.getOllamaEndpoint?.());
-    } catch (error: unknown) {
-      log.warn('refineDirectMode:title:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
-    }
+  const title = hasFeedback
+    ? await tryRefineDirectModeTitle(currentTitle, description || lyricsTopic || feedback, sunoStyles, config)
+    : currentTitle;
 
-    if (withLyrics) {
-      try {
-        lyrics = await generateLyricsForDirectMode(styleResult, lyricsTopic, description, feedback, config.getModel, config.getUseSunoTags?.() ?? false, config.getOllamaEndpoint?.());
-      } catch (error: unknown) {
-        log.warn('refineDirectMode:lyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
-      }
-    }
-  }
-
-  const debugInfo = config.isDebugMode()
-    ? config.buildDebugInfo(`DIRECT_MODE_REFINE${hasFeedback ? ' (with feedback)' : ''}`, `Feedback: ${feedback || '(none)'}\nStyles: ${styleResult}`, styleResult)
-    : undefined;
+  // Lyrics bootstrap:
+  // - If lyrics are missing, generate them even when feedback is empty.
+  // - If lyrics exist, only regenerate/refine when feedback is provided.
+  const shouldGenerateLyrics = withLyrics && (!currentLyrics || hasFeedback);
+  const lyricsFeedback = hasFeedback ? feedback : '';
+  const lyrics = shouldGenerateLyrics
+    ? await tryRefineDirectModeLyrics(enrichedPrompt, lyricsTopic, description, lyricsFeedback, config)
+    : currentLyrics;
 
   log.info('refineDirectMode:complete', {
-    styleLength: styleResult.length,
-    titleChanged: newTitle !== currentTitle,
+    promptLength: enrichedPrompt.length,
+    titleChanged: title !== currentTitle,
     hasLyrics: Boolean(lyrics),
   });
 
   return {
-    text: styleResult,
-    title: newTitle,
+    text: enrichedPrompt,
+    title,
     lyrics,
-    debugInfo,
+    debugInfo: config.isDebugMode()
+      ? config.buildDebugInfo(
+          `DIRECT_MODE_REFINE${hasFeedback ? ' (with feedback)' : ''}`,
+          `Styles: ${sunoStyles.join(', ')}\nFeedback: ${feedback || '(none)'}`,
+          enrichedPrompt
+        )
+      : undefined,
   };
 }
 
@@ -191,6 +205,7 @@ export async function refineCreativeBoost(
   const {
     currentPrompt,
     currentTitle,
+    currentLyrics,
     feedback,
     lyricsTopic,
     description,
@@ -203,16 +218,18 @@ export async function refineCreativeBoost(
     targetGenreCount,
   } = options;
 
-  // Direct Mode: Apply new styles and optionally refine title/lyrics
+  // Direct Mode: Use shared enrichment and optionally generate lyrics
   // Skip genre count enforcement for Direct Mode (sunoStyles selected)
   if (isDirectMode(sunoStyles)) {
     return refineDirectMode({
       currentTitle,
+      currentLyrics,
       feedback,
       lyricsTopic,
       description,
       sunoStyles,
       withLyrics,
+      maxMode,
     }, config);
   }
 

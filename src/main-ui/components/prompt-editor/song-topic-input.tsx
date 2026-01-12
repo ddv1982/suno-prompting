@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type SongTopicInputProps = {
   value: string;
@@ -25,7 +25,7 @@ export function SongTopicInput({
   isOverLimit,
   onChange,
   onKeyDown,
-}: SongTopicInputProps): ReactNode {
+}: SongTopicInputProps): ReactElement {
   return (
     <div className="space-y-1">
       <FormLabel

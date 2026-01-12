@@ -2,7 +2,7 @@ import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 
 type SubmitButtonProps = {
@@ -17,7 +17,7 @@ export function SubmitButton({
   isRefineMode,
   canSubmit,
   onSubmit,
-}: SubmitButtonProps): ReactNode {
+}: SubmitButtonProps): ReactElement {
   return (
     <Button
       onClick={onSubmit}

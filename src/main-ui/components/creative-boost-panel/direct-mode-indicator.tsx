@@ -1,12 +1,12 @@
 import { Zap } from "lucide-react";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type DirectModeIndicatorProps = {
   isDirectMode: boolean;
 };
 
-export function DirectModeIndicator({ isDirectMode }: DirectModeIndicatorProps): ReactNode {
+export function DirectModeIndicator({ isDirectMode }: DirectModeIndicatorProps): ReactElement | null {
   if (!isDirectMode) return null;
 
   return (

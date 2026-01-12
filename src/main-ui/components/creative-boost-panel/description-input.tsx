@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 const MAX_DESCRIPTION_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS;
 
@@ -27,7 +27,7 @@ export function DescriptionInput({
   isGenerating,
   onChange,
   onKeyDown,
-}: DescriptionInputProps): ReactNode {
+}: DescriptionInputProps): ReactElement {
   const charCount = value.length;
   const isDisabled = isGenerating || (isDirectMode && !isRefineMode);
 

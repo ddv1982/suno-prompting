@@ -12,7 +12,7 @@ import { useCreativeBoostHandlers } from "./use-creative-boost-handlers";
 
 import type { MoodCategory } from "@bun/mood";
 import type { CreativeBoostInput, CreativeBoostMode } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type CreativeBoostPanelProps = {
   input: CreativeBoostInput;
@@ -32,7 +32,7 @@ type CreativeBoostPanelProps = {
 export function CreativeBoostPanel({
   input, maxMode, lyricsMode, isGenerating, hasCurrentPrompt, creativeBoostMode,
   onCreativeBoostModeChange, onInputChange, onMaxModeChange, onLyricsModeChange, onGenerate, onRefine,
-}: CreativeBoostPanelProps): ReactNode {
+}: CreativeBoostPanelProps): ReactElement {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
   const isSimpleMode = creativeBoostMode === 'simple';

@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from "react";
+import { useCallback, type ReactElement } from "react";
 
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
@@ -14,7 +14,7 @@ import type { FullPromptInputPanelProps } from "./full-prompt-input-panel.types"
 
 export type { FullPromptInputPanelProps };
 
-export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactNode {
+export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactElement {
   const { currentPrompt, pendingInput, lockedPhrase, lyricsTopic, editorMode, advancedSelection, computedMusicPhrase,
     moodCategory, maxMode, lyricsMode, isGenerating, maxChars, lockedPhraseValidation, inputOverLimit, lyricsTopicOverLimit,
     hasAdvancedSelection, onPendingInputChange, onLockedPhraseChange, onLyricsTopicChange, onMoodCategoryChange, onEditorModeChange,

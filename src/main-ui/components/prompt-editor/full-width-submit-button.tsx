@@ -2,7 +2,7 @@ import { Loader2, RefreshCw, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 /**
  * Full-width submit button for Full Prompt mode.
@@ -21,7 +21,7 @@ export function FullWidthSubmitButton({
   isRefineMode,
   disabled,
   onSubmit,
-}: FullWidthSubmitButtonProps): ReactNode {
+}: FullWidthSubmitButtonProps): ReactElement {
   return (
     <Button
       onClick={onSubmit}

@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { DebugDrawerBody } from "./debug-drawer";
 
 import type { DebugInfo } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type DebugSheetProps = {
   debugInfo: Partial<DebugInfo> | undefined;
@@ -14,7 +14,7 @@ type DebugSheetProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-export function DebugSheet({ debugInfo, open, onOpenChange }: DebugSheetProps): ReactNode {
+export function DebugSheet({ debugInfo, open, onOpenChange }: DebugSheetProps): ReactElement | null {
   if (!debugInfo) return null;
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

@@ -9,7 +9,7 @@ import { APP_CONSTANTS } from "@shared/constants";
 import { QUICK_VIBES_CATEGORIES } from "@shared/quick-vibes-categories";
 
 import type { QuickVibesCategory } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 const getCategoryLabel = (categoryId: QuickVibesCategory): string => {
   return QUICK_VIBES_CATEGORIES[categoryId]?.label ?? categoryId;
@@ -48,7 +48,7 @@ export function DescriptionInput({
   isGenerating,
   onChange,
   onKeyDown,
-}: DescriptionInputProps): ReactNode {
+}: DescriptionInputProps): ReactElement {
   const charCount = value.length;
 
   const getPlaceholder = (): string => {

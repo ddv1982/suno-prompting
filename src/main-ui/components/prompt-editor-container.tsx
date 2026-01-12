@@ -9,9 +9,9 @@ import { useSessionContext } from "@/context/session-context";
 import { useSettingsContext } from "@/context/settings-context";
 import { APP_CONSTANTS } from "@shared/constants";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
-export function PromptEditorContainer(): ReactNode {
+export function PromptEditorContainer(): ReactElement {
   // -- Session State --
   const { currentSession } = useSessionContext();
 

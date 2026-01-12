@@ -1,5 +1,5 @@
 import { AlertCircle, MessageSquare } from "lucide-react";
-import { useCallback, type ReactNode } from "react";
+import { useCallback, type ReactElement } from "react";
 
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +23,7 @@ type MainInputProps = {
 export function MainInput({
   value, currentPrompt, lyricsMode, maxMode, isGenerating, maxChars, inputOverLimit,
   hasAdvancedSelection, onChange, onSubmit, onConversionComplete,
-}: MainInputProps): ReactNode {
+}: MainInputProps): ReactElement {
   const { showToast } = useToast();
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {

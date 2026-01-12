@@ -53,6 +53,7 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
       const {
         currentPrompt,
         currentTitle,
+        currentLyrics,
         feedback,
         lyricsTopic,
         description,
@@ -60,13 +61,15 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         sunoStyles,
         withWordlessVocals,
         maxMode,
-        withLyrics
+        withLyrics,
+        targetGenreCount,
       } = validate(RefineCreativeBoostSchema, params);
 
       return withErrorHandling('refineCreativeBoost', async () => {
         const result = await aiEngine.refineCreativeBoost(
           currentPrompt,
           currentTitle,
+          currentLyrics,
           feedback,
           lyricsTopic,
           description,
@@ -74,7 +77,8 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
           sunoStyles,
           withWordlessVocals,
           maxMode,
-          withLyrics
+          withLyrics,
+          targetGenreCount,
         );
         const versionId = Bun.randomUUIDv7();
         log.info('refineCreativeBoost:result', {

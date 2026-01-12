@@ -3,7 +3,7 @@ import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import type { CreativeBoostMode } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type CreativeBoostModeToggleProps = {
   mode: CreativeBoostMode;
@@ -17,7 +17,7 @@ export function CreativeBoostModeToggle({
   isDirectMode,
   isGenerating,
   onModeChange,
-}: CreativeBoostModeToggleProps): ReactNode {
+}: CreativeBoostModeToggleProps): ReactElement {
   return (
     <div className="flex items-center gap-2">
       <Button

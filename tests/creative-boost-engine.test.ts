@@ -182,6 +182,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
+      undefined,
       "make it warmer",
       "", // lyricsTopic
       "", // description
@@ -200,6 +201,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
+      undefined,
       "make it warmer",
       "", // lyricsTopic
       "", // description
@@ -218,6 +220,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     const result = await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
+      undefined,
       "add more bass",
       "", "", [], [], false, true, false
     );
@@ -231,6 +234,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
     const result = await engine.refineCreativeBoost(
       "original prompt",
       "Original Title",
+      undefined,
       "add more bass",
       "", "", [], [], false, false, false
     );
@@ -489,22 +493,25 @@ This is how we thrive`,
 
   // Task 4.5: Test refine mode keeps styles unchanged
   it("keeps styles unchanged when refining in direct mode", async () => {
-    const originalStyles = "lo-fi jazz, dark goa trance";
+    const sunoStyles = ["lo-fi jazz", "dark goa trance"];
     const result = await engine.refineCreativeBoost(
-      originalStyles, // currentPrompt (the styles)
+      "lo-fi jazz, dark goa trance", // currentPrompt (the styles)
       "Old Title", // currentTitle
+      undefined,
       "Make it more upbeat", // feedback
       "", // lyricsTopic
       "", // description
       [], // seedGenres
-      ["lo-fi jazz", "dark goa trance"], // sunoStyles - triggers direct mode
+      sunoStyles, // sunoStyles - triggers direct mode
       false, // withWordlessVocals
       false, // maxMode
       false // withLyrics
     );
 
-    // Styles should remain exactly unchanged
-    expect(result.text).toBe(originalStyles);
+    // Styles should be preserved in enriched prompt
+    expect(result.text).toContain("lo-fi jazz, dark goa trance");
+    // Enriched prompt should include genre and other elements
+    expect(result.text).toContain("Genre:");
   });
 
   it("refines title based on feedback in direct mode", async () => {
@@ -512,6 +519,7 @@ This is how we thrive`,
     const result = await engine.refineCreativeBoost(
       originalStyles,
       "Old Title",
+      undefined,
       "Make the title more energetic",
       "", "", [],
       ["indie rock", "shoegaze"],
@@ -527,6 +535,7 @@ This is how we thrive`,
     const result = await engine.refineCreativeBoost(
       "synthpop, electro",
       "Electric Nights",
+      undefined,
       "Add more emotion",
       "love story", // lyricsTopic
       "", [],
@@ -569,6 +578,7 @@ This is how we thrive`,
     const result = await engine.refineCreativeBoost(
       "original rock prompt",
       "Original Title",
+      undefined,
       "make it heavier",
       "", "", ["rock"], [], // seedGenres has value, sunoStyles is empty
       false, true, false
@@ -584,6 +594,7 @@ This is how we thrive`,
     await engine.refineCreativeBoost(
       "chill hop, lo-fi",
       "Chill Session",
+      undefined,
       "Make it mellower",
       "", "", [],
       ["chill hop", "lo-fi"],
@@ -599,6 +610,7 @@ This is how we thrive`,
     await engine.refineCreativeBoost(
       "ambient, drone",
       "Peaceful Drift",
+      undefined,
       "Make it darker",
       "", "", [],
       ["ambient", "drone"],
@@ -607,6 +619,32 @@ This is how we thrive`,
     );
 
     // Direct mode refine without lyrics: only 1 call for title
+    expect(generateTextCalls).toBe(1);
+  });
+
+  it("bootstraps lyrics when withLyrics is true and no lyrics exist, even without feedback", async () => {
+    // Override mock: without feedback, title refinement is skipped, so the first LLM call is lyrics.
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      return { text: "[VERSE]\nBootstrapped lyrics" };
+    });
+
+    const result = await engine.refineCreativeBoost(
+      "chill, lo-fi",
+      "Old Title",
+      undefined,
+      "", // no feedback
+      "love story", // lyricsTopic
+      "", // description
+      [], // seedGenres
+      ["chill", "lo-fi"], // Direct Mode
+      false,
+      false,
+      true // withLyrics
+    );
+
+    expect(result.lyrics).toBeDefined();
+    expect(result.lyrics).toContain("[VERSE]");
     expect(generateTextCalls).toBe(1);
   });
 });
@@ -695,6 +733,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "lo-fi, chill", // currentPrompt
       "Old Title", // currentTitle
+      undefined,
       "make it more epic", // feedback - should be used
       "peaceful journey", // lyricsTopic - included but feedback takes priority
       "", [], ["lo-fi", "chill"],
@@ -712,6 +751,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "jazz, smooth", // currentPrompt
       "Old Title", // currentTitle
+      undefined,
       "", // feedback - empty
       "ocean voyage", // lyricsTopic - should NOT trigger title refinement
       "", [], ["jazz", "smooth"],
@@ -728,6 +768,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "rock, alternative", // currentPrompt
       "Original Title", // currentTitle
+      undefined,
       "", // feedback - empty
       "", // lyricsTopic - empty
       "", [], ["rock", "alternative"],
@@ -747,6 +788,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "electronic, dance", // currentPrompt
       "Old Title", // currentTitle
+      undefined,
       "", // feedback - empty
       "night city vibes", // lyricsTopic - should NOT trigger title refinement
       "", [], ["electronic", "dance"],
@@ -798,15 +840,18 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "old-style, chillwave", // currentPrompt (old styles)
       "Old Title",
+      undefined,
       "", // no feedback
       "", "", [],
       ["dream-pop", "shoegaze"], // NEW styles
       false, false, false
     );
 
-    // New styles should be returned
-    expect(result.text).toBe("dream-pop, shoegaze");
-    expect(result.text).not.toBe("old-style, chillwave");
+    // New styles should be in enriched prompt
+    expect(result.text).toContain("dream-pop, shoegaze");
+    expect(result.text).toContain("Genre:");
+    expect(result.text).not.toContain("old-style");
+    expect(result.text).not.toContain("chillwave");
   });
 
   it("keeps title unchanged when only styles change (no feedback)", async () => {
@@ -814,6 +859,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "lo-fi, chill", // currentPrompt
       "Original Title", // currentTitle - should remain unchanged
+      undefined,
       "", // no feedback
       "", "", [],
       ["dream-pop", "shoegaze"], // Different styles
@@ -824,8 +870,9 @@ This is the chorus`,
     expect(result.title).toBe("Original Title");
     // No LLM calls should be made (no title refinement, no lyrics)
     expect(generateTextCalls).toBe(0);
-    // But styles should be updated
-    expect(result.text).toBe("dream-pop, shoegaze");
+    // Styles should be in enriched prompt
+    expect(result.text).toContain("dream-pop, shoegaze");
+    expect(result.text).toContain("Genre:");
   });
 
   it("keeps lyrics undefined when only styles change (no feedback)", async () => {
@@ -833,6 +880,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "rock, metal", // currentPrompt
       "Rock Title",
+      "[VERSE]\nExisting lyrics",
       "", // no feedback
       "some topic", "", [],
       ["jazz", "smooth"], // Different styles
@@ -840,12 +888,13 @@ This is the chorus`,
       true // withLyrics = true, but no feedback so no lyrics generated
     );
 
-    // Lyrics should be undefined (not generated without feedback)
-    expect(result.lyrics).toBeUndefined();
+    // Lyrics should be preserved (no regeneration without feedback)
+    expect(result.lyrics).toBe("[VERSE]\nExisting lyrics");
     // No LLM calls should be made
     expect(generateTextCalls).toBe(0);
-    // Styles should still be updated
-    expect(result.text).toBe("jazz, smooth");
+    // Styles should be in enriched prompt
+    expect(result.text).toContain("jazz, smooth");
+    expect(result.text).toContain("Genre:");
   });
 
   it("regenerates title when feedback provided with style change", async () => {
@@ -853,14 +902,16 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "old-style, ambient", // currentPrompt
       "Old Title",
+      undefined,
       "make it more energetic", // feedback provided
       "", "", [],
       ["rock", "punk"], // NEW styles
       false, false, false
     );
 
-    // Styles should be updated
-    expect(result.text).toBe("rock, punk");
+    // Styles should be in enriched prompt
+    expect(result.text).toContain("rock, punk");
+    expect(result.text).toContain("Genre:");
     // Title should be refined (LLM called)
     expect(result.title).toBe("Refined Title");
     expect(generateTextCalls).toBe(1);
@@ -871,6 +922,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "chill, lo-fi", // currentPrompt
       "Old Title",
+      undefined,
       "add more feeling", // feedback provided
       "love theme", "", [],
       ["dream-pop", "ethereal"], // NEW styles
@@ -878,8 +930,9 @@ This is the chorus`,
       true // withLyrics = true
     );
 
-    // Styles should be updated
-    expect(result.text).toBe("dream-pop, ethereal");
+    // Styles should be in enriched prompt
+    expect(result.text).toContain("dream-pop, ethereal");
+    expect(result.text).toContain("Genre:");
     // Lyrics should be generated (feedback provided)
     expect(result.lyrics).toBeDefined();
     expect(result.lyrics).toContain("[VERSE]");
@@ -892,14 +945,16 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "dream-pop, shoegaze", // currentPrompt
       "Title",
+      undefined,
       "", // no feedback
       "", "", [],
       ["dream-pop", "shoegaze"], // Same styles
       false, false, false
     );
 
-    // Styles should remain the same
-    expect(result.text).toBe("dream-pop, shoegaze");
+    // Styles should be in enriched prompt
+    expect(result.text).toContain("dream-pop, shoegaze");
+    expect(result.text).toContain("Genre:");
     // No LLM calls (no feedback)
     expect(generateTextCalls).toBe(0);
   });
@@ -908,13 +963,16 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "old-style, old-style-2", // currentPrompt
       "Title",
+      undefined,
       "", // no feedback
       "", "", [],
       ["single-new-style"], // Single new style
       false, false, false
     );
 
-    expect(result.text).toBe("single-new-style");
+    // Single style should be in enriched prompt
+    expect(result.text).toContain("single-new-style");
+    expect(result.text).toContain("Genre:");
   });
 });
 
@@ -1010,6 +1068,7 @@ describe("AIEngine.refineCreativeBoost performance instruments", () => {
     const result = await engine.refineCreativeBoost(
       "current prompt text",
       "Current Title",
+      undefined,
       "make it more energetic", // feedback
       "", // lyricsTopic
       "", // description
@@ -1066,6 +1125,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"\nmood: "energetic"', // currentPrompt
       "Original Title",
+      undefined,
       "make it more jazzy", // feedback
       "", // lyricsTopic
       "", // description
@@ -1088,6 +1148,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock, jazz, funk"\nbpm: "100"', // currentPrompt with 3 genres
       "Original Title",
+      undefined,
       "simplify the genre", // feedback
       "", "", ["rock"], [], false, true, false,
       1 // targetGenreCount
@@ -1103,6 +1164,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "100"', // currentPrompt with 1 genre
       "Original Title",
+      undefined,
       "make it a fusion", // feedback
       "", "", ["rock", "jazz", "funk", "pop"], [], false, true, false,
       4 // targetGenreCount
@@ -1134,6 +1196,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
     const result = await engine.refineCreativeBoost(
       "lo-fi, chillwave", // currentPrompt
       "Original Title",
+      undefined,
       "make it warmer", // feedback
       "", "", [],
       ["lo-fi", "chillwave"], // sunoStyles - triggers Direct Mode
@@ -1141,10 +1204,10 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
       3 // targetGenreCount - should be ignored in Direct Mode
     );
 
-    // Direct Mode returns the styles directly, no genre enforcement
-    expect(result.text).toBe("lo-fi, chillwave");
-    // Should not contain a genre: field structure
-    expect(result.text).not.toContain('genre:');
+    // Direct Mode returns enriched prompt with styles preserved
+    expect(result.text).toContain("lo-fi, chillwave");
+    // Should contain Genre: field (from enrichment)
+    expect(result.text).toContain("Genre:");
   });
 
   it("returns exact sunoStyles in Direct Mode regardless of targetGenreCount", async () => {
@@ -1152,6 +1215,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
     const result = await engine.refineCreativeBoost(
       "old styles",
       "Title",
+      undefined,
       "",
       "", "", [],
       styles, // Direct Mode
@@ -1159,7 +1223,9 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
       1 // targetGenreCount should be ignored
     );
 
-    expect(result.text).toBe("synthwave, retrowave, outrun");
+    // Styles should be in enriched prompt
+    expect(result.text).toContain("synthwave, retrowave, outrun");
+    expect(result.text).toContain("Genre:");
   });
 });
 
@@ -1201,6 +1267,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"',
       "Title",
+      undefined,
       "add jazz elements",
       "", "", ["rock"], [], false, true, false,
       0 // targetGenreCount = 0 means no enforcement
@@ -1217,6 +1284,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"',
       "Title",
+      undefined,
       "add jazz elements",
       "", "", ["rock"], [], false, true, false
       // targetGenreCount not provided (undefined)
@@ -1254,6 +1322,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"',
       "Title",
+      undefined,
       "make it jazzy",
       "", "", ["rock", "jazz", "funk"], [], false, true, false,
       3 // targetGenreCount = 3 triggers enforcement

@@ -8,8 +8,7 @@
 
 import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS, type GenreType, selectInstrumentsForGenre as selectInstruments } from '@bun/instruments';
 import { filterSunoStylesByMoodCategory, selectMoodsForCategory, type MoodCategory } from '@bun/mood';
-import { InvariantError } from '@shared/errors';
-
+import { selectRandom } from '@shared/utils/random';
 
 import {
   ADVENTUROUS_TRIPLE_PROBABILITY,
@@ -24,19 +23,6 @@ import type { CreativityLevel } from '@shared/types';
 // =============================================================================
 // Helper Functions
 // =============================================================================
-
-/**
- * Select a random item from an array using provided RNG.
- * Safe: All callers pass non-empty constant arrays defined in this module.
- */
-function selectRandom<T>(items: readonly T[], rng: () => number): T {
-  if (items.length === 0) {
-    throw new InvariantError('selectRandom called with empty array');
-  }
-  const idx = Math.floor(rng() * items.length);
-  // idx is always valid since 0 <= rng() < 1 and items.length > 0
-  return items[idx] as T;
-}
 
 /**
  * Select multiple unique random items from an array.

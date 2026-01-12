@@ -7,7 +7,7 @@
  * @module prompt/title/patterns
  */
 
-import { InvariantError } from '@shared/errors';
+import { selectRandom as sharedSelectRandom } from '@shared/utils/random';
 
 import { EMOTION_WORDS, ACTION_WORDS, MOOD_WORD_WEIGHTS } from './datasets/emotions';
 import { NUMBER_WORDS, PLACE_WORDS, SINGLE_WORDS, QUESTION_WORDS } from './datasets/extended';
@@ -26,22 +26,14 @@ const PREFERRED_MOOD_PROBABILITY = 0.7;
 
 /**
  * Select a random item from an array using provided RNG.
+ * Re-exports from shared utility for backward compatibility.
  *
  * @param items - Array to select from
  * @param rng - Random number generator
  * @returns Selected item
  */
 export function selectRandom<T>(items: readonly T[], rng: () => number): T {
-  if (items.length === 0) {
-    throw new InvariantError('selectRandom called with empty array');
-  }
-  const idx = Math.floor(rng() * items.length);
-  const item = items[idx];
-  if (item === undefined) {
-    // Fallback to first item (should never happen with valid index)
-    return items[0] as T;
-  }
-  return item;
+  return sharedSelectRandom(items, rng);
 }
 
 /**

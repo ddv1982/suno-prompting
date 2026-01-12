@@ -2,7 +2,7 @@ import { Dice3, Loader2, RefreshCw, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 
 type SubmitButtonProps = {
@@ -19,7 +19,7 @@ export function SubmitButton({
   isDirectMode,
   canSubmit,
   onSubmit,
-}: SubmitButtonProps): ReactNode {
+}: SubmitButtonProps): ReactElement {
   return (
     <Button
       onClick={onSubmit}

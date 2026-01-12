@@ -56,6 +56,7 @@ export function createCreativeBoostMethods(
   async function refineCreativeBoost(
     currentPrompt: string,
     currentTitle: string,
+    currentLyrics: string | undefined,
     feedback: string,
     lyricsTopic: string,
     description: string,
@@ -69,6 +70,7 @@ export function createCreativeBoostMethods(
     return refineCreativeBoostImpl({
       currentPrompt,
       currentTitle,
+      currentLyrics,
       feedback,
       lyricsTopic,
       description,

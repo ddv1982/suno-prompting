@@ -1,7 +1,9 @@
 // Domain types - core business entities
 
 import type { MoodCategory } from '@bun/mood';
+import type { QuickVibesCategory as QuickVibesCategoryType } from '@shared/schemas/common';
 import type { AIProvider } from '@shared/types/config';
+// Import QuickVibesCategory from schema - single source of truth
 
 // Prompt generation mode
 export type PromptMode = 'full' | 'quickVibes' | 'creativeBoost';
@@ -12,26 +14,12 @@ export type CreativityLevel = 'low' | 'safe' | 'normal' | 'adventurous' | 'high'
 // Valid slider positions for creativity (5 discrete values)
 export type CreativitySliderValue = 0 | 25 | 50 | 75 | 100;
 
-// Quick Vibes category presets - 16 total categories
-export type QuickVibesCategory =
-  // Existing 6 categories
-  | 'lofi-study'
-  | 'cafe-coffeeshop'
-  | 'ambient-focus'
-  | 'latenight-chill'
-  | 'cozy-rainy'
-  | 'lofi-chill'
-  // New 10 categories (v3.0)
-  | 'workout-energy'
-  | 'morning-sunshine'
-  | 'sunset-golden'
-  | 'dinner-party'
-  | 'road-trip'
-  | 'gaming-focus'
-  | 'romantic-evening'
-  | 'meditation-zen'
-  | 'creative-flow'
-  | 'party-night';
+/**
+ * Quick Vibes category presets - 16 total categories.
+ * Derived from QuickVibesCategorySchema to ensure type and schema stay in sync.
+ * This is the non-nullable type, suitable for indexing into objects.
+ */
+export type QuickVibesCategory = QuickVibesCategoryType;
 
 // Quick Vibes input state
 export type QuickVibesInput = {

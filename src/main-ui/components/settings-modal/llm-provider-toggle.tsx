@@ -1,5 +1,5 @@
 import { Server, Cloud } from "lucide-react";
-import { type ReactNode } from "react";
+import { type ReactElement } from "react";
 
 import { SectionLabel } from "@/components/ui/section-label";
 import { ToggleRow } from "@/components/ui/toggle-row";
@@ -16,7 +16,7 @@ export function LLMProviderToggle({
   hasApiKey,
   loading,
   onToggle,
-}: LLMProviderToggleProps): ReactNode {
+}: LLMProviderToggleProps): ReactElement {
   const statusIcon = useLocalLLM ? (
     <Server className="w-4 h-4" />
   ) : (

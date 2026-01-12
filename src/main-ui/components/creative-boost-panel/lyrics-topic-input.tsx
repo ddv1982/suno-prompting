@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 const MAX_LYRICS_TOPIC_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS;
 
@@ -23,7 +23,7 @@ export function LyricsTopicInput({
   isGenerating,
   onChange,
   onKeyDown,
-}: LyricsTopicInputProps): ReactNode {
+}: LyricsTopicInputProps): ReactElement {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">

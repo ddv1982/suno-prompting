@@ -108,7 +108,7 @@ describe('v3.0 Performance: Genre Registry', () => {
 
   test('should have 60+ genres in registry', () => {
     expect(allGenres.length).toBeGreaterThanOrEqual(60);
-    console.log(`Genre count: ${allGenres.length}`);
+    console.info(`Genre count: ${allGenres.length}`);
   });
 
   test('should generate tags for all genres in <1ms average', () => {
@@ -127,14 +127,14 @@ describe('v3.0 Performance: Genre Registry', () => {
     const overallAvg = genreTimes.reduce((sum, t) => sum + t.avg, 0) / genreTimes.length;
     const maxIndividual = Math.max(...genreTimes.map((t) => t.max));
 
-    console.log(`Overall average: ${overallAvg.toFixed(4)}ms`);
-    console.log(`Max individual: ${maxIndividual.toFixed(4)}ms`);
+    console.info(`Overall average: ${overallAvg.toFixed(4)}ms`);
+    console.info(`Max individual: ${maxIndividual.toFixed(4)}ms`);
 
     // Report slowest genres
     const sortedByAvg = [...genreTimes].sort((a, b) => b.avg - a.avg);
-    console.log('Slowest 5 genres:');
+    console.info('Slowest 5 genres:');
     sortedByAvg.slice(0, 5).forEach((t) => {
-      console.log(`  ${t.genre}: ${t.avg.toFixed(4)}ms avg, ${t.max.toFixed(4)}ms max`);
+      console.info(`  ${t.genre}: ${t.avg.toFixed(4)}ms avg, ${t.max.toFixed(4)}ms max`);
     });
 
     // Assertions
@@ -168,7 +168,7 @@ describe('v3.0 Performance: Genre Registry', () => {
     }
 
     const avg = times.reduce((sum, t) => sum + t, 0) / times.length;
-    console.log(`New genres average: ${avg.toFixed(4)}ms`);
+    console.info(`New genres average: ${avg.toFixed(4)}ms`);
 
     expect(avg).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
@@ -189,7 +189,7 @@ describe('v3.0 Performance: Genre Compatibility', () => {
       getCompatibilityScore('folk', 'country');
     }, ITERATIONS);
 
-    console.log(formatStats(stats, 'compatibility lookup (5 pairs)'));
+    console.info(formatStats(stats, 'compatibility lookup (5 pairs)'));
     expect(stats.average).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
 
@@ -201,7 +201,7 @@ describe('v3.0 Performance: Genre Compatibility', () => {
       canFuse('ambient', 'newage');
     }, ITERATIONS);
 
-    console.log(formatStats(stats, 'canFuse check (4 pairs)'));
+    console.info(formatStats(stats, 'canFuse check (4 pairs)'));
     expect(stats.average).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
 
@@ -210,7 +210,7 @@ describe('v3.0 Performance: Genre Compatibility', () => {
       getCompatibleGenres('jazz');
     }, ITERATIONS);
 
-    console.log(formatStats(stats, 'getCompatibleGenres'));
+    console.info(formatStats(stats, 'getCompatibleGenres'));
     expect(stats.average).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
 
@@ -234,7 +234,7 @@ describe('v3.0 Performance: Genre Compatibility', () => {
     }
 
     const avg = times.reduce((sum, t) => sum + t, 0) / times.length;
-    console.log(`Fusion generation average: ${avg.toFixed(4)}ms`);
+    console.info(`Fusion generation average: ${avg.toFixed(4)}ms`);
 
     expect(avg).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
@@ -249,7 +249,7 @@ describe('v3.0 Performance: Quick Vibes', () => {
 
   test('should have 16 Quick Vibes categories', () => {
     expect(allCategories.length).toBe(16);
-    console.log(`Quick Vibes categories: ${allCategories.length}`);
+    console.info(`Quick Vibes categories: ${allCategories.length}`);
   });
 
   test('should generate Quick Vibes for all 16 categories in <1ms average', () => {
@@ -266,14 +266,14 @@ describe('v3.0 Performance: Quick Vibes', () => {
     const overallAvg = categoryTimes.reduce((sum, t) => sum + t.avg, 0) / categoryTimes.length;
     const maxIndividual = Math.max(...categoryTimes.map((t) => t.max));
 
-    console.log(`Quick Vibes overall average: ${overallAvg.toFixed(4)}ms`);
-    console.log(`Quick Vibes max individual: ${maxIndividual.toFixed(4)}ms`);
+    console.info(`Quick Vibes overall average: ${overallAvg.toFixed(4)}ms`);
+    console.info(`Quick Vibes max individual: ${maxIndividual.toFixed(4)}ms`);
 
     // Report slowest categories
     const sortedByAvg = [...categoryTimes].sort((a, b) => b.avg - a.avg);
-    console.log('Slowest 3 Quick Vibes categories:');
+    console.info('Slowest 3 Quick Vibes categories:');
     sortedByAvg.slice(0, 3).forEach((t) => {
-      console.log(`  ${t.category}: ${t.avg.toFixed(4)}ms avg, ${t.max.toFixed(4)}ms max`);
+      console.info(`  ${t.category}: ${t.avg.toFixed(4)}ms avg, ${t.max.toFixed(4)}ms max`);
     });
 
     expect(overallAvg).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
@@ -305,7 +305,7 @@ describe('v3.0 Performance: Quick Vibes', () => {
     }
 
     const avg = times.reduce((sum, t) => sum + t, 0) / times.length;
-    console.log(`New Quick Vibes categories average: ${avg.toFixed(4)}ms`);
+    console.info(`New Quick Vibes categories average: ${avg.toFixed(4)}ms`);
 
     expect(avg).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
@@ -315,7 +315,7 @@ describe('v3.0 Performance: Quick Vibes', () => {
       buildDeterministicQuickVibes('workout-energy', true, true);
     }, ITERATIONS);
 
-    console.log(formatStats(stats, 'Quick Vibes maxMode'));
+    console.info(formatStats(stats, 'Quick Vibes maxMode'));
     expect(stats.average).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
 });
@@ -374,11 +374,11 @@ describe('v3.0 Performance: Comprehensive Summary', () => {
       workloadIndex++;
     }, ITERATIONS * 2);
 
-    console.log('\n=== V3.0 COMPREHENSIVE PERFORMANCE SUMMARY ===');
-    console.log(formatStats(stats, 'Mixed Workload'));
-    console.log(`  Total genres tested: ${allGenres.length}`);
-    console.log(`  Total Quick Vibes categories: ${allCategories.length}`);
-    console.log('==============================================\n');
+    console.info('\n=== V3.0 COMPREHENSIVE PERFORMANCE SUMMARY ===');
+    console.info(formatStats(stats, 'Mixed Workload'));
+    console.info(`  Total genres tested: ${allGenres.length}`);
+    console.info(`  Total Quick Vibes categories: ${allCategories.length}`);
+    console.info('==============================================\n');
 
     expect(stats.average).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
   });
@@ -388,11 +388,11 @@ describe('v3.0 Performance: Comprehensive Summary', () => {
       assembleStyleTags(['dubstep'], createSeededRng(Math.random() * 1000000));
     }, 1000);
 
-    console.log('\n=== V3.0 BASELINE METRICS ===');
-    console.log(formatStats(stats, 'dubstep (new genre)'));
-    console.log(`  Requirement: <1ms average`);
-    console.log(`  Status: ${stats.average < 1 ? '✅ PASS' : '❌ FAIL'}`);
-    console.log('=============================\n');
+    console.info('\n=== V3.0 BASELINE METRICS ===');
+    console.info(formatStats(stats, 'dubstep (new genre)'));
+    console.info(`  Requirement: <1ms average`);
+    console.info(`  Status: ${stats.average < 1 ? '✅ PASS' : '❌ FAIL'}`);
+    console.info('=============================\n');
 
     expect(stats.average).toBeLessThan(MAX_ALLOWED_AVERAGE_MS);
     expect(stats.p95).toBeLessThan(MAX_ALLOWED_AVERAGE_MS * 2);

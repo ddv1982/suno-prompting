@@ -35,6 +35,7 @@ export interface GenerateCreativeBoostOptions {
 export interface RefineCreativeBoostOptions {
   currentPrompt: string;
   currentTitle: string;
+  currentLyrics?: string;
   feedback: string;
   lyricsTopic: string;
   description: string;
@@ -60,11 +61,13 @@ export interface RefineCreativeBoostOptions {
  */
 export interface RefineDirectModeOptions {
   currentTitle: string;
+  currentLyrics?: string;
   feedback: string;
   lyricsTopic: string;
   description: string;
   sunoStyles: string[];
   withLyrics: boolean;
+  maxMode: boolean;
 }
 
 /**

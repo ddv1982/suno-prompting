@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { useCallback, type ReactNode } from "react";
+import { useCallback, type ReactElement } from "react";
 
 import { CategorySelector } from "@/components/category-selector";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
@@ -34,7 +34,7 @@ type QuickVibesPanelProps = {
 export function QuickVibesPanel({
   input, originalInput, withWordlessVocals, maxMode, isGenerating, hasCurrentPrompt,
   onInputChange, onWordlessVocalsChange, onMaxModeChange, onGenerate, onRefine,
-}: QuickVibesPanelProps): ReactNode {
+}: QuickVibesPanelProps): ReactElement {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
   const canSubmit = getCanSubmit(input, originalInput, isRefineMode);

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 import type { EditorMode } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type ModeToggleProps = {
   editorMode: EditorMode;
@@ -25,7 +25,7 @@ export function ModeToggle({
   onEditorModeChange,
   onMaxModeChange,
   onLyricsModeChange,
-}: ModeToggleProps): ReactNode {
+}: ModeToggleProps): ReactElement {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">

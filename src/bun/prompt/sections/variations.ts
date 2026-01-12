@@ -10,6 +10,7 @@
 import { GENRE_REGISTRY, selectInstrumentsForGenre } from '@bun/instruments';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { InvariantError } from '@shared/errors';
+import { selectRandomN } from '@shared/utils/random';
 
 import { GENERIC_MOODS, GENERIC_DESCRIPTORS } from './templates';
 
@@ -21,6 +22,7 @@ import type { GenreType } from '@bun/instruments/genres';
 
 /**
  * Select random items from an array using provided RNG.
+ * Re-exports from shared utility for backward compatibility.
  *
  * @param items - Array to select from
  * @param count - Number of items to select
@@ -29,8 +31,7 @@ import type { GenreType } from '@bun/instruments/genres';
  */
 export function selectRandom<T>(items: readonly T[], count: number, rng: () => number): T[] {
   if (items.length === 0) return [];
-  const shuffled = [...items].sort(() => rng() - 0.5);
-  return shuffled.slice(0, Math.min(count, items.length));
+  return selectRandomN(items, Math.min(count, items.length), rng);
 }
 
 /**

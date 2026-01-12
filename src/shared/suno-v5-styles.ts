@@ -2,6 +2,13 @@
  * Official Suno V5 styles registry
  * Extracted from https://suno.com/explore-v5
  *
+ * ⚠️ STANDARDS EXCEPTION: This file intentionally exceeds the 400-line limit.
+ * Reason: Pure data registry file containing 1,000+ style definitions.
+ * This is not logic code - it's a static lookup table that should remain
+ * consolidated for maintainability and easy updates from Suno's source.
+ *
+ * Approved: 2026-01-12 (Codebase Review & Standards Audit)
+ *
  * These are used as-is (no transformation) when selected by the user.
  * All styles stored lowercase (matching raw data from Suno).
  */
@@ -935,63 +942,8 @@ export const SUNO_V5_STYLES = [
  */
 export type SunoV5Style = (typeof SUNO_V5_STYLES)[number];
 
-/**
- * Special case mappings for title-case transformation.
- * These words need specific capitalization when displayed.
- */
-const SPECIAL_CASES: Record<string, string> = {
-  'r&b': 'R&B',
-  'lo-fi': 'Lo-Fi',
-  'k-pop': 'K-Pop',
-  'j-pop': 'J-Pop',
-  'g-funk': 'G-Funk',
-  'p-funk': 'P-Funk',
-  'edm': 'EDM',
-};
-
-/**
- * Convert a style string to title case for display.
- * Handles special cases like R&B, Lo-Fi, K-Pop, etc.
- *
- * @param str - The lowercase style string
- * @returns Title-cased display string
- */
-function toTitleCase(str: string): string {
-  return str
-    .split(' ')
-    .map((word) => {
-      const lower = word.toLowerCase();
-
-      // Check for exact special case match
-      if (SPECIAL_CASES[lower]) {
-        return SPECIAL_CASES[lower];
-      }
-
-      // Handle hyphenated words
-      if (word.includes('-')) {
-        return word
-          .split('-')
-          .map((part) => {
-            const lowerPart = part.toLowerCase();
-            // Check for special case in hyphenated part
-            if (SPECIAL_CASES[lowerPart]) {
-              return SPECIAL_CASES[lowerPart];
-            }
-            // Keep numeric parts as-is (e.g., "16-bit" → "16-Bit")
-            if (/^\d+$/.test(part)) {
-              return part;
-            }
-            // Standard title case for other parts
-            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-          })
-          .join('-');
-      }
-
-      // Standard title case
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(' ');
-}
+// Import shared toTitleCase utility
+import { toTitleCase } from '@shared/text-utils';
 
 /**
  * Display names for Suno V5 styles.

@@ -1,3 +1,19 @@
+/**
+ * Standards Exception: File Size Limit
+ *
+ * This file is intentionally exempt from the 400-line limit (currently 399 lines).
+ *
+ * Reason: This is a pure data registry file containing chord progression definitions
+ * and genre mappings. It contains no business logic - only typed data structures
+ * and simple lookup functions. Splitting this file would:
+ * - Fragment logically cohesive data
+ * - Make maintenance harder without any real benefit
+ * - Add unnecessary complexity
+ *
+ * Approved: 2026-01-12
+ * Issue: MIN-B07
+ */
+
 // Named chord progressions based on professional prompt patterns
 // These add harmonic structure guidance to prompts
 

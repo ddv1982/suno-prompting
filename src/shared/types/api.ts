@@ -181,6 +181,7 @@ export type GenerateCreativeBoostResponse = {
 export type RefineCreativeBoostParams = {
   currentPrompt: string;
   currentTitle: string;
+  currentLyrics?: string;
   feedback: string;
   lyricsTopic: string;
   description: string;
@@ -190,6 +191,8 @@ export type RefineCreativeBoostParams = {
   withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;
+  /** Optional genre count enforcement for non-Direct Mode refinement. */
+  targetGenreCount?: number;
 };
 
 export type RefineCreativeBoostResponse = {

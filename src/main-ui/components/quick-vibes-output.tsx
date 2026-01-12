@@ -33,11 +33,11 @@ function CopyButton({ label, copiedLabel, onClick, disabled }: {
 }
 
 type QuickVibesOutputProps = {
-  prompt: string; title?: string; isGenerating: boolean; hasDebugInfo: boolean;
-  onRemix: () => void; onCopy: () => void; onDebugOpen: () => void;
+  prompt: string; title?: string; lyrics?: string; isGenerating: boolean; hasDebugInfo: boolean;
+  onRemix: () => void; onCopy: () => void; onDebugOpen: () => void; onRemixLyrics?: () => void;
 };
 
-export function QuickVibesOutput({ prompt, title, isGenerating, hasDebugInfo, onRemix, onCopy, onDebugOpen }: QuickVibesOutputProps): ReactElement {
+export function QuickVibesOutput({ prompt, title, lyrics, isGenerating, hasDebugInfo, onRemix, onCopy, onDebugOpen, onRemixLyrics }: QuickVibesOutputProps): ReactElement {
   const contentOnly = stripMaxModeHeader(prompt);
   const charCount = contentOnly.length;
   const isOverLimit = charCount > APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
@@ -70,6 +70,17 @@ export function QuickVibesOutput({ prompt, title, isGenerating, hasDebugInfo, on
           </div>
         </Card>
       </div>
+
+      {lyrics && (
+        <OutputSection
+          label="Lyrics"
+          content={lyrics}
+          onCopy={() => navigator.clipboard.writeText(lyrics)}
+          onRemix={onRemixLyrics}
+          isGenerating={isGenerating}
+          scrollable
+        />
+      )}
     </div>
   );
 }

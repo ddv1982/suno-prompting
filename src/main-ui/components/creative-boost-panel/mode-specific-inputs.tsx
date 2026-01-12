@@ -6,7 +6,7 @@ import { DirectModeIndicator } from "./direct-mode-indicator";
 
 import type { MoodCategory } from "@bun/mood";
 import type { CreativeBoostInput } from "@shared/types";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 type ModeSpecificInputsProps = {
   input: CreativeBoostInput;
@@ -26,7 +26,7 @@ export function ModeSpecificInputs({
   onMoodCategoryChange,
   onGenresChange,
   onSunoStylesChange,
-}: ModeSpecificInputsProps): ReactNode {
+}: ModeSpecificInputsProps): ReactElement {
   if (isSimpleMode) {
     return (
       <MoodCategoryCombobox
