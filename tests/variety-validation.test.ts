@@ -8,10 +8,13 @@
  * - ≥70% unique combinations in 1000 runs
  * - Recording contexts show variety across runs
  * - Overall tag combinations are sufficiently diverse
+ * - ≥95% coherence rate at normal creativity (50)
  */
 
 import { test, expect, describe } from 'bun:test';
 
+import { checkCoherence } from '@bun/prompt/deterministic/coherence';
+import { assembleInstruments } from '@bun/prompt/deterministic/instruments';
 import { assembleStyleTags } from '@bun/prompt/deterministic/styles';
 
 /**
@@ -223,5 +226,40 @@ describe('Statistical Variety Validation', () => {
     // Recording contexts should appear in reasonable number of prompts (≥15%)
     // Due to probabilistic tag selection and 10-tag limit, 15-30% is expected
     expect(appearanceCount).toBeGreaterThanOrEqual(iterations * 0.15);
+  });
+
+  test('generated prompts pass coherence check', () => {
+    // Arrange
+    const iterations = 100;
+    const creativityLevel = 50; // Normal creativity
+    let coherentCount = 0;
+    const genres = ['jazz', 'rock', 'pop', 'electronic'] as const;
+
+    // Act - run 100 iterations across different genres
+    for (let i = 0; i < iterations; i++) {
+      // Rotate through genres for better coverage
+      const genre = genres[i % genres.length]!;
+      const rng = seedRng(i);
+
+      const styleResult = assembleStyleTags([genre], rng);
+      const instrumentResult = assembleInstruments([genre], rng);
+
+      const coherenceResult = checkCoherence(
+        instrumentResult.instruments,
+        styleResult.tags,
+        creativityLevel
+      );
+
+      if (coherenceResult.valid) {
+        coherentCount++;
+      }
+    }
+
+    // Assert
+    const coherenceRate = (coherentCount / iterations) * 100;
+    console.info(`Coherence rate: ${coherenceRate.toFixed(1)}%`);
+
+    // Expect ≥95% coherent at normal creativity (50)
+    expect(coherentCount).toBeGreaterThanOrEqual(iterations * 0.95);
   });
 });

@@ -11,6 +11,55 @@ import type { MoodCategory } from '@bun/mood';
 import type { TraceCollector } from '@bun/trace';
 
 /**
+ * Tag category weights for style tag assembly.
+ * Probabilities (0.0-1.0) determine inclusion chance per category.
+ *
+ * These weights control how likely each tag category is to be included
+ * in the generated style tags. Different genres may have different weights
+ * to better match their musical characteristics.
+ *
+ * @example
+ * ```typescript
+ * const jazzWeights: TagCategoryWeights = {
+ *   vocal: 0.8,    // Jazz often features vocals prominently
+ *   spatial: 0.4,  // Moderate spatial effects
+ *   harmonic: 0.5, // Rich harmonic content
+ *   dynamic: 0.3,  // Natural dynamics
+ *   temporal: 0.3, // Subtle timing variations
+ * };
+ * ```
+ */
+export type TagCategoryWeights = {
+  /** Probability of including vocal-related tags (0.0-1.0) */
+  readonly vocal: number;
+  /** Probability of including spatial/reverb tags (0.0-1.0) */
+  readonly spatial: number;
+  /** Probability of including harmonic complexity tags (0.0-1.0) */
+  readonly harmonic: number;
+  /** Probability of including dynamic range tags (0.0-1.0) */
+  readonly dynamic: number;
+  /** Probability of including timing/groove tags (0.0-1.0) */
+  readonly temporal: number;
+};
+
+/**
+ * Default tag category weights used when no genre-specific weights exist.
+ *
+ * These values provide a balanced baseline for tag selection across
+ * all genres. Genre-specific weights in the weights module override
+ * these defaults for more tailored style tag generation.
+ *
+ * @see GENRE_TAG_WEIGHTS in `./weights.ts` for genre-specific overrides
+ */
+export const DEFAULT_TAG_WEIGHTS = {
+  vocal: 0.6,
+  spatial: 0.5,
+  harmonic: 0.4,
+  dynamic: 0.4,
+  temporal: 0.3,
+} as const satisfies TagCategoryWeights;
+
+/**
  * Options for deterministic prompt generation.
  */
 export type DeterministicOptions = {
@@ -20,6 +69,57 @@ export type DeterministicOptions = {
   readonly genreOverride?: string;
   /** Optional mood category to override genre-based mood selection */
   readonly moodCategory?: MoodCategory;
+  /**
+   * Optional creativity level (0-100) for mood selection.
+   *
+   * At creativityLevel > 60 (adventurous/high creativity), compound moods
+   * like "dark euphoria" or "bittersweet nostalgia" are used for richer
+   * emotional expression.
+   *
+   * At creativityLevel ≤ 60 (standard/low creativity), simple moods from
+   * the genre's mood pool are used for more conventional results.
+   *
+   * @default 50 (standard creativity, uses simple moods)
+   *
+   * @example
+   * ```typescript
+   * // High creativity - uses compound moods
+   * const result = buildDeterministicMaxPrompt({
+   *   description: 'jazz ballad',
+   *   creativityLevel: 75,
+   * });
+   * // Moods may include 'bittersweet nostalgia', 'raw elegance', etc.
+   *
+   * // Standard creativity - uses simple moods
+   * const result2 = buildDeterministicMaxPrompt({
+   *   description: 'jazz ballad',
+   *   creativityLevel: 50,
+   * });
+   * // Moods will be 'smooth', 'warm', 'sophisticated', etc.
+   * ```
+   */
+  readonly creativityLevel?: number;
+  /**
+   * Optional seed for reproducible RNG generation.
+   *
+   * When provided and `rng` is not specified, creates a seeded pseudo-random
+   * number generator using `createSeededRng(seed)`. This enables reproducible
+   * prompt generation where the same seed always produces identical outputs.
+   *
+   * Useful for:
+   * - Debugging: Reproduce exact prompts for investigation
+   * - Testing: Deterministic test assertions
+   * - Sharing: Allow users to share and recreate specific generations
+   *
+   * @example
+   * ```typescript
+   * // Same seed produces identical output
+   * const result1 = buildDeterministicMaxPrompt({ description: 'jazz', seed: 12345 });
+   * const result2 = buildDeterministicMaxPrompt({ description: 'jazz', seed: 12345 });
+   * // result1.text === result2.text
+   * ```
+   */
+  readonly seed?: number;
   /** Random number generator for deterministic testing */
   readonly rng?: () => number;
   /** Optional trace collector (undefined when debug mode OFF). */
@@ -78,10 +178,18 @@ export type InstrumentAssemblyResult = {
 
 /**
  * Result from style tag assembly.
+ *
+ * The tags array contains all style tags in priority order (production first).
+ * The moodTags array contains just the mood-related tags for use in headers
+ * and mood-specific displays, separate from production/recording tags.
  */
 export type StyleTagsResult = {
+  /** All style tags in priority order (production → recording → mood → etc.) */
   readonly tags: readonly string[];
+  /** Formatted comma-separated string of all tags */
   readonly formatted: string;
+  /** Mood tags only (from genre mood pool), for header and mood display */
+  readonly moodTags: readonly string[];
 };
 
 /**

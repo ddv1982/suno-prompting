@@ -2,7 +2,7 @@
 
 This guide explains how the app generates Suno prompts **instantly without AI**, making smart choices based on your inputs using curated databases of genres, instruments, moods, and production styles.
 
-> **✨ v3.0.0 Update:** Major expansion with compound moods, mood intensity scaling, era-based instruments, ensemble presets, 16 Quick Vibes categories, and 25 new genre definitions! See new sections for [Compound Moods](#compound-moods-v30), [Mood Intensity](#mood-intensity-v30), [Era-Based Instruments](#era-based-instruments-v30), and [Ensemble Presets](#ensemble-presets-v30).
+> **✨ v3.1.0 Update:** Enhanced deterministic system with genre aliases (70+ mappings), genre-specific tag weights (60 genres), coherence validation (5 conflict rules), and multi-genre auto-detection (up to 4 genres). See new sections for [Genre Aliases](#genre-aliases-v31), [Genre-Specific Tag Weights](#genre-specific-tag-weights-v31), [Coherence Validation](#coherence-validation-v31), and [Multi-Genre Detection](#multi-genre-detection-v31).
 
 ## Table of Contents
 
@@ -16,11 +16,15 @@ This guide explains how the app generates Suno prompts **instantly without AI**,
 8. [Mood Intensity (v3.0)](#mood-intensity-v30)
 9. [Era-Based Instruments (v3.0)](#era-based-instruments-v30)
 10. [Ensemble Presets (v3.0)](#ensemble-presets-v30)
-11. [Performance: Why It's Instant](#performance-why-its-instant)
-12. [Data Sources](#data-sources)
-13. [User Control vs Automation](#user-control-vs-automation)
-14. [Examples: Input → Output](#examples-input--output)
-15. [Quality Assurance](#quality-assurance)
+11. [Genre Aliases (v3.1)](#genre-aliases-v31)
+12. [Genre-Specific Tag Weights (v3.1)](#genre-specific-tag-weights-v31)
+13. [Coherence Validation (v3.1)](#coherence-validation-v31)
+14. [Multi-Genre Detection (v3.1)](#multi-genre-detection-v31)
+15. [Performance: Why It's Instant](#performance-why-its-instant)
+16. [Data Sources](#data-sources)
+17. [User Control vs Automation](#user-control-vs-automation)
+18. [Examples: Input → Output](#examples-input--output)
+19. [Quality Assurance](#quality-assurance)
 
 ---
 
@@ -808,6 +812,436 @@ Ensemble: "horn section" → ["trumpet", "trombone", "saxophone"]
 
 ---
 
+## Genre Aliases (v3.1)
+
+**NEW in v3.1:** 70+ genre alias mappings that automatically resolve common variations, misspellings, and alternate names to canonical genre types.
+
+### What Are Genre Aliases?
+
+Genre aliases map user-friendly terms to the internal genre system, enabling more flexible genre detection:
+
+| User Input | Resolved Genre | Reason |
+|------------|----------------|--------|
+| "hip hop" | trap | Closest match in registry |
+| "r&b" | rnb | Alternate spelling |
+| "synth wave" | synthwave | Space variation |
+| "doom metal" | stonerrock | Sonic characteristics |
+| "dnb" | drumandbass | Common abbreviation |
+
+### Alias Categories (70+ mappings)
+
+**Hip-hop variants → trap:**
+```
+hip hop, hip-hop, hiphop, rap
+```
+
+**Boom bap/Lo-fi variants → lofi:**
+```
+boom bap, boombap, lofi hip hop, lofi hiphop
+```
+
+**R&B variants → rnb:**
+```
+r&b, r and b, r n b, rhythm and blues, r'n'b
+```
+
+**Synth variants:**
+```
+synth pop, synth-pop → synthpop
+synth wave, synth-wave, retro wave, retrowave → synthwave
+```
+
+**Metal variants:**
+```
+heavy metal, thrash metal, death metal, black metal, nu metal, nu-metal → metal
+doom metal, stoner metal, sludge metal, doom → stonerrock
+```
+
+**Electronic variants:**
+```
+edm, electro, electronica → electronic
+techno music → melodictechno
+tech house, deep house, progressive house → house
+progressive trance, psytrance, psy-trance, goa trance → trance
+```
+
+**Rock variants:**
+```
+alternative, alt rock, alt-rock, alternative rock → indie
+post-rock, post rock → shoegaze
+math-rock, math rock → mathrock
+```
+
+**Drum & Bass variants:**
+```
+dnb, d&b, d n b, drum n bass, drum and bass, drum-n-bass, liquid dnb, neurofunk → drumandbass
+```
+
+**Jazz variants:**
+```
+nu jazz, nu-jazz, acid jazz, smooth jazz, bebop, bop, cool jazz → jazz
+```
+
+**And more:** soul variants, new wave, garage, dubstep, country, classical, ambient, world music
+
+### API Functions
+
+```typescript
+// Exact alias lookup (case-insensitive, trimmed)
+resolveGenreAlias('hip hop') // returns 'trap'
+resolveGenreAlias('R&B') // returns 'rnb'
+resolveGenreAlias('unknown') // returns null
+
+// Find alias in longer text (substring matching)
+findGenreAliasInText('I want hip hop beats') // returns 'trap'
+findGenreAliasInText('some r&b vibes') // returns 'rnb'
+findGenreAliasInText('random text') // returns null
+```
+
+### How It's Used
+
+Genre aliases are automatically checked during genre resolution:
+
+```
+INPUT:
+Description: "chill r&b vibes with smooth vocals"
+
+APP PROCESS:
+1. detectAllGenres() finds no direct genre match
+2. findGenreAliasInText() finds "r&b" → resolves to 'rnb'
+3. Genre set to 'rnb'
+
+OUTPUT:
+Genre: "rnb" (resolved from alias)
+```
+
+---
+
+## Genre-Specific Tag Weights (v3.1)
+
+**NEW in v3.1:** Tailored tag category weights for all 60 supported genres, controlling the probability of including specific production tag categories.
+
+### What Are Tag Weights?
+
+Each genre has custom probabilities (0.0 to 1.0) for five tag categories:
+
+| Category | Description | Low Value | High Value |
+|----------|-------------|-----------|------------|
+| **vocal** | Vocal-related tags | Instrumental focus | Vocal-forward |
+| **spatial** | Spatial/reverb tags | Dry/intimate | Expansive/wide |
+| **harmonic** | Harmonic complexity tags | Simple | Complex |
+| **dynamic** | Dynamic range tags | Compressed | Wide dynamic |
+| **temporal** | Timing/groove tags | Steady | Rhythmic focus |
+
+### Weight Design by Genre Family
+
+**Jazz & Blues** - Vocal-forward, moderate spatial:
+```typescript
+jazz:   { vocal: 0.8, spatial: 0.4, harmonic: 0.5, dynamic: 0.3, temporal: 0.3 }
+blues:  { vocal: 0.75, spatial: 0.35, harmonic: 0.4, dynamic: 0.35, temporal: 0.3 }
+soul:   { vocal: 0.85, spatial: 0.4, harmonic: 0.45, dynamic: 0.4, temporal: 0.3 }
+rnb:    { vocal: 0.85, spatial: 0.5, harmonic: 0.4, dynamic: 0.45, temporal: 0.35 }
+gospel: { vocal: 0.9, spatial: 0.5, harmonic: 0.5, dynamic: 0.5, temporal: 0.25 }
+```
+
+**Electronic** - Spatial-forward, lower vocal:
+```typescript
+electronic:    { vocal: 0.4, spatial: 0.7, harmonic: 0.3, dynamic: 0.5, temporal: 0.4 }
+house:         { vocal: 0.45, spatial: 0.65, harmonic: 0.3, dynamic: 0.55, temporal: 0.5 }
+trance:        { vocal: 0.3, spatial: 0.8, harmonic: 0.35, dynamic: 0.4, temporal: 0.35 }
+melodictechno: { vocal: 0.35, spatial: 0.75, harmonic: 0.4, dynamic: 0.45, temporal: 0.4 }
+```
+
+**Rock** - Balanced, dynamic-forward:
+```typescript
+rock:   { vocal: 0.6, spatial: 0.45, harmonic: 0.35, dynamic: 0.55, temporal: 0.35 }
+metal:  { vocal: 0.45, spatial: 0.35, harmonic: 0.3, dynamic: 0.7, temporal: 0.35 }
+punk:   { vocal: 0.6, spatial: 0.3, harmonic: 0.2, dynamic: 0.6, temporal: 0.3 }
+indie:  { vocal: 0.65, spatial: 0.5, harmonic: 0.4, dynamic: 0.4, temporal: 0.35 }
+```
+
+**Ambient/Atmospheric** - Spatial-forward, low vocal:
+```typescript
+ambient:   { vocal: 0.15, spatial: 0.85, harmonic: 0.5, dynamic: 0.25, temporal: 0.2 }
+dreampop:  { vocal: 0.5, spatial: 0.8, harmonic: 0.45, dynamic: 0.3, temporal: 0.25 }
+shoegaze:  { vocal: 0.4, spatial: 0.85, harmonic: 0.45, dynamic: 0.35, temporal: 0.3 }
+```
+
+**Classical/Orchestral** - High harmonic, high spatial:
+```typescript
+classical: { vocal: 0.3, spatial: 0.75, harmonic: 0.7, dynamic: 0.55, temporal: 0.3 }
+symphonic: { vocal: 0.25, spatial: 0.8, harmonic: 0.65, dynamic: 0.6, temporal: 0.3 }
+cinematic: { vocal: 0.3, spatial: 0.85, harmonic: 0.6, dynamic: 0.65, temporal: 0.35 }
+```
+
+### API Function
+
+```typescript
+// Get weights for a genre (falls back to defaults if unknown)
+const weights = getTagWeightsForGenre('jazz');
+// { vocal: 0.8, spatial: 0.4, harmonic: 0.5, dynamic: 0.3, temporal: 0.3 }
+
+// Unknown genres return defaults
+const defaultWeights = getTagWeightsForGenre('unknown' as GenreType);
+// { vocal: 0.5, spatial: 0.5, harmonic: 0.3, dynamic: 0.4, temporal: 0.3 }
+```
+
+### Impact on Style Tag Assembly
+
+When MAX mode generates production tags, it uses genre weights to determine inclusion probability:
+
+```
+INPUT:
+Genre: "ambient"
+MAX mode: enabled
+
+WEIGHT CHECK (ambient):
+- vocal: 0.15 → 15% chance of vocal tags (instrumental focus)
+- spatial: 0.85 → 85% chance of spatial tags (expansive soundscape)
+- harmonic: 0.5 → 50% chance of harmonic tags
+- dynamic: 0.25 → 25% chance of dynamic tags (minimal dynamics)
+- temporal: 0.2 → 20% chance of temporal tags (less rhythmic)
+
+OUTPUT:
+Tags emphasize spatial characteristics, minimal vocal/dynamic content
+```
+
+---
+
+## Coherence Validation (v3.1)
+
+**NEW in v3.1:** Lightweight conflict detection ensures musically sensible instrument-production combinations with creativity-aware validation.
+
+### What Is Coherence Validation?
+
+Coherence validation detects obviously conflicting combinations between instruments and production tags. It prevents musically incoherent results while allowing experimental fusions at high creativity levels.
+
+### Creativity-Aware Behavior
+
+| Creativity Level | Mode | Behavior |
+|------------------|------|----------|
+| **0-60** | Strict | Validates and removes conflicting tags |
+| **61-100** | Permissive | Allows experimental combinations |
+
+### Conflict Rules (5 total)
+
+**1. distorted-intimate**
+- **Conflict:** Heavy/distorted sounds with intimate/gentle production
+- **Instruments:** distorted, overdriven, fuzz, heavy guitar, crushing, screaming
+- **Production:** intimate, bedroom, whisper, gentle, delicate, soft
+
+**2. acoustic-digital**
+- **Conflict:** Pure acoustic instruments with heavy digital processing
+- **Instruments:** acoustic guitar, upright bass, acoustic piano, nylon string, ukulele
+- **Production:** glitch, bitcrushed, digital distortion, vocoder, autotune, robotic
+
+**3. orchestral-lofi**
+- **Conflict:** Orchestral instruments with lo-fi production
+- **Instruments:** symphony, orchestra, string section, philharmonic, chamber orchestra, full strings
+- **Production:** lo-fi, vinyl crackle, tape hiss, dusty, bedroom production, cassette
+
+**4. delicate-aggressive**
+- **Conflict:** Delicate instruments with aggressive production
+- **Instruments:** music box, celesta, harp, glockenspiel, kalimba, wind chimes, glass harmonica
+- **Production:** crushing, aggressive, slamming, brutal, punishing, extreme compression
+
+**5. vintage-futuristic**
+- **Conflict:** Vintage instruments with futuristic production
+- **Instruments:** phonograph, gramophone, 1920s, antique, victorian, baroque
+- **Production:** futuristic, sci-fi, neural, ai-generated, cyber, space age
+
+### API Functions
+
+```typescript
+// Check coherence (returns validation result)
+const result = checkCoherence(
+  ['distorted guitar', 'heavy bass'],
+  ['intimate bedroom recording'],
+  30 // creativity level
+);
+// result: { valid: false, conflicts: ['distorted-intimate'], suggestions: [...] }
+
+// At high creativity, same inputs pass
+const result2 = checkCoherence(
+  ['distorted guitar', 'heavy bass'],
+  ['intimate bedroom recording'],
+  80 // high creativity - permissive mode
+);
+// result2: { valid: true, conflicts: [] }
+
+// Validate and auto-fix conflicts
+const fixedTags = validateAndFixCoherence(
+  ['distorted guitar'],
+  ['intimate bedroom recording', 'warm', 'wide stereo'],
+  30
+);
+// Returns: ['warm', 'wide stereo'] - conflicting tag removed
+```
+
+### Example: Conflict Detection
+
+```
+INPUT:
+Instruments: ["acoustic guitar", "upright bass"]
+Production: ["glitch effects", "warm analog", "wide stereo"]
+Creativity: 30 (strict mode)
+
+APP PROCESS:
+1. Check acoustic-digital rule
+2. Instruments match: "acoustic guitar", "upright bass"
+3. Production match: "glitch effects"
+4. Conflict detected: acoustic-digital
+
+VALIDATION RESULT:
+{
+  valid: false,
+  conflicts: ['acoustic-digital'],
+  suggestions: ['Consider adjusting instruments or production style for better coherence']
+}
+
+AUTO-FIX:
+["warm analog", "wide stereo"] (glitch effects removed)
+```
+
+### Helper Functions
+
+```typescript
+// Get human-readable description of a conflict
+getConflictDescription('distorted-intimate')
+// "Distorted instruments with intimate production"
+
+// Get all available conflict rule IDs
+getAllConflictRuleIds()
+// ['distorted-intimate', 'acoustic-digital', 'orchestral-lofi', 'delicate-aggressive', 'vintage-futuristic']
+```
+
+---
+
+## Multi-Genre Detection (v3.1)
+
+**NEW in v3.1:** Automatic detection of multiple genres in descriptions for intelligent genre blending (up to 4 genres).
+
+### What Is Multi-Genre Detection?
+
+Instead of detecting only the first/primary genre, the system now identifies all mentioned genres in a description for automatic blending.
+
+### Detection Process
+
+```
+INPUT:
+Description: "jazz rock fusion with electronic beats"
+
+APP PROCESS:
+1. Check priority genres first (most common)
+2. Check remaining genres from registry
+3. Check genre aliases as fallback
+4. Limit to maximum 4 genres
+
+OUTPUT:
+Detected: ['jazz', 'rock', 'electronic'] (3 genres)
+Display: "jazz rock electronic"
+Primary: 'jazz' (first detected)
+```
+
+### Detection Priority
+
+1. **Priority genres** - Most common/important genres checked first (from GENRE_PRIORITY)
+2. **Registry genres** - All remaining genres from GENRE_REGISTRY
+3. **Genre aliases** - Alias mappings checked if room remains (max 4)
+
+### Maximum Genres
+
+The system limits detection to **4 genres maximum** to prevent overly complex combinations:
+
+```
+INPUT:
+Description: "ambient jazz metal house rock indie"
+
+OUTPUT:
+Detected: ['jazz', 'metal', 'house', 'rock'] (limited to 4)
+```
+
+### API Function
+
+```typescript
+// Detect all genres in a description
+detectAllGenres('jazz rock fusion')
+// returns ['jazz', 'rock']
+
+detectAllGenres('chill lofi hip hop beats')
+// returns ['lofi', 'trap'] (hip hop resolved via alias)
+
+detectAllGenres('ambient jazz metal house rock')
+// returns ['jazz', 'metal', 'house', 'rock'] (max 4)
+```
+
+### Genre Resolution Flow
+
+The complete genre resolution now follows this priority:
+
+```
+1. Genre override (if provided)
+   ↓ not provided
+2. Multi-keyword detection (detectAllGenres)
+   ↓ no genres found
+3. Mood-based detection (detectGenreFromMood)
+   ↓ no mood match
+4. Random fallback (selectRandomGenre)
+```
+
+### ResolvedGenre Structure
+
+```typescript
+type ResolvedGenre = {
+  detected: GenreType | null;     // Primary detected genre (null if override/random)
+  displayGenre: string;           // Full genre string for display ("jazz rock")
+  primaryGenre: GenreType;        // Primary genre for instrument selection
+  components: GenreType[];        // All genre components for blending
+};
+```
+
+### Example: Full Resolution
+
+```
+INPUT:
+Description: "chill jazz vibes with electronic elements"
+Genre override: undefined
+
+APP PROCESS:
+1. No override provided
+2. detectAllGenres() finds: ['jazz', 'electronic']
+3. Primary genre: 'jazz'
+4. Display: "jazz electronic"
+5. Components: ['jazz', 'electronic']
+
+OUTPUT:
+{
+  detected: 'jazz',
+  displayGenre: 'jazz electronic',
+  primaryGenre: 'jazz',
+  components: ['jazz', 'electronic']
+}
+```
+
+### Integration with Instrument Selection
+
+When multiple genres are detected, instruments are blended from all components:
+
+```
+DETECTED GENRES: ['jazz', 'electronic']
+
+INSTRUMENT BLENDING:
+1. Jazz pool: [Rhodes, piano, tenor sax, upright bass, brushed drums]
+2. Electronic pool: [synth, synth pad, drum machine, bass synth]
+3. Smart blend: Select proportionally from each pool
+4. Coherence check: Ensure no conflicts
+
+OUTPUT:
+Instruments: "Rhodes, synth pad, tenor sax, drum machine"
+```
+
+---
+
 ## Performance: Why It's Instant
 
 ### Traditional AI Approach
@@ -955,9 +1389,37 @@ All choices come from carefully curated, tested databases maintained in code:
 - Auto-expansion to individual instruments
 - Examples: string quartet, horn section, jazz combo, synth stack
 
+### Genre Aliases (v3.1)
+
+- **70+ alias mappings** for flexible genre input
+- Categories: hip-hop, R&B, synth, metal, electronic, rock, drum & bass, jazz, and more
+- Functions: `resolveGenreAlias()` for exact lookup, `findGenreAliasInText()` for substring matching
+- Sorted by length for precise matching (longer aliases checked first)
+
+### Genre-Specific Tag Weights (v3.1)
+
+- **60 genres** with tailored `TagCategoryWeights`
+- 5 weight categories: vocal, spatial, harmonic, dynamic, temporal
+- Design by genre family (Jazz=vocal-forward, Electronic=spatial-forward, Rock=dynamic-forward)
+- Default fallback weights for unknown genres
+
+### Coherence Validation (v3.1)
+
+- **5 conflict rules** for instrument-production coherence
+- Rules: distorted-intimate, acoustic-digital, orchestral-lofi, delicate-aggressive, vintage-futuristic
+- Creativity-aware: strict (0-60), permissive (61-100)
+- Auto-fix capability with trace logging
+
+### Multi-Genre Detection (v3.1)
+
+- **Up to 4 genres** detected per description
+- Priority-based detection: GENRE_PRIORITY → GENRE_REGISTRY → aliases
+- `ResolvedGenre` structure with primary, display, and component genres
+- Mood-based fallback detection (`detectGenreFromMood`)
+
 **All data is:**
 - ✅ Reviewed by developers
-- ✅ Tested in 2,886 automated tests
+- ✅ Tested in 3,275 automated tests (24,241 assertions)
 - ✅ Validated for musical coherence
 - ✅ Regularly updated and expanded
 
@@ -1298,8 +1760,8 @@ The deterministic system is thoroughly tested to ensure high-quality outputs:
 
 ### Automated Testing
 
-✅ **2,886 tests** verify all combinations work correctly  
-✅ **22,805 assertions** validate expected behavior  
+✅ **3,275 tests** verify all combinations work correctly  
+✅ **24,241 assertions** validate expected behavior  
 ✅ **100% pass rate** maintained across all refactoring
 
 ### Test Categories
@@ -1347,6 +1809,30 @@ The deterministic system is thoroughly tested to ensure high-quality outputs:
 - ✅ All word combinations reviewed for coherence
 - ✅ Title complexity scales with creativity (2-word → 3-word → complex)
 - ✅ No nonsensical combinations
+
+**Genre Aliases Quality (v3.1):**
+- ✅ 70+ alias mappings covering all common variations
+- ✅ Case-insensitive, trimmed lookup
+- ✅ Length-sorted matching for precision (longer aliases first)
+- ✅ Comprehensive coverage: hip-hop, R&B, metal, electronic, jazz, and more
+
+**Genre Tag Weights Quality (v3.1):**
+- ✅ 60 genres with tailored weights
+- ✅ Genre family design rationale documented
+- ✅ Default fallback for unknown genres
+- ✅ 5 weight categories validated for musical appropriateness
+
+**Coherence Validation Quality (v3.1):**
+- ✅ 5 conflict rules with clear descriptions
+- ✅ Creativity-aware validation (strict vs permissive)
+- ✅ Auto-fix capability preserves non-conflicting tags
+- ✅ Trace logging for debugging
+
+**Multi-Genre Detection Quality (v3.1):**
+- ✅ Up to 4 genres detected per description
+- ✅ Priority-based detection prevents false positives
+- ✅ Alias fallback extends detection coverage
+- ✅ ResolvedGenre structure supports blending
 
 ### Performance Benchmarks
 
@@ -1398,9 +1884,11 @@ The deterministic generation system provides:
 🎵 **Quality** - Curated data, tested combinations  
 🎨 **Variety** - Controlled randomness from quality pools  
 ⚡ **Reliability** - Works offline, no API failures  
-🧪 **Tested** - 2,886 tests validate correctness  
+🧪 **Tested** - 3,275 tests validate correctness  
 📝 **Topic-Aware** - 170+ keywords map descriptions to relevant titles (v2.0)  
-🎼 **Rich Vocabulary** - 269 words × 159 patterns = 100,000+ unique titles (v2.0)
+🎼 **Rich Vocabulary** - 269 words × 159 patterns = 100,000+ unique titles (v2.0)  
+🏷️ **Smart Aliases** - 70+ genre mappings for flexible input (v3.1)  
+⚖️ **Genre Weights** - 60 genres with tailored tag probabilities (v3.1)
 
 **Your role:** Guide the direction with creativity level, mood category, Quick Vibes, and optional description  
 **App's role:** Make expert musical decisions from validated databases, extract keywords from descriptions
@@ -1422,6 +1910,13 @@ The result is professional-quality Suno prompts generated instantly, with full c
 - Era-based instruments (70s/80s/90s/modern)
 - 10 ensemble presets with genre compatibility
 - 550 additional tests (2,336 → 2,886)
+
+**v3.1 enhancements:**
+- Genre aliases system (70+ mappings for hip-hop, R&B, metal, electronic, etc.)
+- Genre-specific tag weights (60 genres with tailored vocal/spatial/harmonic/dynamic/temporal weights)
+- Coherence validation (5 conflict rules with creativity-aware strictness)
+- Multi-genre detection (up to 4 genres auto-detected for blending)
+- 389 additional tests (2,886 → 3,275)
 
 ---
 

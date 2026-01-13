@@ -17,7 +17,33 @@ export type {
   InstrumentAssemblyResult,
   StyleTagsResult,
   RemixResult,
+  TagCategoryWeights,
 } from './types';
+
+// Re-export constants
+export { DEFAULT_TAG_WEIGHTS } from './types';
+
+// Re-export genre weights
+export { GENRE_TAG_WEIGHTS, getTagWeightsForGenre } from './weights';
+
+// Re-export genre aliases
+export {
+  GENRE_ALIASES,
+  resolveGenreAlias,
+  findGenreAliasInText,
+} from './aliases';
+
+// Re-export multi-genre detection
+export { detectAllGenres } from './genre';
+
+// Re-export coherence validation
+export type { CoherenceResult } from './coherence';
+export {
+  checkCoherence,
+  validateAndFixCoherence,
+  getConflictDescription,
+  getAllConflictRuleIds,
+} from './coherence';
 
 // Re-export main builder functions
 export { buildDeterministicMaxPrompt } from './max-builder';

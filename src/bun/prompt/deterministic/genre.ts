@@ -4,8 +4,10 @@
  * @module prompt/deterministic/genre
  */
 
-import { detectGenre } from '@bun/instruments/detection';
+import { detectGenre, detectGenreFromMood, GENRE_PRIORITY } from '@bun/instruments/detection';
+import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { createLogger } from '@bun/logger';
+import { findGenreAliasInText } from '@bun/prompt/deterministic/aliases';
 import { parseGenreComponents } from '@bun/prompt/genre-parser';
 import { traceDecision } from '@bun/trace';
 
@@ -73,9 +75,86 @@ export function parseMultiGenre(description: string): GenreType | null {
 }
 
 /**
+ * Maximum number of genres to detect for auto-blending.
+ * Prevents overly complex genre combinations.
+ */
+const MAX_DETECTED_GENRES = 4;
+
+/**
+ * Match genres from a list against lowercased description text.
+ * Mutates detected and seen arrays for efficiency.
+ */
+function matchGenresFromList(
+  lower: string,
+  genreKeys: readonly GenreType[],
+  detected: GenreType[],
+  seen: Set<GenreType>
+): void {
+  for (const key of genreKeys) {
+    if (detected.length >= MAX_DETECTED_GENRES) return;
+    if (seen.has(key)) continue;
+
+    const genre = GENRE_REGISTRY[key];
+    const nameMatch = lower.includes(genre.name.toLowerCase());
+    const keywordMatch = genre.keywords.some((kw) => lower.includes(kw));
+
+    if (nameMatch || keywordMatch) {
+      detected.push(key);
+      seen.add(key);
+    }
+  }
+}
+
+/**
+ * Detect all genres mentioned in a description for auto-blending.
+ *
+ * Searches the description for genre names, keywords, and aliases.
+ * Returns all detected genres in priority order (first detected = primary).
+ *
+ * @param description - User's song description
+ * @returns Array of detected GenreTypes (max 4, no duplicates)
+ *
+ * @example
+ * detectAllGenres('jazz rock fusion') // returns ['jazz', 'rock']
+ * detectAllGenres('chill lofi hip hop') // returns ['lofi', 'trap']
+ * detectAllGenres('ambient jazz metal house rock') // returns ['jazz', 'metal', 'house', 'rock'] (max 4)
+ */
+export function detectAllGenres(description: string): GenreType[] {
+  if (!description || typeof description !== 'string') {
+    return [];
+  }
+
+  const lower = description.toLowerCase();
+  const detected: GenreType[] = [];
+  const seen = new Set<GenreType>();
+
+  // 1. Check priority genres first (most common/important)
+  matchGenresFromList(lower, GENRE_PRIORITY, detected, seen);
+
+  // 2. Check remaining genres not in priority list
+  matchGenresFromList(lower, ALL_GENRE_KEYS, detected, seen);
+
+  // 3. Check for genre aliases if we have room
+  if (detected.length < MAX_DETECTED_GENRES) {
+    const aliasGenre = findGenreAliasInText(description);
+    if (aliasGenre && !seen.has(aliasGenre)) {
+      detected.push(aliasGenre);
+    }
+  }
+
+  return detected;
+}
+
+/**
  * Resolve the effective genre from description and optional override.
+ *
  * Supports compound genre strings like "jazz rock" or "jazz, metal".
- * Priority: genreOverride > detected genre > random fallback
+ *
+ * Detection priority:
+ * 1. Genre override (if provided)
+ * 2. Multi-keyword detection from description (e.g., "jazz rock" → ['jazz', 'rock'])
+ * 3. Mood-based detection (e.g., "chill vibes" → lofi)
+ * 4. Random fallback
  *
  * @param description - User's song description
  * @param genreOverride - Optional genre override (can be compound like "jazz rock")
@@ -85,6 +164,10 @@ export function parseMultiGenre(description: string): GenreType | null {
  * @example
  * resolveGenre('smooth jazz night', undefined, Math.random)
  * // { detected: 'jazz', displayGenre: 'jazz', primaryGenre: 'jazz', components: ['jazz'] }
+ *
+ * @example
+ * resolveGenre('jazz rock fusion', undefined, Math.random)
+ * // { detected: 'jazz', displayGenre: 'jazz rock', primaryGenre: 'jazz', components: ['jazz', 'rock'] }
  *
  * @example
  * resolveGenre('random words', 'jazz rock', Math.random)
@@ -118,25 +201,50 @@ export function resolveGenre(
     log.warn('invalid_genre_override', { genreOverride });
   }
 
-  // 2. Try keyword detection from description
-  const detected = detectGenreKeywordsOnly(description);
-  if (detected) {
+  // 2. Try multi-keyword detection from description
+  const detectedGenres = detectAllGenres(description);
+  if (detectedGenres.length > 0) {
+    const primaryGenre = detectedGenres[0] ?? 'pop';
+
+    // For display, join multiple genres or use single genre
+    const displayGenre =
+      detectedGenres.length > 1 ? detectedGenres.join(' ') : primaryGenre;
+
     traceDecision(trace, {
       domain: 'genre',
       key: 'deterministic.genre.resolve',
-      branchTaken: 'keyword-detection',
-      why: `detected=${detected}`,
+      branchTaken:
+        detectedGenres.length > 1 ? 'multi-keyword-detection' : 'keyword-detection',
+      why: `detected=${detectedGenres.join(', ')}`,
     });
 
     return {
-      detected,
-      displayGenre: detected,
-      primaryGenre: detected,
-      components: [detected],
+      detected: primaryGenre,
+      displayGenre,
+      primaryGenre,
+      components: detectedGenres,
     };
   }
 
-  // 3. Fallback to random genre
+  // 3. Try mood-based detection as fallback
+  const moodGenre = detectGenreFromMood(description, rng);
+  if (moodGenre) {
+    traceDecision(trace, {
+      domain: 'genre',
+      key: 'deterministic.genre.resolve',
+      branchTaken: 'mood-detection',
+      why: `mood-based detection: ${moodGenre}`,
+    });
+
+    return {
+      detected: moodGenre,
+      displayGenre: moodGenre,
+      primaryGenre: moodGenre,
+      components: [moodGenre],
+    };
+  }
+
+  // 4. Fallback to random genre
   const idx = Math.floor(rng() * ALL_GENRE_KEYS.length);
   const randomGenre = ALL_GENRE_KEYS[idx] ?? 'pop';
 

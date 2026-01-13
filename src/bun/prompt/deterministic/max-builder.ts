@@ -7,13 +7,78 @@
 import { selectMoodsForCategory } from '@bun/mood';
 import { traceDecision } from '@bun/trace';
 import { MAX_MODE_HEADER } from '@shared/max-format';
+import { createSeededRng } from '@shared/utils/random';
 
 import { resolveGenre } from './genre';
 import { truncatePrompt, joinRecordingDescriptors, getBpmRangeForGenreWithTrace } from './helpers';
 import { assembleInstruments } from './instruments';
-import { assembleStyleTags } from './styles';
+import { assembleStyleTags, selectMoodsForCreativity } from './styles';
 
-import type { DeterministicOptions, DeterministicResult } from './types';
+import type { DeterministicOptions, DeterministicResult, StyleTagsResult } from './types';
+import type { GenreType } from '@bun/instruments/genres';
+import type { MoodCategory } from '@bun/mood';
+import type { TraceCollector } from '@bun/trace';
+
+/**
+ * Resolve style tags with mood overrides based on category or creativity level.
+ */
+function resolveStyleTagsWithOverrides(
+  styleResult: StyleTagsResult,
+  primaryGenre: GenreType,
+  moodCategory: MoodCategory | undefined,
+  creativityLevel: number,
+  rng: () => number,
+  trace?: TraceCollector
+): { styleTags: string; styleTagsArray: readonly string[] } {
+  // Helper to replace mood tags with new moods
+  const replaceMoods = (newMoods: readonly string[]): { styleTags: string; styleTagsArray: readonly string[] } => {
+    const nonMoodTags = styleResult.tags.filter((tag) => !styleResult.moodTags.includes(tag));
+    const combinedTags = [...nonMoodTags.slice(0, 5), ...newMoods, ...nonMoodTags.slice(5)];
+    const cappedTags = combinedTags.slice(0, 10);
+    return { styleTags: cappedTags.join(', '), styleTagsArray: cappedTags };
+  };
+
+  if (moodCategory) {
+    const categoryMoods = selectMoodsForCategory(moodCategory, 3, rng);
+    if (categoryMoods.length > 0) {
+      traceDecision(trace, {
+        domain: 'mood',
+        key: 'deterministic.moods.source',
+        branchTaken: 'moodCategory',
+        why: `moodCategory=${moodCategory} selected=${categoryMoods.length}`,
+        selection: { method: 'shuffleSlice', candidates: categoryMoods },
+      });
+      return replaceMoods(categoryMoods);
+    }
+    traceDecision(trace, {
+      domain: 'mood',
+      key: 'deterministic.moods.source',
+      branchTaken: 'moodCategory.fallback',
+      why: `moodCategory=${moodCategory} returned empty; using genre-derived style tags`,
+    });
+    return { styleTags: styleResult.formatted, styleTagsArray: styleResult.tags };
+  }
+
+  if (creativityLevel > 60) {
+    const compoundMoods = selectMoodsForCreativity(primaryGenre, creativityLevel, 3, rng, trace);
+    traceDecision(trace, {
+      domain: 'mood',
+      key: 'deterministic.moods.source',
+      branchTaken: 'creativityBased',
+      why: `creativityLevel=${creativityLevel} > 60; using compound moods`,
+      selection: { method: 'shuffleSlice', candidates: compoundMoods },
+    });
+    return replaceMoods(compoundMoods);
+  }
+
+  traceDecision(trace, {
+    domain: 'mood',
+    key: 'deterministic.moods.source',
+    branchTaken: 'styleTags',
+    why: 'no moodCategory override; using genre-derived style tags',
+  });
+  return { styleTags: styleResult.formatted, styleTagsArray: styleResult.tags };
+}
 
 /**
  * Build a complete MAX MODE prompt deterministically.
@@ -56,7 +121,20 @@ import type { DeterministicOptions, DeterministicResult } from './types';
 export function buildDeterministicMaxPrompt(
   options: DeterministicOptions,
 ): DeterministicResult {
-  const { description, genreOverride, moodCategory, rng = Math.random, trace } = options;
+  const { description, genreOverride, moodCategory, creativityLevel = 50, seed, rng: providedRng, trace } = options;
+
+  // Determine RNG: use provided rng, or create seeded rng from seed, or default to Math.random
+  const rng = providedRng ?? (seed !== undefined ? createSeededRng(seed) : Math.random);
+
+  // Trace seed usage for debugging
+  if (seed !== undefined && !providedRng) {
+    traceDecision(trace, {
+      domain: 'other',
+      key: 'deterministic.max.seed',
+      branchTaken: 'seeded-rng',
+      why: `seed=${seed} provided; using seeded RNG for reproducibility`,
+    });
+  }
 
   // 1. Resolve genre - supports compound genres like "jazz rock" (up to 4)
   const { detected, displayGenre, primaryGenre, components } = resolveGenre(
@@ -70,52 +148,12 @@ export function buildDeterministicMaxPrompt(
   const instrumentsResult = assembleInstruments(components, rng, trace);
 
   // 3. Assemble style tags - blends moods from all genre components
-  // If moodCategory is provided, we'll override the moods
   const styleResult = assembleStyleTags(components, rng, trace);
 
-  // 3b. Override style tags if mood category is provided
-  let styleTags: string;
-  let styleTagsArray: readonly string[];
-  if (moodCategory) {
-    const categoryMoods = selectMoodsForCategory(moodCategory, 3, rng);
-    if (categoryMoods.length > 0) {
-      traceDecision(trace, {
-        domain: 'mood',
-        key: 'deterministic.moods.source',
-        branchTaken: 'moodCategory',
-        why: `moodCategory=${moodCategory} selected=${categoryMoods.length}`,
-        selection: {
-          method: 'shuffleSlice',
-          candidates: categoryMoods,
-        },
-      });
-
-      // Combine category moods with non-mood style tags from genre
-      // Style result includes moods and other descriptors, so we prepend category moods
-      styleTags = [...categoryMoods, ...styleResult.tags.slice(categoryMoods.length)].join(', ');
-      styleTagsArray = [...categoryMoods, ...styleResult.tags.slice(categoryMoods.length)];
-    } else {
-      traceDecision(trace, {
-        domain: 'mood',
-        key: 'deterministic.moods.source',
-        branchTaken: 'moodCategory.fallback',
-        why: `moodCategory=${moodCategory} returned empty; using genre-derived style tags`,
-      });
-
-      styleTags = styleResult.formatted;
-      styleTagsArray = styleResult.tags;
-    }
-  } else {
-    traceDecision(trace, {
-      domain: 'mood',
-      key: 'deterministic.moods.source',
-      branchTaken: 'styleTags',
-      why: 'no moodCategory override; using genre-derived style tags',
-    });
-
-    styleTags = styleResult.formatted;
-    styleTagsArray = styleResult.tags;
-  }
+  // 3b. Resolve style tags with mood overrides
+  const { styleTags, styleTagsArray } = resolveStyleTagsWithOverrides(
+    styleResult, primaryGenre, moodCategory, creativityLevel, rng, trace
+  );
 
   // 4. Get recording context
   const recordingContext = joinRecordingDescriptors(rng, 2, trace);
