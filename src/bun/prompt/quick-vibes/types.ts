@@ -7,6 +7,7 @@
  */
 
 import type { MoodCategory } from '@bun/mood';
+import type { TraceCollector } from '@bun/trace';
 import type { QuickVibesCategory } from '@shared/types';
 
 export type QuickVibesTemplate = {
@@ -33,6 +34,8 @@ export interface BuildQuickVibesOptions {
   moodCategory?: MoodCategory;
   /** Random number generator for deterministic testing (defaults to Math.random) */
   rng?: () => number;
+  /** Optional trace collector for debug mode */
+  trace?: TraceCollector;
 }
 
 export type { MoodCategory, QuickVibesCategory };

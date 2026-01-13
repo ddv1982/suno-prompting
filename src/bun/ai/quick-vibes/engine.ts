@@ -83,7 +83,7 @@ export async function generateQuickVibes(
       category,
       withWordlessVocals,
       config.isMaxMode(),
-      rng
+      { withWordlessVocals, maxMode: config.isMaxMode(), rng, trace: runtime?.trace }
     );
 
     const result = applyQuickVibesMaxMode(text, config.isMaxMode());

@@ -7,11 +7,13 @@
  */
 
 import { selectMoodsForCategory } from '@bun/mood';
+import { traceDecision } from '@bun/trace';
 import { selectRandom } from '@shared/utils/random';
 
 import { QUICK_VIBES_TEMPLATES } from './templates';
 
 import type { BuildQuickVibesOptions, QuickVibesTemplate } from './types';
+import type { TraceCollector } from '@bun/trace';
 import type { QuickVibesCategory } from '@shared/types';
 
 /**
@@ -27,6 +29,7 @@ const TITLE_CONTEXT_PROBABILITY = 0.5;
  *
  * @param template - The category template containing title word pools
  * @param rng - Random number generator for deterministic selection
+ * @param trace - Optional trace collector for debug mode
  * @returns Generated title string
  *
  * @example
@@ -40,19 +43,32 @@ const TITLE_CONTEXT_PROBABILITY = 0.5;
  */
 export function generateQuickVibesTitle(
   template: QuickVibesTemplate,
-  rng: () => number
+  rng: () => number,
+  trace?: TraceCollector
 ): string {
   const { titleWords } = template;
   const adjective = selectRandom(titleWords.adjectives, rng);
   const noun = selectRandom(titleWords.nouns, rng);
 
   // Add context suffix for more descriptive titles half the time
-  if (rng() < TITLE_CONTEXT_PROBABILITY) {
+  const addContext = rng() < TITLE_CONTEXT_PROBABILITY;
+  let title: string;
+
+  if (addContext) {
     const context = selectRandom(titleWords.contexts, rng);
-    return `${adjective} ${noun} ${context}`;
+    title = `${adjective} ${noun} ${context}`;
+  } else {
+    title = `${adjective} ${noun}`;
   }
 
-  return `${adjective} ${noun}`;
+  traceDecision(trace, {
+    domain: 'other',
+    key: 'quickVibes.title.generate',
+    branchTaken: title,
+    why: `adjective="${adjective}" noun="${noun}"${addContext ? ` context added` : ''}`,
+  });
+
+  return title;
 }
 
 /**
@@ -103,23 +119,63 @@ export function buildDeterministicQuickVibes(
 
   const rng = options.rng ?? Math.random;
   const moodCategory = options.moodCategory;
+  const trace = options.trace;
 
   const template = QUICK_VIBES_TEMPLATES[category];
 
   const genre = selectRandom(template.genres, rng);
+  traceDecision(trace, {
+    domain: 'genre',
+    key: 'quickVibes.genre.select',
+    branchTaken: genre,
+    why: `category="${category}"`,
+    selection: {
+      method: 'pickRandom',
+      candidates: template.genres,
+    },
+  });
+
   const instruments = selectRandom(template.instruments, rng);
+  traceDecision(trace, {
+    domain: 'instruments',
+    key: 'quickVibes.instruments.select',
+    branchTaken: instruments.join(', '),
+    why: `category="${category}"`,
+    selection: {
+      method: 'pickRandom',
+      candidates: template.instruments.map(i => i.join(', ')),
+    },
+  });
 
   // Select mood: use mood category if provided, otherwise use template moods
   let mood: string;
+  let moodSource: string;
   if (moodCategory) {
     const categoryMoods = selectMoodsForCategory(moodCategory, 1, rng);
     // Fall back to template mood if category selection returns empty
-    mood = categoryMoods[0] ?? selectRandom(template.moods, rng);
+    if (categoryMoods[0]) {
+      mood = categoryMoods[0];
+      moodSource = `moodCategory="${moodCategory}"`;
+    } else {
+      mood = selectRandom(template.moods, rng);
+      moodSource = `moodCategory="${moodCategory}" empty, fallback to template`;
+    }
   } else {
     mood = selectRandom(template.moods, rng);
+    moodSource = 'template';
   }
 
-  const title = generateQuickVibesTitle(template, rng);
+  traceDecision(trace, {
+    domain: 'mood',
+    key: 'quickVibes.mood.select',
+    branchTaken: mood,
+    why: moodSource,
+    selection: moodCategory
+      ? { method: 'pickRandom' }
+      : { method: 'pickRandom', candidates: template.moods },
+  });
+
+  const title = generateQuickVibesTitle(template, rng, trace);
 
   // Build instrument list
   const instrumentList = [...instruments];

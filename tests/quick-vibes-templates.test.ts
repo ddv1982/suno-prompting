@@ -7,6 +7,9 @@ import {
   getQuickVibesTemplate,
 } from '@bun/prompt/quick-vibes';
 
+import type { TraceCollector } from '@bun/trace';
+import type { TraceDecisionEvent } from '@shared/types/trace';
+
 // =============================================================================
 // Test Constants - RNG values for deterministic testing
 // =============================================================================
@@ -139,5 +142,63 @@ describe('getQuickVibesTemplate', () => {
 
     expect(template).toBeDefined();
     expect(template.genres).toBeDefined();
+  });
+});
+
+describe('trace instrumentation', () => {
+  it('records trace decisions when collector provided', () => {
+    const events: Partial<TraceDecisionEvent>[] = [];
+    const mockTrace = {
+      enabled: true,
+      addDecisionEvent: (event: Omit<TraceDecisionEvent, 'id' | 'ts' | 'tMs' | 'type'>) => {
+        events.push(event);
+      },
+    } as TraceCollector;
+
+    buildDeterministicQuickVibes('lofi-study', false, true, {
+      withWordlessVocals: false,
+      maxMode: true,
+      rng: () => 0.5,
+      trace: mockTrace,
+    });
+
+    expect(events).toHaveLength(4);
+    expect(events.map(e => e.key)).toEqual([
+      'quickVibes.genre.select',
+      'quickVibes.instruments.select',
+      'quickVibes.mood.select',
+      'quickVibes.title.generate',
+    ]);
+  });
+
+  it('includes selection candidates in trace events', () => {
+    const events: Partial<TraceDecisionEvent>[] = [];
+    const mockTrace = {
+      enabled: true,
+      addDecisionEvent: (event: Omit<TraceDecisionEvent, 'id' | 'ts' | 'tMs' | 'type'>) => {
+        events.push(event);
+      },
+    } as TraceCollector;
+
+    buildDeterministicQuickVibes('lofi-study', false, true, {
+      withWordlessVocals: false,
+      maxMode: true,
+      rng: () => 0.5,
+      trace: mockTrace,
+    });
+
+    const genreEvent = events.find(e => e.key === 'quickVibes.genre.select');
+    expect(genreEvent?.selection?.method).toBe('pickRandom');
+    expect(genreEvent?.selection?.candidatesCount).toBeGreaterThan(0);
+  });
+
+  it('does not throw when trace is undefined', () => {
+    expect(() => {
+      buildDeterministicQuickVibes('lofi-study', false, true, {
+        withWordlessVocals: false,
+        maxMode: true,
+        rng: () => 0.5,
+      });
+    }).not.toThrow();
   });
 });
