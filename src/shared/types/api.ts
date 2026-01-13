@@ -26,7 +26,8 @@ export type GenerateInitialResponse = {
 
 export type RefinePromptParams = { 
   currentPrompt: string; 
-  feedback: string; 
+  /** Feedback text for lyrics refinement (optional for style-only refinement) */
+  feedback?: string; 
   lockedPhrase?: string; 
   currentTitle?: string; 
   currentLyrics?: string;
@@ -34,6 +35,28 @@ export type RefinePromptParams = {
   genreOverride?: string;
   /** Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
   sunoStyles?: string[];
+  /** Type of refinement to perform (auto-detected by frontend, defaults to 'combined') */
+  refinementType?: 'style' | 'lyrics' | 'combined';
+  /** Style changes to apply (for 'style' or 'combined' refinement types) */
+  styleChanges?: {
+    seedGenres?: string[];
+    sunoStyles?: string[];
+    bpm?: number;
+    instruments?: string[];
+    mood?: string[];
+    /** Changed harmonic style */
+    harmonicStyle?: string | null;
+    /** Changed harmonic combination */
+    harmonicCombination?: string | null;
+    /** Changed polyrhythm combination */
+    polyrhythmCombination?: string | null;
+    /** Changed time signature */
+    timeSignature?: string | null;
+    /** Changed time signature journey */
+    timeSignatureJourney?: string | null;
+    /** Changed mood category */
+    moodCategory?: string | null;
+  };
 };
 export type RefinePromptResponse = { 
   prompt: string; 

@@ -55,49 +55,37 @@ export async function generateDirectMode(
   const mood = enriched.enrichment.moods[0] || 'energetic';
 
   // Generate title and lyrics based on lyrics mode
-  let title: string;
-  let lyrics: string | undefined;
+  const { title, lyrics } = config.isLyricsMode()
+    ? await generateDirectModeTitleAndLyrics(description, lyricsTopic, sunoStyles, genre, mood, config, runtime)
+    : { title: generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, description), lyrics: undefined };
 
-  if (config.isLyricsMode()) {
-    // LLM-based title and lyrics generation
-    const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
+  return { text, title, lyrics, debugTrace: undefined };
+}
 
-    title = await generateDirectModeTitle(
-      description || '',
-      sunoStyles,
-      config.getModel,
-      ollamaEndpoint,
-      {
-        trace: runtime?.trace,
-        traceLabel: 'title.generate',
-      }
-    );
+/** Generates title and lyrics via LLM for direct mode */
+async function generateDirectModeTitleAndLyrics(
+  description: string | undefined,
+  lyricsTopic: string | undefined,
+  sunoStyles: string[],
+  genre: string,
+  mood: string,
+  config: GenerationConfig,
+  runtime?: TraceRuntime
+): Promise<{ title: string; lyrics: string }> {
+  const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
 
-    const topicForLyrics = lyricsTopic?.trim() || description;
-    const lyricsResult = await generateLyrics(
-      topicForLyrics,
-      genre,
-      mood,
-      config.isMaxMode(),
-      config.getModel,
-      config.getUseSunoTags(),
-      undefined,
-      ollamaEndpoint,
-      {
-        trace: runtime?.trace,
-        traceLabel: 'lyrics.generate',
-      }
-    );
-    lyrics = cleanLyrics(lyricsResult.lyrics);
-  } else {
-    // Deterministic title when lyrics mode is off
-    title = generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, description);
-  }
+  // Parallel execution for performance; both must succeed for valid result
+  const topic = lyricsTopic?.trim() || description || '';
+  const [title, lyricsResult] = await Promise.all([
+    generateDirectModeTitle(description || '', sunoStyles, config.getModel, ollamaEndpoint, {
+      trace: runtime?.trace,
+      traceLabel: 'title.generate',
+    }),
+    generateLyrics(topic, genre, mood, config.isMaxMode(), config.getModel, config.getUseSunoTags(), undefined, ollamaEndpoint, {
+      trace: runtime?.trace,
+      traceLabel: 'lyrics.generate',
+    }),
+  ]);
 
-  return {
-    text,
-    title,
-    lyrics,
-    debugTrace: undefined,
-  };
+  return { title, lyrics: cleanLyrics(lyricsResult.lyrics) ?? '' };
 }

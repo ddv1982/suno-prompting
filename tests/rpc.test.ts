@@ -77,6 +77,8 @@ describe("RPC Handlers", () => {
                 lyricsTopic: undefined,
                 genreOverride: undefined,
                 sunoStyles: [],
+                refinementType: "combined",
+                styleChanges: undefined,
             },
             expect.anything()
         );
@@ -125,6 +127,8 @@ describe("RPC Handlers", () => {
                 lyricsTopic: undefined,
                 genreOverride: undefined,
                 sunoStyles: [],
+                refinementType: "combined",
+                styleChanges: undefined,
             },
             expect.anything()
         );
@@ -183,6 +187,8 @@ describe("RPC Handlers", () => {
                 lyricsTopic: "A story about lost love",
                 genreOverride: undefined,
                 sunoStyles: [],
+                refinementType: "combined",
+                styleChanges: undefined,
             },
             expect.anything()
         );

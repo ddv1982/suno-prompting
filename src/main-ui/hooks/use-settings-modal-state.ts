@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { createLogger } from "@/lib/logger";
-import { api } from "@/services/rpc";
+import { rpcClient } from "@/services/rpc-client";
 import { APP_CONSTANTS } from "@shared/constants";
 import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
 
@@ -67,7 +67,13 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
       setError(null);
       setLoading(true);
       try {
-        const settings = await api.getAllSettings();
+        const result = await rpcClient.getAllSettings({});
+        if (!result.ok) {
+          setError("Unable to load settings.");
+          return;
+        }
+
+        const settings = result.value;
         setProvider(settings.provider);
         setApiKeys(settings.apiKeys);
         const providerModels = MODELS_BY_PROVIDER[settings.provider];
@@ -107,7 +113,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     setSaving(true);
     setError(null);
     try {
-      await api.saveAllSettings({
+      await rpcClient.saveAllSettings({
         provider, model, useSunoTags, debugMode, maxMode, lyricsMode, useLocalLLM,
         apiKeys: {
           groq: apiKeys.groq?.trim() || null,

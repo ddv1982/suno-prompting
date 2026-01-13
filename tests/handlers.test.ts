@@ -114,6 +114,8 @@ describe("RPC Handlers", () => {
         currentLyrics: "Old lyrics",
         lyricsTopic: "topic",
         genreOverride: "jazz",
+        refinementType: "combined",
+        styleChanges: { seedGenres: ["jazz"] },
       });
 
       expect(aiEngine.refinePrompt).toHaveBeenCalledWith(
@@ -126,6 +128,8 @@ describe("RPC Handlers", () => {
           lyricsTopic: "topic",
           genreOverride: "jazz",
           sunoStyles: [],
+          refinementType: "combined",
+          styleChanges: { seedGenres: ["jazz"] },
         },
         expect.anything()
       );

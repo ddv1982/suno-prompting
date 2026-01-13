@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { api } from '@/services/rpc';
+import { rpcClient, type RpcError } from '@/services/rpc-client';
 import { type MoodCategory } from '@bun/mood';
 import { type QuickVibesInput, type QuickVibesCategory } from '@shared/types';
 
@@ -13,6 +13,10 @@ import {
 
 
 const log = createLogger('QuickVibes');
+
+function formatRpcError(error: RpcError): string {
+  return error.message;
+}
 
 type QuickVibesActionsConfig = GenerationActionDeps & {
   setPendingInput: (input: string) => void;
@@ -29,7 +33,7 @@ export interface QuickVibesActionsResult {
     moodCategory?: MoodCategory | null
   ) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
-  handleRefineQuickVibes: (input: string) => Promise<void>;
+  handleRefineQuickVibes: (input: string) => Promise<boolean>;
 }
 
 export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibesActionsResult {
@@ -60,7 +64,11 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     await execute(
       {
         action: 'quickVibes',
-        apiCall: () => api.generateQuickVibes(category, customDescription, wordlessVocals, sunoStyles, moodCategory),
+        apiCall: async () => {
+          const result = await rpcClient.generateQuickVibes({ category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles, moodCategory });
+          if (!result.ok) throw new Error(formatRpcError(result.error));
+          return result.value;
+        },
         originalInput,
         promptMode: 'quickVibes',
         modeInput: { quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles, moodCategory } },
@@ -81,23 +89,27 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     await handleGenerateQuickVibes(category, customDescription, storedWithWordlessVocals ?? false, storedSunoStyles ?? []);
   }, [isGenerating, currentSession, handleGenerateQuickVibes]);
 
-  const handleRefineQuickVibes = useCallback(async (input: string) => {
-    if (!currentSession?.currentPrompt) return;
+  const handleRefineQuickVibes = useCallback(async (input: string): Promise<boolean> => {
+    if (!currentSession?.currentPrompt) return false;
 
     const uiInput = getQuickVibesInput();
 
-    await execute(
+    return execute(
       {
         action: 'quickVibes',
-        apiCall: () => api.refineQuickVibes({
-          currentPrompt: currentSession.currentPrompt,
-          currentTitle: currentSession.currentTitle,
-          description: uiInput.customDescription,
-          feedback: input,
-          withWordlessVocals,
-          category: uiInput.category,
-          sunoStyles: uiInput.sunoStyles,
-        }),
+        apiCall: async () => {
+          const result = await rpcClient.refineQuickVibes({
+            currentPrompt: currentSession.currentPrompt,
+            currentTitle: currentSession.currentTitle,
+            description: uiInput.customDescription,
+            feedback: input,
+            withWordlessVocals,
+            category: uiInput.category,
+            sunoStyles: uiInput.sunoStyles,
+          });
+          if (!result.ok) throw new Error(formatRpcError(result.error));
+          return result.value;
+        },
         originalInput: currentSession.originalInput || '',
         promptMode: 'quickVibes',
         modeInput: { quickVibesInput: { ...uiInput, withWordlessVocals } },
@@ -105,14 +117,11 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
         feedback: input,
         errorContext: "refine Quick Vibes",
         log,
-        onSuccess: () => {
-          setPendingInput("");
-          showToast('Quick Vibes refined!', 'success');
-        },
+        onSuccess: () => { setPendingInput(""); },
       },
       sessionDeps
     );
-  }, [execute, sessionDeps, getQuickVibesInput, currentSession, withWordlessVocals, setPendingInput, showToast]);
+  }, [execute, sessionDeps, getQuickVibesInput, currentSession, withWordlessVocals, setPendingInput]);
 
   return {
     handleGenerateQuickVibes,

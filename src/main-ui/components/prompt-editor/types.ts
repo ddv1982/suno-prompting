@@ -103,11 +103,11 @@ export type EditorHandlers = {
   onQuickVibesInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void;
   onCreativeBoostInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
-  onGenerate: (input: string) => void;
+  onGenerate: (input: string) => Promise<boolean>;
   onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[], moodCategory: MoodCategory | null) => void;
-  onRefineQuickVibes: (feedback: string) => void;
+  onRefineQuickVibes: (feedback: string) => Promise<boolean>;
   onGenerateCreativeBoost: () => void;
-  onRefineCreativeBoost: (feedback: string) => void;
+  onRefineCreativeBoost: (feedback: string) => Promise<boolean>;
   onCopy: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
 };

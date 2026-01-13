@@ -5,6 +5,7 @@ import { CategorySelector } from "@/components/category-selector";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { FormLabel } from "@/components/ui/form-label";
+import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { canSubmitQuickVibes, canRefineQuickVibes } from "@shared/submit-validation";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
@@ -28,7 +29,7 @@ type QuickVibesPanelProps = {
   input: QuickVibesInput; originalInput?: QuickVibesInput | null; withWordlessVocals: boolean; maxMode: boolean;
   isGenerating: boolean; hasCurrentPrompt: boolean; onInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void; onMaxModeChange: (value: boolean) => void;
-  onGenerate: () => void; onRefine: (feedback: string) => void;
+  onGenerate: () => void; onRefine: (feedback: string) => Promise<boolean>;
 };
 
 export function QuickVibesPanel({
@@ -38,6 +39,8 @@ export function QuickVibesPanel({
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
   const canSubmit = getCanSubmit(input, originalInput, isRefineMode);
+
+  const { refined, handleRefine } = useRefinedFeedback(onRefine);
 
   const handleCategorySelect = useCallback((categoryId: QuickVibesCategory | null): void => {
     onInputChange(categoryId !== null && input.sunoStyles.length > 0
@@ -61,11 +64,11 @@ export function QuickVibesPanel({
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey && canSubmit && !isGenerating) {
       e.preventDefault();
-      if (isRefineMode) onRefine(input.customDescription); else onGenerate();
+      if (isRefineMode) void handleRefine(input.customDescription); else onGenerate();
     }
-  }, [canSubmit, isGenerating, isRefineMode, input.customDescription, onRefine, onGenerate]);
+  }, [canSubmit, isGenerating, isRefineMode, input.customDescription, handleRefine, onGenerate]);
 
-  const handleSubmit = useCallback((): void => { if (isRefineMode) onRefine(input.customDescription); else onGenerate(); }, [isRefineMode, input.customDescription, onRefine, onGenerate]);
+  const handleSubmit = useCallback((): void => { if (isRefineMode) void handleRefine(input.customDescription); else onGenerate(); }, [isRefineMode, input.customDescription, handleRefine, onGenerate]);
 
   return (
     <div className="space-y-[var(--space-5)]">
@@ -136,6 +139,7 @@ export function QuickVibesPanel({
         isGenerating={isGenerating}
         isRefineMode={isRefineMode}
         canSubmit={canSubmit}
+        refined={refined}
         onSubmit={handleSubmit}
       />
     </div>

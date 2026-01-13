@@ -5,6 +5,8 @@
  * @module shared/submit-validation
  */
 
+import type { StyleChanges } from './types/refinement';
+
 // ============================================
 // Full Prompt Mode
 // ============================================
@@ -26,6 +28,30 @@ export function canSubmitFullPrompt(input: FullPromptSubmitInput): boolean {
   const hasLyricsTopic = input.lyricsMode && !!input.lyricsTopic.trim();
   const hasSunoStyles = input.sunoStyles.length > 0;
   return hasDescription || input.hasAdvancedSelection || hasLyricsTopic || hasSunoStyles;
+}
+
+export type FullPromptRefineInput = {
+  feedbackText: string;
+  styleChanges: StyleChanges | undefined;
+  lyricsMode: boolean;
+};
+
+/**
+ * Determines if Full Prompt mode can refine.
+ * User can refine with ANY of: style changes OR feedback text.
+ * Style changes always enable refine. Feedback text enables refine (lyrics when lyricsMode ON, style when OFF).
+ */
+export function canRefineFullPrompt(input: FullPromptRefineInput): boolean {
+  const hasFeedback = !!input.feedbackText.trim();
+  const hasStyleChanges = input.styleChanges !== undefined;
+
+  // Style changes always enable refine
+  if (hasStyleChanges) return true;
+
+  // Feedback text enables refine (lyrics when lyricsMode ON, style when OFF)
+  if (hasFeedback) return true;
+
+  return false;
 }
 
 // ============================================

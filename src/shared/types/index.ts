@@ -93,7 +93,18 @@ export type {
   GenerateCreativeBoostResponse,
   RefineCreativeBoostParams,
   RefineCreativeBoostResponse,
+  CheckOllamaStatusResponse,
+  OllamaSettingsResponse,
+  SetOllamaSettingsParams,
 } from '@shared/types/api';
 
 // RPC types
 export type { RPCHandlers, SunoRPCSchema } from '@shared/types/rpc';
+
+// Refinement types
+export type {
+  RefinementType,
+  StyleChanges,
+  RefinementContext,
+  OriginalAdvancedSelection,
+} from '@shared/types/refinement';

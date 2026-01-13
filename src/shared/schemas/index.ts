@@ -15,8 +15,12 @@ export {
 export {
   GenerateInitialSchema,
   RefinePromptSchema,
+  StyleChangesSchema,
+  RefinementTypeSchema,
   type GenerateInitialInput,
   type RefinePromptInput,
+  type StyleChangesInput,
+  type RefinementTypeInput,
 } from './generation';
 
 // Remix schemas

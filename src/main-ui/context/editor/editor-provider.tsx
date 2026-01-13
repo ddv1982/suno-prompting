@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef, type ReactElement, type ReactNode } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { api } from '@/services/rpc';
+import { rpcClient } from '@/services/rpc-client';
 import { type MoodCategory } from '@bun/mood';
 import { buildMusicPhrase } from '@shared/music-phrase';
 import { type EditorMode, type AdvancedSelection, type QuickVibesInput, type PromptMode, type CreativeBoostInput, type CreativeBoostMode, EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types';
@@ -27,8 +27,25 @@ function loadPersistedModes(
   setPromptModeState: (mode: PromptMode) => void,
   setCreativeBoostModeState: (mode: CreativeBoostMode) => void
 ): void {
-  void api.getPromptMode().then(setPromptModeState).catch((e: unknown) => { log.error('loadPromptMode:failed', e); });
-  void api.getCreativeBoostMode().then(setCreativeBoostModeState).catch((e: unknown) => { log.error('loadCreativeBoostMode:failed', e); });
+  void rpcClient
+    .getPromptMode({})
+    .then((result) => {
+      setPromptModeState(result.ok ? result.value.promptMode : ('full' as PromptMode));
+    })
+    .catch((e: unknown) => {
+      log.error('loadPromptMode:failed', e);
+    });
+
+  void rpcClient
+    .getCreativeBoostMode({})
+    .then((result) => {
+      setCreativeBoostModeState(
+        result.ok ? result.value.creativeBoostMode : ('simple' as CreativeBoostMode)
+      );
+    })
+    .catch((e: unknown) => {
+      log.error('loadCreativeBoostMode:failed', e);
+    });
 }
 
 /**
@@ -64,11 +81,15 @@ export function EditorProvider({ children }: EditorProviderProps): ReactElement 
   // Fire-and-forget save setters (no rollback needed for UI preferences)
   const setPromptMode = useCallback((mode: PromptMode) => {
     setPromptModeState(mode);
-    void api.setPromptMode(mode).catch((e: unknown) => { log.error('setPromptMode:failed', e); });
+    void rpcClient.setPromptMode({ promptMode: mode }).catch((e: unknown) => {
+      log.error('setPromptMode:failed', e);
+    });
   }, []);
   const setCreativeBoostMode = useCallback((mode: CreativeBoostMode) => {
     setCreativeBoostModeState(mode);
-    void api.setCreativeBoostMode(mode).catch((e: unknown) => { log.error('setCreativeBoostMode:failed', e); });
+    void rpcClient.setCreativeBoostMode({ creativeBoostMode: mode }).catch((e: unknown) => {
+      log.error('setCreativeBoostMode:failed', e);
+    });
   }, []);
 
   const computedMusicPhrase = useMemo(() => buildMusicPhrase(advancedSelection), [advancedSelection]);

@@ -23,6 +23,7 @@ import {
 } from '@bun/prompt/deterministic';
 import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
+import { traceDecision } from '@bun/trace';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
 import { generateDirectMode } from './direct-mode-generation';
@@ -77,16 +78,54 @@ function generateInitialDeterministic(
   };
 }
 
+/** Determines genre detection strategy and traces the decision */
+function resolveGenreStrategy(
+  genreOverride: string | undefined,
+  lyricsTopic: string | undefined,
+  trace: TraceCollector | undefined
+): { willDetectGenre: boolean; branchTaken: string } {
+  const hasLyricsTopic = !!lyricsTopic?.trim();
+  const willDetectGenre = !genreOverride && hasLyricsTopic;
+  const branchTaken = genreOverride ? 'override' : (willDetectGenre ? 'llm.detect' : 'deterministic');
+
+  traceDecision(trace, {
+    domain: 'genre',
+    key: 'generation.genre.source',
+    branchTaken,
+    why: genreOverride
+      ? `Using provided genre override: "${genreOverride}"`
+      : (willDetectGenre ? `Detecting genre from lyrics topic via LLM` : `No topic provided, using deterministic genre detection`),
+  });
+
+  return { willDetectGenre, branchTaken };
+}
+
+/** Builds prompt deterministically based on mode */
+function buildPromptForMode(
+  description: string,
+  genreOverride: string | undefined,
+  lockedPhrase: string | undefined,
+  config: GenerationConfig,
+  rng: () => number,
+  trace: TraceCollector | undefined
+): string {
+  const deterministicResult = config.isMaxMode()
+    ? buildDeterministicMaxPrompt({ description, genreOverride, rng, trace })
+    : buildDeterministicStandardPrompt({ description, genreOverride, rng, trace });
+
+  let promptText = deterministicResult.text;
+  if (lockedPhrase) {
+    promptText = injectLockedPhrase(promptText, lockedPhrase, config.isMaxMode());
+  }
+  return promptText;
+}
+
 /**
  * LLM-assisted generation path (lyrics mode ON).
  *
  * Uses LLM for genre detection (when no override), title generation
  * (to match lyrics theme), and lyrics generation. Prompt building
  * remains deterministic for consistency.
- *
- * @param options - Generation options
- * @param config - Configuration with dependencies
- * @param useOffline - Whether to use Ollama for offline generation
  */
 async function generateInitialWithLyrics(
   options: GenerateInitialOptions,
@@ -97,17 +136,17 @@ async function generateInitialWithLyrics(
   const { description, lockedPhrase, lyricsTopic, genreOverride } = options;
   const rng = runtime?.rng ?? Math.random;
   const trace = runtime?.trace;
-
-  // For offline mode, use direct Ollama client to bypass Bun fetch empty body bug
-  // For cloud mode, use AI SDK as normal
   const getModelFn = config.getModel;
   const ollamaEndpoint = useOffline ? config.getOllamaEndpoint() : undefined;
 
-  let resolvedGenreOverride = genreOverride;
-  // TODO(trace): attach deterministic/LLM decision trace when Debug Mode tracing is implemented.
+  // 1. Determine genre detection strategy
+  const { willDetectGenre } = resolveGenreStrategy(genreOverride, lyricsTopic, trace);
 
-  // 1. Detect genre from lyrics topic if no override provided (LLM call)
-  if (!genreOverride && lyricsTopic?.trim()) {
+  // 2. Detect genre from lyrics topic if needed (LLM call)
+  // Note: `&& lyricsTopic` is logically redundant (willDetectGenre implies lyricsTopic is truthy)
+  // but required for TypeScript to narrow the type from `string | undefined` to `string`
+  let resolvedGenreOverride = genreOverride;
+  if (willDetectGenre && lyricsTopic) {
     const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), getModelFn, undefined, ollamaEndpoint, {
       trace,
       traceLabel: 'genre.detectFromTopic',
@@ -116,52 +155,24 @@ async function generateInitialWithLyrics(
     log.info('generateInitialWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre, offline: useOffline });
   }
 
-  // 2. Build prompt deterministically (no LLM)
-  const deterministicResult = config.isMaxMode()
-    ? buildDeterministicMaxPrompt({ description, genreOverride: resolvedGenreOverride, rng, trace })
-    : buildDeterministicStandardPrompt({ description, genreOverride: resolvedGenreOverride, rng, trace });
-
-  let promptText = deterministicResult.text;
-
-  // 3. Inject locked phrase if provided
-  if (lockedPhrase) {
-    promptText = injectLockedPhrase(promptText, lockedPhrase, config.isMaxMode());
-  }
-
-  // 4. Extract genre and mood for title/lyrics generation
+  // 3. Build prompt deterministically
+  const promptText = buildPromptForMode(description, resolvedGenreOverride, lockedPhrase, config, rng, trace);
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
 
-  // 5. Generate title via LLM (to match lyrics theme)
-  const topicForTitle = lyricsTopic?.trim() || description;
-  const titleResult = await generateTitle(topicForTitle, genre, mood, getModelFn, undefined, ollamaEndpoint, {
-    trace,
-    traceLabel: 'title.generate',
-  });
-  const title = titleResult.title;
-
-  // 6. Generate lyrics via LLM
-  const topicForLyrics = lyricsTopic?.trim() || description;
-  const lyricsResult = await generateLyrics(
-    topicForLyrics,
-    genre,
-    mood,
-    config.isMaxMode(),
-    getModelFn,
-    config.getUseSunoTags(),
-    undefined,
-    ollamaEndpoint,
-    {
-      trace,
-      traceLabel: 'lyrics.generate',
-    }
-  );
-  const lyrics = lyricsResult.lyrics;
+  // 4. Generate title and lyrics via LLM (parallel for performance)
+  // Using Promise.all intentionally: if either fails, we want the whole operation to fail
+  // since both title and lyrics are required for a complete generation result
+  const topic = lyricsTopic?.trim() || description;
+  const [titleResult, lyricsResult] = await Promise.all([
+    generateTitle(topic, genre, mood, getModelFn, undefined, ollamaEndpoint, { trace, traceLabel: 'title.generate' }),
+    generateLyrics(topic, genre, mood, config.isMaxMode(), getModelFn, config.getUseSunoTags(), undefined, ollamaEndpoint, { trace, traceLabel: 'lyrics.generate' }),
+  ]);
 
   return {
     text: promptText,
-    title: cleanTitle(title),
-    lyrics: cleanLyrics(lyrics),
+    title: cleanTitle(titleResult.title),
+    lyrics: cleanLyrics(lyricsResult.lyrics),
     debugTrace: undefined,
   };
 }

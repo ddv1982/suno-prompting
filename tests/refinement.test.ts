@@ -5,6 +5,7 @@ import {
   buildCombinedWithLyricsSystemPrompt,
   type RefinementContext,
 } from '@bun/prompt/builders';
+import { ValidationError } from '@shared/errors';
 import {
   cleanJsonResponse,
   cleanTitle,
@@ -337,6 +338,317 @@ describe('AI Engine Helper Methods', () => {
     test('returns null when prompt is empty string', () => {
       const input = '{"prompt": "", "title": "Title"}';
       expect(parseJsonResponse(input)).toBeNull();
+    });
+  });
+});
+
+// ============================================
+// Refinement Type Routing Tests (Task 6.4)
+// ============================================
+
+describe('Refinement Type Routing', () => {
+  /**
+   * Create a mock config for testing refinement.
+   * All LLM calls are disabled by default to test deterministic behavior.
+   */
+  function createMockConfig(overrides: Partial<{
+    isUseLocalLLM: () => boolean;
+    isLyricsMode: () => boolean;
+    isMaxMode: () => boolean;
+    isDebugMode: () => boolean;
+    getUseSunoTags: () => boolean;
+    getOllamaEndpoint: () => string;
+    getModel: () => never;
+    postProcess: (text: string) => Promise<string>;
+  }> = {}) {
+    return {
+      isUseLocalLLM: () => false,
+      isLyricsMode: () => false,
+      isMaxMode: () => false,
+      isDebugMode: () => false,
+      getUseSunoTags: () => true,
+      getOllamaEndpoint: () => 'http://localhost:11434',
+      getModel: () => {
+        throw new Error('LLM should not be called');
+      },
+      postProcess: async (text: string) => text,
+      ...overrides,
+    };
+  }
+
+  describe('style-only refinement (refinementType: "style")', () => {
+    test('does not call LLM for style-only refinement', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      let llmCalled = false;
+      const mockConfig = createMockConfig({
+        getModel: () => {
+          llmCalled = true;
+          throw new Error('LLM should not be called for style-only refinement');
+        },
+      });
+
+      const result = await refinePrompt(
+        {
+          currentPrompt: 'genre: "jazz"\nmood: "smooth"\nstyle tags: "old"',
+          currentTitle: 'Jazz Vibes',
+          feedback: '', // No feedback for style-only
+          refinementType: 'style',
+          styleChanges: { seedGenres: ['jazz', 'blues'] },
+        },
+        mockConfig as any
+      );
+
+      // Assert
+      expect(llmCalled).toBe(false);
+      expect(result.text).toBeDefined();
+      expect(result.text.length).toBeGreaterThan(0);
+    });
+
+    test('returns updated prompt for style-only refinement', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig();
+      const currentPrompt = `genre: "jazz"
+mood: "smooth, warm"
+style tags: "old tags"
+instruments: "piano, bass"`;
+
+      const result = await refinePrompt(
+        {
+          currentPrompt,
+          currentTitle: 'My Jazz Song',
+          feedback: '',
+          refinementType: 'style',
+          styleChanges: { seedGenres: ['rock'] },
+        },
+        mockConfig as any
+      );
+
+      // Style-only refinement should produce a valid prompt
+      expect(result.text).toBeDefined();
+      expect(result.text).toContain('genre:');
+      expect(result.title).toBe('My Jazz Song'); // Title preserved
+    });
+
+    test('preserves existing lyrics for style-only refinement', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig();
+      const existingLyrics = '[VERSE]\nExisting lyrics content';
+
+      const result = await refinePrompt(
+        {
+          currentPrompt: 'genre: "jazz"\nstyle tags: "smooth"',
+          currentTitle: 'Test Song',
+          feedback: '',
+          currentLyrics: existingLyrics,
+          refinementType: 'style',
+          styleChanges: { sunoStyles: ['dream-pop'] },
+        },
+        mockConfig as any
+      );
+
+      // Lyrics should be preserved unchanged
+      expect(result.lyrics).toBe(existingLyrics);
+    });
+  });
+
+  describe('lyrics-only refinement (refinementType: "lyrics")', () => {
+    test('throws ValidationError without existing lyrics', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig({
+        isLyricsMode: () => true,
+      });
+
+      // Act & Assert
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: 'make it more emotional',
+            refinementType: 'lyrics',
+            // No currentLyrics provided
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: 'make it more emotional',
+            refinementType: 'lyrics',
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow('Cannot refine lyrics without existing lyrics');
+    });
+
+    test('throws ValidationError without feedback text', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig({
+        isLyricsMode: () => true,
+      });
+
+      // Act & Assert - Empty feedback
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: '',
+            currentLyrics: '[VERSE]\nExisting lyrics',
+            refinementType: 'lyrics',
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: '',
+            currentLyrics: '[VERSE]\nExisting lyrics',
+            refinementType: 'lyrics',
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow('Feedback is required for lyrics refinement');
+    });
+
+    test('throws ValidationError for whitespace-only feedback', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig({
+        isLyricsMode: () => true,
+      });
+
+      // Act & Assert - Whitespace-only feedback
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: '   \n\t  ',
+            currentLyrics: '[VERSE]\nExisting lyrics',
+            refinementType: 'lyrics',
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow('Feedback is required for lyrics refinement');
+    });
+  });
+
+  describe('combined refinement (refinementType: "combined")', () => {
+    test('processes both style and lyrics', async () => {
+      // Note: This test verifies the combined path is taken, but the actual
+      // lyrics refinement will fail without proper LLM setup. We're testing
+      // that the routing logic works correctly.
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig({
+        isLyricsMode: () => false, // No lyrics mode, so only style is processed
+      });
+
+      const result = await refinePrompt(
+        {
+          currentPrompt: 'genre: "jazz"\nstyle tags: "smooth"',
+          currentTitle: 'Combined Test',
+          feedback: 'make it more energetic',
+          refinementType: 'combined',
+          styleChanges: { seedGenres: ['rock'] },
+        },
+        mockConfig as any
+      );
+
+      // Combined refinement should return a result
+      expect(result.text).toBeDefined();
+      expect(result.title).toBe('Combined Test');
+    });
+  });
+
+  describe('invalid refinement type', () => {
+    test('throws ValidationError for invalid refinement type', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig();
+
+      // Act & Assert - Invalid type 'none'
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: '',
+            refinementType: 'none', // Invalid for actual refinement
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: '',
+            refinementType: 'none',
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow('Invalid refinement type');
+    });
+
+    test('throws ValidationError for unknown refinement type', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig();
+
+      // Act & Assert - Unknown type
+      await expect(
+        refinePrompt(
+          {
+            currentPrompt: 'genre: "jazz"',
+            currentTitle: 'Test',
+            feedback: '',
+            refinementType: 'unknown' as any, // Invalid type
+          },
+          mockConfig as any
+        )
+      ).rejects.toThrow('Invalid refinement type');
+    });
+  });
+
+  describe('backwards compatibility', () => {
+    test('defaults to combined when refinementType not provided', async () => {
+      const { refinePrompt } = await import('@bun/ai/refinement');
+      
+      const mockConfig = createMockConfig({
+        isLyricsMode: () => false,
+      });
+
+      // No refinementType provided - should default to 'combined'
+      const result = await refinePrompt(
+        {
+          currentPrompt: 'genre: "jazz"\nstyle tags: "smooth"',
+          currentTitle: 'Backwards Compat Test',
+          feedback: 'make it better',
+          // refinementType not provided
+        },
+        mockConfig as any
+      );
+
+      // Should work like combined (default)
+      expect(result.text).toBeDefined();
+      expect(result.title).toBe('Backwards Compat Test');
     });
   });
 });

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { api } from '@/services/rpc';
+import { rpcClient } from '@/services/rpc-client';
 
 const log = createLogger('Settings');
 
@@ -34,8 +34,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
 
   const loadModel = useCallback(async () => {
     try {
-      const model = await api.getModel();
-      setCurrentModel(model);
+      const result = await rpcClient.getModel({});
+      setCurrentModel(result.ok ? result.value.model : '');
     } catch (error: unknown) {
       log.error("loadModel:failed", error);
     }
@@ -43,8 +43,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
 
   const loadMaxMode = useCallback(async () => {
     try {
-      const mode = await api.getMaxMode();
-      setMaxMode(mode);
+      const result = await rpcClient.getMaxMode({});
+      setMaxMode(result.ok ? result.value.maxMode : false);
     } catch (error: unknown) {
       log.error("loadMaxMode:failed", error);
     }
@@ -52,8 +52,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
 
   const loadLyricsMode = useCallback(async () => {
     try {
-      const mode = await api.getLyricsMode();
-      setLyricsMode(mode);
+      const result = await rpcClient.getLyricsMode({});
+      setLyricsMode(result.ok ? result.value.lyricsMode : false);
     } catch (error: unknown) {
       log.error("loadLyricsMode:failed", error);
     }
@@ -61,8 +61,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
 
   const loadUseLocalLLM = useCallback(async () => {
     try {
-      const response = await api.getUseLocalLLM();
-      setUseLocalLLMState(response.useLocalLLM);
+      const result = await rpcClient.getUseLocalLLM({});
+      setUseLocalLLMState(result.ok ? result.value.useLocalLLM : false);
     } catch (error: unknown) {
       log.error("loadUseLocalLLM:failed", error);
     }
@@ -72,7 +72,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     const previousMode = maxMode;
     setMaxMode(mode);
     try {
-      await api.setMaxMode(mode);
+      await rpcClient.setMaxMode({ maxMode: mode });
     } catch (error: unknown) {
       log.error("setMaxMode:failed", error);
       setMaxMode(previousMode);
@@ -83,7 +83,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     const previousMode = lyricsMode;
     setLyricsMode(mode);
     try {
-      await api.setLyricsMode(mode);
+      await rpcClient.setLyricsMode({ lyricsMode: mode });
     } catch (error: unknown) {
       log.error("setLyricsMode:failed", error);
       setLyricsMode(previousMode);

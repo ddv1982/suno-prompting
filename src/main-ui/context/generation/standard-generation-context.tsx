@@ -7,8 +7,8 @@ import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
 import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import { handleGenerationError, addUserMessage, buildFullPromptOriginalInput, completeSessionUpdate } from '@/lib/session-helpers';
-import { api } from '@/services/rpc';
-import { type TraceRun } from '@shared/types';
+import { rpcClient, type RpcError } from '@/services/rpc-client';
+import { type RefinementType, type StyleChanges, type TraceRun } from '@shared/types';
 
 import { useGenerationStateContext } from './generation-state-context';
 import { useSessionOperationsContext } from './session-operations-context';
@@ -18,6 +18,10 @@ import type { ChatMessage } from '@/lib/chat-utils';
 
 const log = createLogger('StandardGeneration');
 const StandardGenerationContext = createContext<StandardGenerationContextValue | null>(null);
+
+function formatRpcError(error: RpcError): string {
+  return error.message;
+}
 
 function shouldSkipGeneration(isGenerating: boolean, promptMode: string, hasPrompt: boolean): boolean {
   return isGenerating || (promptMode === 'quickVibes' && hasPrompt);
@@ -35,22 +39,61 @@ interface ConversionCallbacks {
 }
 
 async function tryMaxConversion(input: string, cb: ConversionCallbacks): Promise<boolean> {
-  const conv = await api.convertToMaxFormat(input).catch(() => null);
-  if (!conv?.convertedPrompt || !conv.wasConverted) return false;
-  await cb.createConversionSession(input, conv.convertedPrompt, conv.versionId, conv.debugTrace);
+  const conv = await rpcClient.convertToMaxFormat({ text: input });
+  if (!conv.ok) return false;
+  if (!conv.value.convertedPrompt || !conv.value.wasConverted) return false;
+  await cb.createConversionSession(input, conv.value.convertedPrompt, conv.value.versionId, conv.value.debugTrace);
   cb.setPendingInput(''); cb.setLyricsTopic(''); cb.showToast('Converted to Max Mode format', 'success');
   return true;
 }
 
 interface GenerateParams { input: string; lockedPhrase?: string; topic?: string; genre?: string }
-interface RefineParams extends GenerateParams { currentPrompt: string; currentTitle?: string; currentLyrics?: string }
+interface RefineParams extends GenerateParams { 
+  currentPrompt: string; 
+  currentTitle?: string; 
+  currentLyrics?: string;
+  refinementType?: RefinementType;
+  styleChanges?: StyleChanges;
+}
 
 type ApiParams = GenerateParams & { sunoStyles?: string[] };
 
-async function callGenerateApi(isInitial: boolean, p: ApiParams | (RefineParams & { sunoStyles?: string[] })): ReturnType<typeof api.generateInitial> {
-  if (isInitial) return api.generateInitial(p.input, p.lockedPhrase, p.topic, p.genre, p.sunoStyles);
+async function callGenerateApi(
+  isInitial: boolean,
+  p: ApiParams | (RefineParams & { sunoStyles?: string[] })
+): Promise<{ prompt: string; versionId: string; validation: unknown; debugTrace?: TraceRun; title?: string; lyrics?: string }> {
+  if (isInitial) {
+    return rpcClient.generateInitial({
+      description: p.input,
+      lockedPhrase: p.lockedPhrase,
+      lyricsTopic: p.topic,
+      genreOverride: p.genre,
+      sunoStyles: p.sunoStyles,
+    }).then((r) => {
+      if (!r.ok) throw new Error(formatRpcError(r.error));
+      return r.value;
+    });
+  }
   const rp = p as RefineParams & { sunoStyles?: string[] };
-  return api.refinePrompt(rp.currentPrompt, rp.input, rp.lockedPhrase, rp.currentTitle, rp.currentLyrics, rp.topic, rp.genre, rp.sunoStyles);
+  // Determine refinement type for API call:
+  // - 'none' is frontend-only (button disabled state) and should never reach here normally
+  // - Default to 'combined' for backwards compatibility and as a safety fallback
+  const refinementType = (rp.refinementType && rp.refinementType !== 'none') ? rp.refinementType : 'combined';
+  return rpcClient.refinePrompt({
+    currentPrompt: rp.currentPrompt,
+    feedback: rp.input || undefined,
+    lockedPhrase: rp.lockedPhrase,
+    currentTitle: rp.currentTitle,
+    currentLyrics: rp.currentLyrics,
+    lyricsTopic: rp.topic,
+    genreOverride: rp.genre,
+    sunoStyles: rp.sunoStyles,
+    refinementType,
+    styleChanges: rp.styleChanges,
+  }).then((r) => {
+    if (!r.ok) throw new Error(formatRpcError(r.error));
+    return r.value;
+  });
 }
 
 function addUserMessageIfRefine(isInitial: boolean, setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>, input: string): void {
@@ -109,25 +152,27 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     showToast,
   ]);
 
-  const handleGenerate = useCallback(async (input: string) => {
-    if (shouldSkipGeneration(isGenerating, promptMode, !!currentSession?.currentPrompt)) return;
+  const handleGenerate = useCallback(async (input: string, refinementType?: RefinementType, styleChanges?: StyleChanges): Promise<boolean> => {
+    if (shouldSkipGeneration(isGenerating, promptMode, !!currentSession?.currentPrompt)) return false;
     const ctx = buildGenerateContext(currentSession);
     setGeneratingAction('generate');
     try {
       addUserMessageIfRefine(ctx.isInitial, setChatMessages, input);
       const conversionCallbacks = { createConversionSession, setPendingInput, setLyricsTopic, showToast };
-      if (shouldAttemptMaxConversion(ctx.isInitial, maxMode, input) && await tryMaxConversion(input, conversionCallbacks)) return;
+      if (shouldAttemptMaxConversion(ctx.isInitial, maxMode, input) && await tryMaxConversion(input, conversionCallbacks)) return true;
       const lockedPhrase = getEffectiveLockedPhrase();
       const topic = lyricsTopic?.trim() || undefined;
       const genre = advancedSelection.seedGenres[0];
       const sunoStyles = advancedSelection.sunoStyles.length > 0 ? advancedSelection.sunoStyles : undefined;
-      const apiParams = { input, lockedPhrase, topic, genre, sunoStyles, ...ctx };
+      // Include refinementType and styleChanges for refine mode
+      const apiParams = { input, lockedPhrase, topic, genre, sunoStyles, refinementType, styleChanges, ...ctx };
       const result = await callGenerateApi(ctx.isInitial, apiParams);
       if (!result?.prompt) throw new Error('Invalid result received from generation');
       const originalInput = buildFullPromptOriginalInput(input, genre, topic);
       await completeSessionUpdate(deps, result, originalInput, 'full', {}, 'Updated prompt generated.', ctx.isInitial ? undefined : input);
       setPendingInput(''); setLyricsTopic('');
-    } catch (e: unknown) { handleGenerationError(e, 'generate prompt', setChatMessages, showToast, log); }
+      return true;
+    } catch (e: unknown) { handleGenerationError(e, 'generate prompt', setChatMessages, showToast, log); return false; }
     finally { setGeneratingAction('none'); }
   }, [isGenerating, promptMode, currentSession, maxMode, getEffectiveLockedPhrase, lyricsTopic, advancedSelection, createConversionSession, setPendingInput, setLyricsTopic, showToast, deps, setChatMessages, setGeneratingAction]);
 
@@ -138,7 +183,16 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     setGeneratingAction('remix');
     try {
       const sunoStyles = advancedSelection.sunoStyles.length > 0 ? advancedSelection.sunoStyles : undefined;
-      const result = await api.generateInitial(currentSession.originalInput, getEffectiveLockedPhrase(), currentSession.lyricsTopic, advancedSelection.seedGenres[0], sunoStyles);
+      const result = await rpcClient.generateInitial({
+        description: currentSession.originalInput,
+        lockedPhrase: getEffectiveLockedPhrase(),
+        lyricsTopic: currentSession.lyricsTopic,
+        genreOverride: advancedSelection.seedGenres[0],
+        sunoStyles,
+      }).then((r) => {
+        if (!r.ok) throw new Error(formatRpcError(r.error));
+        return r.value;
+      });
       if (!result?.prompt) throw new Error('Invalid result received from remix');
       await completeSessionUpdate(deps, result, currentSession.originalInput, 'full', {}, 'Remixed prompt generated.', '[remix]');
     } catch (e: unknown) { handleGenerationError(e, 'remix prompt', setChatMessages, showToast, log); }

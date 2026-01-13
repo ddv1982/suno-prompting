@@ -113,241 +113,185 @@ function buildAttemptError(normalized: { type: string; message: string; status?:
   };
 }
 
-/**
- * Shared helper for making LLM calls with consistent error handling.
- * Supports both cloud providers (via AI SDK) and local Ollama (via direct HTTP client).
- * 
- * When ollamaEndpoint is provided, uses direct Ollama client to bypass Bun fetch
- * empty body bug (#6932).
- */
-export async function callLLM(options: CallLLMOptions): Promise<string> {
-  const {
-    getModel,
-    systemPrompt,
-    userPrompt,
-    errorContext,
-    ollamaEndpoint,
-    timeoutMs,
-    maxRetries,
-    trace,
-    traceLabel,
-    ollamaModel,
-    providerOptions,
-  } = options;
+/** Wrap an error into AIGenerationError with context */
+function wrapAIError(error: unknown, errorContext: string): AIGenerationError {
+  if (error instanceof AIGenerationError) return error;
+  return new AIGenerationError(
+    `Failed to ${errorContext}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    error instanceof Error ? error : undefined
+  );
+}
 
-  // Fast-path: when debug tracing is OFF, keep behavior and overhead minimal.
-  if (!trace) {
-    try {
-      let rawResponse: string;
+/** Execute LLM call without tracing (fast path) */
+async function callLLMWithoutTrace(options: CallLLMOptions): Promise<string> {
+  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, providerOptions } = options;
 
-      if (ollamaEndpoint) {
-        // Use direct Ollama client to bypass Bun fetch empty body bug
-        const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
-        log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout });
-        rawResponse = await generateWithOllama(
-          ollamaEndpoint,
-          systemPrompt,
-          userPrompt,
-          timeout
-        );
-      } else {
-        // Use AI SDK for cloud providers
-        const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
-        const retries = maxRetries ?? APP_CONSTANTS.AI.MAX_RETRIES;
-        log.info('callLLM:cloud', { errorContext, timeout, retries });
-        const { text } = await generateText({
-          model: getModel(),
-          system: systemPrompt,
-          prompt: userPrompt,
-          maxRetries: retries,
-          abortSignal: AbortSignal.timeout(timeout),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any -- AI SDK providerOptions is dynamically typed per-provider
-          providerOptions: providerOptions as any,
-        });
-        rawResponse = text;
-      }
-
-      if (!rawResponse?.trim()) {
-        throw new AIGenerationError(`Empty response from AI model (${errorContext})`);
-      }
-
-      return rawResponse;
-    } catch (error: unknown) {
-      if (error instanceof AIGenerationError) throw error;
-      throw new AIGenerationError(
-        `Failed to ${errorContext}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        error instanceof Error ? error : undefined
-      );
+  try {
+    let rawResponse: string;
+    if (ollamaEndpoint) {
+      const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
+      log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout });
+      rawResponse = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout);
+    } else {
+      const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
+      const retries = maxRetries ?? APP_CONSTANTS.AI.MAX_RETRIES;
+      log.info('callLLM:cloud', { errorContext, timeout, retries });
+      const { text } = await generateText({
+        model: getModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        maxRetries: retries,
+        abortSignal: AbortSignal.timeout(timeout),
+        providerOptions: providerOptions as Parameters<typeof generateText>[0]['providerOptions'],
+      });
+      rawResponse = text;
     }
+
+    if (!rawResponse?.trim()) {
+      throw new AIGenerationError(`Empty response from AI model (${errorContext})`);
+    }
+    return rawResponse;
+  } catch (error: unknown) {
+    throw wrapAIError(error, errorContext);
   }
+}
+
+type TraceLLMCallEvent = import('@shared/types/trace').TraceLLMCallEvent;
+type TraceAttempt = NonNullable<TraceLLMCallEvent['attempts']>[number];
+type TraceTelemetry = NonNullable<TraceLLMCallEvent['telemetry']>;
+
+/** Options for executing a traced LLM attempt */
+interface TracedAttemptOptions {
+  systemPrompt: string;
+  userPrompt: string;
+  timeoutMs: number | undefined;
+  errorContext: string;
+  attempt: number;
+  totalAttempts: number;
+}
+
+/** Execute single Ollama attempt for traced call */
+async function executeOllamaAttempt(
+  ollamaEndpoint: string,
+  opts: TracedAttemptOptions
+): Promise<{ text: string; telemetry: TraceTelemetry; latencyMs: number }> {
+  const { systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts } = opts;
+  const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
+  log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout, attempt, totalAllowedAttempts: totalAttempts });
+  const startMs = Date.now();
+  const text = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout);
+  const latencyMs = Date.now() - startMs;
+  return { text, telemetry: { latencyMs }, latencyMs };
+}
+
+/** Execute single cloud attempt for traced call */
+async function executeCloudAttempt(
+  getModel: () => LanguageModel,
+  providerOptions: Record<string, unknown> | undefined,
+  opts: TracedAttemptOptions
+): Promise<{ text: string; telemetry: TraceTelemetry; latencyMs: number; modelId?: string }> {
+  const { systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts } = opts;
+  const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
+  log.info('callLLM:cloud', { errorContext, timeout, attempt, totalAllowedAttempts: totalAttempts });
+  const startMs = Date.now();
+  const result = await generateText({
+    model: getModel(),
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxRetries: 0, // Manual retries in trace mode
+    abortSignal: AbortSignal.timeout(timeout),
+    providerOptions: providerOptions as Parameters<typeof generateText>[0]['providerOptions'],
+  });
+  const latencyMs = Date.now() - startMs;
+  return {
+    text: result.text,
+    modelId: result.response.modelId,
+    latencyMs,
+    telemetry: { latencyMs, finishReason: result.finishReason, tokensIn: result.usage.inputTokens, tokensOut: result.usage.outputTokens },
+  };
+}
+
+/** Build initial provider info for tracing */
+function buildInitialProviderInfo(ollamaEndpoint: string | undefined, ollamaModel: string | undefined, getModel: () => LanguageModel): TraceProviderInfo {
+  if (ollamaEndpoint) {
+    return { id: 'ollama', model: ollamaModel ?? 'unknown', locality: 'local' };
+  }
+  const inferred = inferCloudProviderInfo(getModel());
+  return { id: inferred.providerId ?? 'openai', model: inferred.modelId ?? 'unknown', locality: 'cloud' };
+}
+
+/** Execute LLM call with tracing */
+async function callLLMWithTrace(options: CallLLMOptions, trace: TraceCollector): Promise<string> {
+  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, traceLabel, ollamaModel, providerOptions } = options;
 
   try {
     const label = traceLabel ?? errorContext;
     const requestSummary = computePromptSummary(systemPrompt, userPrompt);
-
     const maxRetriesResolved = maxRetries ?? APP_CONSTANTS.AI.MAX_RETRIES;
     const totalAllowedAttempts = Math.max(1, Math.floor(maxRetriesResolved) + 1);
 
-    const attempts: NonNullable<import('@shared/types/trace').TraceLLMCallEvent['attempts']> = [];
+    const attempts: TraceAttempt[] = [];
     let lastError: unknown;
-
-    // Provider/model info.
-    let provider: TraceProviderInfo;
-    if (ollamaEndpoint) {
-      provider = {
-        id: 'ollama',
-        model: ollamaModel ?? 'unknown',
-        locality: 'local',
-      };
-    } else {
-      const inferred = inferCloudProviderInfo(getModel());
-      provider = {
-        id: inferred.providerId ?? 'openai',
-        model: inferred.modelId ?? 'unknown',
-        locality: 'cloud',
-      };
-    }
-
+    let provider = buildInitialProviderInfo(ollamaEndpoint, ollamaModel, getModel);
     let responseText = '';
-    let telemetry: NonNullable<import('@shared/types/trace').TraceLLMCallEvent['telemetry']> | undefined;
-    // Note: request ids are captured in error normalization when present.
+    let telemetry: TraceTelemetry | undefined;
 
     for (let attempt = 1; attempt <= totalAllowedAttempts; attempt += 1) {
       const startedMs = Date.now();
+      const attemptOpts: TracedAttemptOptions = {
+        systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts: totalAllowedAttempts,
+      };
       try {
         if (ollamaEndpoint) {
-          const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
-          log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout, attempt, totalAllowedAttempts });
-          responseText = await generateWithOllama(
-            ollamaEndpoint,
-            systemPrompt,
-            userPrompt,
-            timeout
-          );
-
-          const endedMs = Date.now();
-          attempts.push({
-            attempt,
-            startedAt: nowIso(startedMs),
-            endedAt: nowIso(endedMs),
-            latencyMs: endedMs - startedMs,
-          });
-
-          telemetry = { latencyMs: endedMs - startedMs };
-          break;
+          const result = await executeOllamaAttempt(ollamaEndpoint, attemptOpts);
+          responseText = result.text;
+          telemetry = result.telemetry;
+          attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(startedMs + result.latencyMs), latencyMs: result.latencyMs });
+        } else {
+          const result = await executeCloudAttempt(getModel, providerOptions, attemptOpts);
+          responseText = result.text;
+          telemetry = result.telemetry;
+          if (result.modelId) provider = { ...provider, model: result.modelId };
+          attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(startedMs + result.latencyMs), latencyMs: result.latencyMs });
         }
-
-        const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
-        log.info('callLLM:cloud', { errorContext, timeout, attempt, totalAllowedAttempts });
-
-        const result = await generateText({
-          model: getModel(),
-          system: systemPrompt,
-          prompt: userPrompt,
-          // We perform manual retries in trace mode.
-          maxRetries: 0,
-          abortSignal: AbortSignal.timeout(timeout),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any -- AI SDK providerOptions is dynamically typed per-provider
-          providerOptions: providerOptions as any,
-        });
-
-        responseText = result.text;
-        provider = {
-          ...provider,
-          model: result.response.modelId || provider.model,
-        };
-        const endedMs = Date.now();
-        attempts.push({
-          attempt,
-          startedAt: nowIso(startedMs),
-          endedAt: nowIso(endedMs),
-          latencyMs: endedMs - startedMs,
-        });
-
-        telemetry = {
-          latencyMs: endedMs - startedMs,
-          finishReason: result.finishReason,
-          tokensIn: result.usage.inputTokens,
-          tokensOut: result.usage.outputTokens,
-        };
-
         break;
       } catch (error: unknown) {
         lastError = error;
         const endedMs = Date.now();
-        const normalized = normalizeTraceError(error);
-
-        attempts.push({
-          attempt,
-          startedAt: nowIso(startedMs),
-          endedAt: nowIso(endedMs),
-          latencyMs: endedMs - startedMs,
-          error: buildAttemptError(normalized),
-        });
-
-        // Retry on subsequent attempt if we have budget.
-        if (attempt < totalAllowedAttempts) {
-          continue;
-        }
-
-        // No more retries.
-        break;
+        attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(endedMs), latencyMs: endedMs - startedMs, error: buildAttemptError(normalizeTraceError(error)) });
+        if (attempt >= totalAllowedAttempts) break;
       }
     }
 
     if (!responseText?.trim()) {
-      if (lastError) {
-        if (lastError instanceof Error) {
-          throw lastError;
-        }
-        throw new AIGenerationError(
-          `Failed to ${errorContext}: Unknown error`,
-          undefined
-        );
-      }
+      if (lastError instanceof Error) throw lastError;
+      if (lastError) throw new AIGenerationError(`Failed to ${errorContext}: Unknown error`);
       throw new AIGenerationError(`Empty response from AI model (${errorContext})`);
     }
 
-    const previewText = truncateTextWithMarker(redactSecretsInText(responseText), 900).text;
-    const rawText = truncateTextWithMarker(redactSecretsInText(responseText), 7000).text;
-
-    const tracedProviderOptions = providerOptions
-      ? (redactSecretsDeep(providerOptions) as Record<string, unknown>)
-      : undefined;
-
+    const tracedProviderOptions = providerOptions ? (redactSecretsDeep(providerOptions) as Record<string, unknown>) : undefined;
     trace.addLLMCallEvent({
       label: truncateTextWithMarker(label, 160).text,
       provider,
-      request: {
-        maxRetries: maxRetriesResolved,
-        providerOptions: tracedProviderOptions,
-        inputSummary: {
-          messageCount: requestSummary.messageCount,
-          totalChars: requestSummary.totalChars,
-          preview: requestSummary.preview,
-        },
-        messages: requestSummary.messages,
-      },
-      response: {
-        previewText,
-        rawText,
-      },
+      request: { maxRetries: maxRetriesResolved, providerOptions: tracedProviderOptions, inputSummary: { messageCount: requestSummary.messageCount, totalChars: requestSummary.totalChars, preview: requestSummary.preview }, messages: requestSummary.messages },
+      response: { previewText: truncateTextWithMarker(redactSecretsInText(responseText), 900).text, rawText: truncateTextWithMarker(redactSecretsInText(responseText), 7000).text },
       telemetry,
       attempts: attempts.length > 0 ? attempts : undefined,
     });
 
     return responseText;
   } catch (error: unknown) {
-    // Emit a stable, safe error event (and keep the thrown error user-safe).
     traceError(trace, error);
-
-    if (error instanceof AIGenerationError) throw error;
-
-    throw new AIGenerationError(
-      `Failed to ${errorContext}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined
-    );
+    throw wrapAIError(error, options.errorContext);
   }
+}
+
+/**
+ * Shared helper for making LLM calls with consistent error handling.
+ * Supports both cloud providers (via AI SDK) and local Ollama (via direct HTTP client).
+ */
+export async function callLLM(options: CallLLMOptions): Promise<string> {
+  return options.trace ? callLLMWithTrace(options, options.trace) : callLLMWithoutTrace(options);
 }
 
 /**

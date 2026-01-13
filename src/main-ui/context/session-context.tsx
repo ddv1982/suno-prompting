@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { api } from '@/services/rpc';
+import { rpcClient } from '@/services/rpc-client';
 import { type PromptSession } from '@shared/types';
 import { nowISO } from '@shared/utils';
 
@@ -42,8 +42,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
 
   const loadHistory = useCallback(async (retries = 1) => {
     try {
-      const history = await api.getHistory();
-      setSessions(history);
+      const result = await rpcClient.getHistory({});
+      setSessions(result.ok ? result.value.sessions : []);
     } catch (error: unknown) {
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, 400));
@@ -60,7 +60,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
     });
     setCurrentSession(session);
     try {
-      await api.saveSession(session);
+      await rpcClient.saveSession({ session });
     } catch (error: unknown) {
       log.error("saveSession:failed", error);
     }
@@ -68,7 +68,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
 
   const deleteSession = useCallback(async (id: string) => {
     try {
-      await api.deleteSession(id);
+      await rpcClient.deleteSession({ id });
       setSessions((prev) => prev.filter(s => s.id !== id));
       if (currentSession?.id === id) {
         setCurrentSession(null);

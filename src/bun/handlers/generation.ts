@@ -93,7 +93,18 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
       );
     },
     refinePrompt: async (params) => {
-      const { currentPrompt, feedback, lockedPhrase, currentTitle, currentLyrics, lyricsTopic, genreOverride, sunoStyles = [] } = validate(RefinePromptSchema, params);
+      const {
+        currentPrompt,
+        feedback = '',
+        lockedPhrase,
+        currentTitle,
+        currentLyrics,
+        lyricsTopic,
+        genreOverride,
+        sunoStyles = [],
+        refinementType,
+        styleChanges,
+      } = validate(RefinePromptSchema, params);
       
       // Validate Suno styles limit
       validateSunoStylesLimit(sunoStyles);
@@ -103,7 +114,7 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
         validateGenreStylesMutualExclusivity([genreOverride], sunoStyles);
       }
       
-      return runAndValidate(aiEngine, 'refinePrompt', { feedback, sunoStylesCount: sunoStyles.length }, (runtime) =>
+      return runAndValidate(aiEngine, 'refinePrompt', { feedback, sunoStylesCount: sunoStyles.length, refinementType }, (runtime) =>
         aiEngine.refinePrompt({
           currentPrompt,
           currentTitle: currentTitle ?? 'Untitled',
@@ -113,6 +124,8 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
           lyricsTopic,
           genreOverride,
           sunoStyles,
+          refinementType,
+          styleChanges,
         }, runtime)
       );
     },

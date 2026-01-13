@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { createLogger } from "@/lib/logger";
-import { api } from "@/services/rpc";
+import { rpcClient } from "@/services/rpc-client";
 
 const log = createLogger("OllamaSettings");
 
@@ -36,8 +36,8 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
 
   const loadSettings = useCallback(async (): Promise<void> => {
     try {
-      const result = await api.getOllamaSettings();
-      setSettings(result);
+      const result = await rpcClient.getOllamaSettings({});
+      setSettings(result.ok ? result.value : DEFAULT_SETTINGS);
     } catch (error: unknown) {
       log.error("loadSettings:failed", error);
     }
@@ -50,7 +50,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
   const updateEndpoint = useCallback(async (value: string): Promise<void> => {
     setSettings((prev) => ({ ...prev, endpoint: value }));
     try {
-      await api.setOllamaSettings({ endpoint: value });
+      await rpcClient.setOllamaSettings({ endpoint: value });
     } catch (error: unknown) {
       log.error("setEndpoint:failed", error);
     }
@@ -59,7 +59,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
   const updateTemperature = useCallback(async (value: number): Promise<void> => {
     setSettings((prev) => ({ ...prev, temperature: value }));
     try {
-      await api.setOllamaSettings({ temperature: value });
+      await rpcClient.setOllamaSettings({ temperature: value });
     } catch (error: unknown) {
       log.error("setTemperature:failed", error);
     }
@@ -68,7 +68,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
   const updateMaxTokens = useCallback(async (value: number): Promise<void> => {
     setSettings((prev) => ({ ...prev, maxTokens: value }));
     try {
-      await api.setOllamaSettings({ maxTokens: value });
+      await rpcClient.setOllamaSettings({ maxTokens: value });
     } catch (error: unknown) {
       log.error("setMaxTokens:failed", error);
     }
@@ -77,7 +77,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
   const updateContextLength = useCallback(async (value: number): Promise<void> => {
     setSettings((prev) => ({ ...prev, contextLength: value }));
     try {
-      await api.setOllamaSettings({ contextLength: value });
+      await rpcClient.setOllamaSettings({ contextLength: value });
     } catch (error: unknown) {
       log.error("setContextLength:failed", error);
     }

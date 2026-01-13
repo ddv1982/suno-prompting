@@ -2,7 +2,10 @@ import { useCallback, type ReactElement } from "react";
 
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
-import { canSubmitFullPrompt } from "@shared/submit-validation";
+import { useOriginalSelection } from "@/hooks/use-original-selection";
+import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
+import { useRefinementType } from "@/hooks/use-refinement-type";
+import { canSubmitFullPrompt, canRefineFullPrompt } from "@shared/submit-validation";
 
 import { FullWidthSubmitButton } from "./full-width-submit-button";
 import { LockedPhraseInput } from "./locked-phrase-input";
@@ -20,24 +23,30 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
     hasAdvancedSelection, onPendingInputChange, onLockedPhraseChange, onLyricsTopicChange, onMoodCategoryChange, onEditorModeChange,
     onAdvancedSelectionUpdate, onAdvancedSelectionClear, onMaxModeChange, onLyricsModeChange, onGenerate, onConversionComplete } = props;
 
-  // Use centralized validation for submit eligibility
-  const canSubmitContent = canSubmitFullPrompt({
-    description: pendingInput,
-    lyricsTopic,
-    lyricsMode,
-    hasAdvancedSelection,
-    sunoStyles: advancedSelection.sunoStyles,
+  const { refined, triggerRefinedFeedback } = useRefinedFeedback();
+
+  // Track original selection and determine refinement type for change detection
+  const originalSelection = useOriginalSelection(currentPrompt, advancedSelection, moodCategory);
+  const { refinementType, styleChanges } = useRefinementType({
+    currentSelection: advancedSelection, originalSelection, feedbackText: pendingInput, lyricsMode, hasCurrentPrompt: !!currentPrompt, moodCategory,
   });
 
-  const canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && canSubmitContent;
+  // Validation: initial generation uses canSubmitFullPrompt, refine mode uses canRefineFullPrompt
+  const canSubmitContent = canSubmitFullPrompt({ description: pendingInput, lyricsTopic, lyricsMode, hasAdvancedSelection, sunoStyles: advancedSelection.sunoStyles });
+  const canRefine = canRefineFullPrompt({ feedbackText: pendingInput, styleChanges, lyricsMode });
+  const canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && (currentPrompt ? canRefine : canSubmitContent);
 
-  const handleSend = useCallback((): void => {
+  const handleSend = useCallback(async (): Promise<void> => {
     if (!canSubmit) return;
-    onGenerate(pendingInput.trim());
-  }, [canSubmit, pendingInput, onGenerate]);
+    const isRefine = !!currentPrompt;
+    const success = await onGenerate(pendingInput.trim(), refinementType, styleChanges);
+    if (success && isRefine) {
+      triggerRefinedFeedback();
+    }
+  }, [canSubmit, currentPrompt, pendingInput, refinementType, styleChanges, onGenerate, triggerRefinedFeedback]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
-    if (e.key === "Enter" && !e.shiftKey && canSubmit) { e.preventDefault(); handleSend(); }
+    if (e.key === "Enter" && !e.shiftKey && canSubmit) { e.preventDefault(); void handleSend(); }
   }, [canSubmit, handleSend]);
 
   return (
@@ -110,6 +119,7 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
         isGenerating={isGenerating}
         isRefineMode={!!currentPrompt}
         disabled={!canSubmit}
+        refined={refined}
         onSubmit={handleSend}
       />
     </>

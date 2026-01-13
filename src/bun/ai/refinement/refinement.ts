@@ -7,16 +7,22 @@
  * - Style refinement: Always deterministic (no LLM calls, <50ms)
  * - Lyrics refinement: Uses LLM (cloud or Ollama based on settings)
  *
+ * Supports three refinement types (auto-detected by frontend):
+ * - 'style': Only style fields changed, no LLM calls needed
+ * - 'lyrics': Only feedback text provided, refine lyrics with LLM
+ * - 'combined': Both style changes AND feedback, do both
+ *
  * This ensures fast, consistent style refinement while leveraging
  * LLM capabilities only for creative lyrics work.
  *
  * @module ai/refinement/refinement
  */
 
-import { isDirectMode, buildDirectModePrompt } from '@bun/ai/direct-mode';
+import { isDirectMode, buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
 import { remixLyrics } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
-
+import { traceDecision } from '@bun/trace';
+import { ValidationError } from '@shared/errors';
 
 import { refineLyricsWithFeedback } from './lyrics-refinement';
 import { applyLockedPhraseIfNeeded } from './validation';
@@ -62,11 +68,13 @@ function isDirectModeRefinement(sunoStyles: string[] | undefined): sunoStyles is
  *
  * @param options - Refinement options
  * @param config - Configuration with dependencies
+ * @param trace - Optional trace collector for debugging
  * @returns Refined prompt with updated style tags
  */
 async function refinePromptDeterministic(
   options: RefinePromptOptions,
-  config: RefinementConfig
+  config: RefinementConfig,
+  trace?: TraceCollector
 ): Promise<GenerationResult> {
   const { currentPrompt, currentTitle, lockedPhrase } = options;
 
@@ -74,9 +82,23 @@ async function refinePromptDeterministic(
 
   const genre = extractGenreFromPrompt(currentPrompt);
 
+  traceDecision(trace, {
+    domain: 'genre',
+    key: 'refinement.genre.fromPrompt',
+    branchTaken: genre || 'unknown',
+    why: 'Genre extracted from existing prompt text (used for style tag generation)',
+  });
+
   log.info('refinePromptDeterministic:start', { genre, hasLockedPhrase: !!lockedPhrase });
 
   const { text: updatedPrompt } = remixStyleTags(currentPrompt);
+
+  traceDecision(trace, {
+    domain: 'styleTags',
+    key: 'refinement.styleTags.remix',
+    branchTaken: 'regenerated',
+    why: `Style tags regenerated for genre=${genre || 'unknown'}`,
+  });
 
   let finalPrompt = await config.postProcess(updatedPrompt);
   finalPrompt = await applyLockedPhraseIfNeeded(finalPrompt, lockedPhrase, config.isMaxMode());
@@ -89,6 +111,119 @@ async function refinePromptDeterministic(
   return {
     text: finalPrompt,
     title: currentTitle,
+    debugTrace: undefined,
+  };
+}
+
+/**
+ * Style-only refinement (no LLM calls).
+ *
+ * Performs deterministic style refinement without any LLM calls.
+ * Used when only style fields (genre, bpm, instruments, etc.) have changed
+ * and no feedback text is provided.
+ *
+ * Performance: < 100ms execution (deterministic, no network calls)
+ *
+ * @param options - Refinement options
+ * @param config - Configuration with dependencies
+ * @param runtime - Optional trace runtime for debugging
+ * @returns GenerationResult with updated prompt text, unchanged title and lyrics
+ */
+async function refineStyleOnly(
+  options: RefinePromptOptions,
+  config: RefinementConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult> {
+  const { currentTitle, currentLyrics } = options;
+
+  log.info('refineStyleOnly:start', {
+    hasTitle: !!currentTitle,
+    hasLyrics: !!currentLyrics,
+  });
+
+  // Use existing deterministic refinement for style changes
+  const styleResult = await refinePromptDeterministic(options, config, runtime?.trace);
+
+  log.info('refineStyleOnly:complete', {
+    promptLength: styleResult.text.length,
+  });
+
+  // Preserve existing title and lyrics unchanged
+  return {
+    text: styleResult.text,
+    title: currentTitle,
+    lyrics: currentLyrics,
+    debugTrace: undefined,
+  };
+}
+
+/**
+ * Lyrics-only refinement (LLM call for lyrics, prompt unchanged).
+ *
+ * Refines only the lyrics using LLM, leaving the prompt text unchanged.
+ * Used when feedback text is provided but no style fields have changed.
+ *
+ * @param options - Refinement options
+ * @param config - Configuration with dependencies
+ * @param runtime - Optional trace runtime for debugging
+ * @returns GenerationResult with unchanged prompt, updated lyrics
+ *
+ * @throws {ValidationError} When currentLyrics is missing (cannot refine non-existent lyrics)
+ * @throws {ValidationError} When feedback is empty or missing
+ * @throws {OllamaUnavailableError} When offline mode but Ollama is not running
+ * @throws {OllamaModelMissingError} When offline mode but Gemma model is missing
+ */
+async function refineLyricsOnly(
+  options: RefinePromptOptions,
+  config: RefinementConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult> {
+  const { currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic } = options;
+
+  // Validate: cannot refine lyrics that don't exist
+  if (!currentLyrics) {
+    throw new ValidationError('Cannot refine lyrics without existing lyrics', 'currentLyrics');
+  }
+
+  // Validate: feedback is required for lyrics refinement
+  if (!feedback?.trim()) {
+    throw new ValidationError('Feedback is required for lyrics refinement', 'feedback');
+  }
+
+  log.info('refineLyricsOnly:start', {
+    hasLyricsTopic: !!lyricsTopic,
+    feedbackLength: feedback.length,
+    currentLyricsLength: currentLyrics.length,
+  });
+
+  // Determine offline mode and endpoint
+  const isOffline = config.isUseLocalLLM();
+  const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
+
+  // Call LLM to refine lyrics
+  const lyricsResult = await refineLyricsWithFeedback(
+    currentLyrics,
+    feedback,
+    currentPrompt,
+    lyricsTopic,
+    config,
+    ollamaEndpoint,
+    {
+      trace: runtime?.trace,
+      traceLabel: 'lyrics.refine',
+    }
+  );
+
+  log.info('refineLyricsOnly:complete', {
+    outputLyricsLength: lyricsResult.lyrics.length,
+    isOffline,
+  });
+
+  // Return unchanged prompt with updated lyrics
+  return {
+    text: currentPrompt,
+    title: currentTitle,
+    lyrics: lyricsResult.lyrics,
     debugTrace: undefined,
   };
 }
@@ -122,7 +257,7 @@ async function refineWithDeterministicStyle(
   });
 
   // Step 1: ALWAYS do deterministic style refinement (no LLM)
-  const styleResult = await refinePromptDeterministic(options, config);
+  const styleResult = await refinePromptDeterministic(options, config, runtime?.trace);
 
   const lyricsAction = getLyricsAction(isLyricsMode, currentLyrics);
   if (lyricsAction === 'refineExisting') {
@@ -185,7 +320,9 @@ async function refinePromptDirectMode(
 
   log.info('refinePrompt:directMode', { stylesCount: sunoStyles.length, maxMode: config.isMaxMode() });
 
-  const { text: enrichedPrompt } = buildDirectModePrompt(sunoStyles, config.isMaxMode());
+  const { text: enrichedPrompt } = buildDirectModePromptWithRuntime(sunoStyles, config.isMaxMode(), {
+    trace: runtime?.trace,
+  });
   const shouldBootstrapLyrics = config.isLyricsMode() && !currentLyrics;
 
   const seedInput = getLyricsSeedInput(lyricsTopic, feedback);
@@ -224,6 +361,11 @@ async function refinePromptDirectMode(
  * - Style refinement: Always deterministic (no LLM calls, <50ms)
  * - Lyrics refinement: Uses LLM (cloud or Ollama based on settings)
  *
+ * Supports three refinement types (auto-detected by frontend):
+ * - 'style': Only style fields changed, no LLM calls needed
+ * - 'lyrics': Only feedback text provided, refine lyrics with LLM
+ * - 'combined': Both style changes AND feedback, do both (default)
+ *
  * This architecture ensures fast, consistent style refinement while
  * leveraging LLM capabilities only for creative lyrics work.
  *
@@ -231,6 +373,9 @@ async function refinePromptDirectMode(
  * @param config - Configuration with dependencies
  * @returns Refined prompt, title, and optionally lyrics
  *
+ * @throws {ValidationError} When refinementType is invalid
+ * @throws {ValidationError} When lyrics refinement requested without existing lyrics
+ * @throws {ValidationError} When lyrics refinement requested without feedback
  * @throws {OllamaUnavailableError} When offline mode is on but Ollama is not running
  * @throws {OllamaModelMissingError} When offline mode is on but Gemma model is missing
  */
@@ -239,20 +384,107 @@ export async function refinePrompt(
   config: RefinementConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
-  const { sunoStyles } = options;
+  const { sunoStyles, refinementType } = options;
 
   // Direct Mode: Use shared enrichment (DRY - same as generation)
   // Title preserved (no LLM call) - only style prompt is enriched
   if (isDirectModeRefinement(sunoStyles)) {
+    traceDecision(runtime?.trace, {
+      domain: 'other',
+      key: 'refinement.routing',
+      branchTaken: 'directMode',
+      why: `Suno V5 styles detected (${sunoStyles.length} styles), using Direct Mode enrichment`,
+    });
+
+    if (options.styleChanges?.sunoStyles) {
+      traceDecision(runtime?.trace, {
+        domain: 'styleTags',
+        key: 'refinement.sunoStyles.changed',
+        branchTaken: options.styleChanges.sunoStyles.join(', ') || 'cleared',
+        why: `New Suno V5 styles: ${options.styleChanges.sunoStyles.length} selected`,
+      });
+    }
+
     return refinePromptDirectMode({ ...options, sunoStyles }, config, runtime);
   }
 
-  // Determine offline mode and endpoint
-  const isOffline = config.isUseLocalLLM();
-  const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
+  // Route based on refinement type (auto-detected by frontend)
+  // Default to 'combined' for backwards compatibility
+  const type = refinementType ?? 'combined';
 
-  // Unified path: deterministic style + LLM lyrics (for all providers)
-  return refineWithDeterministicStyle(options, config, ollamaEndpoint, runtime);
+  log.info('refinePrompt:routing', {
+    refinementType: type,
+    hasStyleChanges: !!options.styleChanges,
+    hasFeedback: !!options.feedback?.trim(),
+  });
+
+  // Trace the routing decision
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'refinement.routing',
+    branchTaken: type,
+    why: `refinementType=${type} hasStyleChanges=${!!options.styleChanges} hasFeedback=${!!options.feedback?.trim()}`,
+  });
+
+  // Trace style changes with actual new values
+  if (options.styleChanges) {
+    const { seedGenres, sunoStyles: changedSunoStyles, ...otherChanges } = options.styleChanges;
+
+    // Trace genre changes specifically with new values
+    if (seedGenres !== undefined) {
+      traceDecision(runtime?.trace, {
+        domain: 'genre',
+        key: 'refinement.genre.changed',
+        branchTaken: seedGenres.length > 0 ? seedGenres.join(', ') : 'cleared',
+        why: `New genre selection: ${seedGenres.length} genre(s)`,
+      });
+    }
+
+    // Trace Suno V5 style changes (shouldn't happen here since direct mode handles it, but for completeness)
+    if (changedSunoStyles !== undefined) {
+      traceDecision(runtime?.trace, {
+        domain: 'styleTags',
+        key: 'refinement.sunoStyles.changed',
+        branchTaken: changedSunoStyles.length > 0 ? changedSunoStyles.join(', ') : 'cleared',
+        why: `New Suno V5 styles: ${changedSunoStyles.length} selected`,
+      });
+    }
+
+    // Trace other field changes
+    const otherChangedFields = Object.entries(otherChanges)
+      .filter(([, v]) => v !== undefined)
+      .map(([k]) => k);
+
+    if (otherChangedFields.length > 0) {
+      traceDecision(runtime?.trace, {
+        domain: 'styleTags',
+        key: 'refinement.styleChanges.other',
+        branchTaken: otherChangedFields.join(', '),
+        why: `Additional fields changed: ${otherChangedFields.join(', ')}`,
+      });
+    }
+  }
+
+  switch (type) {
+    case 'style':
+      // Style-only: deterministic refinement, no LLM calls
+      return refineStyleOnly(options, config, runtime);
+
+    case 'lyrics':
+      // Lyrics-only: LLM refinement with feedback
+      return refineLyricsOnly(options, config, runtime);
+
+    case 'combined': {
+      // Combined: deterministic style + LLM lyrics (original behavior)
+      const isOffline = config.isUseLocalLLM();
+      const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
+      return refineWithDeterministicStyle(options, config, ollamaEndpoint, runtime);
+    }
+
+    default:
+      // Handle 'none' or any invalid type
+      throw new ValidationError(`Invalid refinement type: ${type as string}`, 'refinementType');
+  }
 }
 
 // Re-export types for convenience

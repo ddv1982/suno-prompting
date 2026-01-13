@@ -81,12 +81,13 @@ export type ExecuteGenerationOptions<TResult extends GenerationResultBase> = {
 /**
  * Hook that provides a reusable execute function for generation actions.
  * Handles the common try/catch/finally pattern with proper state management.
+ * Returns true on success, false on failure or if already generating.
  */
 export interface UseGenerationActionResult {
   execute: <TResult extends GenerationResultBase>(
     options: ExecuteGenerationOptions<TResult>,
     sessionDeps: SessionDeps
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 }
 
 export function useGenerationAction(deps: GenerationActionDeps): UseGenerationActionResult {
@@ -99,8 +100,8 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
   const execute = useCallback(async <TResult extends GenerationResultBase>(
     options: ExecuteGenerationOptions<TResult>,
     sessionDeps: SessionDeps
-  ): Promise<void> => {
-    if (isGenerating) return;
+  ): Promise<boolean> => {
+    if (isGenerating) return false;
 
     const {
       action,
@@ -139,8 +140,10 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
       );
 
       onSuccess?.();
+      return true;
     } catch (error: unknown) {
       handleGenerationError(error, errorContext, setChatMessages, sessionDeps.showToast, log);
+      return false;
     } finally {
       setGeneratingAction('none');
     }

@@ -1,5 +1,5 @@
 import type { MoodCategory } from "@bun/mood";
-import type { AdvancedSelection, EditorMode, TraceRun } from "@shared/types";
+import type { AdvancedSelection, EditorMode, RefinementType, StyleChanges, TraceRun } from "@shared/types";
 
 /** Input state and handlers */
 export type InputState = {
@@ -48,7 +48,7 @@ export type ValidationState = {
 export type GenerationState = {
   currentPrompt: string;
   isGenerating: boolean;
-  onGenerate: (input: string) => void;
+  onGenerate: (input: string, refinementType?: RefinementType, styleChanges?: StyleChanges) => Promise<boolean>;
   onConversionComplete: (
     originalInput: string,
     convertedPrompt: string,

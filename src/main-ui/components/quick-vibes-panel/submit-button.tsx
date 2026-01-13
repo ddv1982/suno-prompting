@@ -1,6 +1,7 @@
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Check, Loader2, RefreshCw, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
 
@@ -9,6 +10,7 @@ type SubmitButtonProps = {
   isGenerating: boolean;
   isRefineMode: boolean;
   canSubmit: boolean;
+  refined?: boolean;
   onSubmit: () => void;
 };
 
@@ -16,18 +18,27 @@ export function SubmitButton({
   isGenerating,
   isRefineMode,
   canSubmit,
+  refined = false,
   onSubmit,
 }: SubmitButtonProps): ReactElement {
   return (
     <Button
       onClick={onSubmit}
       disabled={!canSubmit || isGenerating}
-      className="w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2"
+      className={cn(
+        "w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2",
+        refined && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
+      )}
     >
       {isGenerating ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
           {isRefineMode ? "REFINING..." : "GENERATING..."}
+        </>
+      ) : refined ? (
+        <>
+          <Check className="w-4 h-4" />
+          REFINED!
         </>
       ) : isRefineMode ? (
         <>

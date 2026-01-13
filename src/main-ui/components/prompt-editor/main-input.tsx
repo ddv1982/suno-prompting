@@ -7,11 +7,15 @@ import { useToast } from "@/components/ui/toast";
 import { createLogger } from "@/lib/logger";
 import { isMaxFormat } from "@/lib/max-format";
 import { cn } from "@/lib/utils";
-import { api } from "@/services/rpc";
+import { rpcClient, type RpcError } from "@/services/rpc-client";
 
 import type { TraceRun } from "@shared/types";
 
 const log = createLogger('MainInput');
+
+function formatRpcError(error: RpcError): string {
+  return error.message;
+}
 
 type MainInputProps = {
   value: string; currentPrompt: string; lyricsMode: boolean; maxMode: boolean;
@@ -45,14 +49,18 @@ export function MainInput({
     }
 
     try {
-      const result = await api.convertToMaxFormat(pastedText);
-      
-      if (result?.convertedPrompt && result.wasConverted) {
+      const result = await rpcClient.convertToMaxFormat({ text: pastedText });
+      if (!result.ok) {
+        showToast(formatRpcError(result.error), 'error');
+        return;
+      }
+
+      if (result.value?.convertedPrompt && result.value.wasConverted) {
         await onConversionComplete(
           pastedText,
-          result.convertedPrompt,
-          result.versionId,
-          result.debugTrace
+          result.value.convertedPrompt,
+          result.value.versionId,
+          result.value.debugTrace
         );
         showToast('Converted to Max Mode format', 'success');
       }
@@ -69,8 +77,8 @@ export function MainInput({
   const getPlaceholder = (): string => {
     if (currentPrompt) {
       return lyricsMode 
-        ? "How should the style change? (e.g., 'more epic', 'add orchestra')"
-        : "How should the prompt change? (e.g., 'more energy', 'darker mood')";
+        ? "Describe how the lyrics should change (optional if changing style)"
+        : "Describe style changes, or modify fields above (changes auto-detected)";
     }
     return lyricsMode 
       ? "Describe the musical style, genre, mood, and instrumentation"
@@ -78,7 +86,9 @@ export function MainInput({
   };
 
   const getLabel = (): string => {
-    if (currentPrompt) return 'Refine Prompt';
+    if (currentPrompt) {
+      return lyricsMode ? 'Refine Lyrics (optional)' : 'Refine Style (optional)';
+    }
     return lyricsMode ? 'Musical Style' : 'Describe Your Song';
   };
 

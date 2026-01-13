@@ -1,5 +1,8 @@
+import { type ReactElement } from "react";
+
 import { CreativitySlider } from "@/components/creativity-slider";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
+import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { canSubmitCreativeBoost } from "@shared/submit-validation";
 
 import { CreativeBoostModeToggle } from "./creative-boost-mode-toggle";
@@ -12,7 +15,6 @@ import { useCreativeBoostHandlers } from "./use-creative-boost-handlers";
 
 import type { MoodCategory } from "@bun/mood";
 import type { CreativeBoostInput, CreativeBoostMode } from "@shared/types";
-import type { ReactElement } from "react";
 
 type CreativeBoostPanelProps = {
   input: CreativeBoostInput;
@@ -26,7 +28,7 @@ type CreativeBoostPanelProps = {
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
   onGenerate: () => void;
-  onRefine: (feedback: string) => void;
+  onRefine: (feedback: string) => Promise<boolean>;
 };
 
 export function CreativeBoostPanel({
@@ -37,6 +39,8 @@ export function CreativeBoostPanel({
   const isDirectMode = input.sunoStyles.length > 0;
   const isSimpleMode = creativeBoostMode === 'simple';
 
+  const { refined, handleRefine } = useRefinedFeedback(onRefine);
+
   // Use centralized validation for submit eligibility
   const canSubmit = canSubmitCreativeBoost({
     description: input.description,
@@ -46,7 +50,7 @@ export function CreativeBoostPanel({
     seedGenres: input.seedGenres,
   });
 
-  const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleWordlessVocalsChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine });
+  const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleWordlessVocalsChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine: handleRefine });
 
   const handleMoodCategoryChange = (category: MoodCategory | null): void => {
     onInputChange(prev => ({ ...prev, moodCategory: category }));
@@ -132,6 +136,7 @@ export function CreativeBoostPanel({
         isRefineMode={isRefineMode}
         isDirectMode={isDirectMode}
         canSubmit={canSubmit}
+        refined={refined}
         onSubmit={handleSubmit}
       />
     </div>

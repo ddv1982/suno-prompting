@@ -44,7 +44,19 @@ function extractProviderRequestId(error: unknown): string | undefined {
   return undefined;
 }
 
-function mapErrorType(error: unknown): TraceErrorType {
+/** Maps error codes to trace error types for AppError subclasses */
+const ERROR_CODE_MAP: Record<string, TraceErrorType> = {
+  VALIDATION_ERROR: 'validation',
+  AI_GENERATION_ERROR: 'ai.generation',
+  STORAGE_ERROR: 'storage',
+  INVARIANT_VIOLATION: 'invariant',
+  OLLAMA_UNAVAILABLE: 'ollama.unavailable',
+  OLLAMA_MODEL_MISSING: 'ollama.model_missing',
+  OLLAMA_TIMEOUT: 'ollama.timeout',
+};
+
+/** Maps error class to trace error type via instanceof checks */
+function mapErrorTypeByInstance(error: unknown): TraceErrorType | undefined {
   if (error instanceof ValidationError) return 'validation';
   if (error instanceof OllamaUnavailableError) return 'ollama.unavailable';
   if (error instanceof OllamaModelMissingError) return 'ollama.model_missing';
@@ -52,27 +64,17 @@ function mapErrorType(error: unknown): TraceErrorType {
   if (error instanceof AIGenerationError) return 'ai.generation';
   if (error instanceof StorageError) return 'storage';
   if (error instanceof InvariantError) return 'invariant';
+  return undefined;
+}
 
+function mapErrorType(error: unknown): TraceErrorType {
+  // First try direct instanceof mapping
+  const instanceType = mapErrorTypeByInstance(error);
+  if (instanceType) return instanceType;
+
+  // Fall back to code-based mapping for AppError subclasses
   if (error instanceof AppError) {
-    // Best-effort mapping for unknown subclasses.
-    switch (error.code) {
-      case 'VALIDATION_ERROR':
-        return 'validation';
-      case 'AI_GENERATION_ERROR':
-        return 'ai.generation';
-      case 'STORAGE_ERROR':
-        return 'storage';
-      case 'INVARIANT_VIOLATION':
-        return 'invariant';
-      case 'OLLAMA_UNAVAILABLE':
-        return 'ollama.unavailable';
-      case 'OLLAMA_MODEL_MISSING':
-        return 'ollama.model_missing';
-      case 'OLLAMA_TIMEOUT':
-        return 'ollama.timeout';
-      default:
-        return 'unknown';
-    }
+    return ERROR_CODE_MAP[error.code] ?? 'unknown';
   }
 
   return 'unknown';

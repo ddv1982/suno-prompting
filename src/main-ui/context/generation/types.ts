@@ -1,6 +1,6 @@
 import type { ChatMessage } from '@/lib/chat-utils';
 import type { MoodCategory } from '@bun/mood';
-import type { PromptSession, QuickVibesCategory, TraceRun } from '@shared/types';
+import type { PromptSession, QuickVibesCategory, RefinementType, StyleChanges, TraceRun } from '@shared/types';
 import type { ValidationResult } from '@shared/validation';
 
 /** Active generation actions (excluding 'none') */
@@ -47,7 +47,7 @@ export interface SessionOperationsContextValue {
 
 /** Standard generation context - provides core generation operations */
 export interface StandardGenerationContextValue {
-  handleGenerate: (input: string) => Promise<void>;
+  handleGenerate: (input: string, refinementType?: RefinementType, styleChanges?: StyleChanges) => Promise<boolean>;
   handleCopy: () => void;
   handleRemix: () => Promise<void>;
   handleConversionComplete: (
@@ -80,8 +80,8 @@ export interface GenerationContextType
     moodCategory?: MoodCategory | null
   ) => Promise<void>;
   handleRemixQuickVibes: () => Promise<void>;
-  handleRefineQuickVibes: (feedback: string) => Promise<void>;
+  handleRefineQuickVibes: (feedback: string) => Promise<boolean>;
   // Creative Boost actions
   handleGenerateCreativeBoost: () => Promise<void>;
-  handleRefineCreativeBoost: (feedback: string) => Promise<void>;
+  handleRefineCreativeBoost: (feedback: string) => Promise<boolean>;
 }
