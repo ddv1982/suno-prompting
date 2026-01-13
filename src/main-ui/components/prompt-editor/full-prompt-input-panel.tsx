@@ -2,6 +2,7 @@ import { useCallback, type ReactElement } from "react";
 
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
+import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
 import { useOriginalSelection } from "@/hooks/use-original-selection";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { useRefinementType } from "@/hooks/use-refinement-type";
@@ -50,12 +51,11 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
   }, [canSubmit, handleSend]);
 
   return (
-    <>
+    <GenerationDisabledProvider isDisabled={isGenerating}>
       <ModeToggle
         editorMode={editorMode}
         maxMode={maxMode}
         lyricsMode={lyricsMode}
-        isGenerating={isGenerating}
         onEditorModeChange={onEditorModeChange}
         onMaxModeChange={onMaxModeChange}
         onLyricsModeChange={onLyricsModeChange}
@@ -122,6 +122,6 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
         refined={refined}
         onSubmit={handleSend}
       />
-    </>
+    </GenerationDisabledProvider>
   );
 }

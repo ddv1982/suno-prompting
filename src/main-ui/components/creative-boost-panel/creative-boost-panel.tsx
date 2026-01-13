@@ -2,6 +2,7 @@ import { type ReactElement } from "react";
 
 import { CreativitySlider } from "@/components/creativity-slider";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
+import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { canSubmitCreativeBoost } from "@shared/submit-validation";
 
@@ -57,88 +58,90 @@ export function CreativeBoostPanel({
   };
 
   return (
-    <div className="space-y-[var(--space-5)]">
-      <CreativeBoostModeToggle
-        mode={creativeBoostMode}
-        isDirectMode={isDirectMode}
-        isGenerating={isGenerating}
-        onModeChange={onCreativeBoostModeChange}
-      />
-
-      <CreativitySlider
-        value={input.creativityLevel}
-        onChange={handleCreativityChange}
-        disabled={isGenerating || isDirectMode}
-      />
-      {isDirectMode && (
-        <p className="ui-helper -mt-3">
-          Creativity slider disabled when using Suno V5 Styles
-        </p>
-      )}
-
-      <ModeSpecificInputs
-        input={input}
-        isSimpleMode={isSimpleMode}
-        isDirectMode={isDirectMode}
-        isGenerating={isGenerating}
-        onMoodCategoryChange={handleMoodCategoryChange}
-        onGenresChange={handleGenresChange}
-        onSunoStylesChange={handleSunoStylesChange}
-      />
-
-      {!isSimpleMode && (
-        <MoodCategoryCombobox
-          value={input.moodCategory}
-          onChange={handleMoodCategoryChange}
-          disabled={isGenerating || isDirectMode}
-          helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
-          badgeText={isDirectMode ? "disabled" : "optional"}
-        />
-      )}
-
-      <DescriptionInput
-        value={input.description}
-        isRefineMode={isRefineMode}
-        isDirectMode={isDirectMode}
-        isGenerating={isGenerating}
-        onChange={handleDescriptionChange}
-        onKeyDown={handleKeyDown}
-      />
-
-      {isSimpleMode && (
-        <p className="ui-helper">
-          AI will automatically select genres and vocal style based on your description
-        </p>
-      )}
-
-      {lyricsMode && (
-        <LyricsTopicInput
-          value={input.lyricsTopic}
+    <GenerationDisabledProvider isDisabled={isGenerating}>
+      <div className="space-y-[var(--space-5)]">
+        <CreativeBoostModeToggle
+          mode={creativeBoostMode}
+          isDirectMode={isDirectMode}
           isGenerating={isGenerating}
-          onChange={handleLyricsTopicChange}
+          onModeChange={onCreativeBoostModeChange}
+        />
+
+        <CreativitySlider
+          value={input.creativityLevel}
+          onChange={handleCreativityChange}
+          disabled={isGenerating || isDirectMode}
+        />
+        {isDirectMode && (
+          <p className="ui-helper -mt-3">
+            Creativity slider disabled when using Suno V5 Styles
+          </p>
+        )}
+
+        <ModeSpecificInputs
+          input={input}
+          isSimpleMode={isSimpleMode}
+          isDirectMode={isDirectMode}
+          isGenerating={isGenerating}
+          onMoodCategoryChange={handleMoodCategoryChange}
+          onGenresChange={handleGenresChange}
+          onSunoStylesChange={handleSunoStylesChange}
+        />
+
+        {!isSimpleMode && (
+          <MoodCategoryCombobox
+            value={input.moodCategory}
+            onChange={handleMoodCategoryChange}
+            disabled={isGenerating || isDirectMode}
+            helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
+            badgeText={isDirectMode ? "disabled" : "optional"}
+          />
+        )}
+
+        <DescriptionInput
+          value={input.description}
+          isRefineMode={isRefineMode}
+          isDirectMode={isDirectMode}
+          isGenerating={isGenerating}
+          onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
         />
-      )}
 
-      <TogglesSection
-        withWordlessVocals={input.withWordlessVocals}
-        maxMode={maxMode}
-        lyricsMode={lyricsMode}
-        isDirectMode={isDirectMode}
-        isGenerating={isGenerating}
-        onWordlessVocalsChange={handleWordlessVocalsChange}
-        onMaxModeChange={onMaxModeChange}
-        onLyricsModeChange={handleLyricsToggleChange}
-      />
+        {isSimpleMode && (
+          <p className="ui-helper">
+            AI will automatically select genres and vocal style based on your description
+          </p>
+        )}
 
-      <SubmitButton
-        isGenerating={isGenerating}
-        isRefineMode={isRefineMode}
-        isDirectMode={isDirectMode}
-        canSubmit={canSubmit}
-        refined={refined}
-        onSubmit={handleSubmit}
-      />
-    </div>
+        {lyricsMode && (
+          <LyricsTopicInput
+            value={input.lyricsTopic}
+            isGenerating={isGenerating}
+            onChange={handleLyricsTopicChange}
+            onKeyDown={handleKeyDown}
+          />
+        )}
+
+        <TogglesSection
+          withWordlessVocals={input.withWordlessVocals}
+          maxMode={maxMode}
+          lyricsMode={lyricsMode}
+          isDirectMode={isDirectMode}
+          isGenerating={isGenerating}
+          onWordlessVocalsChange={handleWordlessVocalsChange}
+          onMaxModeChange={onMaxModeChange}
+          onLyricsModeChange={handleLyricsToggleChange}
+        />
+
+        <SubmitButton
+          isGenerating={isGenerating}
+          isRefineMode={isRefineMode}
+          isDirectMode={isDirectMode}
+          canSubmit={canSubmit}
+          refined={refined}
+          onSubmit={handleSubmit}
+        />
+      </div>
+    </GenerationDisabledProvider>
   );
 }

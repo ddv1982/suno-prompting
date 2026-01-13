@@ -11,7 +11,6 @@ type ModeToggleProps = {
   editorMode: EditorMode;
   maxMode: boolean;
   lyricsMode: boolean;
-  isGenerating: boolean;
   onEditorModeChange: (mode: EditorMode) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
@@ -21,7 +20,6 @@ export function ModeToggle({
   editorMode,
   maxMode,
   lyricsMode,
-  isGenerating,
   onEditorModeChange,
   onMaxModeChange,
   onLyricsModeChange,
@@ -33,6 +31,7 @@ export function ModeToggle({
           variant={editorMode === 'simple' ? 'default' : 'outline'}
           size="xs"
           onClick={(): void => { onEditorModeChange('simple'); }}
+          autoDisable
           className="font-semibold"
         >
           Simple
@@ -41,6 +40,7 @@ export function ModeToggle({
           variant={editorMode === 'advanced' ? 'default' : 'outline'}
           size="xs"
           onClick={(): void => { onEditorModeChange('advanced'); }}
+          autoDisable
           className="font-semibold"
         >
           <Settings2 className="w-3 h-3" />
@@ -58,7 +58,7 @@ export function ModeToggle({
         <Switch 
           checked={lyricsMode} 
           onCheckedChange={onLyricsModeChange}
-          disabled={isGenerating}
+          autoDisable
           size="sm"
         />
       </label>
@@ -68,7 +68,7 @@ export function ModeToggle({
         <Switch 
           checked={maxMode} 
           onCheckedChange={onMaxModeChange}
-          disabled={isGenerating}
+          autoDisable
           size="sm"
         />
       </label>

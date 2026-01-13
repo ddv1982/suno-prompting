@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useGenerationDisabled } from "@/context/generation-disabled-context";
 import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
@@ -27,6 +28,13 @@ interface ComboboxProps {
   searchPlaceholder?: string;
   emptyText?: string;
   disabled?: boolean;
+  /**
+   * When true, the combobox will automatically be disabled when inside a
+   * GenerationDisabledProvider with isDisabled=true.
+   * Explicit `disabled` prop takes precedence over context.
+   * @default false
+   */
+  autoDisable?: boolean;
   className?: string;
   "aria-label"?: string;
 }
@@ -38,11 +46,15 @@ export function Combobox({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   emptyText = "No results found.",
-  disabled = false,
+  disabled,
+  autoDisable = false,
   className,
   "aria-label": ariaLabel,
 }: ComboboxProps): ReactElement {
   const [open, setOpen] = React.useState(false);
+  const contextDisabled = useGenerationDisabled();
+  // Explicit disabled prop takes precedence, then autoDisable + context
+  const isDisabled = disabled ?? (autoDisable ? contextDisabled : false);
 
   const selectedOption = options.find((opt) => opt.value === value);
 
@@ -54,7 +66,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           aria-label={ariaLabel}
-          disabled={disabled}
+          disabled={isDisabled}
           className={cn(
             "h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal",
             !value && "text-muted-foreground",

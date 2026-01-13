@@ -2,6 +2,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import * as React from "react"
 
+import { useGenerationDisabled } from "@/context/generation-disabled-context"
 import { cn } from "@/lib/utils"
 
 import type { ReactElement } from "react";
@@ -40,16 +41,30 @@ const buttonVariants = cva(
   }
 )
 
+interface ButtonProps extends React.ComponentProps<"button">, VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  /**
+   * When true, the button will automatically be disabled when inside a
+   * GenerationDisabledProvider with isDisabled=true.
+   * Explicit `disabled` prop takes precedence over context.
+   * @default false
+   */
+  autoDisable?: boolean;
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  disabled,
+  autoDisable = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }): ReactElement {
+}: ButtonProps): ReactElement {
+  const contextDisabled = useGenerationDisabled();
+  // Explicit disabled prop takes precedence, then autoDisable + context
+  const isDisabled = disabled ?? (autoDisable ? contextDisabled : false);
+  
   const Comp = asChild ? Slot : "button"
 
   return (
@@ -57,6 +72,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      disabled={isDisabled}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

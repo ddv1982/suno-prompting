@@ -1,3 +1,4 @@
+import { useGenerationDisabled } from "@/context/generation-disabled-context";
 import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
@@ -7,6 +8,13 @@ interface SwitchProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
+  /**
+   * When true, the switch will automatically be disabled when inside a
+   * GenerationDisabledProvider with isDisabled=true.
+   * Explicit `disabled` prop takes precedence over context.
+   * @default false
+   */
+  autoDisable?: boolean;
   size?: "default" | "sm";
   className?: string;
 }
@@ -24,7 +32,11 @@ const sizeStyles = {
   }
 };
 
-export function Switch({ id, checked, onCheckedChange, disabled = false, size = "default", className }: SwitchProps): ReactElement {
+export function Switch({ id, checked, onCheckedChange, disabled, autoDisable = false, size = "default", className }: SwitchProps): ReactElement {
+  const contextDisabled = useGenerationDisabled();
+  // Explicit disabled prop takes precedence, then autoDisable + context
+  const isDisabled = disabled ?? (autoDisable ? contextDisabled : false);
+  
   const styles = sizeStyles[size];
   
   return (
@@ -33,7 +45,7 @@ export function Switch({ id, checked, onCheckedChange, disabled = false, size = 
       type="button"
       role="switch"
       aria-checked={checked}
-      disabled={disabled}
+      disabled={isDisabled}
       onClick={() => { onCheckedChange(!checked); }}
       className={cn(
         "relative inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-150",

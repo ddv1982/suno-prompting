@@ -90,6 +90,7 @@ export function AdvancedPanel({
             variant="ghost"
             size="xs"
             onClick={onClear}
+            disabled={isGenerating}
             className="text-muted-foreground hover:text-destructive"
           >
             <X className="w-3 h-3" />
@@ -144,6 +145,7 @@ export function AdvancedPanel({
         polyrhythmOptions={POLYRHYTHM_OPTIONS}
         timeSignatureOptions={TIME_SIGNATURE_OPTIONS}
         timeJourneyOptions={TIME_JOURNEY_OPTIONS}
+        isGenerating={isGenerating}
       />
 
       <PhrasePreview phrase={computedPhrase} />
