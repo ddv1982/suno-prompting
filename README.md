@@ -574,6 +574,8 @@ flowchart TB
 
 **Why deterministic for style?** Faster response (~50ms), predictable results, no API costs, consistent quality.
 
+📖 **[Deterministic Generation Deep Dive](docs/deterministic-generation.md)** - Technical details on genre aliases, tag weights, coherence validation, and multi-genre detection.
+
 </details>
 
 ## Tech Stack
