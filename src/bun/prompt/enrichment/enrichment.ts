@@ -14,6 +14,8 @@ import { SUNO_STYLE_GENRE_MAP } from '@bun/prompt/datasets/suno-style-mappings';
 import { assembleInstruments } from '@bun/prompt/deterministic/instruments';
 import { assembleStyleTags } from '@bun/prompt/deterministic/styles';
 import { buildBlendedProductionDescriptor, buildBlendedVocalDescriptor } from '@bun/prompt/genre-parser';
+import { traceDecision } from '@bun/trace';
+
 
 import { buildMaxModeEnrichedLines, buildStandardModeEnrichedLines } from './formatters';
 
@@ -21,15 +23,16 @@ import type { EnrichmentResult, EnrichmentOptions, EnrichedSunoStyleResult } fro
 import type { GenreType } from '@bun/instruments/genres';
 import type { Rng } from '@bun/instruments/services/random';
 import type { MoodCategory } from '@bun/mood';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Enrichment');
 
 /**
  * Default enrichment for when no genres are extracted.
  */
-function getDefaultEnrichment(rng: Rng, moodCategory?: MoodCategory): EnrichmentResult {
+function getDefaultEnrichment(rng: Rng, moodCategory?: MoodCategory, trace?: TraceCollector): EnrichmentResult {
   const defaultGenres: GenreType[] = ['pop'];
-  return enrichFromGenresInternal(defaultGenres, rng, moodCategory);
+  return enrichFromGenresInternal(defaultGenres, rng, moodCategory, trace);
 }
 
 /**
@@ -42,10 +45,11 @@ function enrichFromGenresInternal(
   genres: GenreType[],
   rng: Rng,
   moodCategory?: MoodCategory,
+  trace?: TraceCollector,
 ): EnrichmentResult {
   // Use existing pipeline functions - no duplication
-  const styleResult = assembleStyleTags(genres, rng);
-  const instrumentResult = assembleInstruments(genres, rng);
+  const styleResult = assembleStyleTags(genres, rng, trace);
+  const instrumentResult = assembleInstruments(genres, rng, trace);
   const production = buildBlendedProductionDescriptor(genres, rng);
   const vocalStyle = buildBlendedVocalDescriptor(genres, rng);
 
@@ -59,14 +63,50 @@ function enrichFromGenresInternal(
 
   const bpmRange = bpmResult ? formatBpmRange(bpmResult) : 'between 90 and 120';
 
+  traceDecision(trace, {
+    domain: 'bpm',
+    key: 'enrichment.bpm.range',
+    branchTaken: bpmResult ? 'blended' : 'fallback',
+    why: bpmResult
+      ? `genres=${genreString} range=${bpmRange}`
+      : `no BPM range found for genres=${genreString}; using default`,
+  });
+
   // Select moods: use mood category if provided, otherwise use style tags
   let moods: string[];
   if (moodCategory) {
     const categoryMoods = selectMoodsForCategory(moodCategory, 3, rng);
     // Fall back to style tags if category selection returns empty
     moods = categoryMoods.length > 0 ? categoryMoods : [...styleResult.tags.slice(0, 3)];
+
+    traceDecision(trace, {
+      domain: 'mood',
+      key: 'enrichment.moods.source',
+      branchTaken: categoryMoods.length > 0 ? 'moodCategory' : 'moodCategory.fallback',
+      why:
+        categoryMoods.length > 0
+          ? `moodCategory=${moodCategory} selected=${categoryMoods.length}`
+          : `moodCategory=${moodCategory} returned empty; using styleTags`,
+      selection: categoryMoods.length > 0
+        ? {
+            method: 'shuffleSlice',
+            candidates: categoryMoods,
+          }
+        : undefined,
+    });
   } else {
     moods = [...styleResult.tags.slice(0, 3)];
+
+    traceDecision(trace, {
+      domain: 'mood',
+      key: 'enrichment.moods.source',
+      branchTaken: 'styleTags',
+      why: 'no moodCategory override; using styleTags-derived moods',
+      selection: {
+        method: 'shuffleSlice',
+        candidates: moods,
+      },
+    });
   }
 
   return {
@@ -104,14 +144,15 @@ export function enrichFromGenres(
 
   const rng = options.rng ?? Math.random;
   const moodCategory = options.moodCategory;
+  const trace = options.trace;
 
   if (genres.length === 0) {
     log.info('enrichFromGenres:empty', { fallback: 'pop' });
-    return getDefaultEnrichment(rng, moodCategory);
+    return getDefaultEnrichment(rng, moodCategory, trace);
   }
 
   log.info('enrichFromGenres', { genreCount: genres.length, genres, moodCategory });
-  return enrichFromGenresInternal(genres, rng, moodCategory);
+  return enrichFromGenresInternal(genres, rng, moodCategory, trace);
 }
 
 /**
@@ -162,6 +203,7 @@ export function enrichSunoStyles(
 
   const rng = options.rng ?? Math.random;
   const moodCategory = options.moodCategory;
+  const trace = options.trace;
 
   // Input validation: filter out empty/invalid entries
   const validStyles = sunoStyles.filter(
@@ -182,8 +224,8 @@ export function enrichSunoStyles(
   // Get enrichment from extracted genres (or default if none found)
   const enrichment =
     extractedGenres.length > 0
-      ? enrichFromGenresInternal(extractedGenres, rng, moodCategory)
-      : getDefaultEnrichment(rng, moodCategory);
+      ? enrichFromGenresInternal(extractedGenres, rng, moodCategory, trace)
+      : getDefaultEnrichment(rng, moodCategory, trace);
 
   return {
     rawStyles: validStyles,

@@ -9,7 +9,7 @@ import { isMaxFormat } from "@/lib/max-format";
 import { cn } from "@/lib/utils";
 import { api } from "@/services/rpc";
 
-import type { DebugInfo } from "@shared/types";
+import type { TraceRun } from "@shared/types";
 
 const log = createLogger('MainInput');
 
@@ -17,7 +17,7 @@ type MainInputProps = {
   value: string; currentPrompt: string; lyricsMode: boolean; maxMode: boolean;
   isGenerating: boolean; maxChars: number; inputOverLimit: boolean;
   hasAdvancedSelection: boolean; onChange: (value: string) => void; onSubmit: () => void;
-  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
+  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
 };
 
 export function MainInput({
@@ -52,7 +52,7 @@ export function MainInput({
           pastedText,
           result.convertedPrompt,
           result.versionId,
-          result.debugInfo
+          result.debugTrace
         );
         showToast('Converted to Max Mode format', 'success');
       }

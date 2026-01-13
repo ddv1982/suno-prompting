@@ -301,13 +301,6 @@ describe('convertToNonMaxFormat', () => {
     expect(mockGenerateText).toHaveBeenCalled();
   });
 
-  it('includes debug info', async () => {
-    const result = await convertToNonMaxFormat('jazz music', mockGetModel);
-    expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.systemPrompt).toBeDefined();
-    expect(result.debugInfo?.userPrompt).toBeDefined();
-  });
-
   it('does not include MAX_MODE header', async () => {
     const result = await convertToNonMaxFormat(
       'jazz with rhodes piano',

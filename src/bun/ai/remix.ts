@@ -25,6 +25,8 @@ import {
 import { APP_CONSTANTS } from '@shared/constants';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
+import type { TraceCollector } from '@bun/trace';
+
 const log = createLogger('Remix');
 
 /**
@@ -41,14 +43,15 @@ export async function remixTitle(
   currentPrompt: string,
   originalInput: string,
   getModel: () => LanguageModel,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ title: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
   
   log.info('remixTitle', { genre, mood, offline: !!ollamaEndpoint });
   
-  const result = await generateTitle(originalInput, genre, mood, getModel, undefined, ollamaEndpoint);
+  const result = await generateTitle(originalInput, genre, mood, getModel, undefined, ollamaEndpoint, traceRuntime);
   return { title: result.title };
 }
 
@@ -78,7 +81,8 @@ export async function remixLyrics(
   getModel: () => LanguageModel,
   useSunoTags: boolean = false,
   isOffline: boolean = false,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ lyrics: string }> {
   // Pre-flight check for Ollama when in offline mode
   if (isOffline && ollamaEndpoint) {
@@ -112,7 +116,8 @@ export async function remixLyrics(
     getModel,
     useSunoTags,
     timeoutMs,
-    isOffline ? ollamaEndpoint : undefined
+    isOffline ? ollamaEndpoint : undefined,
+    traceRuntime
   );
   return { lyrics: result.lyrics };
 }

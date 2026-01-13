@@ -14,7 +14,7 @@ import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
 import type { Logger } from '@/lib/logger';
-import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, DebugInfo } from '@shared/types';
+import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, TraceRun } from '@shared/types';
 
 /**
  * Build originalInput for Full Prompt mode.
@@ -60,7 +60,7 @@ export type GenerationResultBase = {
   title?: string;
   lyrics?: string;
   versionId: string;
-  debugInfo?: Partial<DebugInfo>;
+  debugTrace?: TraceRun;
 };
 
 export type ModeInputUpdate = {
@@ -72,7 +72,7 @@ export type SessionDeps = {
   currentSession: PromptSession | null;
   generateId: () => string;
   saveSession: (session: PromptSession) => Promise<void>;
-  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
+  setDebugTrace: (trace: TraceRun | undefined) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
   setGeneratingAction: (action: GeneratingAction) => void;
@@ -94,6 +94,7 @@ export function createVersion(
     lyrics: result.lyrics,
     feedback,
     timestamp: nowISO(),
+    debugTrace: result.debugTrace,
   };
 }
 
@@ -195,7 +196,7 @@ export function addUserMessage(
 
 /**
  * Complete session update flow after successful generation.
- * Combines: debugInfo update, session create/update, chat update, validation reset, save.
+ * Combines: debugTrace update, session create/update, chat update, validation reset, save.
  */
 export async function completeSessionUpdate(
   deps: SessionDeps,
@@ -206,9 +207,9 @@ export async function completeSessionUpdate(
   successMessage: string,
   feedback?: string
 ): Promise<PromptSession> {
-  const { currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation } = deps;
+  const { currentSession, generateId, saveSession, setDebugTrace, setChatMessages, setValidation } = deps;
   
-  setDebugInfo(result.debugInfo);
+  setDebugTrace(result.debugTrace);
   
   const { session, isNew } = createOrUpdateSession(
     currentSession,

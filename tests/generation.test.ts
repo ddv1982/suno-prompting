@@ -37,15 +37,6 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
     getOllamaEndpoint: () => 'http://127.0.0.1:11434',
-    buildDebugInfo: (systemPrompt: string, userPrompt: string, rawResponse: string) => ({
-      systemPrompt,
-      userPrompt,
-      model: 'test-model',
-      provider: 'groq',
-      timestamp: new Date().toISOString(),
-      requestBody: userPrompt,
-      responseBody: rawResponse,
-    }),
     ...overrides,
   };
 }
@@ -63,23 +54,6 @@ describe('generateInitial - deterministic path', () => {
     expect(result.text.length).toBeGreaterThan(0);
     expect(result.title).toBeDefined();
     expect(result.lyrics).toBeUndefined();
-  });
-
-  test('includes debug info when debug mode is enabled', async () => {
-    const config = createMockConfig({
-      isLyricsMode: () => false,
-      isDebugMode: () => true,
-    });
-
-    const result = await generateInitial(
-      { description: 'A rock song' },
-      config
-    );
-
-    expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.systemPrompt).toContain('deterministic');
-    expect(result.debugInfo?.model).toBe('test-model');
-    expect(result.debugInfo?.provider).toBe('groq');
   });
 
   test('respects genre override', async () => {

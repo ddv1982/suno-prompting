@@ -25,10 +25,25 @@ export type {
   AdvancedSelection, 
   PromptVersion, 
   PromptSession, 
-  DebugInfo,
   ConversionOptions,
 } from '@shared/types/domain';
 export { EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types/domain';
+
+// Trace types
+export type {
+  TraceVersion,
+  TraceRunAction,
+  TraceRun,
+  TraceEvent,
+  TraceBaseEvent,
+  TraceRunEvent,
+  TraceDecisionDomain,
+  TraceDecisionEvent,
+  TraceProviderInfo,
+  TraceLLMCallEvent,
+  TraceErrorType,
+  TraceErrorEvent,
+} from '@shared/types/trace';
 
 // API types
 export type {

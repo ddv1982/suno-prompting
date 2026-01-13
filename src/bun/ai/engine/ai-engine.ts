@@ -24,6 +24,7 @@ import { createCreativeBoostMethods } from './creative-boost';
 import { createQuickVibesMethods } from './quick-vibes';
 
 import type { GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * AI Engine - Unified facade for AI generation operations.
@@ -78,8 +79,11 @@ export class AIEngine {
    * - Lyrics OFF: Fully deterministic path (<50ms, no LLM calls)
    * - Lyrics ON: LLM-assisted path (genre detection, title, lyrics)
    */
-  async generateInitial(options: GenerateInitialOptions): Promise<GenerationResult> {
-    return generateInitialImpl(options, this.factories.getGenerationConfig());
+  async generateInitial(
+    options: GenerateInitialOptions,
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
+  ): Promise<GenerationResult> {
+    return generateInitialImpl(options, this.factories.getGenerationConfig(), runtime);
   }
 
   /**
@@ -88,8 +92,11 @@ export class AIEngine {
    * Delegates to refinement module which handles LLM-based
    * refinement with fallback on JSON parse failure.
    */
-  async refinePrompt(options: RefinePromptOptions): Promise<GenerationResult> {
-    return refinePromptImpl(options, this.factories.getRefinementConfig());
+  async refinePrompt(
+    options: RefinePromptOptions,
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
+  ): Promise<GenerationResult> {
+    return refinePromptImpl(options, this.factories.getRefinementConfig(), runtime);
   }
 
   // ==========================================================================

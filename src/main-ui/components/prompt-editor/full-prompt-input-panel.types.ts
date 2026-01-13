@@ -1,5 +1,5 @@
 import type { MoodCategory } from "@bun/mood";
-import type { AdvancedSelection, DebugInfo, EditorMode } from "@shared/types";
+import type { AdvancedSelection, EditorMode, TraceRun } from "@shared/types";
 
 /** Input state and handlers */
 export type InputState = {
@@ -53,7 +53,7 @@ export type GenerationState = {
     originalInput: string,
     convertedPrompt: string,
     versionId: string,
-    debugInfo?: Partial<DebugInfo>
+    debugTrace?: TraceRun
   ) => Promise<void>;
 };
 

@@ -6,8 +6,9 @@ import { encrypt, decrypt } from '@bun/crypto';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { StorageError } from '@shared/errors';
+import { TraceRunSchema } from '@shared/schemas';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
-import { type PromptSession, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode, type CreativeBoostMode } from '@shared/types';
+import { type PromptSession, type PromptVersion, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode, type CreativeBoostMode } from '@shared/types';
 
 // Type for the stored config (with encrypted API keys)
 type StoredConfig = Partial<{
@@ -65,7 +66,8 @@ export class StorageManager {
             if (!(await file.exists())) {
                 return [];
             }
-            const sessions = await file.json() as PromptSession[];
+            const raw = await file.json() as unknown;
+            const sessions = sanitizeDebugTracesInHistory(raw);
             return sortByUpdated(sessions);
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
@@ -183,4 +185,61 @@ export class StorageManager {
             throw new StorageError(`Failed to save config: ${message}`, 'write');
         }
     }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return value !== null && typeof value === 'object';
+}
+
+function isPromptVersion(value: unknown): value is PromptVersion {
+    return (
+        isRecord(value)
+        && typeof value.id === 'string'
+        && typeof value.content === 'string'
+        && typeof value.timestamp === 'string'
+    );
+}
+
+function isPromptSession(value: unknown): value is PromptSession {
+    return (
+        isRecord(value)
+        && typeof value.id === 'string'
+        && typeof value.originalInput === 'string'
+        && typeof value.currentPrompt === 'string'
+        && typeof value.createdAt === 'string'
+        && typeof value.updatedAt === 'string'
+        && Array.isArray(value.versionHistory)
+    );
+}
+
+function sanitizeDebugTracesInHistory(raw: unknown): PromptSession[] {
+    if (!Array.isArray(raw)) {
+        return [];
+    }
+
+    return raw
+        .filter(isPromptSession)
+        .map((session) => {
+            const sanitizedVersions = session.versionHistory
+                .filter(isPromptVersion)
+                .map((version) => {
+                    if (!('debugTrace' in version) || version.debugTrace === undefined) {
+                        return version;
+                    }
+
+                    const parsed = TraceRunSchema.safeParse(version.debugTrace);
+                    if (parsed.success) {
+                        return { ...version, debugTrace: parsed.data };
+                    }
+
+                    // Drop invalid traces rather than crashing on load.
+                    const { debugTrace: _drop, ...rest } = version;
+                    return rest;
+                });
+
+            return {
+                ...session,
+                versionHistory: sanitizedVersions,
+            };
+        });
 }

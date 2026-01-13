@@ -4,7 +4,7 @@ import { useEditorContext } from '@/context/editor-context';
 import { useSessionContext } from '@/context/session-context';
 import { buildChatMessages } from '@/lib/chat-utils';
 import { createVersion, updateChatMessagesAfterGeneration } from '@/lib/session-helpers';
-import { type PromptSession, type DebugInfo } from '@shared/types';
+import { type PromptSession, type TraceRun } from '@shared/types';
 import { nowISO } from '@shared/utils';
 import { EMPTY_VALIDATION } from '@shared/validation';
 
@@ -23,7 +23,7 @@ export function useSessionOperationsContext(): SessionOperationsContextValue {
 export function SessionOperationsProvider({ children }: { children: ReactNode }): ReactNode {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
   const { resetEditor, setLyricsTopic, setPromptMode, setQuickVibesInput, setWithWordlessVocals, resetQuickVibesInput, setCreativeBoostInput } = useEditorContext();
-  const { setChatMessages, setValidation, setDebugInfo } = useGenerationStateContext();
+  const { setChatMessages, setValidation, setDebugTrace } = useGenerationStateContext();
 
   const selectSession = useCallback((session: PromptSession) => {
     setCurrentSession(session);
@@ -64,11 +64,11 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
     originalInput: string,
     convertedPrompt: string,
     versionId: string,
-    conversionDebugInfo?: Partial<DebugInfo>
+    conversionDebugTrace?: TraceRun
   ): Promise<void> => {
-    setDebugInfo(conversionDebugInfo);
+    setDebugTrace(conversionDebugTrace);
     const now = nowISO();
-    const newVersion = createVersion({ prompt: convertedPrompt, versionId }, '[auto-converted to max format]');
+    const newVersion = createVersion({ prompt: convertedPrompt, versionId, debugTrace: conversionDebugTrace }, '[auto-converted to max format]');
     const isNewSession = !currentSession;
 
     const updatedSession: PromptSession = isNewSession
@@ -90,7 +90,7 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
     updateChatMessagesAfterGeneration(setChatMessages, updatedSession, isNewSession, 'Converted to Max Mode format.');
     setValidation({ ...EMPTY_VALIDATION });
     await saveSession(updatedSession);
-  }, [currentSession, generateId, saveSession, setDebugInfo, setChatMessages, setValidation]);
+  }, [currentSession, generateId, saveSession, setDebugTrace, setChatMessages, setValidation]);
 
   return <SessionOperationsContext.Provider value={{ selectSession, newProject, createConversionSession }}>{children}</SessionOperationsContext.Provider>;
 }

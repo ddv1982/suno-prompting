@@ -20,8 +20,14 @@ import { isDirectMode, generateDirectModeResult } from '../direct-mode';
 
 import type { GenerationResult, EngineConfig } from '../types';
 import type { GenerateQuickVibesOptions } from './types';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('QuickVibesEngine');
+
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: () => number;
+};
 
 /**
  * Generates a Quick Vibes prompt based on category or custom description.
@@ -33,22 +39,24 @@ const log = createLogger('QuickVibesEngine');
  *
  * @param options - Generation options including category and description
  * @param config - Engine configuration with model and debug settings
- * @returns Generated prompt with text, title, and optional debug info
+ * @returns Generated prompt with text and title
  *
  * @example
  * ```typescript
  * const result = await generateQuickVibes(
  *   { category: 'lofi-study', customDescription: '', withWordlessVocals: false, sunoStyles: [] },
- *   { getModel, isMaxMode: () => true, isDebugMode: () => false, buildDebugInfo }
+ *   { getModel, isMaxMode: () => true, isDebugMode: () => false }
  * );
  * console.log(result.text); // "Genre: \"lo-fi\"\nMood: \"relaxed\"..."
  * ```
  */
 export async function generateQuickVibes(
   options: GenerateQuickVibesOptions,
-  config: EngineConfig & { isMaxMode: () => boolean }
+  config: EngineConfig & { isMaxMode: () => boolean },
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { category, customDescription, withWordlessVocals, sunoStyles } = options;
+  const rng = runtime?.rng ?? Math.random;
 
   // Validate input (styles limit + mutual exclusivity with category)
   if (sunoStyles.length > 4) {
@@ -61,7 +69,11 @@ export async function generateQuickVibes(
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
     log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription, maxMode: config.isMaxMode() });
-    return generateDirectModeResult({ sunoStyles, description: customDescription, maxMode: config.isMaxMode() }, config);
+    return generateDirectModeResult(
+      { sunoStyles, description: customDescription, maxMode: config.isMaxMode() },
+      config,
+      { trace: runtime?.trace, rng }
+    );
   }
 
   // Category-based generation: fully deterministic (no LLM)
@@ -70,7 +82,8 @@ export async function generateQuickVibes(
     const { text, title } = buildDeterministicQuickVibes(
       category,
       withWordlessVocals,
-      config.isMaxMode()
+      config.isMaxMode(),
+      rng
     );
 
     const result = applyQuickVibesMaxMode(text, config.isMaxMode());
@@ -78,9 +91,7 @@ export async function generateQuickVibes(
     return {
       text: result,
       title,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo('DETERMINISTIC', `Category: ${category}`, text)
-        : undefined,
+      debugTrace: undefined,
     };
   }
 
@@ -90,8 +101,6 @@ export async function generateQuickVibes(
 
   return {
     text: result,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo('PASSTHROUGH', 'Custom description', customDescription)
-      : undefined,
+    debugTrace: undefined,
   };
 }

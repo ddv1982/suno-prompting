@@ -138,16 +138,11 @@ describe('Deterministic Refinement (Offline Mode)', () => {
       isUseLocalLLM: () => true,
       isLyricsMode: () => false,
       isMaxMode: () => false,
-      isDebugMode: () => true, // Enable debug mode to test debug info
+      isDebugMode: () => true,
       getUseSunoTags: () => true,
       getOllamaEndpoint: () => 'http://localhost:11434',
       getModel: () => { throw new Error('Should not call LLM in deterministic mode'); },
       postProcess: async (text: string) => text,
-      buildDebugInfo: (system: string, user: string, response: string) => ({
-        systemPrompt: system,
-        userPrompt: user,
-        rawResponse: response,
-      }),
     };
 
     const currentPrompt = `genre: "jazz"
@@ -176,8 +171,7 @@ BPM: 90`;
     // Verify title is preserved
     expect(result.title).toBe('My Jazz Song');
     
-    // Verify debug info indicates deterministic mode
-    expect(result.debugInfo?.systemPrompt).toContain('DETERMINISTIC_REFINE');
+    // Debug tracing is migrated to TraceRun, but trace emission is implemented in later task groups.
   });
 
   test('uses LLM when offline but lyrics mode is enabled', async () => {
@@ -205,11 +199,6 @@ BPM: 90`;
         throw new Error('Should not be called - Ollama check should fail first');
       },
       postProcess: async (text: string) => text,
-      buildDebugInfo: (system: string, user: string, response: string) => ({
-        systemPrompt: system,
-        userPrompt: user,
-        rawResponse: response,
-      }),
     };
 
     const currentPrompt = `genre: "jazz"

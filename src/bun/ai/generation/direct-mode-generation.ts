@@ -8,7 +8,7 @@
  */
 
 import { generateLyrics } from '@bun/ai/content-generator';
-import { buildDirectModePrompt } from '@bun/ai/direct-mode';
+import { buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
 import { generateDirectModeTitle } from '@bun/ai/llm-utils';
 import { cleanLyrics } from '@bun/ai/utils';
 import { generateDeterministicTitle } from '@bun/prompt/title';
@@ -16,6 +16,12 @@ import { ValidationError } from '@shared/errors';
 
 import type { GenerateInitialOptions } from './types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
+
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: () => number;
+};
 
 /**
  * Generate prompt in Direct Mode (Suno V5 styles selected).
@@ -29,7 +35,8 @@ import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
  */
 export async function generateDirectMode(
   options: GenerateInitialOptions,
-  config: GenerationConfig
+  config: GenerationConfig,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { sunoStyles, description, lyricsTopic } = options;
 
@@ -38,7 +45,10 @@ export async function generateDirectMode(
   }
 
   // Use centralized prompt building
-  const { text, enriched } = buildDirectModePrompt(sunoStyles, config.isMaxMode());
+  const { text, enriched } = buildDirectModePromptWithRuntime(sunoStyles, config.isMaxMode(), {
+    trace: runtime?.trace,
+    rng: runtime?.rng,
+  });
 
   // Extract genre/mood for title generation
   const genre = enriched.extractedGenres[0] || 'pop';
@@ -47,7 +57,6 @@ export async function generateDirectMode(
   // Generate title and lyrics based on lyrics mode
   let title: string;
   let lyrics: string | undefined;
-  let lyricsDebugInfo: { systemPrompt: string; userPrompt: string } | undefined;
 
   if (config.isLyricsMode()) {
     // LLM-based title and lyrics generation
@@ -57,7 +66,11 @@ export async function generateDirectMode(
       description || '',
       sunoStyles,
       config.getModel,
-      ollamaEndpoint
+      ollamaEndpoint,
+      {
+        trace: runtime?.trace,
+        traceLabel: 'title.generate',
+      }
     );
 
     const topicForLyrics = lyricsTopic?.trim() || description;
@@ -69,30 +82,22 @@ export async function generateDirectMode(
       config.getModel,
       config.getUseSunoTags(),
       undefined,
-      ollamaEndpoint
+      ollamaEndpoint,
+      {
+        trace: runtime?.trace,
+        traceLabel: 'lyrics.generate',
+      }
     );
     lyrics = cleanLyrics(lyricsResult.lyrics);
-    lyricsDebugInfo = lyricsResult.debugInfo;
   } else {
     // Deterministic title when lyrics mode is off
-    title = generateDeterministicTitle(genre, mood, Math.random, description);
+    title = generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, description);
   }
-
-  const debugInfo = config.isDebugMode()
-    ? {
-        ...config.buildDebugInfo(
-          'DIRECT_MODE (Full Prompt Advanced): Styles preserved, prompt enriched.',
-          `Suno V5 Styles: ${sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${description || '(none)'}`,
-          text
-        ),
-        lyricsGeneration: lyricsDebugInfo,
-      }
-    : undefined;
 
   return {
     text,
     title,
     lyrics,
-    debugInfo,
+    debugTrace: undefined,
   };
 }

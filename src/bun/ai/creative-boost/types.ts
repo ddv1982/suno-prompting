@@ -8,6 +8,7 @@
  */
 
 import type { EngineConfig } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Configuration for the Creative Boost Engine
@@ -104,6 +105,11 @@ export type PostProcessParams = {
   rawResponse: string;
   /** Engine config for model access and debug mode checks */
   config: CreativeBoostEngineConfig;
+
+  /** Optional per-run trace collector (undefined when debug mode OFF). */
+  trace?: TraceCollector;
+  /** Optional per-run RNG used for deterministic decisions in this run. */
+  rng?: () => number;
   /** Genre-specific instruments for max mode conversion injection */
   performanceInstruments?: string[];
   /** Genre-specific vocal style for max mode conversion injection */

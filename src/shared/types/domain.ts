@@ -2,7 +2,7 @@
 
 import type { MoodCategory } from '@bun/mood';
 import type { QuickVibesCategory as QuickVibesCategoryType } from '@shared/schemas/common';
-import type { AIProvider } from '@shared/types/config';
+import type { TraceRun } from '@shared/types/trace';
 // Import QuickVibesCategory from schema - single source of truth
 
 // Prompt generation mode
@@ -91,6 +91,7 @@ export type PromptVersion = {
   feedback?: string;
   lockedPhrase?: string;
   timestamp: string;
+  debugTrace?: TraceRun;
 };
 
 export type PromptSession = {
@@ -107,34 +108,6 @@ export type PromptSession = {
   promptMode?: PromptMode;
   quickVibesInput?: QuickVibesInput;
   creativeBoostInput?: CreativeBoostInput;
-};
-
-export type DebugInfo = {
-  systemPrompt: string;
-  userPrompt: string;
-  model: string;
-  provider: AIProvider;
-  timestamp: string;
-  requestBody: string;
-  responseBody: string;
-  titleGeneration?: {
-    systemPrompt: string;
-    userPrompt: string;
-  };
-  lyricsGeneration?: {
-    systemPrompt: string;
-    userPrompt: string;
-  };
-  maxConversion?: {
-    systemPrompt?: string;
-    userPrompt?: string;
-    timestamp?: string;
-  };
-  genreDetection?: {
-    systemPrompt: string;
-    userPrompt: string;
-    detectedGenre: string;
-  };
 };
 
 /** Options for prompt format conversion with performance guidance */

@@ -12,9 +12,9 @@ import {
   refineQuickVibes as refineQuickVibesImpl,
 } from '@bun/ai/quick-vibes-engine';
 
-import type { ConfigFactories } from './config-factories';
 import type { ConfigProxies } from './config-proxies';
 import type { GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 import type { QuickVibesCategory } from '@shared/types';
 
 /**
@@ -23,13 +23,14 @@ import type { QuickVibesCategory } from '@shared/types';
 export function createQuickVibesMethods(
   config: AIConfig,
   proxies: ConfigProxies,
-  factories: ConfigFactories
+  _factories: unknown
 ): {
   generateQuickVibes: (
     category: QuickVibesCategory | null,
     customDescription: string,
     withWordlessVocals: boolean,
-    sunoStyles: string[]
+    sunoStyles: string[],
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
   refineQuickVibes: (options: {
     currentPrompt: string;
@@ -39,13 +40,14 @@ export function createQuickVibesMethods(
     withWordlessVocals: boolean;
     category?: QuickVibesCategory | null;
     sunoStyles?: string[];
-  }) => Promise<GenerationResult>;
+  }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }) => Promise<GenerationResult>;
 } {
   async function generateQuickVibes(
     category: QuickVibesCategory | null,
     customDescription: string,
     withWordlessVocals: boolean,
-    sunoStyles: string[]
+    sunoStyles: string[],
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ): Promise<GenerationResult> {
     return generateQuickVibesImpl(
       { category, customDescription, withWordlessVocals, sunoStyles },
@@ -53,8 +55,8 @@ export function createQuickVibesMethods(
         getModel: proxies.getModel,
         isMaxMode: config.isMaxMode.bind(config),
         isDebugMode: config.isDebugMode.bind(config),
-        buildDebugInfo: factories.buildDebugInfo,
-      }
+      },
+      runtime
     );
   }
 
@@ -66,16 +68,16 @@ export function createQuickVibesMethods(
     withWordlessVocals: boolean;
     category?: QuickVibesCategory | null;
     sunoStyles?: string[];
-  }): Promise<GenerationResult> {
+  }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }): Promise<GenerationResult> {
     return refineQuickVibesImpl(
       { ...options, sunoStyles: options.sunoStyles ?? [] },
       {
         getModel: proxies.getModel,
         isMaxMode: config.isMaxMode.bind(config),
         isDebugMode: config.isDebugMode.bind(config),
-        buildDebugInfo: factories.buildDebugInfo,
         getOllamaEndpoint: () => config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined,
-      }
+      },
+      runtime
     );
   }
 

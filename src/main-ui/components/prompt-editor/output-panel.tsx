@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SectionLabel } from "@/components/ui/section-label";
 
 import type { GeneratingAction } from "@/context/app-context";
-import type { DebugInfo } from "@shared/types";
+import type { TraceRun } from "@shared/types";
 import type { ReactElement } from "react";
 
 type OutputPanelProps = {
@@ -22,7 +22,7 @@ type OutputPanelProps = {
   promptOverLimit: boolean;
   charCount: number;
   maxChars: number;
-  debugInfo?: Partial<DebugInfo>;
+  debugTrace?: TraceRun;
   onRemixQuickVibes: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
@@ -48,7 +48,7 @@ export function OutputPanel({
   promptOverLimit,
   charCount,
   maxChars,
-  debugInfo,
+  debugTrace,
   onRemixQuickVibes,
   onRemixTitle,
   onRemixLyrics,
@@ -66,7 +66,7 @@ export function OutputPanel({
   if (promptMode === 'quickVibes') {
     return (
       <div className="space-y-[var(--space-5)]">
-        <QuickVibesOutput prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics} isGenerating={isGenerating} hasDebugInfo={!!debugInfo} onRemix={onRemixQuickVibes} onCopy={onCopy} onDebugOpen={onDebugOpen} onRemixLyrics={onRemixLyrics} />
+        <QuickVibesOutput prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics} isGenerating={isGenerating} hasDebugInfo={!!debugTrace} onRemix={onRemixQuickVibes} onCopy={onCopy} onDebugOpen={onDebugOpen} onRemixLyrics={onRemixLyrics} />
       </div>
     );
   }
@@ -104,7 +104,7 @@ export function OutputPanel({
             maxMode={maxMode}
             copied={copied}
             promptOverLimit={promptOverLimit}
-            hasDebugInfo={!!debugInfo}
+            hasDebugInfo={!!debugTrace}
             onDebugOpen={onDebugOpen}
             onRemixGenre={onRemixGenre}
             onRemixMood={onRemixMood}

@@ -10,9 +10,7 @@
 import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
 import { postProcessPrompt } from '@bun/prompt/postprocess';
 import { APP_CONSTANTS } from '@shared/constants';
-import { nowISO } from '@shared/utils';
 
-import type { AIProvider, DebugInfo } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 // =============================================================================
@@ -39,56 +37,6 @@ export function cleanTitle(title: string | undefined, fallback: string = 'Untitl
  */
 export function cleanLyrics(lyrics: string | undefined): string | undefined {
   return lyrics?.trim() || undefined;
-}
-
-// =============================================================================
-// Debug Information
-// =============================================================================
-
-/**
- * Build debug information from LLM interaction.
- *
- * WHY: Debug info captures the full context of an LLM call for debugging
- * and development. Includes prompts, model info, and raw response to
- * help diagnose issues with generation quality or parsing.
- *
- * @param systemPrompt - The system prompt sent to the LLM
- * @param userPrompt - The user prompt sent to the LLM
- * @param rawResponse - The raw response from the LLM
- * @param modelName - Name of the model used
- * @param provider - AI provider (groq, openai, anthropic)
- * @param messages - Optional array of messages for multi-turn conversations
- */
-export function buildDebugInfo(
-  systemPrompt: string,
-  userPrompt: string,
-  rawResponse: string,
-  modelName: string,
-  provider: AIProvider,
-  messages?: Array<{ role: string; content: string }>
-): DebugInfo {
-  const requestMessages = messages
-    ? [{ role: 'system', content: systemPrompt }, ...messages]
-    : [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ];
-
-  const requestBody = {
-    provider,
-    model: modelName,
-    messages: requestMessages,
-  };
-
-  return {
-    systemPrompt,
-    userPrompt,
-    model: modelName,
-    provider,
-    timestamp: nowISO(),
-    requestBody: JSON.stringify(requestBody, null, 2),
-    responseBody: rawResponse,
-  };
 }
 
 // =============================================================================

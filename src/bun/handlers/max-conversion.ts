@@ -22,7 +22,7 @@ export function createMaxConversionHandlers(aiEngine: AIEngine): MaxConversionHa
           convertedPrompt: result.convertedPrompt,
           wasConverted: result.wasConverted,
           versionId,
-          debugInfo: result.debugInfo,
+          debugTrace: undefined,
         };
       }, { textLength: text.length });
     },

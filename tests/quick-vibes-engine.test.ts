@@ -72,25 +72,7 @@ describe("AIEngine.generateQuickVibes", () => {
     expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
-  it("includes debug info when debug mode enabled", async () => {
-    // Enable debug mode
-    engine.setDebugMode(true);
-    
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
-    
-    expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.systemPrompt).toBeDefined();
-    expect(result.debugInfo?.userPrompt).toBeDefined();
-  });
-
-  it("excludes debug info when debug mode disabled", async () => {
-    // Ensure debug mode is off
-    engine.setDebugMode(false);
-    
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
-    
-    expect(result.debugInfo).toBeUndefined();
-  });
+  // NOTE: Debug tracing is migrated to TraceRun, but trace emission is implemented in later task groups.
 
   it("returns deterministic output for category (no empty response possible)", async () => {
     // Category-based generation is deterministic and always produces output
@@ -178,13 +160,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
     expect(result.title).toBeDefined();
   });
 
-  it("includes debug info in direct mode when debug enabled", async () => {
-    engine.setDebugMode(true);
-    const result = await engine.generateQuickVibes(null, "", false, ["ambient"]);
-
-    expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.systemPrompt).toContain("DIRECT_MODE");
-  });
+  // NOTE: Debug tracing is migrated to TraceRun, but trace emission is implemented in later task groups.
 });
 
 describe("AIEngine.refineQuickVibes Direct Mode", () => {

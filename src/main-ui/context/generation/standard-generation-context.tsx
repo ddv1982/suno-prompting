@@ -8,7 +8,7 @@ import { createLogger } from '@/lib/logger';
 import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import { handleGenerationError, addUserMessage, buildFullPromptOriginalInput, completeSessionUpdate } from '@/lib/session-helpers';
 import { api } from '@/services/rpc';
-import { type DebugInfo } from '@shared/types';
+import { type TraceRun } from '@shared/types';
 
 import { useGenerationStateContext } from './generation-state-context';
 import { useSessionOperationsContext } from './session-operations-context';
@@ -28,7 +28,7 @@ function shouldAttemptMaxConversion(isInitial: boolean, maxMode: boolean, input:
 }
 
 interface ConversionCallbacks {
-  createConversionSession: (o: string, c: string, v: string, d?: Partial<DebugInfo>) => Promise<void>;
+  createConversionSession: (o: string, c: string, v: string, d?: TraceRun) => Promise<void>;
   setPendingInput: (v: string) => void;
   setLyricsTopic: (v: string) => void;
   showToast: (m: string, t: 'success' | 'error') => void;
@@ -37,7 +37,7 @@ interface ConversionCallbacks {
 async function tryMaxConversion(input: string, cb: ConversionCallbacks): Promise<boolean> {
   const conv = await api.convertToMaxFormat(input).catch(() => null);
   if (!conv?.convertedPrompt || !conv.wasConverted) return false;
-  await cb.createConversionSession(input, conv.convertedPrompt, conv.versionId, conv.debugInfo);
+  await cb.createConversionSession(input, conv.convertedPrompt, conv.versionId, conv.debugTrace);
   cb.setPendingInput(''); cb.setLyricsTopic(''); cb.showToast('Converted to Max Mode format', 'success');
   return true;
 }
@@ -85,14 +85,14 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
   const { getEffectiveLockedPhrase, setPendingInput, lyricsTopic, setLyricsTopic, advancedSelection, promptMode } = useEditorContext();
   const { maxMode } = useSettingsContext();
   const { showToast } = useToast();
-  const { isGenerating, setGeneratingAction, setChatMessages, setValidation, setDebugInfo } = useGenerationStateContext();
+  const { isGenerating, setGeneratingAction, setChatMessages, setValidation, setDebugTrace } = useGenerationStateContext();
   const { createConversionSession } = useSessionOperationsContext();
 
   const deps = useMemo(() => ({
     currentSession,
     generateId,
     saveSession,
-    setDebugInfo,
+    setDebugTrace,
     setChatMessages,
     setValidation,
     setGeneratingAction,
@@ -102,7 +102,7 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     currentSession,
     generateId,
     saveSession,
-    setDebugInfo,
+    setDebugTrace,
     setChatMessages,
     setValidation,
     setGeneratingAction,
@@ -145,8 +145,8 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     finally { setGeneratingAction('none'); }
   }, [isGenerating, currentSession, getEffectiveLockedPhrase, advancedSelection, deps, setChatMessages, showToast, setGeneratingAction]);
 
-  const handleConversionComplete = useCallback(async (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => {
-    await createConversionSession(originalInput, convertedPrompt, versionId, debugInfo);
+  const handleConversionComplete = useCallback(async (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => {
+    await createConversionSession(originalInput, convertedPrompt, versionId, debugTrace);
   }, [createConversionSession]);
 
   return <StandardGenerationContext.Provider value={{ handleGenerate, handleCopy, handleRemix, handleConversionComplete }}>{children}</StandardGenerationContext.Provider>;

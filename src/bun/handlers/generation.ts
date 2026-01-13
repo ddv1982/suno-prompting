@@ -1,5 +1,8 @@
 import { type AIEngine, type GenerationResult } from '@bun/ai';
+import { createRng } from '@bun/instruments/services/random';
+import { maybeCreateTraceCollector, type TraceCollector } from '@bun/trace';
 import { GenerateInitialSchema, RefinePromptSchema } from '@shared/schemas';
+import { enforceTraceSizeCap } from '@shared/trace';
 import { validatePrompt } from '@shared/validation';
 
 import { withErrorHandling, log, type ActionMeta } from './utils';
@@ -10,14 +13,55 @@ import type { RPCHandlers } from '@shared/types';
 
 type GenerationHandlers = Pick<RPCHandlers, 'generateInitial' | 'refinePrompt'>;
 
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: () => number;
+};
+
+function createTraceRuntime(
+  aiEngine: AIEngine,
+  versionId: string,
+  action: 'generate.full' | 'refine',
+): TraceRuntime {
+  const enabled = aiEngine.isDebugMode();
+  if (!enabled) return {};
+
+  const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? 1;
+  const rng = createRng(seed);
+
+  const trace = maybeCreateTraceCollector(true, {
+    runId: versionId,
+    action,
+    promptMode: 'full',
+    rng: {
+      seed,
+      algorithm: 'mulberry32',
+    },
+  });
+
+  return {
+    trace,
+    rng,
+  };
+}
+
 async function runAndValidate(
+  aiEngine: AIEngine,
   action: 'generateInitial' | 'refinePrompt',
   meta: ActionMeta,
-  operation: () => Promise<GenerationResult>
-): Promise<{ prompt: string; title?: string; lyrics?: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugInfo?: GenerationResult['debugInfo'] }> {
+  operation: (runtime: TraceRuntime) => Promise<GenerationResult>
+): Promise<{ prompt: string; title?: string; lyrics?: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: GenerationResult['debugTrace'] }> {
   return withErrorHandling(action, async () => {
-    const result = await operation();
     const versionId = Bun.randomUUIDv7();
+
+    const traceAction = action === 'generateInitial' ? 'generate.full' : 'refine';
+    const runtime = createTraceRuntime(aiEngine, versionId, traceAction);
+
+    runtime.trace?.addRunEvent('run.start', traceAction);
+    const result = await operation(runtime);
+    runtime.trace?.addRunEvent('run.end', 'success');
+
+    const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : undefined;
     const validation = validatePrompt(result.text);
     log.info(`${action}:result`, { versionId, isValid: validation.isValid, promptLength: result.text.length });
     return {
@@ -26,7 +70,7 @@ async function runAndValidate(
       lyrics: result.lyrics,
       versionId,
       validation,
-      debugInfo: result.debugInfo
+      debugTrace,
     };
   }, meta);
 }
@@ -44,8 +88,8 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
         validateGenreStylesMutualExclusivity([genreOverride], sunoStyles);
       }
       
-      return runAndValidate('generateInitial', { description, genreOverride, sunoStylesCount: sunoStyles.length }, () =>
-        aiEngine.generateInitial({ description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles })
+      return runAndValidate(aiEngine, 'generateInitial', { description, genreOverride, sunoStylesCount: sunoStyles.length }, (runtime) =>
+        aiEngine.generateInitial({ description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles }, runtime)
       );
     },
     refinePrompt: async (params) => {
@@ -59,7 +103,7 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
         validateGenreStylesMutualExclusivity([genreOverride], sunoStyles);
       }
       
-      return runAndValidate('refinePrompt', { feedback, sunoStylesCount: sunoStyles.length }, () =>
+      return runAndValidate(aiEngine, 'refinePrompt', { feedback, sunoStylesCount: sunoStyles.length }, (runtime) =>
         aiEngine.refinePrompt({
           currentPrompt,
           currentTitle: currentTitle ?? 'Untitled',
@@ -69,7 +113,7 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
           lyricsTopic,
           genreOverride,
           sunoStyles,
-        })
+        }, runtime)
       );
     },
   };

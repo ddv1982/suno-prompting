@@ -13,7 +13,6 @@ import {
   buildCreativeBoostStyle,
   generateCreativeBoostTitle,
   generateCreativeBoostLyrics,
-  buildCreativeBoostDebugInfo,
 } from '@bun/ai/creative-boost/helpers';
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
 import { createLogger } from '@bun/logger';
@@ -23,8 +22,14 @@ import { ValidationError } from '@shared/errors';
 
 import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
 import type { GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('CreativeBoostGenerate');
+
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: () => number;
+};
 
 /**
  * Direct Mode generation - Suno V5 styles preserved as-is, prompt enriched
@@ -36,7 +41,8 @@ export async function generateDirectMode(
   description: string,
   withLyrics: boolean,
   maxMode: boolean,
-  config: CreativeBoostEngineConfig
+  config: CreativeBoostEngineConfig,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   log.info('generateDirectMode:start', { stylesCount: sunoStyles.length, withLyrics, maxMode });
 
@@ -58,10 +64,12 @@ export async function generateDirectMode(
           true,
           config.getModel,
           config.getUseSunoTags?.() ?? false,
-          ollamaEndpoint
+          ollamaEndpoint,
+          runtime
         ),
     },
-    config
+    config,
+    runtime
   );
 
   log.info('generateDirectMode:complete', {
@@ -79,9 +87,11 @@ export async function generateDirectMode(
  * lyrics and title generation when lyrics mode is enabled.
  */
 export async function generateCreativeBoost(
-  options: GenerateCreativeBoostOptions
+  options: GenerateCreativeBoostOptions,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, withWordlessVocals, maxMode, withLyrics, config } = options;
+  const rng = runtime?.rng ?? Math.random;
 
   // Validate input (styles limit + mutual exclusivity)
   if (sunoStyles.length > 4) {
@@ -93,7 +103,7 @@ export async function generateCreativeBoost(
 
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
-    return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, maxMode, config);
+    return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, maxMode, config, runtime);
   }
 
   log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals, withLyrics });
@@ -101,35 +111,27 @@ export async function generateCreativeBoost(
   const ollamaEndpoint = config.getOllamaEndpoint?.();
 
   // 1. Resolve genre (detect from lyrics topic if needed)
-  const { genres: resolvedGenres, debugInfo: genreDebugInfo } = await resolveGenreForCreativeBoost(
-    seedGenres, lyricsTopic, withLyrics, config.getModel, ollamaEndpoint
+  const { genres: resolvedGenres } = await resolveGenreForCreativeBoost(
+    seedGenres, lyricsTopic, withLyrics, config.getModel, ollamaEndpoint, runtime
   );
 
   // 2. Select genre and mood based on creativity level
   const level = mapSliderToLevel(creativityLevel);
-  const selectedGenre = selectGenreForLevel(level, resolvedGenres, Math.random);
-  const selectedMood = selectMoodForLevel(level, Math.random);
+  const selectedGenre = selectGenreForLevel(level, resolvedGenres, rng);
+  const selectedMood = selectMoodForLevel(level, rng);
 
   // 3. Build style prompt
-  const styleResult = buildCreativeBoostStyle(selectedGenre, maxMode, withWordlessVocals);
+  const styleResult = buildCreativeBoostStyle(selectedGenre, maxMode, withWordlessVocals, runtime);
 
   // 4. Generate title
-  const { title, debugInfo: titleDebugInfo } = await generateCreativeBoostTitle(
-    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel, ollamaEndpoint
+  const { title } = await generateCreativeBoostTitle(
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel, ollamaEndpoint, runtime
   );
 
   // 5. Generate lyrics if requested
-  const { lyrics, debugInfo: lyricsDebugInfo } = await generateCreativeBoostLyrics(
-    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, maxMode, config.getModel, config.getUseSunoTags?.() ?? false, ollamaEndpoint
+  const { lyrics } = await generateCreativeBoostLyrics(
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, maxMode, config.getModel, config.getUseSunoTags?.() ?? false, ollamaEndpoint, runtime
   );
 
-  // 6. Build debug info
-  const debugInfo = buildCreativeBoostDebugInfo(
-    config,
-    { withLyrics, level, genre: selectedGenre, mood: selectedMood, topic: lyricsTopic?.trim() || '(none)' },
-    styleResult,
-    { genreDetection: genreDebugInfo, titleGeneration: titleDebugInfo, lyricsGeneration: lyricsDebugInfo }
-  );
-
-  return { text: styleResult, title, lyrics, debugInfo };
+  return { text: styleResult, title, lyrics, debugTrace: undefined };
 }

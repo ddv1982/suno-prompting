@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 
 import { type ChatMessage } from '@/lib/chat-utils';
-import { type DebugInfo } from '@shared/types';
+import { type TraceRun } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 /** Active generation actions (excluding 'none') */
@@ -34,11 +34,11 @@ export interface GenerationStateResult {
   isGenerating: boolean;
   chatMessages: ChatMessage[];
   validation: ValidationResult;
-  debugInfo: Partial<DebugInfo> | undefined;
+  debugTrace: TraceRun | undefined;
   setGeneratingAction: (action: GeneratingAction) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
-  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
+  setDebugTrace: (trace: TraceRun | undefined) => void;
   resetState: () => void;
   addErrorMessage: (error: unknown, context: string) => void;
   addSuccessMessage: (message: string) => void;
@@ -49,14 +49,14 @@ export function useGenerationState(): GenerationStateResult {
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
-  const [debugInfo, setDebugInfo] = useState<Partial<DebugInfo> | undefined>(undefined);
+  const [debugTrace, setDebugTrace] = useState<TraceRun | undefined>(undefined);
 
   const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
 
   const resetState = useCallback((): void => {
     setChatMessages([]);
     setValidation({ ...EMPTY_VALIDATION });
-    setDebugInfo(undefined);
+    setDebugTrace(undefined);
   }, []);
 
   const addErrorMessage = useCallback((error: unknown, context: string): void => {
@@ -78,12 +78,12 @@ export function useGenerationState(): GenerationStateResult {
     isGenerating,
     chatMessages,
     validation,
-    debugInfo,
+    debugTrace,
     // Setters
     setGeneratingAction,
     setChatMessages,
     setValidation,
-    setDebugInfo,
+    setDebugTrace,
     // Helpers
     resetState,
     addErrorMessage,

@@ -78,3 +78,6 @@ export {
   OLLAMA_DEFAULTS,
   type SetOllamaSettingsInput,
 } from './ollama';
+
+// Trace schemas
+export { TraceRunSchema, zTraceRun, type TraceRunInput } from './trace';

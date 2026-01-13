@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import type { GenreType } from '@bun/instruments/genres';
 import type { MoodCategory } from '@bun/mood';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Options for deterministic prompt generation.
@@ -21,6 +22,8 @@ export type DeterministicOptions = {
   readonly moodCategory?: MoodCategory;
   /** Random number generator for deterministic testing */
   readonly rng?: () => number;
+  /** Optional trace collector (undefined when debug mode OFF). */
+  readonly trace?: TraceCollector;
 };
 
 /**

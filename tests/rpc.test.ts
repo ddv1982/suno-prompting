@@ -6,15 +6,16 @@ import { type StorageManager } from "@bun/storage";
 import { APP_CONSTANTS } from "@shared/constants";
 import { type PromptSession } from "@shared/types";
 
-type MockAIEngine = Pick<AIEngine, 'generateInitial' | 'refinePrompt' | 'setApiKey'>;
+type MockAIEngine = Pick<AIEngine, 'generateInitial' | 'refinePrompt' | 'setApiKey' | 'isDebugMode'>;
 type MockStorageManager = Pick<StorageManager, 'getHistory' | 'saveSession' | 'deleteSession' | 'getConfig' | 'saveConfig' | 'initialize'>;
 
 describe("RPC Handlers", () => {
     test("generateInitial should call aiEngine and return validation", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => ({ text: "Generated Prompt", debugInfo: undefined })),
-            refinePrompt: mock(async () => ({ text: "", debugInfo: undefined })),
+            generateInitial: mock(async () => ({ text: "Generated Prompt", debugTrace: undefined })),
+            refinePrompt: mock(async () => ({ text: "", debugTrace: undefined })),
             setApiKey: mock(),
+            isDebugMode: mock(() => false),
         };
 
         const mockStorage: MockStorageManager = {
@@ -33,20 +34,24 @@ describe("RPC Handlers", () => {
         expect(result.versionId).toBeDefined();
         expect(result.validation).toBeDefined();
         expect(result.validation.isValid).toBe(true);
-        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith({
-            description: "Test description",
-            lockedPhrase: undefined,
-            lyricsTopic: undefined,
-            genreOverride: undefined,
-            sunoStyles: [],
-        });
+        expect(mockAiEngine.generateInitial).toHaveBeenCalledWith(
+            {
+                description: "Test description",
+                lockedPhrase: undefined,
+                lyricsTopic: undefined,
+                genreOverride: undefined,
+                sunoStyles: [],
+            },
+            expect.anything()
+        );
     });
 
     test("refinePrompt should call aiEngine with feedback", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
-            refinePrompt: mock(async () => ({ text: "Refined Prompt", debugInfo: undefined })),
+            generateInitial: mock(async () => ({ text: "", debugTrace: undefined })),
+            refinePrompt: mock(async () => ({ text: "Refined Prompt", debugTrace: undefined })),
             setApiKey: mock(),
+            isDebugMode: mock(() => false),
         };
 
         const mockStorage: MockStorageManager = {
@@ -62,28 +67,32 @@ describe("RPC Handlers", () => {
         const result = await handlers.refinePrompt({ currentPrompt: "Old prompt", feedback: "Make it louder" });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith({
-            currentPrompt: "Old prompt",
-            currentTitle: "Untitled",
-            feedback: "Make it louder",
-            currentLyrics: undefined,
-            lockedPhrase: undefined,
-            lyricsTopic: undefined,
-            genreOverride: undefined,
-            sunoStyles: [],
-        });
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
+            {
+                currentPrompt: "Old prompt",
+                currentTitle: "Untitled",
+                feedback: "Make it louder",
+                currentLyrics: undefined,
+                lockedPhrase: undefined,
+                lyricsTopic: undefined,
+                genreOverride: undefined,
+                sunoStyles: [],
+            },
+            expect.anything()
+        );
     });
 
     test("refinePrompt should pass currentTitle and currentLyrics to aiEngine", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            generateInitial: mock(async () => ({ text: "", debugTrace: undefined })),
             refinePrompt: mock(async () => ({ 
                 text: "Refined Prompt", 
                 title: "Refined Title",
                 lyrics: "[VERSE]\nRefined lyrics",
-                debugInfo: undefined 
+                debugTrace: undefined 
             })),
             setApiKey: mock(),
+            isDebugMode: mock(() => false),
         };
 
         const mockStorage: MockStorageManager = {
@@ -106,28 +115,32 @@ describe("RPC Handlers", () => {
         expect(result.prompt).toBe("Refined Prompt");
         expect(result.title).toBe("Refined Title");
         expect(result.lyrics).toBe("[VERSE]\nRefined lyrics");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith({
-            currentPrompt: "Old prompt",
-            currentTitle: "Old Title",
-            feedback: "Make it louder",
-            currentLyrics: "[VERSE]\nOld lyrics",
-            lockedPhrase: undefined,
-            lyricsTopic: undefined,
-            genreOverride: undefined,
-            sunoStyles: [],
-        });
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
+            {
+                currentPrompt: "Old prompt",
+                currentTitle: "Old Title",
+                feedback: "Make it louder",
+                currentLyrics: "[VERSE]\nOld lyrics",
+                lockedPhrase: undefined,
+                lyricsTopic: undefined,
+                genreOverride: undefined,
+                sunoStyles: [],
+            },
+            expect.anything()
+        );
     });
 
     test("refinePrompt should pass lyricsTopic to aiEngine", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            generateInitial: mock(async () => ({ text: "", debugTrace: undefined })),
             refinePrompt: mock(async () => ({ 
                 text: "Refined Prompt", 
                 title: "Refined Title",
                 lyrics: "[VERSE]\nRefined lyrics about love",
-                debugInfo: undefined 
+                debugTrace: undefined 
             })),
             setApiKey: mock(),
+            isDebugMode: mock(() => false),
         };
 
         const mockStorage: MockStorageManager = {
@@ -160,27 +173,31 @@ describe("RPC Handlers", () => {
         });
 
         expect(result.prompt).toBe("Refined Prompt");
-        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith({
-            currentPrompt: "Old prompt",
-            currentTitle: "Old Title",
-            feedback: "Make the lyrics more emotional",
-            currentLyrics: "[VERSE]\nOld lyrics",
-            lockedPhrase: undefined,
-            lyricsTopic: "A story about lost love",
-            genreOverride: undefined,
-            sunoStyles: [],
-        });
+        expect(mockAiEngine.refinePrompt).toHaveBeenCalledWith(
+            {
+                currentPrompt: "Old prompt",
+                currentTitle: "Old Title",
+                feedback: "Make the lyrics more emotional",
+                currentLyrics: "[VERSE]\nOld lyrics",
+                lockedPhrase: undefined,
+                lyricsTopic: "A story about lost love",
+                genreOverride: undefined,
+                sunoStyles: [],
+            },
+            expect.anything()
+        );
     });
 
     test("refinePrompt should return title from aiEngine response", async () => {
         const mockAiEngine: MockAIEngine = {
-            generateInitial: mock(async () => ({ text: "", debugInfo: undefined })),
+            generateInitial: mock(async () => ({ text: "", debugTrace: undefined })),
             refinePrompt: mock(async () => ({ 
                 text: "Refined Prompt", 
                 title: "New Title",
-                debugInfo: undefined 
+                debugTrace: undefined 
             })),
             setApiKey: mock(),
+            isDebugMode: mock(() => false),
         };
 
         const mockStorage: MockStorageManager = {

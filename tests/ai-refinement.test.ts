@@ -66,15 +66,6 @@ function createMockConfig(overrides: Partial<RefinementConfig> = {}): Refinement
     getProvider: () => 'groq',
     getOllamaEndpoint: () => 'http://127.0.0.1:11434',
     postProcess: async (text: string) => text,
-    buildDebugInfo: (systemPrompt, userPrompt, rawResponse) => ({
-      systemPrompt,
-      userPrompt,
-      model: 'test-model',
-      provider: 'groq',
-      timestamp: new Date().toISOString(),
-      requestBody: '{}',
-      responseBody: rawResponse,
-    }),
     ...overrides,
   };
 }
@@ -96,22 +87,6 @@ describe('refinePrompt', () => {
     expect(result.text).toContain('jazz');
     // Title is preserved (not refined by LLM) in deterministic mode
     expect(result.title).toBe('Original Title');
-  });
-
-  test('includes debug info when debug mode is enabled', async () => {
-    const config = createMockConfig({ isDebugMode: () => true });
-
-    const result = await refinePrompt(
-      {
-        currentPrompt: 'A rock song',
-        currentTitle: 'Rock Song',
-        feedback: 'Make it heavier',
-      },
-      config
-    );
-
-    expect(result.debugInfo).toBeDefined();
-    expect(result.debugInfo?.model).toBe('test-model');
   });
 
   test('preserves current title when JSON parse fails', async () => {

@@ -10,12 +10,11 @@ import { callLLM } from '@bun/ai/llm-utils';
 import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
 import { cleanJsonResponse } from '@shared/prompt-utils';
-import { nowISO } from '@shared/utils';
 
 import { parseStyleDescription } from './parser';
 
 import type { ParsedStyleDescription, NonMaxSectionContent, NonMaxFormatFields, NonMaxConversionResult } from './types';
-import type { ConversionOptions, DebugInfo } from '@shared/types';
+import type { ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 // Re-export shared utilities for backwards compatibility
@@ -123,7 +122,7 @@ async function generateSectionContent(
   parsed: ParsedStyleDescription,
   getModel: () => LanguageModel,
   ollamaEndpoint?: string
-): Promise<{ sections: NonMaxSectionContent; debugInfo?: Partial<DebugInfo> }> {
+): Promise<{ sections: NonMaxSectionContent }> {
   const systemPrompt = buildNonMaxConversionSystemPrompt();
   const userPrompt = buildNonMaxConversionUserPrompt(parsed);
 
@@ -138,11 +137,6 @@ async function generateSectionContent(
   const sections = parseNonMaxAIResponse(text);
   return {
     sections,
-    debugInfo: {
-      systemPrompt,
-      userPrompt,
-      timestamp: nowISO(),
-    },
   };
 }
 
@@ -233,7 +227,7 @@ export async function convertToNonMaxFormat(
   const bpm = bpmRange ?? inferBpm(genre.forLookup);
 
   // Generate section content using AI
-  const { sections, debugInfo } = await generateSectionContent(parsed, getModel, ollamaEndpoint);
+  const { sections } = await generateSectionContent(parsed, getModel, ollamaEndpoint);
 
   // Build instruments string with articulations (with non-max fallback)
   const baseInstruments = enhanceInstruments(
@@ -265,6 +259,5 @@ export async function convertToNonMaxFormat(
   return { 
     convertedPrompt, 
     wasConverted: true,
-    debugInfo,
   };
 }

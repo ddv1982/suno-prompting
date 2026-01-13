@@ -24,14 +24,19 @@ import {
 import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
-import { nowISO } from '@shared/utils';
 
 import { generateDirectMode } from './direct-mode-generation';
 
 import type { GenerateInitialOptions } from './types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Generation');
+
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: () => number;
+};
 
 /**
  * Fully deterministic generation path (lyrics mode OFF).
@@ -41,14 +46,17 @@ const log = createLogger('Generation');
  */
 function generateInitialDeterministic(
   options: GenerateInitialOptions,
-  config: GenerationConfig
+  config: GenerationConfig,
+  runtime?: TraceRuntime
 ): GenerationResult {
   const { description, lockedPhrase, genreOverride } = options;
+  const rng = runtime?.rng ?? Math.random;
+  const trace = runtime?.trace;
 
   // 1. Build prompt deterministically (max or standard mode)
   const deterministicResult = config.isMaxMode()
-    ? buildDeterministicMaxPrompt({ description, genreOverride })
-    : buildDeterministicStandardPrompt({ description, genreOverride });
+    ? buildDeterministicMaxPrompt({ description, genreOverride, rng, trace })
+    : buildDeterministicStandardPrompt({ description, genreOverride, rng, trace });
 
   let promptText = deterministicResult.text;
 
@@ -60,25 +68,12 @@ function generateInitialDeterministic(
   // 3. Generate deterministic title from extracted genre/mood
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
-  const title = generateDeterministicTitle(genre, mood, Math.random, description);
-
-  // 4. Build debug info if debug mode enabled
-  const debugInfo = config.isDebugMode()
-    ? {
-        systemPrompt: 'Fully deterministic generation - no LLM calls',
-        userPrompt: description,
-        model: config.getModelName(),
-        provider: config.getProvider(),
-        timestamp: nowISO(),
-        requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata }, null, 2),
-        responseBody: promptText,
-      }
-    : undefined;
+  const title = generateDeterministicTitle(genre, mood, rng, description);
 
   return {
     text: promptText,
     title: cleanTitle(title),
-    debugInfo,
+    debugTrace: undefined,
   };
 }
 
@@ -96,9 +91,12 @@ function generateInitialDeterministic(
 async function generateInitialWithLyrics(
   options: GenerateInitialOptions,
   config: GenerationConfig,
-  useOffline: boolean = false
+  useOffline: boolean = false,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { description, lockedPhrase, lyricsTopic, genreOverride } = options;
+  const rng = runtime?.rng ?? Math.random;
+  const trace = runtime?.trace;
 
   // For offline mode, use direct Ollama client to bypass Bun fetch empty body bug
   // For cloud mode, use AI SDK as normal
@@ -106,20 +104,22 @@ async function generateInitialWithLyrics(
   const ollamaEndpoint = useOffline ? config.getOllamaEndpoint() : undefined;
 
   let resolvedGenreOverride = genreOverride;
-  let genreDetectionDebugInfo: { systemPrompt: string; userPrompt: string; detectedGenre: string } | undefined;
+  // TODO(trace): attach deterministic/LLM decision trace when Debug Mode tracing is implemented.
 
   // 1. Detect genre from lyrics topic if no override provided (LLM call)
   if (!genreOverride && lyricsTopic?.trim()) {
-    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), getModelFn, undefined, ollamaEndpoint);
+    const genreResult = await detectGenreFromTopic(lyricsTopic.trim(), getModelFn, undefined, ollamaEndpoint, {
+      trace,
+      traceLabel: 'genre.detectFromTopic',
+    });
     resolvedGenreOverride = genreResult.genre;
-    genreDetectionDebugInfo = genreResult.debugInfo;
     log.info('generateInitialWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: genreResult.genre, offline: useOffline });
   }
 
   // 2. Build prompt deterministically (no LLM)
   const deterministicResult = config.isMaxMode()
-    ? buildDeterministicMaxPrompt({ description, genreOverride: resolvedGenreOverride })
-    : buildDeterministicStandardPrompt({ description, genreOverride: resolvedGenreOverride });
+    ? buildDeterministicMaxPrompt({ description, genreOverride: resolvedGenreOverride, rng, trace })
+    : buildDeterministicStandardPrompt({ description, genreOverride: resolvedGenreOverride, rng, trace });
 
   let promptText = deterministicResult.text;
 
@@ -134,9 +134,11 @@ async function generateInitialWithLyrics(
 
   // 5. Generate title via LLM (to match lyrics theme)
   const topicForTitle = lyricsTopic?.trim() || description;
-  const titleResult = await generateTitle(topicForTitle, genre, mood, getModelFn, undefined, ollamaEndpoint);
+  const titleResult = await generateTitle(topicForTitle, genre, mood, getModelFn, undefined, ollamaEndpoint, {
+    trace,
+    traceLabel: 'title.generate',
+  });
   const title = titleResult.title;
-  const titleDebugInfo = titleResult.debugInfo;
 
   // 6. Generate lyrics via LLM
   const topicForLyrics = lyricsTopic?.trim() || description;
@@ -148,33 +150,19 @@ async function generateInitialWithLyrics(
     getModelFn,
     config.getUseSunoTags(),
     undefined,
-    ollamaEndpoint
+    ollamaEndpoint,
+    {
+      trace,
+      traceLabel: 'lyrics.generate',
+    }
   );
   const lyrics = lyricsResult.lyrics;
-  const lyricsDebugInfo = lyricsResult.debugInfo;
-
-  // 7. Build debug info if debug mode enabled
-  const modelLabel = useOffline ? 'ollama:gemma3:4b' : config.getModelName();
-  const debugInfo = config.isDebugMode()
-    ? {
-        systemPrompt: `Deterministic prompt; ${useOffline ? 'Ollama (direct)' : 'LLM'} for genre detection, title, and lyrics`,
-        userPrompt: description,
-        model: modelLabel,
-        provider: config.getProvider(),
-        timestamp: nowISO(),
-        requestBody: JSON.stringify({ deterministicResult: deterministicResult.metadata, offline: useOffline }, null, 2),
-        responseBody: promptText,
-        genreDetection: genreDetectionDebugInfo,
-        titleGeneration: titleDebugInfo,
-        lyricsGeneration: lyricsDebugInfo,
-      }
-    : undefined;
 
   return {
     text: promptText,
     title: cleanTitle(title),
     lyrics: cleanLyrics(lyrics),
-    debugInfo,
+    debugTrace: undefined,
   };
 }
 
@@ -189,7 +177,8 @@ async function generateInitialWithLyrics(
  */
 async function generateInitialWithOfflineLyrics(
   options: GenerateInitialOptions,
-  config: GenerationConfig
+  config: GenerationConfig,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   // Pre-flight check: Verify Ollama is available
   const endpoint = config.getOllamaEndpoint();
@@ -206,7 +195,7 @@ async function generateInitialWithOfflineLyrics(
   log.info('generateInitialWithOfflineLyrics:start', { endpoint });
 
   // Delegate to standard generation with offline flag
-  return generateInitialWithLyrics(options, config, true);
+  return generateInitialWithLyrics(options, config, true, runtime);
 }
 
 /**
@@ -224,23 +213,24 @@ async function generateInitialWithOfflineLyrics(
  */
 export async function generateInitial(
   options: GenerateInitialOptions,
-  config: GenerationConfig
+  config: GenerationConfig,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   // Direct Mode: Use sunoStyles as-is (bypasses deterministic genre logic)
   if (options.sunoStyles && options.sunoStyles.length > 0) {
-    return generateDirectMode(options, config);
+    return generateDirectMode(options, config, runtime);
   }
 
   if (!config.isLyricsMode()) {
-    return generateInitialDeterministic(options, config);
+    return generateInitialDeterministic(options, config, runtime);
   }
 
   // Use offline generation with Ollama when offline mode is enabled
   if (config.isUseLocalLLM()) {
-    return generateInitialWithOfflineLyrics(options, config);
+    return generateInitialWithOfflineLyrics(options, config, runtime);
   }
 
-  return generateInitialWithLyrics(options, config);
+  return generateInitialWithLyrics(options, config, false, runtime);
 }
 
 // Re-export types for convenience
