@@ -37,7 +37,6 @@ import type {
   RemixStyleTagsResponse,
   RemixTitleParams,
   RemixTitleResponse,
-  // (deduped) RemixGenreParams/RemixGenreResponse
   SaveAllSettingsParams,
   SaveSessionParams,
   SetApiKeyParams,
