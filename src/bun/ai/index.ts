@@ -3,7 +3,6 @@ export type { GenerateInitialOptions, RefinePromptOptions } from '@bun/ai/engine
 export type {
   GenerationResult,
   ParsedCombinedResponse,
-  DebugInfoBuilder,
   EngineConfig,
   GenerationConfig,
   RefinementConfig,
@@ -15,4 +14,4 @@ export { generateInitial } from '@bun/ai/generation';
 export { refinePrompt } from '@bun/ai/refinement';
 
 // Re-export utilities for shared use
-export { buildDebugInfo, cleanLyrics, cleanTitle, postProcess } from '@bun/ai/utils';
+export { cleanLyrics, cleanTitle, postProcess } from '@bun/ai/utils';

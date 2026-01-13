@@ -12,7 +12,6 @@ import { enforceMaxLength } from './length';
 
 import type { PostProcessParams } from '@bun/ai/creative-boost/types';
 import type { GenerationResult } from '@bun/ai/types';
-import type { DebugInfo } from '@shared/types';
 
 
 /**
@@ -25,7 +24,7 @@ export async function postProcessCreativeBoostResponse(
   const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = params;
 
   const ollamaEndpoint = config.getOllamaEndpoint?.();
-  const { styleResult, debugInfo: maxConversionDebugInfo } = await applyMaxModeConversion(
+  const { styleResult } = await applyMaxModeConversion(
     parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint }
   );
 
@@ -42,21 +41,10 @@ export async function postProcessCreativeBoostResponse(
     ollamaEndpoint
   );
 
-  let debugInfo: DebugInfo | undefined;
-  if (config.isDebugMode()) {
-    debugInfo = config.buildDebugInfo(params.systemPrompt, params.userPrompt, params.rawResponse);
-    if (maxConversionDebugInfo) {
-      debugInfo.maxConversion = maxConversionDebugInfo;
-    }
-    if (lyricsResult.debugInfo) {
-      debugInfo.lyricsGeneration = lyricsResult.debugInfo;
-    }
-  }
-
   return {
     text: processedStyle,
     title: parsed.title,
     lyrics: lyricsResult.lyrics,
-    debugInfo,
+    debugTrace: undefined,
   };
 }

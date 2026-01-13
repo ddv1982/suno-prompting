@@ -20,7 +20,7 @@ import type { ReactElement } from "react";
 export function PromptEditor({ output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config }: PromptEditorProps): ReactElement {
   const { currentPrompt, currentTitle, currentLyrics } = output;
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
-  const { isGenerating, generatingAction, validation, debugInfo, chatMessages } = generation;
+  const { isGenerating, generatingAction, validation, debugTrace, chatMessages } = generation;
   const { maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode } = modes;
   const { maxChars, currentModel, useLocalLLM } = config;
   const [copied, setCopied] = useState(false);
@@ -50,7 +50,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
         <OutputPanel
           promptMode={promptMode} currentPrompt={currentPrompt} currentTitle={currentTitle} currentLyrics={currentLyrics}
           isGenerating={isGenerating} generatingAction={generatingAction} maxMode={maxMode} copied={copied}
-          promptOverLimit={promptOverLimit} charCount={charCount} maxChars={maxChars} debugInfo={debugInfo}
+          promptOverLimit={promptOverLimit} charCount={charCount} maxChars={maxChars} debugTrace={debugTrace}
           onRemixQuickVibes={remix.onRemixQuickVibes} onRemixTitle={remix.onRemixTitle} onRemixLyrics={remix.onRemixLyrics}
           onRemixGenre={remix.onRemixGenre} onRemixMood={remix.onRemixMood} onRemixInstruments={remix.onRemixInstruments}
           onRemixStyleTags={remix.onRemixStyleTags} onRemixRecording={remix.onRemixRecording} onRemix={remix.onRemix}
@@ -58,7 +58,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
         />
 
         <ValidationMessages errors={validation.errors} warnings={validation.warnings} />
-        <DebugSheet debugInfo={debugInfo} open={debugOpen} onOpenChange={setDebugOpen} />
+        <DebugSheet debugTrace={debugTrace} open={debugOpen} onOpenChange={setDebugOpen} />
         <Separator className="opacity-50" />
 
         <ChatHistorySection

@@ -1,3 +1,7 @@
+import { traceDecision } from '@bun/trace';
+
+import type { TraceCollector } from '@bun/trace';
+
 export type Rng = () => number;
 
 export function createRng(seed: number): Rng {
@@ -28,6 +32,55 @@ export function shuffle<T>(arr: readonly T[], rng: Rng = Math.random): T[] {
 export function pickRandom<T>(arr: readonly T[], rng: Rng = Math.random): T | undefined {
   if (arr.length === 0) return undefined;
   return arr[Math.floor(rng() * arr.length)];
+}
+
+/**
+ * Pick a random item and emit a decision event when a trace collector is provided.
+ *
+ * This is intentionally opt-in (existing `pickRandom` stays unchanged) to avoid
+ * overhead and signature churn across the codebase.
+ */
+export function pickRandomTraced<T>(
+  arr: readonly T[],
+  options: {
+    readonly rng?: Rng;
+    readonly trace?: TraceCollector;
+    readonly domain: Parameters<typeof traceDecision>[1]['domain'];
+    readonly key: string;
+    readonly branchTaken: string;
+    readonly why: string;
+    /** Optional preview strings for candidates (will be capped+truncated in trace). */
+    readonly candidatesPreview?: readonly string[];
+  }
+): T | undefined {
+  const rng = options.rng ?? Math.random;
+  if (arr.length === 0) {
+    traceDecision(options.trace, {
+      domain: options.domain,
+      key: options.key,
+      branchTaken: options.branchTaken,
+      why: `${options.why}; candidates=0`,
+      selection: {
+        method: 'pickRandom',
+        candidates: options.candidatesPreview ?? [],
+      },
+    });
+    return undefined;
+  }
+
+  const chosenIndex = Math.floor(rng() * arr.length);
+  traceDecision(options.trace, {
+    domain: options.domain,
+    key: options.key,
+    branchTaken: options.branchTaken,
+    why: `${options.why}; candidates=${arr.length}`,
+    selection: {
+      method: 'pickRandom',
+      chosenIndex,
+      candidates: options.candidatesPreview,
+    },
+  });
+  return arr[chosenIndex];
 }
 
 export function randomIntInclusive(min: number, max: number, rng: Rng = Math.random): number {

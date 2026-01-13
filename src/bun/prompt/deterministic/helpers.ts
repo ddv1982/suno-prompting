@@ -6,8 +6,11 @@
 
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import { selectRecordingDescriptors as selectRecordingDescriptorsNew } from '@bun/prompt/tags';
+import { traceDecision } from '@bun/trace';
 
 import { MAX_CHARS, DEFAULT_BPM_RANGE, MUSICAL_KEYS, MUSICAL_MODES } from './constants';
+
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Truncate a prompt to fit within the MAX_CHARS limit.
@@ -52,9 +55,22 @@ export function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): s
  */
 export function joinRecordingDescriptors(
   rng: () => number = Math.random,
-  count: number = 2
+  count: number = 2,
+  trace?: TraceCollector
 ): string {
   const selected = selectRecordingDescriptorsNew(rng, count);
+
+  traceDecision(trace, {
+    domain: 'recording',
+    key: 'deterministic.recording.descriptors',
+    branchTaken: 'selectRecordingDescriptors',
+    why: `count=${count} selected=${selected.length}`,
+    selection: {
+      method: 'shuffleSlice',
+      candidates: selected,
+    },
+  });
+
   return selected.join(', ');
 }
 
@@ -73,6 +89,32 @@ export function getBpmRangeForGenre(genreString: string): string {
   return DEFAULT_BPM_RANGE;
 }
 
+export function getBpmRangeForGenreWithTrace(
+  genreString: string,
+  trace?: TraceCollector
+): string {
+  const range = getBlendedBpmRange(genreString);
+  if (range) {
+    const formatted = formatBpmRange(range);
+    traceDecision(trace, {
+      domain: 'bpm',
+      key: 'deterministic.bpm.range',
+      branchTaken: 'blended',
+      why: `genre=${genreString} range=${formatted}`,
+    });
+    return formatted;
+  }
+
+  traceDecision(trace, {
+    domain: 'bpm',
+    key: 'deterministic.bpm.range',
+    branchTaken: 'fallback',
+    why: `no BPM range found for genre=${genreString}; using default`,
+  });
+
+  return DEFAULT_BPM_RANGE;
+}
+
 /**
  * Select a random musical key.
  *
@@ -84,7 +126,8 @@ export function getBpmRangeForGenre(genreString: string): string {
  */
 export function selectMusicalKey(rng: () => number = Math.random): string {
   const idx = Math.floor(rng() * MUSICAL_KEYS.length);
-  return MUSICAL_KEYS[idx] ?? 'C';
+  const key = MUSICAL_KEYS[idx] ?? 'C';
+  return key;
 }
 
 /**
@@ -98,7 +141,8 @@ export function selectMusicalKey(rng: () => number = Math.random): string {
  */
 export function selectMusicalMode(rng: () => number = Math.random): string {
   const idx = Math.floor(rng() * MUSICAL_MODES.length);
-  return MUSICAL_MODES[idx] ?? 'major';
+  const mode = MUSICAL_MODES[idx] ?? 'major';
+  return mode;
 }
 
 /**
@@ -113,5 +157,30 @@ export function selectMusicalMode(rng: () => number = Math.random): string {
 export function selectKeyAndMode(rng: () => number = Math.random): string {
   const key = selectMusicalKey(rng);
   const mode = selectMusicalMode(rng);
+  return `Key: ${key} ${mode}`;
+}
+
+export function selectKeyAndModeWithTrace(
+  rng: () => number = Math.random,
+  trace?: TraceCollector
+): string {
+  const keyIdx = Math.floor(rng() * MUSICAL_KEYS.length);
+  const modeIdx = Math.floor(rng() * MUSICAL_MODES.length);
+  const key = MUSICAL_KEYS[keyIdx] ?? 'C';
+  const mode = MUSICAL_MODES[modeIdx] ?? 'major';
+
+  traceDecision(trace, {
+    domain: 'other',
+    key: 'deterministic.keyMode.select',
+    branchTaken: 'random',
+    why: `key=${key} mode=${mode}`,
+    selection: {
+      method: 'index',
+      chosenIndex: keyIdx,
+      candidates: MUSICAL_KEYS,
+      rolls: [modeIdx],
+    },
+  });
+
   return `Key: ${key} ${mode}`;
 }

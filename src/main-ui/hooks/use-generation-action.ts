@@ -9,7 +9,7 @@ import {
   type GenerationResultBase,
   type ModeInputUpdate,
 } from '@/lib/session-helpers';
-import { type PromptSession, type DebugInfo, type PromptMode } from '@shared/types';
+import { type PromptSession, type PromptMode, type TraceRun } from '@shared/types';
 import { type ValidationResult } from '@shared/validation';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
@@ -25,7 +25,7 @@ export type GenerationActionDeps = {
   generateId: () => string;
   saveSession: (session: PromptSession) => Promise<void>;
   setGeneratingAction: (action: GeneratingAction) => void;
-  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
+  setDebugTrace: (trace: TraceRun | undefined) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
   showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
@@ -43,7 +43,7 @@ export function createSessionDeps(
     currentSession: deps.currentSession,
     generateId: deps.generateId,
     saveSession: deps.saveSession,
-    setDebugInfo: deps.setDebugInfo,
+    setDebugTrace: deps.setDebugTrace,
     setChatMessages: deps.setChatMessages,
     setValidation: deps.setValidation,
     setGeneratingAction: deps.setGeneratingAction,

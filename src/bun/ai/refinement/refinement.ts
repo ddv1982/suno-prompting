@@ -17,13 +17,20 @@ import { isDirectMode, buildDirectModePrompt } from '@bun/ai/direct-mode';
 import { remixLyrics } from '@bun/ai/remix';
 import { createLogger } from '@bun/logger';
 
+
 import { refineLyricsWithFeedback } from './lyrics-refinement';
 import { applyLockedPhraseIfNeeded } from './validation';
 
 import type { RefinePromptOptions } from './types';
 import type { GenerationResult, RefinementConfig } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Refinement');
+
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: () => number;
+};
 
 type LyricsAction = 'none' | 'refineExisting' | 'bootstrap';
 
@@ -82,13 +89,7 @@ async function refinePromptDeterministic(
   return {
     text: finalPrompt,
     title: currentTitle,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(
-          'DETERMINISTIC_REFINE (style-only)',
-          `Genre: ${genre}\nFeedback: ${options.feedback}`,
-          'Style tags regenerated deterministically'
-        )
-      : undefined,
+    debugTrace: undefined,
   };
 }
 
@@ -106,7 +107,8 @@ async function refinePromptDeterministic(
 async function refineWithDeterministicStyle(
   options: RefinePromptOptions,
   config: RefinementConfig,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { currentPrompt, feedback, currentLyrics, lyricsTopic } = options;
   const isLyricsMode = config.isLyricsMode();
@@ -131,19 +133,17 @@ async function refineWithDeterministicStyle(
       currentPrompt,
       lyricsTopic,
       config,
-      ollamaEndpoint
+      ollamaEndpoint,
+      {
+        trace: runtime?.trace,
+        traceLabel: 'lyrics.refine',
+      }
     );
 
     return {
       ...styleResult,
       lyrics: lyricsResult.lyrics,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(
-            `UNIFIED_REFINEMENT (style: deterministic, lyrics: ${isOffline ? 'Ollama' : 'Cloud LLM'})`,
-            `Style feedback + lyrics feedback: ${feedback}`,
-            `Style: deterministic remix\nLyrics: ${isOffline ? 'local' : 'cloud'} LLM refined`
-          )
-        : undefined,
+      debugTrace: undefined,
     };
   }
 
@@ -159,19 +159,17 @@ async function refineWithDeterministicStyle(
       config.getModel,
       config.getUseSunoTags?.() ?? false,
       config.isUseLocalLLM(),
-      config.getOllamaEndpoint()
+      config.getOllamaEndpoint(),
+      {
+        trace: runtime?.trace,
+        traceLabel: 'lyrics.bootstrap',
+      }
     );
 
     return {
       ...styleResult,
       lyrics: lyricsResult.lyrics,
-      debugInfo: config.isDebugMode()
-        ? config.buildDebugInfo(
-            `UNIFIED_REFINEMENT (style: deterministic, lyrics: ${isOffline ? 'Ollama' : 'Cloud LLM'})`,
-            `Style feedback + lyrics bootstrap: ${feedback || '(none)'}\nTopic: ${topic || '(none)'}`,
-            `Style: deterministic remix\nLyrics: ${isOffline ? 'local' : 'cloud'} LLM generated`
-          )
-        : undefined,
+      debugTrace: undefined,
     };
   }
 
@@ -180,7 +178,8 @@ async function refineWithDeterministicStyle(
 
 async function refinePromptDirectMode(
   options: RefinePromptOptions & { sunoStyles: string[] },
-  config: RefinementConfig
+  config: RefinementConfig,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { sunoStyles, feedback, lyricsTopic, currentLyrics } = options;
 
@@ -201,7 +200,11 @@ async function refinePromptDirectMode(
         config.getModel,
         config.getUseSunoTags?.() ?? false,
         config.isUseLocalLLM(),
-        config.getOllamaEndpoint()
+        config.getOllamaEndpoint(),
+        {
+          trace: runtime?.trace,
+          traceLabel: 'lyrics.bootstrap',
+        }
       )
     : null;
 
@@ -209,13 +212,7 @@ async function refinePromptDirectMode(
     text: enrichedPrompt,
     title: options.currentTitle,
     lyrics: lyricsResult?.lyrics ?? currentLyrics,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(
-          'DIRECT_MODE_REFINE',
-          `Styles: ${sunoStyles.join(', ')}\nFeedback: ${feedback}`,
-          enrichedPrompt
-        )
-      : undefined,
+    debugTrace: undefined,
   };
 }
 
@@ -239,14 +236,15 @@ async function refinePromptDirectMode(
  */
 export async function refinePrompt(
   options: RefinePromptOptions,
-  config: RefinementConfig
+  config: RefinementConfig,
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { sunoStyles } = options;
 
   // Direct Mode: Use shared enrichment (DRY - same as generation)
   // Title preserved (no LLM call) - only style prompt is enriched
   if (isDirectModeRefinement(sunoStyles)) {
-    return refinePromptDirectMode({ ...options, sunoStyles }, config);
+    return refinePromptDirectMode({ ...options, sunoStyles }, config, runtime);
   }
 
   // Determine offline mode and endpoint
@@ -254,7 +252,7 @@ export async function refinePrompt(
   const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
 
   // Unified path: deterministic style + LLM lyrics (for all providers)
-  return refineWithDeterministicStyle(options, config, ollamaEndpoint);
+  return refineWithDeterministicStyle(options, config, ollamaEndpoint, runtime);
 }
 
 // Re-export types for convenience

@@ -7,7 +7,6 @@
  * @module prompt/conversion/types
  */
 
-import type { DebugInfo } from '@shared/types';
 
 // =============================================================================
 // Max Mode Types
@@ -38,7 +37,6 @@ export interface ParsedMaxPrompt {
 export interface AIEnhancementResult {
   styleTags: string;
   recording: string;
-  debugInfo?: Partial<DebugInfo>;
 }
 
 /**
@@ -58,7 +56,6 @@ export interface MaxFormatFields {
 export interface MaxConversionResult {
   convertedPrompt: string;
   wasConverted: boolean;
-  debugInfo?: Partial<DebugInfo>;
 }
 
 // =============================================================================
@@ -103,5 +100,4 @@ export interface NonMaxFormatFields {
 export interface NonMaxConversionResult {
   convertedPrompt: string;
   wasConverted: boolean;
-  debugInfo?: Partial<DebugInfo>;
 }

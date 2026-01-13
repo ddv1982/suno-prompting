@@ -2,7 +2,8 @@
 
 import type { MoodCategory } from '@bun/mood';
 import type { AIProvider, APIKeys } from '@shared/types/config';
-import type { PromptSession, DebugInfo, PromptMode, QuickVibesCategory, CreativeBoostMode } from '@shared/types/domain';
+import type { PromptSession, PromptMode, QuickVibesCategory, CreativeBoostMode } from '@shared/types/domain';
+import type { TraceRun } from '@shared/types/trace';
 import type { ValidationResult } from '@shared/validation';
 
 // Generation endpoints
@@ -20,7 +21,7 @@ export type GenerateInitialResponse = {
   lyrics?: string;
   versionId: string; 
   validation: ValidationResult; 
-  debugInfo?: DebugInfo;
+  debugTrace?: TraceRun;
 };
 
 export type RefinePromptParams = { 
@@ -40,7 +41,7 @@ export type RefinePromptResponse = {
   lyrics?: string; 
   versionId: string; 
   validation: ValidationResult; 
-  debugInfo?: DebugInfo;
+  debugTrace?: TraceRun;
 };
 
 // Remix endpoints
@@ -127,7 +128,7 @@ export type GenerateQuickVibesResponse = {
   prompt: string;
   title?: string;
   versionId: string;
-  debugInfo?: DebugInfo;
+  debugTrace?: TraceRun;
 };
 
 export type RefineQuickVibesParams = {
@@ -145,7 +146,7 @@ export type RefineQuickVibesResponse = {
   prompt: string;
   title?: string;
   versionId: string;
-  debugInfo?: DebugInfo;
+  debugTrace?: TraceRun;
 };
 
 // Max Mode Format Conversion
@@ -154,7 +155,7 @@ export type ConvertToMaxFormatResponse = {
   convertedPrompt: string;
   wasConverted: boolean;
   versionId: string;
-  debugInfo?: Partial<DebugInfo>;
+  debugTrace?: TraceRun;
 };
 
 // Creative Boost endpoints
@@ -175,7 +176,7 @@ export type GenerateCreativeBoostResponse = {
   title: string;               // Generated title
   lyrics?: string;             // Generated lyrics (when withLyrics: true)
   versionId: string;
-  debugInfo?: DebugInfo;
+  debugTrace?: TraceRun;
 };
 
 export type RefineCreativeBoostParams = {
@@ -200,7 +201,7 @@ export type RefineCreativeBoostResponse = {
   title: string;
   lyrics?: string;
   versionId: string;
-  debugInfo?: DebugInfo;
+  debugTrace?: TraceRun;
 };
 
 // Ollama endpoints

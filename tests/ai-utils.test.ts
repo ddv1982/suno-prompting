@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { buildDebugInfo, cleanLyrics, cleanTitle } from '@bun/ai/utils';
+import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 
 describe('cleanTitle', () => {
   test('removes double quotes from title', () => {
@@ -58,56 +58,3 @@ describe('cleanLyrics', () => {
   });
 });
 
-describe('buildDebugInfo', () => {
-  test('builds debug info with required fields', () => {
-    const result = buildDebugInfo(
-      'System prompt',
-      'User prompt',
-      'Raw response',
-      'test-model',
-      'groq'
-    );
-
-    expect(result.systemPrompt).toBe('System prompt');
-    expect(result.userPrompt).toBe('User prompt');
-    expect(result.responseBody).toBe('Raw response');
-    expect(result.model).toBe('test-model');
-    expect(result.provider).toBe('groq');
-    expect(result.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(result.requestBody).toContain('"model": "test-model"');
-  });
-
-  test('includes messages in requestBody when provided', () => {
-    const messages = [
-      { role: 'assistant', content: 'Previous response' },
-      { role: 'user', content: 'Follow-up' },
-    ];
-
-    const result = buildDebugInfo(
-      'System prompt',
-      'User prompt',
-      'Raw response',
-      'test-model',
-      'openai',
-      messages
-    );
-
-    expect(result.requestBody).toContain('Previous response');
-    expect(result.requestBody).toContain('Follow-up');
-  });
-
-  test('builds default messages when none provided', () => {
-    const result = buildDebugInfo(
-      'System prompt',
-      'User prompt',
-      'Raw response',
-      'test-model',
-      'anthropic'
-    );
-
-    const requestBody = JSON.parse(result.requestBody);
-    expect(requestBody.messages).toHaveLength(2);
-    expect(requestBody.messages[0].role).toBe('system');
-    expect(requestBody.messages[1].role).toBe('user');
-  });
-});

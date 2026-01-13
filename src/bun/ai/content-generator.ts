@@ -5,6 +5,7 @@ import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt,
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
 
+import type { TraceCollector } from '@bun/trace';
 import type { LanguageModel } from 'ai';
 
 const log = createLogger('ContentGenerator');
@@ -53,7 +54,8 @@ export async function generateTitle(
   mood: string,
   getModel: () => LanguageModel,
   timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<TitleResult> {
   const systemPrompt = buildTitleSystemPrompt();
   const userPrompt = buildTitleUserPrompt(description, genre, mood);
@@ -67,6 +69,8 @@ export async function generateTitle(
       errorContext: 'generate title',
       ollamaEndpoint,
       timeoutMs,
+      trace: traceRuntime?.trace,
+      traceLabel: traceRuntime?.traceLabel,
     });
 
     return {
@@ -99,7 +103,8 @@ export async function generateLyrics(
   getModel: () => LanguageModel,
   useSunoTags: boolean = false,
   timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<LyricsResult> {
   const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
   const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags);
@@ -113,6 +118,8 @@ export async function generateLyrics(
       errorContext: 'generate lyrics',
       ollamaEndpoint,
       timeoutMs,
+      trace: traceRuntime?.trace,
+      traceLabel: traceRuntime?.traceLabel,
     });
 
     return { lyrics: text.trim(), debugInfo };
@@ -136,7 +143,8 @@ export async function detectGenreFromTopic(
   lyricsTopic: string,
   getModel: () => LanguageModel,
   timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<GenreDetectionResult> {
   // Build genre list with descriptions for LLM context
   const genreDescriptions = ALL_GENRE_KEYS.map((key) => {
@@ -168,6 +176,8 @@ Which genre fits best? Return only the genre key.`;
       errorContext: 'detect genre from topic',
       ollamaEndpoint,
       timeoutMs,
+      trace: traceRuntime?.trace,
+      traceLabel: traceRuntime?.traceLabel,
     });
 
     const genre = text.trim().toLowerCase();

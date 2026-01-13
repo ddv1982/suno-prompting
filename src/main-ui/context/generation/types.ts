@@ -1,6 +1,6 @@
 import type { ChatMessage } from '@/lib/chat-utils';
 import type { MoodCategory } from '@bun/mood';
-import type { DebugInfo, PromptSession, QuickVibesCategory } from '@shared/types';
+import type { PromptSession, QuickVibesCategory, TraceRun } from '@shared/types';
 import type { ValidationResult } from '@shared/validation';
 
 /** Active generation actions (excluding 'none') */
@@ -26,11 +26,11 @@ export interface GenerationStateContextValue {
   generatingAction: GeneratingAction;
   chatMessages: ChatMessage[];
   validation: ValidationResult;
-  debugInfo: Partial<DebugInfo> | undefined;
+  debugTrace: TraceRun | undefined;
   setGeneratingAction: (action: GeneratingAction) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
-  setDebugInfo: (info: Partial<DebugInfo> | undefined) => void;
+  setDebugTrace: (trace: TraceRun | undefined) => void;
 }
 
 /** Session operations context - provides session management */
@@ -41,7 +41,7 @@ export interface SessionOperationsContextValue {
     originalInput: string,
     convertedPrompt: string,
     versionId: string,
-    debugInfo?: Partial<DebugInfo>
+    debugTrace?: TraceRun
   ) => Promise<void>;
 }
 
@@ -54,7 +54,7 @@ export interface StandardGenerationContextValue {
     originalInput: string,
     convertedPrompt: string,
     versionId: string,
-    debugInfo?: Partial<DebugInfo>
+    debugTrace?: TraceRun
   ) => Promise<void>;
 }
 

@@ -11,7 +11,6 @@ import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversi
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
 import { cleanJsonResponse } from '@shared/prompt-utils';
-import { nowISO } from '@shared/utils';
 
 import { parseNonMaxPrompt } from './parser';
 
@@ -149,14 +148,7 @@ export async function enhanceWithAI(
   });
 
   const result = parseAIEnhancementResponse(text);
-  return {
-    ...result,
-    debugInfo: {
-      systemPrompt,
-      userPrompt,
-      timestamp: nowISO(),
-    },
-  };
+  return result;
 }
 
 // =============================================================================
@@ -237,6 +229,5 @@ export async function convertToMaxFormat(
   return { 
     convertedPrompt, 
     wasConverted: true,
-    debugInfo: aiResult.debugInfo,
   };
 }

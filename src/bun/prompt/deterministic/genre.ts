@@ -7,11 +7,13 @@
 import { detectGenre } from '@bun/instruments/detection';
 import { createLogger } from '@bun/logger';
 import { parseGenreComponents } from '@bun/prompt/genre-parser';
+import { traceDecision } from '@bun/trace';
 
 import { ALL_GENRE_KEYS } from './constants';
 
 import type { ResolvedGenre } from './types';
 import type { GenreType } from '@bun/instruments/genres';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('DeterministicBuilder');
 
@@ -91,12 +93,20 @@ export function parseMultiGenre(description: string): GenreType | null {
 export function resolveGenre(
   description: string,
   genreOverride: string | undefined,
-  rng: () => number
+  rng: () => number,
+  trace?: TraceCollector
 ): ResolvedGenre {
   // 1. Try genre override - supports both single and compound genres
   if (genreOverride) {
     const components = parseGenreComponents(genreOverride);
     if (components.length > 0) {
+      traceDecision(trace, {
+        domain: 'genre',
+        key: 'deterministic.genre.resolve',
+        branchTaken: 'override',
+        why: `genreOverride provided (${components.length} component(s))`,
+      });
+
       const primaryGenre = components[0] ?? 'pop';
       return {
         detected: null,
@@ -111,6 +121,13 @@ export function resolveGenre(
   // 2. Try keyword detection from description
   const detected = detectGenreKeywordsOnly(description);
   if (detected) {
+    traceDecision(trace, {
+      domain: 'genre',
+      key: 'deterministic.genre.resolve',
+      branchTaken: 'keyword-detection',
+      why: `detected=${detected}`,
+    });
+
     return {
       detected,
       displayGenre: detected,
@@ -120,7 +137,21 @@ export function resolveGenre(
   }
 
   // 3. Fallback to random genre
-  const randomGenre = selectRandomGenre(rng);
+  const idx = Math.floor(rng() * ALL_GENRE_KEYS.length);
+  const randomGenre = ALL_GENRE_KEYS[idx] ?? 'pop';
+
+  traceDecision(trace, {
+    domain: 'genre',
+    key: 'deterministic.genre.resolve',
+    branchTaken: 'random-fallback',
+    why: 'no keywords matched; falling back to random genre',
+    selection: {
+      method: 'pickRandom',
+      chosenIndex: idx,
+      candidates: ALL_GENRE_KEYS,
+    },
+  });
+
   return {
     detected: null,
     displayGenre: randomGenre,

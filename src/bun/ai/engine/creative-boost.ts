@@ -12,9 +12,10 @@ import {
   refineCreativeBoost as refineCreativeBoostImpl,
 } from '@bun/ai/creative-boost';
 
-import type { ConfigFactories } from './config-factories';
+
 import type { ConfigProxies } from './config-proxies';
 import type { GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Create Creative Boost methods bound to configuration.
@@ -22,7 +23,7 @@ import type { GenerationResult } from '@bun/ai/types';
 export function createCreativeBoostMethods(
   config: AIConfig,
   proxies: ConfigProxies,
-  factories: ConfigFactories
+  _factories: unknown
 ): {
   generateCreativeBoost: (
     creativityLevel: number,
@@ -32,7 +33,8 @@ export function createCreativeBoostMethods(
     lyricsTopic: string,
     withWordlessVocals: boolean,
     maxMode: boolean,
-    withLyrics: boolean
+    withLyrics: boolean,
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
   refineCreativeBoost: (
     currentPrompt: string,
@@ -46,7 +48,8 @@ export function createCreativeBoostMethods(
     withWordlessVocals: boolean,
     maxMode: boolean,
     withLyrics: boolean,
-    targetGenreCount?: number
+    targetGenreCount?: number,
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
 } {
   async function generateCreativeBoost(
@@ -57,7 +60,8 @@ export function createCreativeBoostMethods(
     lyricsTopic: string,
     withWordlessVocals: boolean,
     maxMode: boolean,
-    withLyrics: boolean
+    withLyrics: boolean,
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ): Promise<GenerationResult> {
     return generateCreativeBoostImpl({
       creativityLevel,
@@ -71,11 +75,10 @@ export function createCreativeBoostMethods(
       config: {
         getModel: proxies.getModel,
         isDebugMode: config.isDebugMode.bind(config),
-        buildDebugInfo: factories.buildDebugInfo,
         getUseSunoTags: config.getUseSunoTags.bind(config),
         getOllamaEndpoint: () => config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined,
       },
-    });
+    }, runtime);
   }
 
   async function refineCreativeBoost(
@@ -90,7 +93,8 @@ export function createCreativeBoostMethods(
     withWordlessVocals: boolean,
     maxMode: boolean,
     withLyrics: boolean,
-    targetGenreCount?: number
+    targetGenreCount?: number,
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ): Promise<GenerationResult> {
     return refineCreativeBoostImpl({
       currentPrompt,
@@ -108,11 +112,10 @@ export function createCreativeBoostMethods(
       config: {
         getModel: proxies.getModel,
         isDebugMode: config.isDebugMode.bind(config),
-        buildDebugInfo: factories.buildDebugInfo,
         getUseSunoTags: config.getUseSunoTags.bind(config),
         getOllamaEndpoint: () => config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined,
       },
-    });
+    }, runtime);
   }
 
   return {

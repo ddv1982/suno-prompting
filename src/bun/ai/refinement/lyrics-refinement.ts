@@ -15,6 +15,7 @@ import { APP_CONSTANTS } from '@shared/constants';
 import { validateOllamaForRefinement } from './validation';
 
 import type { RefinementConfig } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('LyricsRefinement');
 
@@ -76,7 +77,8 @@ export async function refineLyricsWithFeedback(
   currentPrompt: string,
   lyricsTopic: string | undefined,
   config: RefinementConfig,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ lyrics: string }> {
   const { extractGenreFromPrompt, extractMoodFromPrompt } = await import('@bun/prompt/deterministic');
 
@@ -110,6 +112,8 @@ export async function refineLyricsWithFeedback(
     errorContext: 'refine lyrics with feedback',
     ollamaEndpoint,
     timeoutMs,
+    trace: traceRuntime?.trace,
+    traceLabel: traceRuntime?.traceLabel,
   });
 
   log.info('refineLyricsWithFeedback:complete', {

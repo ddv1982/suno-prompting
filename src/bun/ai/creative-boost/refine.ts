@@ -183,13 +183,7 @@ async function refineDirectMode(
     text: enrichedPrompt,
     title,
     lyrics,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(
-          `DIRECT_MODE_REFINE${hasFeedback ? ' (with feedback)' : ''}`,
-          `Styles: ${sunoStyles.join(', ')}\nFeedback: ${feedback || '(none)'}`,
-          enrichedPrompt
-        )
-      : undefined,
+    debugTrace: undefined,
   };
 }
 
@@ -200,7 +194,8 @@ async function refineDirectMode(
  * refinement with LLM assistance.
  */
 export async function refineCreativeBoost(
-  options: RefineCreativeBoostOptions
+  options: RefineCreativeBoostOptions,
+  _runtime?: { readonly trace?: import('@bun/trace').TraceCollector; readonly rng?: () => number }
 ): Promise<GenerationResult> {
   const {
     currentPrompt,

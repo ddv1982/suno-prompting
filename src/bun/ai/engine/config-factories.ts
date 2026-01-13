@@ -9,38 +9,10 @@
 import { type LanguageModel } from 'ai';
 
 import { AIConfig } from '@bun/ai/config';
-import { buildDebugInfo, postProcess } from '@bun/ai/utils';
+import { postProcess } from '@bun/ai/utils';
 
 import type { ConfigProxies } from './config-proxies';
 import type { GenerationConfig, RefinementConfig } from '@bun/ai/types';
-import type { DebugInfo } from '@shared/types';
-
-/**
- * Build debug information from LLM interaction.
- * Wraps the standalone utility to inject model/provider context.
- */
-function createBuildDebugInfo(config: AIConfig): (
-  systemPrompt: string,
-  userPrompt: string,
-  rawResponse: string,
-  messages?: Array<{ role: string; content: string }>
-) => DebugInfo {
-  return (
-    systemPrompt: string,
-    userPrompt: string,
-    rawResponse: string,
-    messages?: Array<{ role: string; content: string }>
-  ): DebugInfo => {
-    return buildDebugInfo(
-      systemPrompt,
-      userPrompt,
-      rawResponse,
-      config.getModelName(),
-      config.getProvider(),
-      messages
-    );
-  };
-}
 
 /**
  * Post-process generated text (condense, dedupe, remove meta).
@@ -63,17 +35,10 @@ export function createConfigFactories(
   config: AIConfig,
   proxies: ConfigProxies
 ): {
-  buildDebugInfo: (
-    systemPrompt: string,
-    userPrompt: string,
-    rawResponse: string,
-    messages?: Array<{ role: string; content: string }>
-  ) => DebugInfo;
   postProcess: (text: string) => Promise<string>;
   getGenerationConfig: () => GenerationConfig;
   getRefinementConfig: () => RefinementConfig;
 } {
-  const buildDebugInfoFn = createBuildDebugInfo(config);
   const postProcessFn = createPostProcess(config, proxies.getModel);
 
   /**
@@ -91,7 +56,6 @@ export function createConfigFactories(
       getModelName: config.getModelName.bind(config),
       getProvider: config.getProvider.bind(config),
       getOllamaEndpoint: config.getOllamaEndpoint.bind(config),
-      buildDebugInfo: buildDebugInfoFn,
     };
   }
 
@@ -102,12 +66,10 @@ export function createConfigFactories(
     return {
       ...getGenerationConfig(),
       postProcess: postProcessFn,
-      buildDebugInfo: buildDebugInfoFn,
     };
   }
 
   return {
-    buildDebugInfo: buildDebugInfoFn,
     postProcess: postProcessFn,
     getGenerationConfig,
     getRefinementConfig,

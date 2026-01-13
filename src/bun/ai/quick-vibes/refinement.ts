@@ -27,8 +27,13 @@ import { callLLM } from '../llm-utils';
 
 import type { GenerationResult, EngineConfig } from '../types';
 import type { RefineQuickVibesOptions } from './types';
+import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('QuickVibesRefinement');
+
+type TraceRuntime = {
+  readonly trace?: TraceCollector;
+};
 
 /**
  * Simple hash function for feedback string to seed RNG.
@@ -135,9 +140,7 @@ export function refineDeterministicQuickVibes(
   return {
     text: result,
     title,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo('DETERMINISTIC_REFINE', `Category: ${category}, Feedback: ${feedback}`, text)
-      : undefined,
+    debugTrace: undefined,
   };
 }
 
@@ -151,11 +154,12 @@ export function refineDeterministicQuickVibes(
  *
  * @param options - Refinement options including current prompt, feedback, and category
  * @param config - Engine configuration with model and debug settings
- * @returns Refined prompt with text, title, and optional debug info
+ * @returns Refined prompt with text and title
  */
 export async function refineQuickVibes(
   options: RefineQuickVibesOptions,
-  config: EngineConfig & { isMaxMode: () => boolean }
+  config: EngineConfig & { isMaxMode: () => boolean },
+  runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { currentPrompt, description, feedback, withWordlessVocals, category, sunoStyles } = options;
 
@@ -165,7 +169,8 @@ export async function refineQuickVibes(
     const titleSource = (description?.trim() || feedback.trim() || '').trim();
     return generateDirectModeResult(
       { sunoStyles, description: titleSource, maxMode: config.isMaxMode(), debugLabel: 'DIRECT_MODE_REFINE: Styles preserved, prompt enriched.' },
-      config
+      config,
+      { trace: runtime?.trace }
     );
   }
 
@@ -190,6 +195,8 @@ export async function refineQuickVibes(
     userPrompt,
     errorContext: 'refine Quick Vibes',
     ollamaEndpoint,
+    trace: runtime?.trace,
+    traceLabel: 'quickVibes.refine',
   });
 
   let result = postProcessQuickVibes(rawResponse);
@@ -197,8 +204,6 @@ export async function refineQuickVibes(
 
   return {
     text: result,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(systemPrompt, userPrompt, rawResponse)
-      : undefined,
+    debugTrace: undefined,
   };
 }

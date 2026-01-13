@@ -16,9 +16,11 @@ import {
   selectTextureTags,
   selectRecordingContext,
 } from '@bun/prompt/tags';
+import { traceDecision } from '@bun/trace';
 
 import type { StyleTagsResult } from './types';
 import type { GenreType } from '@bun/instruments/genres';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Weighted tag category configuration for deterministic selection.
@@ -135,7 +137,8 @@ export { applyWeightedSelection };
 
 export function assembleStyleTags(
   components: GenreType[],
-  rng: () => number = Math.random
+  rng: () => number = Math.random,
+  trace?: TraceCollector
 ): StyleTagsResult {
   const primaryGenre = components[0] ?? 'pop';
   const allTags: string[] = [];
@@ -229,6 +232,17 @@ export function assembleStyleTags(
 
   // 6. Cap at 8-10 total tags (prioritize early selections)
   const finalTags = allTags.slice(0, 10);
+
+  traceDecision(trace, {
+    domain: 'styleTags',
+    key: 'deterministic.styleTags.assemble',
+    branchTaken: components.length > 1 ? 'multi-genre' : 'single-genre',
+    why: `primary=${primaryGenre} components=${components.join(' ')} tags=${finalTags.length}`,
+    selection: {
+      method: 'shuffleSlice',
+      candidates: finalTags,
+    },
+  });
 
   return {
     tags: finalTags,

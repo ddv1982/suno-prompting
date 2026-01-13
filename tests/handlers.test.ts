@@ -38,6 +38,7 @@ function createMockAIEngine() {
     setUseLocalLLM: mock(() => {}),
     setLyricsMode: mock(() => {}),
     getModel: mock(() => ({} as any)),
+    isDebugMode: mock(() => false),
   };
 }
 
@@ -115,16 +116,19 @@ describe("RPC Handlers", () => {
         genreOverride: "jazz",
       });
 
-      expect(aiEngine.refinePrompt).toHaveBeenCalledWith({
-        currentPrompt: "Current prompt",
-        currentTitle: "Old Title",
-        feedback: "Make it happier",
-        currentLyrics: "Old lyrics",
-        lockedPhrase: "locked",
-        lyricsTopic: "topic",
-        genreOverride: "jazz",
-        sunoStyles: [],
-      });
+      expect(aiEngine.refinePrompt).toHaveBeenCalledWith(
+        {
+          currentPrompt: "Current prompt",
+          currentTitle: "Old Title",
+          feedback: "Make it happier",
+          currentLyrics: "Old lyrics",
+          lockedPhrase: "locked",
+          lyricsTopic: "topic",
+          genreOverride: "jazz",
+          sunoStyles: [],
+        },
+        expect.anything()
+      );
     });
   });
 
@@ -388,7 +392,7 @@ describe("RPC Handlers", () => {
 
       expect(result.prompt).toBe("Quick vibes prompt");
       expect(result.versionId).toBeDefined();
-      expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", true, []);
+      expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", true, [], expect.anything());
     });
   });
 

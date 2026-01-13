@@ -132,27 +132,7 @@ describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
     expect(result.title!.length).toBeGreaterThan(0);
   });
 
-  it("includes debug info when debug mode enabled", async () => {
-    engine.setDebugMode(true);
-
-    const result = await engine.generateCreativeBoost(
-      50, [], [], "", "", false, true, false
-    );
-
-    expect(result.debugInfo).toBeDefined();
-    // Debug info shows deterministic generation info
-    expect(result.debugInfo?.systemPrompt).toContain("DETERMINISTIC");
-  });
-
-  it("excludes debug info when debug mode disabled", async () => {
-    engine.setDebugMode(false);
-
-    const result = await engine.generateCreativeBoost(
-      50, [], [], "", "", false, false, false
-    );
-
-    expect(result.debugInfo).toBeUndefined();
-  });
+  // NOTE: Debug tracing is migrated to TraceRun, but trace emission is implemented in later task groups.
 });
 
 describe("AIEngine.refineCreativeBoost Max Mode", () => {

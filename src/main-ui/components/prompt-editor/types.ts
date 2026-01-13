@@ -1,7 +1,7 @@
 import { type GeneratingAction } from "@/context/generation";
 import { type ChatMessage } from "@/lib/chat-utils";
 import { type MoodCategory } from "@bun/mood";
-import { type DebugInfo, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
+import { type TraceRun, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
 import { type ValidationResult } from "@shared/validation";
 
 /** State for the current prompt output display */
@@ -38,8 +38,8 @@ export type GenerationState = {
   generatingAction: GeneratingAction;
   /** Validation result for current prompt */
   validation: ValidationResult;
-  /** Debug info from last generation */
-  debugInfo?: Partial<DebugInfo>;
+  /** Debug trace timeline from last generation */
+  debugTrace?: TraceRun;
   /** Chat history messages */
   chatMessages: ChatMessage[];
 };
@@ -109,7 +109,7 @@ export type EditorHandlers = {
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => void;
   onCopy: () => void;
-  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugInfo?: Partial<DebugInfo>) => Promise<void>;
+  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
 };
 
 /** Configuration values for the editor */

@@ -7,7 +7,7 @@
  * @module ai/types
  */
 
-import type { AIProvider, DebugInfo } from '@shared/types';
+import type { AIProvider, TraceRun } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 /**
@@ -32,8 +32,8 @@ export type GenerationResult = {
   title?: string;
   /** Optional lyrics (when lyrics mode is enabled) */
   lyrics?: string;
-  /** Debug information (when debug mode is enabled) */
-  debugInfo?: DebugInfo;
+  /** Debug trace timeline (when debug mode is enabled) */
+  debugTrace?: TraceRun;
 };
 
 /**
@@ -62,13 +62,6 @@ export type ParsedCombinedResponse = {
  * @param messages - Optional array of messages for multi-turn conversations
  * @returns Debug information object
  */
-export type DebugInfoBuilder = (
-  systemPrompt: string,
-  userPrompt: string,
-  rawResponse: string,
-  messages?: Array<{ role: string; content: string }>
-) => DebugInfo;
-
 /**
  * Unified configuration for AI engines.
  *
@@ -82,8 +75,6 @@ export interface EngineConfig {
   getModel: () => LanguageModel;
   /** Returns whether debug mode is enabled */
   isDebugMode: () => boolean;
-  /** Builds debug info from prompts and response */
-  buildDebugInfo: DebugInfoBuilder;
   /** Returns whether max mode is enabled (optional) */
   isMaxMode?: () => boolean;
   /** Returns whether lyrics mode is enabled (optional) */
@@ -121,8 +112,6 @@ export interface GenerationConfig {
   getProvider: () => AIProvider;
   /** Returns the Ollama endpoint URL */
   getOllamaEndpoint: () => string;
-  /** Builds debug info from prompts and response */
-  buildDebugInfo: DebugInfoBuilder;
 }
 
 /**
@@ -134,6 +123,4 @@ export interface GenerationConfig {
 export interface RefinementConfig extends GenerationConfig {
   /** Post-process text (condense, rewrite, dedupe) */
   postProcess: (text: string) => Promise<string>;
-  /** Builds debug info from prompts and response */
-  buildDebugInfo: DebugInfoBuilder;
 }

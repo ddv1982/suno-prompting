@@ -9,9 +9,11 @@ import { articulateInstrument } from '@bun/prompt/articulations';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
 import { selectInstrumentsForMultiGenre } from '@bun/prompt/genre-parser';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
+import { traceDecision } from '@bun/trace';
 
 import type { InstrumentAssemblyResult } from './types';
 import type { GenreType } from '@bun/instruments/genres';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Assemble instruments string with articulations, chord progression, and vocals.
@@ -31,7 +33,8 @@ import type { GenreType } from '@bun/instruments/genres';
  */
 export function assembleInstruments(
   components: GenreType[],
-  rng: () => number = Math.random
+  rng: () => number = Math.random,
+  trace?: TraceCollector
 ): InstrumentAssemblyResult {
   const primaryGenre = components[0] ?? 'pop';
 
@@ -40,6 +43,17 @@ export function assembleInstruments(
     components.length > 1
       ? selectInstrumentsForMultiGenre(components, rng, 4)
       : selectInstrumentsForGenre(primaryGenre, { maxTags: 4, rng });
+
+  traceDecision(trace, {
+    domain: 'instruments',
+    key: 'deterministic.instruments.assemble',
+    branchTaken: components.length > 1 ? 'multi-genre-blend' : 'single-genre',
+    why: `primary=${primaryGenre} components=${components.join(' ')} selected=${baseInstruments.length}`,
+    selection: {
+      method: 'shuffleSlice',
+      candidates: baseInstruments,
+    },
+  });
 
   // Apply articulations to instruments
   const articulatedInstruments = baseInstruments.map((instrument) =>

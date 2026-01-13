@@ -7,6 +7,7 @@
 import type { GenreType } from '@bun/instruments/genres';
 import type { Rng } from '@bun/instruments/services/random';
 import type { MoodCategory } from '@bun/mood';
+import type { TraceCollector } from '@bun/trace';
 
 /**
  * Result of enriching a prompt with genre-based metadata.
@@ -38,6 +39,8 @@ export interface EnrichmentOptions {
   rng?: Rng;
   /** Optional mood category to override genre-based mood selection */
   moodCategory?: MoodCategory;
+  /** Optional trace collector (undefined when debug mode OFF). */
+  trace?: TraceCollector;
 }
 
 /**

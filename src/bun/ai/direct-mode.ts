@@ -9,12 +9,20 @@ import { enrichSunoStyles, buildMaxModeEnrichedLines, buildStandardModeEnrichedL
 import { generateDirectModeTitle } from './llm-utils';
 
 import type { GenerationResult, EngineConfig } from './types';
-import type { DebugInfo } from '@shared/types';
+import type { Rng } from '@bun/instruments/services/random';
+import type { MoodCategory } from '@bun/mood';
+import type { TraceCollector } from '@bun/trace';
 
 export type DirectModeConfig = EngineConfig;
 
 export type DirectModeBuildOptions = {
   maxMode?: boolean;
+};
+
+export type DirectModeTraceRuntime = {
+  readonly trace?: TraceCollector;
+  readonly rng?: Rng;
+  readonly moodCategory?: MoodCategory | null;
 };
 
 /**
@@ -42,6 +50,32 @@ export function buildDirectModePrompt(
 }
 
 /**
+ * Build enriched prompt for Direct Mode (styles preserved as-is) with optional trace/rng.
+ */
+export function buildDirectModePromptWithRuntime(
+  sunoStyles: string[],
+  maxMode: boolean,
+  runtime?: DirectModeTraceRuntime,
+): {
+  text: string;
+  enriched: ReturnType<typeof enrichSunoStyles>;
+} {
+  const enriched = enrichSunoStyles(sunoStyles, {
+    rng: runtime?.rng,
+    trace: runtime?.trace,
+    moodCategory: runtime?.moodCategory ?? undefined,
+  });
+  const lines = maxMode
+    ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
+    : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
+
+  return {
+    text: lines.join('\n'),
+    enriched,
+  };
+}
+
+/**
  * Build a Direct Mode result where styles are preserved as-is but
  * the prompt is enriched with instruments, moods, and production.
  * Title is generated via LLM based on the description and styles.
@@ -49,26 +83,17 @@ export function buildDirectModePrompt(
 export function buildDirectModeResult(
   sunoStyles: string[],
   title: string,
-  description: string | undefined,
-  debugLabel: string,
-  config: DirectModeConfig,
   options: DirectModeBuildOptions = {}
 ): GenerationResult {
   const { maxMode = false } = options;
 
   // Use centralized prompt building
-  const { text, enriched } = buildDirectModePrompt(sunoStyles, maxMode);
+  const { text } = buildDirectModePrompt(sunoStyles, maxMode);
 
   return {
     text,
     title,
-    debugInfo: config.isDebugMode()
-      ? config.buildDebugInfo(
-          debugLabel,
-          `Suno V5 Styles: ${sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}\nDescription: ${description || '(none)'}`,
-          text
-        )
-      : undefined,
+    debugTrace: undefined,
   };
 }
 
@@ -85,11 +110,22 @@ export type DirectModeGenerateOptions = {
  */
 export async function generateDirectModeResult(
   options: DirectModeGenerateOptions,
-  config: DirectModeConfig
+  config: DirectModeConfig,
+  runtime?: DirectModeTraceRuntime
 ): Promise<GenerationResult> {
-  const { sunoStyles, description, maxMode, debugLabel = 'DIRECT_MODE: Styles preserved, prompt enriched.' } = options;
-  const title = await generateDirectModeTitle(description || '', sunoStyles, config.getModel);
-  return buildDirectModeResult(sunoStyles, title, description, debugLabel, config, { maxMode });
+  const { sunoStyles, description, maxMode } = options;
+  const title = await generateDirectModeTitle(description || '', sunoStyles, config.getModel, config.getOllamaEndpoint?.(), {
+    trace: runtime?.trace,
+    traceLabel: 'title.generate',
+  });
+
+  const { text } = buildDirectModePromptWithRuntime(sunoStyles, maxMode ?? false, runtime);
+
+  return {
+    text,
+    title,
+    debugTrace: undefined,
+  };
 }
 
 export type DirectModeWithLyricsOptions = DirectModeGenerateOptions & {
@@ -99,7 +135,7 @@ export type DirectModeWithLyricsOptions = DirectModeGenerateOptions & {
     styleResult: string,
     lyricsTopic: string,
     description: string
-  ) => Promise<{ lyrics: string | undefined; debugInfo?: { systemPrompt: string; userPrompt: string } }>;
+  ) => Promise<{ lyrics: string | undefined }>;
 };
 
 /**
@@ -109,45 +145,30 @@ export type DirectModeWithLyricsOptions = DirectModeGenerateOptions & {
  */
 export async function generateDirectModeWithLyrics(
   options: DirectModeWithLyricsOptions,
-  config: DirectModeConfig
+  config: DirectModeConfig,
+  runtime?: DirectModeTraceRuntime
 ): Promise<GenerationResult> {
-  const { sunoStyles, description, lyricsTopic, maxMode, withLyrics, generateLyrics, debugLabel = 'DIRECT_MODE' } = options;
+  const { sunoStyles, description, lyricsTopic, maxMode, withLyrics, generateLyrics } = options;
 
-  // Enrich the prompt while preserving styles exactly as-is
-  const enriched = enrichSunoStyles(sunoStyles);
-  const lines = maxMode
-    ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
-    : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
-
-  const enrichedPrompt = lines.join('\n');
+  const { text: enrichedPrompt } = buildDirectModePromptWithRuntime(sunoStyles, maxMode ?? false, runtime);
 
   // Generate title
   const titleContext = description?.trim() || lyricsTopic?.trim() || '';
-  const title = await generateDirectModeTitle(titleContext, sunoStyles, config.getModel);
+  const title = await generateDirectModeTitle(titleContext, sunoStyles, config.getModel, config.getOllamaEndpoint?.(), {
+    trace: runtime?.trace,
+    traceLabel: 'title.generate',
+  });
 
   // Generate lyrics if requested (pass enriched prompt for context)
   const lyricsResult = withLyrics
     ? await generateLyrics(enrichedPrompt, lyricsTopic, description || '')
     : { lyrics: undefined };
 
-  // Build debug info
-  let debugInfo: DebugInfo | undefined;
-  if (config.isDebugMode()) {
-    debugInfo = config.buildDebugInfo(
-      `${debugLabel}: Styles preserved, prompt enriched`,
-      `Suno V5 Styles: ${sunoStyles.join(', ')}\nExtracted Genres: ${enriched.extractedGenres.join(', ') || '(none)'}`,
-      enrichedPrompt
-    );
-    if (lyricsResult.debugInfo) {
-      debugInfo.lyricsGeneration = lyricsResult.debugInfo;
-    }
-  }
-
   return {
     text: enrichedPrompt,
     title,
     lyrics: lyricsResult.lyrics,
-    debugInfo,
+    debugTrace: undefined,
   };
 }
 

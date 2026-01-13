@@ -4,7 +4,7 @@ import { nowISO } from '@shared/utils';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
 import type { ChatMessage } from '@/lib/chat-utils';
-import type { PromptSession } from '@shared/types';
+import type { PromptSession, TraceRun } from '@shared/types';
 import type { ValidationResult } from '@shared/validation';
 
 const log = createLogger('RemixExecutor');
@@ -15,7 +15,7 @@ export interface RemixExecutorDeps {
   generateId: () => string;
   saveSession: (session: PromptSession) => Promise<void>;
   setGeneratingAction: (action: GeneratingAction) => void;
-  setDebugInfo: (info: undefined) => void;
+  setDebugTrace: (trace: TraceRun | undefined) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
   showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
@@ -31,13 +31,13 @@ export async function executePromptRemix(
   feedbackLabel: string,
   successMessage: string
 ): Promise<void> {
-  const { isGenerating, currentSession, saveSession, setGeneratingAction, setDebugInfo, setChatMessages, setValidation, showToast } = deps;
+  const { isGenerating, currentSession, saveSession, setGeneratingAction, setDebugTrace, setChatMessages, setValidation, showToast } = deps;
 
   if (isGenerating || !currentSession?.currentPrompt) return;
 
   try {
     setGeneratingAction(action);
-    setDebugInfo(undefined);
+    setDebugTrace(undefined);
     const result = await apiCall();
 
     if (!result?.prompt) {

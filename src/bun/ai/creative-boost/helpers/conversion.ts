@@ -8,7 +8,7 @@
 
 import { convertToMaxFormat, convertToNonMaxFormat } from '@bun/prompt/conversion';
 
-import type { ConversionOptions, DebugInfo } from '@shared/types';
+import type { ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 /**
@@ -19,12 +19,12 @@ export async function applyMaxModeConversion(
   maxMode: boolean,
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
-): Promise<{ styleResult: string; debugInfo?: DebugInfo['maxConversion'] }> {
+): Promise<{ styleResult: string }> {
   if (maxMode) {
     const result = await convertToMaxFormat(style, getModel, options);
-    return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
+    return { styleResult: result.convertedPrompt };
   } else {
     const result = await convertToNonMaxFormat(style, getModel, options);
-    return { styleResult: result.convertedPrompt, debugInfo: result.debugInfo };
+    return { styleResult: result.convertedPrompt };
   }
 }
