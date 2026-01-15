@@ -783,4 +783,59 @@ describe('FullPromptInputPanel Button State Integration', () => {
       expect(result.shouldTriggerRefinedState).toBe(false);
     });
   });
+
+  describe('LLM availability integration', () => {
+    /**
+     * Tests for LLM unavailable state affecting GenerationDisabledProvider.
+     * The panel uses: isDisabled={isGenerating || !isLLMAvailable}
+     */
+
+    interface LLMAvailabilityInput {
+      isGenerating: boolean;
+      isLLMAvailable: boolean;
+    }
+
+    /**
+     * Pure logic: compute the isDisabled value for GenerationDisabledProvider.
+     */
+    function computeGenerationDisabled(input: LLMAvailabilityInput): boolean {
+      return input.isGenerating || !input.isLLMAvailable;
+    }
+
+    test('disables generation when LLM is unavailable', () => {
+      const result = computeGenerationDisabled({
+        isGenerating: false,
+        isLLMAvailable: false,
+      });
+
+      expect(result).toBe(true);
+    });
+
+    test('enables generation when LLM is available and not generating', () => {
+      const result = computeGenerationDisabled({
+        isGenerating: false,
+        isLLMAvailable: true,
+      });
+
+      expect(result).toBe(false);
+    });
+
+    test('disables generation when generating (regardless of LLM availability)', () => {
+      const result = computeGenerationDisabled({
+        isGenerating: true,
+        isLLMAvailable: true,
+      });
+
+      expect(result).toBe(true);
+    });
+
+    test('disables generation when both generating and LLM unavailable', () => {
+      const result = computeGenerationDisabled({
+        isGenerating: true,
+        isLLMAvailable: false,
+      });
+
+      expect(result).toBe(true);
+    });
+  });
 });

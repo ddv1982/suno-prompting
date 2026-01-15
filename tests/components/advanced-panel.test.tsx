@@ -1,68 +1,69 @@
 import { describe, test, expect } from 'bun:test';
 
-import type { MoodCategory } from '@bun/mood';
 import type { AdvancedSelection } from '@shared/types';
 
 /**
  * Unit tests for AdvancedPanel component disabled behavior.
  *
  * Tests cover:
- * - Clear All button disabled during generation
- * - MoodCategoryCombobox disabled during generation
- * - GenreMultiSelect disabled during generation
- * - SunoStylesMultiSelect disabled during generation
- * - AdvancedOptionsGrid comboboxes disabled during generation
- * - All controls enabled when not generating
+ * - Clear All button disabled via autoDisable context
+ * - MoodCategoryCombobox disabled via autoDisable context  
+ * - GenreMultiSelect disabled via autoDisable context + mutual exclusion
+ * - SunoStylesMultiSelect disabled via autoDisable context + mutual exclusion
+ * - AdvancedOptionsGrid comboboxes disabled via autoDisable context
+ * - All controls enabled when context allows
  *
  * Following project convention: test pure logic and prop behavior without full React render.
+ * Note: isGenerating prop has been replaced with autoDisable pattern via GenerationDisabledProvider.
  */
 
 // ============================================
-// Types matching the component props
+// Types (AdvancedPanelProps no longer needed since we test context-based logic)
 // ============================================
-
-interface AdvancedPanelProps {
-  selection: AdvancedSelection;
-  onUpdate: (updates: Partial<AdvancedSelection>) => void;
-  onClear: () => void;
-  computedPhrase: string;
-  moodCategory?: MoodCategory | null;
-  onMoodCategoryChange: (category: MoodCategory | null) => void;
-  isGenerating: boolean;
-}
 
 // ============================================
 // Pure logic functions extracted from component
 // ============================================
 
 interface AdvancedPanelDisabledState {
+  /** Clear All button uses autoDisable - disabled via context */
   clearAllButtonDisabled: boolean;
+  /** MoodCategoryCombobox uses autoDisable (default true) - disabled via context */
   moodCategoryComboboxDisabled: boolean;
+  /** GenreMultiSelect uses autoDisable + disabled prop for mutual exclusion with sunoStyles */
   genreMultiSelectDisabled: boolean;
+  /** SunoStylesMultiSelect uses autoDisable + disabled prop for mutual exclusion with genres */
   sunoStylesMultiSelectDisabled: boolean;
+  /** AdvancedOptionsGrid options use autoDisable - disabled via context */
   advancedOptionsGridDisabled: boolean;
 }
 
 /**
- * Compute the disabled state for all AdvancedPanel controls.
- * Most controls are disabled when isGenerating is true.
- * Genre and Suno Styles have additional disable conditions based on mutual exclusivity.
+ * Compute the disabled state for AdvancedPanel controls based on mutual exclusion logic.
+ * 
+ * Note: Generation/LLM availability disabling is handled via GenerationDisabledProvider
+ * context with autoDisable props. This function only computes the component-specific
+ * disable conditions (mutual exclusivity between genres and suno styles).
+ * 
+ * @param contextDisabled - Whether the GenerationDisabledProvider context is disabled
+ * @param selection - Current advanced selection state
  */
-function computeDisabledState(props: AdvancedPanelProps): AdvancedPanelDisabledState {
-  const { isGenerating, selection } = props;
-  
+function computeDisabledState(
+  contextDisabled: boolean,
+  selection: AdvancedSelection
+): AdvancedPanelDisabledState {
   // Genre and Suno Styles have mutual exclusivity
   const isDirectMode = selection.sunoStyles.length > 0;
   const hasGenres = selection.seedGenres.length > 0;
 
   return {
-    clearAllButtonDisabled: isGenerating,
-    moodCategoryComboboxDisabled: isGenerating,
-    // Genre is disabled when generating OR when Suno styles are selected
-    genreMultiSelectDisabled: isGenerating || isDirectMode,
-    // Suno Styles is disabled when generating OR when genres are selected
-    sunoStylesMultiSelectDisabled: isGenerating || hasGenres,
-    advancedOptionsGridDisabled: isGenerating,
+    // These use autoDisable, so they're disabled when context is disabled
+    clearAllButtonDisabled: contextDisabled,
+    moodCategoryComboboxDisabled: contextDisabled,
+    advancedOptionsGridDisabled: contextDisabled,
+    // These have additional disable conditions (mutual exclusion)
+    genreMultiSelectDisabled: contextDisabled || isDirectMode,
+    sunoStylesMultiSelectDisabled: contextDisabled || hasGenres,
   };
 }
 
@@ -110,39 +111,25 @@ function createDefaultSelection(): AdvancedSelection {
 
 describe('AdvancedPanel', () => {
   describe('Clear All button disabled state', () => {
-    test('Clear All button is disabled when isGenerating=true', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: { ...createDefaultSelection(), seedGenres: ['jazz'] },
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: true,
-      };
+    test('Clear All button is disabled when context is disabled', () => {
+      // Arrange - context disabled (e.g., generating or LLM unavailable)
+      const contextDisabled = true;
+      const selection = { ...createDefaultSelection(), seedGenres: ['jazz'] };
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.clearAllButtonDisabled).toBe(true);
     });
 
-    test('Clear All button is enabled when isGenerating=false', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: { ...createDefaultSelection(), seedGenres: ['jazz'] },
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+    test('Clear All button is enabled when context is enabled', () => {
+      // Arrange - context enabled
+      const contextDisabled = false;
+      const selection = { ...createDefaultSelection(), seedGenres: ['jazz'] };
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.clearAllButtonDisabled).toBe(false);
@@ -164,39 +151,25 @@ describe('AdvancedPanel', () => {
   });
 
   describe('MoodCategoryCombobox disabled state', () => {
-    test('MoodCategoryCombobox is disabled when isGenerating=true', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: true,
-      };
+    test('MoodCategoryCombobox is disabled when context is disabled', () => {
+      // Arrange - context disabled
+      const contextDisabled = true;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.moodCategoryComboboxDisabled).toBe(true);
     });
 
-    test('MoodCategoryCombobox is enabled when isGenerating=false', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+    test('MoodCategoryCombobox is enabled when context is enabled', () => {
+      // Arrange - context enabled
+      const contextDisabled = false;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.moodCategoryComboboxDisabled).toBe(false);
@@ -204,58 +177,37 @@ describe('AdvancedPanel', () => {
   });
 
   describe('GenreMultiSelect disabled state', () => {
-    test('GenreMultiSelect is disabled when isGenerating=true', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: true,
-      };
+    test('GenreMultiSelect is disabled when context is disabled', () => {
+      // Arrange - context disabled
+      const contextDisabled = true;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.genreMultiSelectDisabled).toBe(true);
     });
 
     test('GenreMultiSelect is disabled when sunoStyles are selected (Direct Mode)', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: { ...createDefaultSelection(), sunoStyles: ['dream-pop'] },
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+      // Arrange - context enabled but in Direct Mode
+      const contextDisabled = false;
+      const selection = { ...createDefaultSelection(), sunoStyles: ['dream-pop'] };
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.genreMultiSelectDisabled).toBe(true);
     });
 
-    test('GenreMultiSelect is enabled when isGenerating=false and no sunoStyles', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+    test('GenreMultiSelect is enabled when context is enabled and no sunoStyles', () => {
+      // Arrange - context enabled, no Direct Mode
+      const contextDisabled = false;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.genreMultiSelectDisabled).toBe(false);
@@ -263,58 +215,37 @@ describe('AdvancedPanel', () => {
   });
 
   describe('SunoStylesMultiSelect disabled state', () => {
-    test('SunoStylesMultiSelect is disabled when isGenerating=true', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: true,
-      };
+    test('SunoStylesMultiSelect is disabled when context is disabled', () => {
+      // Arrange - context disabled
+      const contextDisabled = true;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.sunoStylesMultiSelectDisabled).toBe(true);
     });
 
     test('SunoStylesMultiSelect is disabled when genres are selected', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: { ...createDefaultSelection(), seedGenres: ['jazz'] },
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+      // Arrange - context enabled but genres selected (mutual exclusion)
+      const contextDisabled = false;
+      const selection = { ...createDefaultSelection(), seedGenres: ['jazz'] };
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.sunoStylesMultiSelectDisabled).toBe(true);
     });
 
-    test('SunoStylesMultiSelect is enabled when isGenerating=false and no genres', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+    test('SunoStylesMultiSelect is enabled when context is enabled and no genres', () => {
+      // Arrange - context enabled, no genres
+      const contextDisabled = false;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.sunoStylesMultiSelectDisabled).toBe(false);
@@ -322,60 +253,39 @@ describe('AdvancedPanel', () => {
   });
 
   describe('AdvancedOptionsGrid disabled state', () => {
-    test('AdvancedOptionsGrid is disabled when isGenerating=true', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: true,
-      };
+    test('AdvancedOptionsGrid is disabled when context is disabled', () => {
+      // Arrange - context disabled
+      const contextDisabled = true;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.advancedOptionsGridDisabled).toBe(true);
     });
 
-    test('AdvancedOptionsGrid is enabled when isGenerating=false', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+    test('AdvancedOptionsGrid is enabled when context is enabled', () => {
+      // Arrange - context enabled
+      const contextDisabled = false;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.advancedOptionsGridDisabled).toBe(false);
     });
   });
 
-  describe('all controls disabled state during generation', () => {
-    test('all controls are disabled simultaneously when generating', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: true,
-      };
+  describe('all controls disabled state when context disabled', () => {
+    test('all controls are disabled simultaneously when context is disabled', () => {
+      // Arrange - context disabled (generating or LLM unavailable)
+      const contextDisabled = true;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.clearAllButtonDisabled).toBe(true);
@@ -385,20 +295,13 @@ describe('AdvancedPanel', () => {
       expect(result.advancedOptionsGridDisabled).toBe(true);
     });
 
-    test('all controls are enabled simultaneously when not generating (empty selection)', () => {
-      // Arrange
-      const props: AdvancedPanelProps = {
-        selection: createDefaultSelection(),
-        onUpdate: () => {},
-        onClear: () => {},
-        computedPhrase: '',
-        moodCategory: null,
-        onMoodCategoryChange: () => {},
-        isGenerating: false,
-      };
+    test('all controls are enabled simultaneously when context is enabled (empty selection)', () => {
+      // Arrange - context enabled, no mutual exclusion conditions
+      const contextDisabled = false;
+      const selection = createDefaultSelection();
 
       // Act
-      const result = computeDisabledState(props);
+      const result = computeDisabledState(contextDisabled, selection);
 
       // Assert
       expect(result.clearAllButtonDisabled).toBe(false);
@@ -427,83 +330,71 @@ describe('AdvancedPanel', () => {
 });
 
 describe('AdvancedPanel source verification', () => {
-  test('advanced-panel.tsx contains disabled prop on Clear All button', async () => {
+  test('advanced-panel.tsx contains autoDisable on Clear All button', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-panel.tsx'
     ).text();
 
-    // Verify Clear All button has disabled={isGenerating}
+    // Verify Clear All button has autoDisable
     expect(source).toContain('Clear All');
-    expect(source).toContain('disabled={isGenerating}');
+    expect(source).toContain('autoDisable');
   });
 
-  test('advanced-panel.tsx passes isGenerating to MoodCategoryCombobox', async () => {
+  test('advanced-panel.tsx uses MoodCategoryCombobox with default autoDisable', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-panel.tsx'
     ).text();
 
-    // Verify MoodCategoryCombobox receives disabled prop
+    // Verify MoodCategoryCombobox is used (autoDisable defaults to true in component)
     expect(source).toContain('MoodCategoryCombobox');
-    expect(source).toContain('disabled={isGenerating}');
   });
 
-  test('advanced-panel.tsx passes isGenerating to GenreMultiSelect', async () => {
+  test('advanced-panel.tsx passes disabled to GenreMultiSelect', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-panel.tsx'
     ).text();
 
-    // Verify GenreMultiSelect receives disabled prop
+    // Verify GenreMultiSelect receives disabled prop for mutual exclusion
     expect(source).toContain('GenreMultiSelect');
-    expect(source).toContain('disabled={isGenerating || genresDisabled}');
+    expect(source).toContain('disabled={genresDisabled}');
   });
 
-  test('advanced-panel.tsx passes isGenerating to SunoStylesMultiSelect', async () => {
+  test('advanced-panel.tsx passes disabled to SunoStylesMultiSelect', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-panel.tsx'
     ).text();
 
-    // Verify SunoStylesMultiSelect receives disabled prop
+    // Verify SunoStylesMultiSelect receives disabled prop for mutual exclusion
     expect(source).toContain('SunoStylesMultiSelect');
-    expect(source).toContain('disabled={isGenerating || stylesDisabled}');
+    expect(source).toContain('disabled={stylesDisabled}');
   });
 
-  test('advanced-panel.tsx passes isGenerating to AdvancedOptionsGrid', async () => {
+  test('advanced-panel.tsx renders AdvancedOptionsGrid', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-panel.tsx'
     ).text();
 
-    // Verify AdvancedOptionsGrid receives isGenerating prop
+    // Verify AdvancedOptionsGrid is rendered
     expect(source).toContain('AdvancedOptionsGrid');
-    expect(source).toContain('isGenerating={isGenerating}');
-  });
-
-  test('isGenerating is properly defined in props', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/advanced-panel/advanced-panel.tsx'
-    ).text();
-
-    // Verify isGenerating is in the props interface
-    expect(source).toContain('isGenerating: boolean');
   });
 });
 
 describe('AdvancedOptionsGrid source verification', () => {
-  test('advanced-options-grid.tsx receives isGenerating prop', async () => {
+  test('advanced-options-grid.tsx uses AdvancedOption components', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-options-grid.tsx'
     ).text();
 
-    // Verify isGenerating is in the props
-    expect(source).toContain('isGenerating');
+    // Verify AdvancedOption components are used
+    expect(source).toContain('AdvancedOption');
   });
 
-  test('advanced-options-grid.tsx passes disabled to AdvancedOption components', async () => {
+  test('advanced-options-grid.tsx passes disabledByMutualExclusion to AdvancedOption', async () => {
     const source = await Bun.file(
       'src/main-ui/components/advanced-panel/advanced-options-grid.tsx'
     ).text();
 
-    // Verify AdvancedOption components receive disabled prop
-    expect(source).toContain('AdvancedOption');
-    expect(source).toContain('disabled={isGenerating}');
+    // Verify AdvancedOption components receive disabledByMutualExclusion prop
+    expect(source).toContain('disabledByMutualExclusion');
   });
 });

@@ -22,14 +22,14 @@ export function AdvancedOption({
   options,
   value,
   onValueChange,
-  disabled = false,
+  disabled,
   disabledByMutualExclusion = false,
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   emptyText = "No option found.",
   className,
 }: AdvancedOptionProps): ReactElement {
-  const isDisabled = disabled || disabledByMutualExclusion;
+  const isDisabledByExclusion = disabledByMutualExclusion;
 
   return (
     <div className={cn("space-y-[var(--space-2)]", className)}>
@@ -43,11 +43,12 @@ export function AdvancedOption({
         options={options}
         value={value}
         onValueChange={onValueChange}
-        disabled={isDisabled}
+        disabled={disabled || isDisabledByExclusion}
+        autoDisable
         placeholder={placeholder}
         searchPlaceholder={searchPlaceholder}
         emptyText={emptyText}
-        className={cn(disabledByMutualExclusion && "opacity-50")}
+        className={cn(isDisabledByExclusion && "opacity-50")}
       />
     </div>
   );

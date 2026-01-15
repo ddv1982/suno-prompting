@@ -2,7 +2,7 @@ import { mkdir } from 'fs/promises';
 import { homedir } from 'os';
 import { join } from 'path';
 
-import { encrypt, decrypt } from '@bun/crypto';
+import { decrypt, encrypt } from '@bun/crypto';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { StorageError } from '@shared/errors';
@@ -101,7 +101,9 @@ export class StorageManager {
     }
 
     /** Decrypt API keys from stored config */
-    private async decryptApiKeys(storedKeys: Partial<Record<AIProvider, string | null>> | undefined): Promise<APIKeys> {
+    private async decryptApiKeys(
+        storedKeys: Partial<Record<AIProvider, string | null>> | undefined
+    ): Promise<APIKeys> {
         const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
         if (!storedKeys) return apiKeys;
 
@@ -142,6 +144,25 @@ export class StorageManager {
         };
     }
 
+    private async persistConfig(config: AppConfig): Promise<void> {
+        // Encrypt all API keys
+        const encryptedKeys: APIKeys = { ...DEFAULT_API_KEYS };
+        for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
+            if (config.apiKeys[provider]) {
+                try {
+                    encryptedKeys[provider] = await encrypt(config.apiKeys[provider]);
+                } catch (e) {
+                    const message = e instanceof Error ? e.message : String(e);
+                    log.error('saveConfig:encryptFailed', { provider, error: message });
+                    throw new StorageError(`Failed to encrypt API key for ${provider}: ${message}`, 'encrypt');
+                }
+            }
+        }
+
+        const toSave = { ...config, apiKeys: encryptedKeys };
+        await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
+    }
+
     async getConfig(): Promise<AppConfig> {
         try {
             const file = Bun.file(this.configPath);
@@ -161,23 +182,7 @@ export class StorageManager {
         try {
             const existing = await this.getConfig();
             const toSave = { ...existing, ...config };
-            
-            // Encrypt all API keys
-            const encryptedKeys: APIKeys = { ...DEFAULT_API_KEYS };
-            for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
-                if (toSave.apiKeys[provider]) {
-                    try {
-                        encryptedKeys[provider] = await encrypt(toSave.apiKeys[provider]);
-                    } catch (e) {
-                        const message = e instanceof Error ? e.message : String(e);
-                        log.error('saveConfig:encryptFailed', { provider, error: message });
-                        throw new StorageError(`Failed to encrypt API key for ${provider}: ${message}`, 'encrypt');
-                    }
-                }
-            }
-            toSave.apiKeys = encryptedKeys;
-            
-            await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
+            await this.persistConfig(toSave);
         } catch (error: unknown) {
             if (error instanceof StorageError) throw error;
             const message = error instanceof Error ? error.message : String(error);

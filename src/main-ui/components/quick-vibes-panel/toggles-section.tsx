@@ -1,6 +1,5 @@
 import { Mic, Zap } from "lucide-react";
 
-
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { getMaxModeHelperText } from "@shared/constants";
 
@@ -10,7 +9,6 @@ type TogglesSectionProps = {
   withWordlessVocals: boolean;
   maxMode: boolean;
   isDirectMode: boolean;
-  isGenerating: boolean;
   onWordlessVocalsChange: (checked: boolean) => void;
   onMaxModeChange: (checked: boolean) => void;
 };
@@ -19,7 +17,6 @@ export function TogglesSection({
   withWordlessVocals,
   maxMode,
   isDirectMode,
-  isGenerating,
   onWordlessVocalsChange,
   onMaxModeChange,
 }: TogglesSectionProps): ReactElement {
@@ -32,7 +29,8 @@ export function TogglesSection({
         helperText="(humming, oohs)"
         checked={isDirectMode ? false : withWordlessVocals}
         onChange={onWordlessVocalsChange}
-        disabled={isGenerating || isDirectMode}
+        disabled={isDirectMode}
+        autoDisable
         showNaBadge={isDirectMode}
       />
       <ToggleRow
@@ -41,7 +39,7 @@ export function TogglesSection({
         label="Max Mode"
         checked={maxMode}
         onChange={onMaxModeChange}
-        disabled={isGenerating}
+        autoDisable
       />
       <p className="ui-helper pl-6">{getMaxModeHelperText(maxMode)}</p>
     </div>

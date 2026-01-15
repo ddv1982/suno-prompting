@@ -253,3 +253,11 @@ export type SetOllamaSettingsParams = {
   maxTokens?: number;
   contextLength?: number;
 };
+
+/** Response from checking LLM availability */
+export type CheckLLMAvailabilityResponse = {
+  /** Whether the LLM is available for generation */
+  available: boolean;
+  /** Reason why LLM is unavailable (null when available) */
+  reason: 'no_api_key' | 'ollama_offline' | 'model_missing' | null;
+};

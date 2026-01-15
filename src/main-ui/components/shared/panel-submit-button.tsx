@@ -9,6 +9,9 @@
 import { Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useSettingsContext } from "@/context/settings-context";
+
+import { LLMUnavailableNotice } from "./llm-unavailable-notice";
 
 import type { PanelSubmitButtonProps } from "./types";
 import type { ReactElement } from "react";
@@ -30,6 +33,8 @@ export function PanelSubmitButton({
   refineLabel = "REFINE",
   refineDirectModeLabel = "REFINE TITLE & LYRICS",
 }: PanelSubmitButtonProps): ReactElement {
+  const { isLLMAvailable } = useSettingsContext();
+
   const getContent = (): ReactElement => {
     if (isGenerating) {
       return (
@@ -67,12 +72,15 @@ export function PanelSubmitButton({
   };
 
   return (
-    <Button
-      onClick={onSubmit}
-      disabled={!canSubmit || isGenerating}
-      className="w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2"
-    >
-      {getContent()}
-    </Button>
+    <div className="flex flex-col gap-2">
+      <Button
+        onClick={onSubmit}
+        disabled={!canSubmit || isGenerating || !isLLMAvailable}
+        className="w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2"
+      >
+        {getContent()}
+      </Button>
+      {!isLLMAvailable && <LLMUnavailableNotice showText />}
+    </div>
   );
 }

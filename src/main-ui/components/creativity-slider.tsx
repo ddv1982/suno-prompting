@@ -37,6 +37,7 @@ export function CreativitySlider({ value, onChange, disabled }: CreativitySlider
         max={100}
         step={25}
         disabled={disabled}
+        autoDisable
         showTicks
         aria-label="Creativity Level"
         aria-describedby="creativity-helper"

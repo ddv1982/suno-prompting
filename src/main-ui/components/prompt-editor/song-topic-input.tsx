@@ -1,6 +1,5 @@
 import { AlertCircle, Music2 } from "lucide-react";
 
-
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -10,7 +9,6 @@ import type { ReactElement } from "react";
 
 type SongTopicInputProps = {
   value: string;
-  isGenerating: boolean;
   hasCurrentPrompt: boolean;
   isOverLimit: boolean;
   onChange: (value: string) => void;
@@ -20,7 +18,6 @@ type SongTopicInputProps = {
 
 export function SongTopicInput({
   value,
-  isGenerating,
   hasCurrentPrompt,
   isOverLimit,
   onChange,
@@ -41,11 +38,10 @@ export function SongTopicInput({
         value={value}
         onChange={(e): void => { onChange(e.target.value); }}
         onKeyDown={onKeyDown}
-        disabled={isGenerating}
+        autoDisable
         className={cn(
           "min-h-16 max-h-32 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
-          isOverLimit && "border-destructive focus-visible:ring-destructive/20",
-          isGenerating && "opacity-70"
+          isOverLimit && "border-destructive focus-visible:ring-destructive/20"
         )}
         placeholder="What is the song about? (e.g., 'the meaning of life', 'lost love', 'summer road trip')"
       />

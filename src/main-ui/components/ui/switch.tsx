@@ -1,4 +1,4 @@
-import { useGenerationDisabled } from "@/context/generation-disabled-context";
+import { useAutoDisable } from "@/hooks/use-auto-disable";
 import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
@@ -33,9 +33,7 @@ const sizeStyles = {
 };
 
 export function Switch({ id, checked, onCheckedChange, disabled, autoDisable = false, size = "default", className }: SwitchProps): ReactElement {
-  const contextDisabled = useGenerationDisabled();
-  // Explicit disabled prop takes precedence, then autoDisable + context
-  const isDisabled = disabled ?? (autoDisable ? contextDisabled : false);
+  const isDisabled = useAutoDisable(disabled, autoDisable);
   
   const styles = sizeStyles[size];
   

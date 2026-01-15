@@ -353,6 +353,123 @@ async function refinePromptDirectMode(
   };
 }
 
+type NormalizedRefinementType = Exclude<RefinePromptOptions['refinementType'], undefined>;
+
+type StyleChanges = RefinePromptOptions['styleChanges'];
+
+type DirectModeResult = GenerationResult | null;
+
+function resolveRefinementType(refinementType: RefinePromptOptions['refinementType']): NormalizedRefinementType {
+  return refinementType ?? 'combined';
+}
+
+function traceRefinementRouting(
+  trace: TraceCollector | undefined,
+  type: NormalizedRefinementType,
+  hasStyleChanges: boolean,
+  hasFeedback: boolean
+): void {
+  log.info('refinePrompt:routing', {
+    refinementType: type,
+    hasStyleChanges,
+    hasFeedback,
+  });
+
+  traceDecision(trace, {
+    domain: 'other',
+    key: 'refinement.routing',
+    branchTaken: type,
+    why: `refinementType=${type} hasStyleChanges=${hasStyleChanges} hasFeedback=${hasFeedback}`,
+  });
+}
+
+function traceStyleChanges(trace: TraceCollector | undefined, styleChanges: StyleChanges): void {
+  if (!styleChanges) return;
+
+  const { seedGenres, sunoStyles: changedSunoStyles, ...otherChanges } = styleChanges;
+
+  if (seedGenres !== undefined) {
+    traceDecision(trace, {
+      domain: 'genre',
+      key: 'refinement.genre.changed',
+      branchTaken: seedGenres.length > 0 ? seedGenres.join(', ') : 'cleared',
+      why: `New genre selection: ${seedGenres.length} genre(s)`,
+    });
+  }
+
+  if (changedSunoStyles !== undefined) {
+    traceDecision(trace, {
+      domain: 'styleTags',
+      key: 'refinement.sunoStyles.changed',
+      branchTaken: changedSunoStyles.length > 0 ? changedSunoStyles.join(', ') : 'cleared',
+      why: `New Suno V5 styles: ${changedSunoStyles.length} selected`,
+    });
+  }
+
+  const otherChangedFields = Object.entries(otherChanges)
+    .filter(([, v]) => v !== undefined)
+    .map(([k]) => k);
+
+  if (otherChangedFields.length > 0) {
+    traceDecision(trace, {
+      domain: 'styleTags',
+      key: 'refinement.styleChanges.other',
+      branchTaken: otherChangedFields.join(', '),
+      why: `Additional fields changed: ${otherChangedFields.join(', ')}`,
+    });
+  }
+}
+
+async function handleDirectModeRefinement(
+  options: RefinePromptOptions,
+  config: RefinementConfig,
+  runtime?: TraceRuntime
+): Promise<DirectModeResult> {
+  if (!isDirectModeRefinement(options.sunoStyles)) return null;
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'refinement.routing',
+    branchTaken: 'directMode',
+    why: `Suno V5 styles detected (${options.sunoStyles.length} styles), using Direct Mode enrichment`,
+  });
+
+  if (options.styleChanges?.sunoStyles) {
+    traceDecision(runtime?.trace, {
+      domain: 'styleTags',
+      key: 'refinement.sunoStyles.changed',
+      branchTaken: options.styleChanges.sunoStyles.join(', ') || 'cleared',
+      why: `New Suno V5 styles: ${options.styleChanges.sunoStyles.length} selected`,
+    });
+  }
+
+  return refinePromptDirectMode({ ...options, sunoStyles: options.sunoStyles }, config, runtime);
+}
+
+async function refineByType(
+  type: NormalizedRefinementType,
+  options: RefinePromptOptions,
+  config: RefinementConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult> {
+  switch (type) {
+    case 'style':
+      return refineStyleOnly(options, config, runtime);
+
+    case 'lyrics':
+      return refineLyricsOnly(options, config, runtime);
+
+    case 'combined': {
+      const isOffline = config.isUseLocalLLM();
+      const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
+      return refineWithDeterministicStyle(options, config, ollamaEndpoint, runtime);
+    }
+
+    default:
+      throw new ValidationError(`Invalid refinement type: ${type as string}`, 'refinementType');
+  }
+}
+
 /**
  * Refine an existing prompt based on user feedback.
  *
@@ -384,107 +501,14 @@ export async function refinePrompt(
   config: RefinementConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
-  const { sunoStyles, refinementType } = options;
+  const directModeResult = await handleDirectModeRefinement(options, config, runtime);
+  if (directModeResult) return directModeResult;
 
-  // Direct Mode: Use shared enrichment (DRY - same as generation)
-  // Title preserved (no LLM call) - only style prompt is enriched
-  if (isDirectModeRefinement(sunoStyles)) {
-    traceDecision(runtime?.trace, {
-      domain: 'other',
-      key: 'refinement.routing',
-      branchTaken: 'directMode',
-      why: `Suno V5 styles detected (${sunoStyles.length} styles), using Direct Mode enrichment`,
-    });
+  const type = resolveRefinementType(options.refinementType);
+  traceRefinementRouting(runtime?.trace, type, !!options.styleChanges, !!options.feedback?.trim());
+  traceStyleChanges(runtime?.trace, options.styleChanges);
 
-    if (options.styleChanges?.sunoStyles) {
-      traceDecision(runtime?.trace, {
-        domain: 'styleTags',
-        key: 'refinement.sunoStyles.changed',
-        branchTaken: options.styleChanges.sunoStyles.join(', ') || 'cleared',
-        why: `New Suno V5 styles: ${options.styleChanges.sunoStyles.length} selected`,
-      });
-    }
-
-    return refinePromptDirectMode({ ...options, sunoStyles }, config, runtime);
-  }
-
-  // Route based on refinement type (auto-detected by frontend)
-  // Default to 'combined' for backwards compatibility
-  const type = refinementType ?? 'combined';
-
-  log.info('refinePrompt:routing', {
-    refinementType: type,
-    hasStyleChanges: !!options.styleChanges,
-    hasFeedback: !!options.feedback?.trim(),
-  });
-
-  // Trace the routing decision
-  traceDecision(runtime?.trace, {
-    domain: 'other',
-    key: 'refinement.routing',
-    branchTaken: type,
-    why: `refinementType=${type} hasStyleChanges=${!!options.styleChanges} hasFeedback=${!!options.feedback?.trim()}`,
-  });
-
-  // Trace style changes with actual new values
-  if (options.styleChanges) {
-    const { seedGenres, sunoStyles: changedSunoStyles, ...otherChanges } = options.styleChanges;
-
-    // Trace genre changes specifically with new values
-    if (seedGenres !== undefined) {
-      traceDecision(runtime?.trace, {
-        domain: 'genre',
-        key: 'refinement.genre.changed',
-        branchTaken: seedGenres.length > 0 ? seedGenres.join(', ') : 'cleared',
-        why: `New genre selection: ${seedGenres.length} genre(s)`,
-      });
-    }
-
-    // Trace Suno V5 style changes (shouldn't happen here since direct mode handles it, but for completeness)
-    if (changedSunoStyles !== undefined) {
-      traceDecision(runtime?.trace, {
-        domain: 'styleTags',
-        key: 'refinement.sunoStyles.changed',
-        branchTaken: changedSunoStyles.length > 0 ? changedSunoStyles.join(', ') : 'cleared',
-        why: `New Suno V5 styles: ${changedSunoStyles.length} selected`,
-      });
-    }
-
-    // Trace other field changes
-    const otherChangedFields = Object.entries(otherChanges)
-      .filter(([, v]) => v !== undefined)
-      .map(([k]) => k);
-
-    if (otherChangedFields.length > 0) {
-      traceDecision(runtime?.trace, {
-        domain: 'styleTags',
-        key: 'refinement.styleChanges.other',
-        branchTaken: otherChangedFields.join(', '),
-        why: `Additional fields changed: ${otherChangedFields.join(', ')}`,
-      });
-    }
-  }
-
-  switch (type) {
-    case 'style':
-      // Style-only: deterministic refinement, no LLM calls
-      return refineStyleOnly(options, config, runtime);
-
-    case 'lyrics':
-      // Lyrics-only: LLM refinement with feedback
-      return refineLyricsOnly(options, config, runtime);
-
-    case 'combined': {
-      // Combined: deterministic style + LLM lyrics (original behavior)
-      const isOffline = config.isUseLocalLLM();
-      const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
-      return refineWithDeterministicStyle(options, config, ollamaEndpoint, runtime);
-    }
-
-    default:
-      // Handle 'none' or any invalid type
-      throw new ValidationError(`Invalid refinement type: ${type as string}`, 'refinementType');
-  }
+  return refineByType(type, options, config, runtime);
 }
 
 // Re-export types for convenience

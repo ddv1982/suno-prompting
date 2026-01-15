@@ -8,14 +8,12 @@ import type { ReactElement } from "react";
 type CreativeBoostModeToggleProps = {
   mode: CreativeBoostMode;
   isDirectMode: boolean;
-  isGenerating: boolean;
   onModeChange: (mode: CreativeBoostMode) => void;
 };
 
 export function CreativeBoostModeToggle({
   mode,
   isDirectMode,
-  isGenerating,
   onModeChange,
 }: CreativeBoostModeToggleProps): ReactElement {
   return (
@@ -24,7 +22,7 @@ export function CreativeBoostModeToggle({
         variant={mode === 'simple' ? 'default' : 'outline'}
         size="xs"
         onClick={() => { onModeChange('simple'); }}
-        disabled={isGenerating}
+        autoDisable
         className="font-semibold"
       >
         Simple
@@ -33,7 +31,7 @@ export function CreativeBoostModeToggle({
         variant={mode === 'advanced' ? 'default' : 'outline'}
         size="xs"
         onClick={() => { onModeChange('advanced'); }}
-        disabled={isGenerating}
+        autoDisable
         className="font-semibold"
       >
         <Settings2 className="w-3 h-3" />

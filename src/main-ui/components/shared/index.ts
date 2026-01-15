@@ -6,6 +6,7 @@
  * @module components/shared
  */
 
+export { LLMUnavailableNotice } from "./llm-unavailable-notice";
 export { PanelSubmitButton } from "./panel-submit-button";
 export { PanelDescriptionInput } from "./panel-description-input";
 export { PanelTogglesSection } from "./panel-toggles-section";

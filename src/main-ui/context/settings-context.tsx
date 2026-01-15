@@ -1,7 +1,10 @@
-import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 import { createLogger } from '@/lib/logger';
 import { rpcClient } from '@/services/rpc-client';
+import { DEFAULT_API_KEYS } from '@shared/types';
+
+import type { APIKeys } from '@shared/types';
 
 const log = createLogger('Settings');
 
@@ -11,10 +14,14 @@ export interface SettingsContextType {
   lyricsMode: boolean;
   useLocalLLM: boolean;
   settingsOpen: boolean;
+  /** Whether the LLM is available for generation (local LLM enabled OR has API key) */
+  isLLMAvailable: boolean;
   setSettingsOpen: (open: boolean) => void;
   setMaxMode: (mode: boolean) => void;
   setLyricsMode: (mode: boolean) => void;
   reloadSettings: () => Promise<void>;
+  /** Open settings modal */
+  openSettings: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
@@ -25,46 +32,37 @@ export const useSettingsContext = (): SettingsContextType => {
   return context;
 };
 
-export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNode => {
+interface SettingsLoaderReturn {
+  currentModel: string;
+  maxMode: boolean;
+  lyricsMode: boolean;
+  useLocalLLM: boolean;
+  apiKeys: APIKeys;
+  setMaxMode: (mode: boolean) => Promise<void>;
+  setLyricsMode: (mode: boolean) => Promise<void>;
+  reloadSettings: () => Promise<void>;
+}
+
+/** Hook to manage settings state loading from RPC */
+function useSettingsLoader(): SettingsLoaderReturn {
   const [currentModel, setCurrentModel] = useState("");
   const [maxMode, setMaxMode] = useState(false);
   const [lyricsMode, setLyricsMode] = useState(false);
-  const [useLocalLLM, setUseLocalLLMState] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [useLocalLLM, setUseLocalLLM] = useState(false);
+  const [apiKeys, setApiKeys] = useState<APIKeys>(DEFAULT_API_KEYS);
 
-  const loadModel = useCallback(async () => {
+  const loadAllSettings = useCallback(async () => {
     try {
-      const result = await rpcClient.getModel({});
-      setCurrentModel(result.ok ? result.value.model : '');
+      const result = await rpcClient.getAllSettings({});
+      if (result.ok) {
+        setCurrentModel(result.value.model);
+        setMaxMode(result.value.maxMode);
+        setLyricsMode(result.value.lyricsMode);
+        setUseLocalLLM(result.value.useLocalLLM);
+        setApiKeys(result.value.apiKeys);
+      }
     } catch (error: unknown) {
-      log.error("loadModel:failed", error);
-    }
-  }, []);
-
-  const loadMaxMode = useCallback(async () => {
-    try {
-      const result = await rpcClient.getMaxMode({});
-      setMaxMode(result.ok ? result.value.maxMode : false);
-    } catch (error: unknown) {
-      log.error("loadMaxMode:failed", error);
-    }
-  }, []);
-
-  const loadLyricsMode = useCallback(async () => {
-    try {
-      const result = await rpcClient.getLyricsMode({});
-      setLyricsMode(result.ok ? result.value.lyricsMode : false);
-    } catch (error: unknown) {
-      log.error("loadLyricsMode:failed", error);
-    }
-  }, []);
-
-  const loadUseLocalLLM = useCallback(async () => {
-    try {
-      const result = await rpcClient.getUseLocalLLM({});
-      setUseLocalLLMState(result.ok ? result.value.useLocalLLM : false);
-    } catch (error: unknown) {
-      log.error("loadUseLocalLLM:failed", error);
+      log.error("loadAllSettings:failed", error);
     }
   }, []);
 
@@ -90,44 +88,66 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     }
   }, [lyricsMode]);
 
-  const reloadSettings = useCallback(async () => {
-    await Promise.all([loadModel(), loadMaxMode(), loadLyricsMode(), loadUseLocalLLM()]);
-  }, [loadModel, loadMaxMode, loadLyricsMode, loadUseLocalLLM]);
+  return {
+    currentModel,
+    maxMode,
+    lyricsMode,
+    useLocalLLM,
+    apiKeys,
+    setMaxMode: handleSetMaxMode,
+    setLyricsMode: handleSetLyricsMode,
+    reloadSettings: loadAllSettings,
+  };
+}
+
+export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNode => {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settings = useSettingsLoader();
+  const isInitialMount = useRef(true);
+
+  const openSettings = useCallback(() => {
+    setSettingsOpen(true);
+  }, []);
 
   // Load settings on initial mount
   useEffect(() => {
-    void reloadSettings();
+    void settings.reloadSettings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps = run once on mount
+  }, []);
 
-  // Reload settings when settings modal closes
+  // Reload settings when settings modal closes (skip initial mount)
   useEffect(() => {
-    if (!settingsOpen) {
-      void reloadSettings();
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
-  }, [settingsOpen, reloadSettings]);
+    if (!settingsOpen) {
+      void settings.reloadSettings();
+    }
+  }, [settingsOpen, settings]);
 
-  // Memoize the context value to prevent unnecessary re-renders of consumers
+  // Derive LLM availability from settings:
+  // LLM is available if local LLM is enabled OR at least one cloud API key is configured
+  const hasAnyApiKey = Boolean(
+    settings.apiKeys.groq?.trim() ||
+    settings.apiKeys.openai?.trim() ||
+    settings.apiKeys.anthropic?.trim()
+  );
+  const isLLMAvailable = settings.useLocalLLM || hasAnyApiKey;
+
   const contextValue = useMemo<SettingsContextType>(() => ({
-    currentModel,
-    maxMode,
-    lyricsMode,
-    useLocalLLM,
+    currentModel: settings.currentModel,
+    maxMode: settings.maxMode,
+    lyricsMode: settings.lyricsMode,
+    useLocalLLM: settings.useLocalLLM,
     settingsOpen,
+    isLLMAvailable,
     setSettingsOpen,
-    setMaxMode: handleSetMaxMode,
-    setLyricsMode: handleSetLyricsMode,
-    reloadSettings,
-  }), [
-    currentModel,
-    maxMode,
-    lyricsMode,
-    useLocalLLM,
-    settingsOpen,
-    handleSetMaxMode,
-    handleSetLyricsMode,
-    reloadSettings,
-  ]);
+    setMaxMode: settings.setMaxMode,
+    setLyricsMode: settings.setLyricsMode,
+    reloadSettings: settings.reloadSettings,
+    openSettings,
+  }), [settings, settingsOpen, isLLMAvailable, openSettings]);
 
   return (
     <SettingsContext.Provider value={contextValue}>

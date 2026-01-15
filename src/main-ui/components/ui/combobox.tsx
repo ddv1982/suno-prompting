@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGenerationDisabled } from "@/context/generation-disabled-context";
+import { useAutoDisable } from "@/hooks/use-auto-disable";
 import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
@@ -52,9 +52,7 @@ export function Combobox({
   "aria-label": ariaLabel,
 }: ComboboxProps): ReactElement {
   const [open, setOpen] = React.useState(false);
-  const contextDisabled = useGenerationDisabled();
-  // Explicit disabled prop takes precedence, then autoDisable + context
-  const isDisabled = disabled ?? (autoDisable ? contextDisabled : false);
+  const isDisabled = useAutoDisable(disabled, autoDisable);
 
   const selectedOption = options.find((opt) => opt.value === value);
 

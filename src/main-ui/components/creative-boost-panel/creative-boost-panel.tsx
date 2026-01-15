@@ -1,8 +1,6 @@
 import { type ReactElement } from "react";
 
 import { CreativitySlider } from "@/components/creativity-slider";
-import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
-import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { canSubmitCreativeBoost } from "@shared/submit-validation";
 
@@ -58,19 +56,17 @@ export function CreativeBoostPanel({
   };
 
   return (
-    <GenerationDisabledProvider isDisabled={isGenerating}>
-      <div className="space-y-[var(--space-5)]">
+    <div className="space-y-[var(--space-5)]">
         <CreativeBoostModeToggle
           mode={creativeBoostMode}
           isDirectMode={isDirectMode}
-          isGenerating={isGenerating}
           onModeChange={onCreativeBoostModeChange}
         />
 
         <CreativitySlider
           value={input.creativityLevel}
           onChange={handleCreativityChange}
-          disabled={isGenerating || isDirectMode}
+          disabled={isDirectMode}
         />
         {isDirectMode && (
           <p className="ui-helper -mt-3">
@@ -82,27 +78,15 @@ export function CreativeBoostPanel({
           input={input}
           isSimpleMode={isSimpleMode}
           isDirectMode={isDirectMode}
-          isGenerating={isGenerating}
           onMoodCategoryChange={handleMoodCategoryChange}
           onGenresChange={handleGenresChange}
           onSunoStylesChange={handleSunoStylesChange}
         />
 
-        {!isSimpleMode && (
-          <MoodCategoryCombobox
-            value={input.moodCategory}
-            onChange={handleMoodCategoryChange}
-            disabled={isGenerating || isDirectMode}
-            helperText={isDirectMode ? "Disabled when using direct Suno styles" : "Influences the emotional tone of enrichment"}
-            badgeText={isDirectMode ? "disabled" : "optional"}
-          />
-        )}
-
         <DescriptionInput
           value={input.description}
           isRefineMode={isRefineMode}
           isDirectMode={isDirectMode}
-          isGenerating={isGenerating}
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
         />
@@ -116,7 +100,6 @@ export function CreativeBoostPanel({
         {lyricsMode && (
           <LyricsTopicInput
             value={input.lyricsTopic}
-            isGenerating={isGenerating}
             onChange={handleLyricsTopicChange}
             onKeyDown={handleKeyDown}
           />
@@ -127,7 +110,6 @@ export function CreativeBoostPanel({
           maxMode={maxMode}
           lyricsMode={lyricsMode}
           isDirectMode={isDirectMode}
-          isGenerating={isGenerating}
           onWordlessVocalsChange={handleWordlessVocalsChange}
           onMaxModeChange={onMaxModeChange}
           onLyricsModeChange={handleLyricsToggleChange}
@@ -141,7 +123,6 @@ export function CreativeBoostPanel({
           refined={refined}
           onSubmit={handleSubmit}
         />
-      </div>
-    </GenerationDisabledProvider>
+    </div>
   );
 }

@@ -12,7 +12,6 @@ type ModeSpecificInputsProps = {
   input: CreativeBoostInput;
   isSimpleMode: boolean;
   isDirectMode: boolean;
-  isGenerating: boolean;
   onMoodCategoryChange: (category: MoodCategory | null) => void;
   onGenresChange: (genres: string[]) => void;
   onSunoStylesChange: (styles: string[]) => void;
@@ -22,7 +21,6 @@ export function ModeSpecificInputs({
   input,
   isSimpleMode,
   isDirectMode,
-  isGenerating,
   onMoodCategoryChange,
   onGenresChange,
   onSunoStylesChange,
@@ -32,7 +30,6 @@ export function ModeSpecificInputs({
       <MoodCategoryCombobox
         value={input.moodCategory}
         onChange={onMoodCategoryChange}
-        disabled={isGenerating}
         helperText="Influences the emotional tone of your prompt"
       />
     );
@@ -48,7 +45,6 @@ export function ModeSpecificInputs({
       <MoodCategoryCombobox
         value={input.moodCategory}
         onChange={onMoodCategoryChange}
-        disabled={isGenerating}
         helperText="Influences the emotional tone of enrichment"
         badgeText="optional"
       />
@@ -57,7 +53,7 @@ export function ModeSpecificInputs({
         selected={input.seedGenres}
         onChange={onGenresChange}
         maxSelections={4}
-        disabled={isGenerating || hasStyles}
+        disabled={hasStyles}
         helperText={hasStyles ? "Disabled when Suno styles are selected" : undefined}
         badgeText={hasStyles ? "disabled" : "optional"}
       />
@@ -66,7 +62,7 @@ export function ModeSpecificInputs({
         selected={input.sunoStyles}
         onChange={onSunoStylesChange}
         maxSelections={4}
-        disabled={isGenerating || hasGenres}
+        disabled={hasGenres}
         helperText={hasGenres ? "Disabled when Seed Genres are selected" : isDirectMode ? "Selected styles will be used exactly as-is" : undefined}
         badgeText={hasGenres ? "disabled" : "optional"}
       />

@@ -1,10 +1,8 @@
 import { MessageSquare } from "lucide-react";
 
-
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
 import type { ReactElement } from "react";
@@ -15,7 +13,6 @@ type DescriptionInputProps = {
   value: string;
   isRefineMode: boolean;
   isDirectMode: boolean;
-  isGenerating: boolean;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
 };
@@ -24,12 +21,11 @@ export function DescriptionInput({
   value,
   isRefineMode,
   isDirectMode,
-  isGenerating,
   onChange,
   onKeyDown,
 }: DescriptionInputProps): ReactElement {
   const charCount = value.length;
-  const isDisabled = isGenerating || (isDirectMode && !isRefineMode);
+  const isDisabledByMode = isDirectMode && !isRefineMode;
 
   return (
     <div className="space-y-1">
@@ -48,12 +44,10 @@ export function DescriptionInput({
         value={value}
         onChange={(e): void => { onChange(e.target.value); }}
         onKeyDown={onKeyDown}
-        disabled={isDisabled}
+        disabled={isDisabledByMode}
+        autoDisable
         maxLength={MAX_DESCRIPTION_CHARS}
-        className={cn(
-          "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-          isDisabled && "opacity-70"
-        )}
+        className="min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface"
         placeholder={
           isRefineMode
             ? "How should the creative boost change? (e.g., 'more upbeat', 'add ethnic elements', 'darker mood')"

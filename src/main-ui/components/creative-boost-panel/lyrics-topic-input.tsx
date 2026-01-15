@@ -1,10 +1,8 @@
 import { FileText } from "lucide-react";
 
-
 import { Badge } from "@/components/ui/badge";
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 
 import type { ReactElement } from "react";
@@ -13,14 +11,12 @@ const MAX_LYRICS_TOPIC_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHA
 
 type LyricsTopicInputProps = {
   value: string;
-  isGenerating: boolean;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
 };
 
 export function LyricsTopicInput({
   value,
-  isGenerating,
   onChange,
   onKeyDown,
 }: LyricsTopicInputProps): ReactElement {
@@ -41,12 +37,9 @@ export function LyricsTopicInput({
         value={value}
         onChange={(e): void => { onChange(e.target.value); }}
         onKeyDown={onKeyDown}
-        disabled={isGenerating}
+        autoDisable
         maxLength={MAX_LYRICS_TOPIC_CHARS}
-        className={cn(
-          "min-h-16 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-          isGenerating && "opacity-70"
-        )}
+        className="min-h-16 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface"
         placeholder="Theme or subject for lyrics..."
       />
       <p className="ui-helper">

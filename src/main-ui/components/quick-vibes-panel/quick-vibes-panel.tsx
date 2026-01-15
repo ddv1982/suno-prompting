@@ -5,7 +5,6 @@ import { CategorySelector } from "@/components/category-selector";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { FormLabel } from "@/components/ui/form-label";
-import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { canSubmitQuickVibes, canRefineQuickVibes } from "@shared/submit-validation";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
@@ -33,14 +32,33 @@ type QuickVibesPanelProps = {
   onGenerate: () => void; onRefine: (feedback: string) => Promise<boolean>;
 };
 
-export function QuickVibesPanel({
-  input, originalInput, withWordlessVocals, maxMode, isGenerating, hasCurrentPrompt,
-  onInputChange, onWordlessVocalsChange, onMaxModeChange, onGenerate, onRefine,
-}: QuickVibesPanelProps): ReactElement {
-  const isRefineMode = hasCurrentPrompt;
-  const isDirectMode = input.sunoStyles.length > 0;
-  const canSubmit = getCanSubmit(input, originalInput, isRefineMode);
+type QuickVibesPanelHandlers = {
+  refined: boolean;
+  handleCategorySelect: (categoryId: QuickVibesCategory | null) => void;
+  handleSunoStylesChange: (styles: string[]) => void;
+  handleDescriptionChange: (value: string) => void;
+  handleMoodCategoryChange: (category: MoodCategory | null) => void;
+  handleKeyDown: (event: React.KeyboardEvent) => void;
+  handleSubmit: () => void;
+};
 
+type QuickVibesPanelState = {
+  isRefineMode: boolean;
+  isDirectMode: boolean;
+  canSubmit: boolean;
+};
+
+type QuickVibesHandlerArgs = {
+  input: QuickVibesInput;
+  isRefineMode: boolean;
+  isGenerating: boolean;
+  canSubmit: boolean;
+  onInputChange: (input: QuickVibesInput) => void;
+  onGenerate: () => void;
+  onRefine: (feedback: string) => Promise<boolean>;
+};
+
+function useQuickVibesPanelHandlers({ input, isRefineMode, isGenerating, canSubmit, onInputChange, onGenerate, onRefine }: QuickVibesHandlerArgs): QuickVibesPanelHandlers {
   const { refined, handleRefine } = useRefinedFeedback(onRefine);
 
   const handleCategorySelect = useCallback((categoryId: QuickVibesCategory | null): void => {
@@ -62,89 +80,158 @@ export function QuickVibesPanel({
     onInputChange({ ...input, moodCategory: category });
   }, [input, onInputChange]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
-    if (e.key === "Enter" && !e.shiftKey && canSubmit && !isGenerating) {
-      e.preventDefault();
+  const handleKeyDown = useCallback((event: React.KeyboardEvent): void => {
+    if (event.key === "Enter" && !event.shiftKey && canSubmit && !isGenerating) {
+      event.preventDefault();
       if (isRefineMode) void handleRefine(input.customDescription); else onGenerate();
     }
   }, [canSubmit, isGenerating, isRefineMode, input.customDescription, handleRefine, onGenerate]);
 
-  const handleSubmit = useCallback((): void => { if (isRefineMode) void handleRefine(input.customDescription); else onGenerate(); }, [isRefineMode, input.customDescription, handleRefine, onGenerate]);
+  const handleSubmit = useCallback((): void => {
+    if (isRefineMode) void handleRefine(input.customDescription); else onGenerate();
+  }, [isRefineMode, input.customDescription, handleRefine, onGenerate]);
+
+  return {
+    refined,
+    handleCategorySelect,
+    handleSunoStylesChange,
+    handleDescriptionChange,
+    handleMoodCategoryChange,
+    handleKeyDown,
+    handleSubmit,
+  };
+}
+
+type QuickVibesPanelContentProps = {
+  input: QuickVibesInput;
+  state: QuickVibesPanelState;
+  handlers: QuickVibesPanelHandlers;
+  withWordlessVocals: boolean;
+  maxMode: boolean;
+  isGenerating: boolean;
+  onWordlessVocalsChange: (value: boolean) => void;
+  onMaxModeChange: (value: boolean) => void;
+};
+
+function QuickVibesPanelContent({
+  input,
+  state,
+  handlers,
+  withWordlessVocals,
+  maxMode,
+  isGenerating,
+  onWordlessVocalsChange,
+  onMaxModeChange,
+}: QuickVibesPanelContentProps): ReactElement {
+  const { isRefineMode, isDirectMode, canSubmit } = state;
 
   return (
-    <GenerationDisabledProvider isDisabled={isGenerating}>
-      <div className="space-y-[var(--space-5)]">
-        {/* Category Selection */}
-        <div className="space-y-2">
-          <FormLabel 
-            icon={<Sparkles className="w-3 h-3" />} 
-            badge={isDirectMode ? "disabled" : "optional"}
-          >
-            {isRefineMode ? "Refine toward category" : "Category"}
-          </FormLabel>
-          <CategorySelector
-            selectedCategory={input.category}
-            onSelect={handleCategorySelect}
-            disabled={isGenerating || isDirectMode}
-          />
-          {isDirectMode && (
-            <p className="ui-helper">
-              Disabled when Suno V5 Styles are selected
-            </p>
-          )}
-        </div>
-
-        {/* Suno V5 Styles Multi-Select */}
-        <SunoStylesMultiSelect
-          selected={input.sunoStyles}
-          onChange={handleSunoStylesChange}
-          maxSelections={4}
-          disabled={isGenerating || input.category !== null}
-          helperText={
-            input.category !== null
-              ? "Disabled when Category is selected"
-              : isDirectMode
-                ? "Selected styles will be used exactly as-is"
-                : undefined
-          }
-          badgeText={input.category !== null ? "disabled" : "optional"}
+    <div className="space-y-[var(--space-5)]">
+      <div className="space-y-2">
+        <FormLabel
+          icon={<Sparkles className="w-3 h-3" />}
+          badge={isDirectMode ? "disabled" : "optional"}
+        >
+          {isRefineMode ? "Refine toward category" : "Category"}
+        </FormLabel>
+        <CategorySelector
+          selectedCategory={input.category}
+          onSelect={handlers.handleCategorySelect}
+          disabled={isDirectMode}
         />
-
-        {/* Mood Category Selection */}
-        <MoodCategoryCombobox
-          value={input.moodCategory}
-          onChange={handleMoodCategoryChange}
-          disabled={isGenerating}
-          helperText="Injects moods from this category into your prompt"
-        />
-
-        <DescriptionInput
-          value={input.customDescription}
-          category={input.category}
-          isRefineMode={isRefineMode}
-          isDirectMode={isDirectMode}
-          isGenerating={isGenerating}
-          onChange={handleDescriptionChange}
-          onKeyDown={handleKeyDown}
-        />
-
-        <TogglesSection
-          withWordlessVocals={withWordlessVocals}
-          maxMode={maxMode}
-          isDirectMode={isDirectMode}
-          isGenerating={isGenerating}
-          onWordlessVocalsChange={onWordlessVocalsChange}
-          onMaxModeChange={onMaxModeChange}
-        />
-
-        <SubmitButton
-          isGenerating={isGenerating}
-          isRefineMode={isRefineMode}
-          canSubmit={canSubmit}
-          refined={refined}
-          onSubmit={handleSubmit}
-        />
+        {isDirectMode && (
+          <p className="ui-helper">
+            Disabled when Suno V5 Styles are selected
+          </p>
+        )}
       </div>
-    </GenerationDisabledProvider>
+
+      <SunoStylesMultiSelect
+        selected={input.sunoStyles}
+        onChange={handlers.handleSunoStylesChange}
+        maxSelections={4}
+        disabled={input.category !== null}
+        helperText={
+          input.category !== null
+            ? "Disabled when Category is selected"
+            : isDirectMode
+              ? "Selected styles will be used exactly as-is"
+              : undefined
+        }
+        badgeText={input.category !== null ? "disabled" : "optional"}
+      />
+
+      <MoodCategoryCombobox
+        value={input.moodCategory}
+        onChange={handlers.handleMoodCategoryChange}
+        helperText="Injects moods from this category into your prompt"
+      />
+
+      <DescriptionInput
+        value={input.customDescription}
+        category={input.category}
+        isRefineMode={isRefineMode}
+        isDirectMode={isDirectMode}
+        onChange={handlers.handleDescriptionChange}
+        onKeyDown={handlers.handleKeyDown}
+      />
+
+      <TogglesSection
+        withWordlessVocals={withWordlessVocals}
+        maxMode={maxMode}
+        isDirectMode={isDirectMode}
+        onWordlessVocalsChange={onWordlessVocalsChange}
+        onMaxModeChange={onMaxModeChange}
+      />
+
+      <SubmitButton
+        isGenerating={isGenerating}
+        isRefineMode={isRefineMode}
+        canSubmit={canSubmit}
+        refined={handlers.refined}
+        onSubmit={handlers.handleSubmit}
+      />
+    </div>
+  );
+}
+
+export function QuickVibesPanel({
+  input,
+  originalInput,
+  withWordlessVocals,
+  maxMode,
+  isGenerating,
+  hasCurrentPrompt,
+  onInputChange,
+  onWordlessVocalsChange,
+  onMaxModeChange,
+  onGenerate,
+  onRefine,
+}: QuickVibesPanelProps): ReactElement {
+  const isRefineMode = hasCurrentPrompt;
+  const isDirectMode = input.sunoStyles.length > 0;
+  const canSubmit = getCanSubmit(input, originalInput, isRefineMode);
+
+  const handlers = useQuickVibesPanelHandlers({
+    input,
+    isRefineMode,
+    isGenerating,
+    canSubmit,
+    onInputChange,
+    onGenerate,
+    onRefine,
+  });
+
+  return (
+    <QuickVibesPanelContent
+      input={input}
+      state={{ isRefineMode, isDirectMode, canSubmit }}
+      handlers={handlers}
+      withWordlessVocals={withWordlessVocals}
+      maxMode={maxMode}
+      isGenerating={isGenerating}
+      onWordlessVocalsChange={onWordlessVocalsChange}
+      onMaxModeChange={onMaxModeChange}
+    />
   );
 }

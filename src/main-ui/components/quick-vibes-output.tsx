@@ -14,8 +14,8 @@ import { stripMaxModeHeader } from "@shared/prompt-utils";
 import type { ReactElement } from "react";
 
 /** Reusable copy button with copied state feedback */
-function CopyButton({ label, copiedLabel, onClick, disabled }: {
-  label: string; copiedLabel: string; onClick: () => void; disabled?: boolean;
+function CopyButton({ label, copiedLabel, onClick }: {
+  label: string; copiedLabel: string; onClick: () => void;
 }): ReactElement {
   const [copied, setCopied] = useState(false);
   const handleClick = (): void => {
@@ -24,7 +24,7 @@ function CopyButton({ label, copiedLabel, onClick, disabled }: {
     setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   };
   return (
-    <Button variant="outline" size="sm" onClick={handleClick} disabled={disabled}
+    <Button variant="outline" size="sm" onClick={handleClick}
       className={cn("font-bold", copied && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400")}>
       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
       {copied ? copiedLabel : label}
@@ -33,11 +33,11 @@ function CopyButton({ label, copiedLabel, onClick, disabled }: {
 }
 
 type QuickVibesOutputProps = {
-  prompt: string; title?: string; lyrics?: string; isGenerating: boolean; hasDebugInfo: boolean;
+  prompt: string; title?: string; lyrics?: string; isRemixing: boolean; hasDebugInfo: boolean;
   onRemix: () => void; onCopy: () => void; onDebugOpen: () => void; onRemixLyrics?: () => void;
 };
 
-export function QuickVibesOutput({ prompt, title, lyrics, isGenerating, hasDebugInfo, onRemix, onCopy, onDebugOpen, onRemixLyrics }: QuickVibesOutputProps): ReactElement {
+export function QuickVibesOutput({ prompt, title, lyrics, isRemixing, hasDebugInfo, onRemix, onCopy, onDebugOpen, onRemixLyrics }: QuickVibesOutputProps): ReactElement {
   const contentOnly = stripMaxModeHeader(prompt);
   const charCount = contentOnly.length;
   const isOverLimit = charCount > APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
@@ -61,12 +61,11 @@ export function QuickVibesOutput({ prompt, title, lyrics, isGenerating, hasDebug
                 <Bug className="w-3.5 h-3.5" />DEBUG
               </Button>
             )}
-            {title && <CopyButton label="COPY TITLE" copiedLabel="COPIED TITLE" onClick={() => navigator.clipboard.writeText(title)} disabled={isGenerating} />}
-            <Button variant="outline" size="sm" onClick={onRemix} disabled={isGenerating} className="font-bold">
-              <RefreshCw className={cn("w-3.5 h-3.5", isGenerating && "animate-spin")} />
-              {isGenerating ? "REMIXING" : "REMIX"}
+            <Button variant="outline" size="sm" onClick={onRemix} autoDisable className="font-bold">
+              <RefreshCw className={cn("w-3.5 h-3.5", isRemixing && "animate-spin")} />
+              {isRemixing ? "REMIXING" : "REMIX"}
             </Button>
-            <CopyButton label="COPY PROMPT" copiedLabel="COPIED PROMPT" onClick={onCopy} />
+            <CopyButton label="COPY" copiedLabel="COPIED" onClick={onCopy} />
           </div>
         </Card>
       </div>
@@ -77,7 +76,6 @@ export function QuickVibesOutput({ prompt, title, lyrics, isGenerating, hasDebug
           content={lyrics}
           onCopy={() => navigator.clipboard.writeText(lyrics)}
           onRemix={onRemixLyrics}
-          isGenerating={isGenerating}
           scrollable
         />
       )}

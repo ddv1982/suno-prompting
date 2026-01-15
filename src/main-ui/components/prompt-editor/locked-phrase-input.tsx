@@ -1,6 +1,5 @@
 import { AlertCircle, Lock } from "lucide-react";
 
-
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -12,7 +11,6 @@ import type { ReactElement } from "react";
 type LockedPhraseInputProps = {
   value: string;
   editorMode: EditorMode;
-  isGenerating: boolean;
   validation: { isValid: boolean; error: string | null };
   onChange: (value: string) => void;
 };
@@ -20,7 +18,6 @@ type LockedPhraseInputProps = {
 export function LockedPhraseInput({
   value,
   editorMode,
-  isGenerating,
   validation,
   onChange,
 }: LockedPhraseInputProps): ReactElement {
@@ -38,11 +35,10 @@ export function LockedPhraseInput({
       <Textarea
         value={value}
         onChange={(e): void => { onChange(e.target.value); }}
-        disabled={isGenerating}
+        autoDisable
         className={cn(
           "min-h-12 max-h-24 resize-none text-[length:var(--text-footnote)] p-3 rounded-lg bg-surface",
-          !validation.isValid && "border-destructive focus-visible:ring-destructive/20",
-          isGenerating && "opacity-70"
+          !validation.isValid && "border-destructive focus-visible:ring-destructive/20"
         )}
         placeholder={editorMode === 'advanced' 
           ? "Additional text to lock (combined with music phrase above)"

@@ -1,8 +1,24 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+
+import type { ReactElement, ReactNode } from 'react';
 
 /**
  * Context value for generation disabled state.
  * Provides a centralized boolean indicating whether controls should be disabled.
+ * 
+ * ## autoDisable Convention
+ * 
+ * Components that support the `autoDisable` prop follow this convention:
+ * 
+ * - **UI primitives** (Input, Textarea, Button, Switch, Slider, Combobox, ToggleRow):
+ *   `autoDisable` defaults to `false` (opt-in). These are generic building blocks
+ *   that shouldn't assume context usage.
+ * 
+ * - **Domain form components** (MoodCategoryCombobox, GenreMultiSelect, SunoStylesMultiSelect):
+ *   `autoDisable` defaults to `true`. These are purpose-built for generation panels
+ *   and should auto-disable when generation is in progress.
+ * 
+ * The `useAutoDisable` hook centralizes this logic. See `@/hooks/use-auto-disable.ts`.
  */
 interface GenerationDisabledContextValue {
   /** Whether controls should be disabled (generation in progress) */
@@ -76,7 +92,7 @@ interface GenerationDisabledProviderProps {
 export function GenerationDisabledProvider({
   isDisabled,
   children,
-}: GenerationDisabledProviderProps): ReactNode {
+}: GenerationDisabledProviderProps): ReactElement {
   const value = useMemo(() => ({ isDisabled }), [isDisabled]);
 
   return (

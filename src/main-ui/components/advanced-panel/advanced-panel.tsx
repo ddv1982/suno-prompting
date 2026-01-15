@@ -30,8 +30,6 @@ type AdvancedPanelProps = {
   moodCategory?: MoodCategory | null;
   /** Callback when mood category changes */
   onMoodCategoryChange: (category: MoodCategory | null) => void;
-  /** Whether generation is in progress (disables mood selector) */
-  isGenerating: boolean;
 };
 
 // All options for Combobox (sorted alphabetically by label)
@@ -62,7 +60,6 @@ export function AdvancedPanel({
   computedPhrase,
   moodCategory,
   onMoodCategoryChange,
-  isGenerating,
 }: AdvancedPanelProps): ReactElement {
   const hasAnySelection = hasAdvancedSelection(selection);
   const isDirectMode = selection.sunoStyles.length > 0;
@@ -90,7 +87,7 @@ export function AdvancedPanel({
             variant="ghost"
             size="xs"
             onClick={onClear}
-            disabled={isGenerating}
+            autoDisable
             className="text-muted-foreground hover:text-destructive"
           >
             <X className="w-3 h-3" />
@@ -112,7 +109,6 @@ export function AdvancedPanel({
       <MoodCategoryCombobox
         value={moodCategory ?? null}
         onChange={onMoodCategoryChange}
-        disabled={isGenerating}
         helperText="Influences the emotional tone of enrichment"
         badgeText="optional"
       />
@@ -122,7 +118,7 @@ export function AdvancedPanel({
         selected={selection.seedGenres}
         onChange={(genres) => { onUpdate({ seedGenres: genres }); }}
         maxSelections={4}
-        disabled={isGenerating || genresDisabled}
+        disabled={genresDisabled}
         helperText={genresHelperText}
         badgeText={genresBadgeText}
       />
@@ -132,7 +128,7 @@ export function AdvancedPanel({
         selected={selection.sunoStyles}
         onChange={(styles) => { onUpdate({ sunoStyles: styles }); }}
         maxSelections={4}
-        disabled={isGenerating || stylesDisabled}
+        disabled={stylesDisabled}
         helperText={stylesHelperText}
         badgeText={stylesBadgeText}
       />
@@ -145,7 +141,6 @@ export function AdvancedPanel({
         polyrhythmOptions={POLYRHYTHM_OPTIONS}
         timeSignatureOptions={TIME_SIGNATURE_OPTIONS}
         timeJourneyOptions={TIME_JOURNEY_OPTIONS}
-        isGenerating={isGenerating}
       />
 
       <PhrasePreview phrase={computedPhrase} />

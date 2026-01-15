@@ -8,10 +8,9 @@ import type { ReactElement } from "react";
 type ModeSelectorProps = {
   promptMode: PromptMode;
   onPromptModeChange: (mode: PromptMode) => void;
-  disabled?: boolean;
 };
 
-export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeSelectorProps): ReactElement {
+export function ModeSelector({ promptMode, onPromptModeChange }: ModeSelectorProps): ReactElement {
   const helperText = {
     full: 'Full-featured prompt generation with sections, instruments, and advanced options',
     quickVibes: 'Short, evocative prompts (≤400 chars) for ambient, lo-fi, and background music',
@@ -25,7 +24,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
           variant={promptMode === 'full' ? 'default' : 'outline'}
           size="xs"
           onClick={() => { onPromptModeChange('full'); }}
-          disabled={disabled}
+          autoDisable
           className="font-semibold"
         >
           <FileText className="w-3 h-3" />
@@ -35,7 +34,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
           variant={promptMode === 'quickVibes' ? 'default' : 'outline'}
           size="xs"
           onClick={() => { onPromptModeChange('quickVibes'); }}
-          disabled={disabled}
+          autoDisable
           className="font-semibold"
         >
           <Zap className="w-3 h-3" />
@@ -45,7 +44,7 @@ export function ModeSelector({ promptMode, onPromptModeChange, disabled }: ModeS
           variant={promptMode === 'creativeBoost' ? 'default' : 'outline'}
           size="xs"
           onClick={() => { onPromptModeChange('creativeBoost'); }}
-          disabled={disabled}
+          autoDisable
           className="font-semibold"
         >
           <Dice3 className="w-3 h-3" />

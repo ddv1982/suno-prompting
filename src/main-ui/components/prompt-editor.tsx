@@ -11,6 +11,8 @@ import { type PromptEditorProps } from "@/components/prompt-editor/types";
 import { ValidationMessages } from "@/components/prompt-editor/validation-messages";
 import { QuickVibesPanel } from "@/components/quick-vibes-panel";
 import { Separator } from "@/components/ui/separator";
+import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
+import { useSettingsContext } from "@/context/settings-context";
 import { APP_CONSTANTS } from "@shared/constants";
 import { hasAdvancedSelection } from "@shared/music-phrase";
 import { validateLockedPhrase } from "@shared/validation";
@@ -22,7 +24,8 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
   const { isGenerating, generatingAction, validation, debugTrace, chatMessages } = generation;
   const { maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode } = modes;
-  const { maxChars, currentModel, useLocalLLM } = config;
+  const { maxChars, currentModel } = config;
+  const { isLLMAvailable } = useSettingsContext();
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -45,11 +48,12 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
   };
 
   return (
+    <GenerationDisabledProvider isDisabled={isGenerating || !isLLMAvailable}>
     <section className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
       <div className="flex-1 flex flex-col p-6 pb-[var(--space-8)] gap-6 max-w-6xl mx-auto w-full overflow-auto">
         <OutputPanel
           promptMode={promptMode} currentPrompt={currentPrompt} currentTitle={currentTitle} currentLyrics={currentLyrics}
-          isGenerating={isGenerating} generatingAction={generatingAction} maxMode={maxMode} copied={copied}
+          generatingAction={generatingAction} maxMode={maxMode} copied={copied}
           promptOverLimit={promptOverLimit} charCount={charCount} maxChars={maxChars} debugTrace={debugTrace}
           onRemixQuickVibes={remix.onRemixQuickVibes} onRemixTitle={remix.onRemixTitle} onRemixLyrics={remix.onRemixLyrics}
           onRemixGenre={remix.onRemixGenre} onRemixMood={remix.onRemixMood} onRemixInstruments={remix.onRemixInstruments}
@@ -74,7 +78,6 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
           <ModeSelector
             promptMode={promptMode}
             onPromptModeChange={handlers.onPromptModeChange}
-            disabled={isGenerating}
           />
 
           {promptMode === 'quickVibes' ? (
@@ -103,9 +106,10 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
               onGenerate={handlers.onGenerate} onConversionComplete={handlers.onConversionComplete} />
           )}
 
-          <EditorStatusFooter isGenerating={isGenerating} currentModel={currentModel} useLocalLLM={useLocalLLM} />
+          <EditorStatusFooter isGenerating={isGenerating} currentModel={currentModel} />
         </div>
       </div>
     </section>
+    </GenerationDisabledProvider>
   );
 }

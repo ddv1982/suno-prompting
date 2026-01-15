@@ -13,8 +13,10 @@ type CategorySelectorProps = {
 export function CategorySelector({
   selectedCategory,
   onSelect,
-  disabled = false,
+  disabled,
 }: CategorySelectorProps): ReactElement {
+  // Buttons use both disabled (for mode-specific logic like isDirectMode)
+  // and autoDisable (for generation/LLM availability via context)
   return (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -22,6 +24,7 @@ export function CategorySelector({
         size="xs"
         onClick={() => { onSelect(null); }}
         disabled={disabled}
+        autoDisable
         className="font-medium"
       >
         None
@@ -33,6 +36,7 @@ export function CategorySelector({
           size="xs"
           onClick={() => { onSelect(cat.id); }}
           disabled={disabled}
+          autoDisable
           className="font-medium"
           title={cat.description}
         >

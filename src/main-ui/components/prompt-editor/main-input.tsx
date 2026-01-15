@@ -4,9 +4,9 @@ import { useCallback, type ReactElement } from "react";
 import { FormLabel } from "@/components/ui/form-label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { useGenerationDisabled } from "@/context/generation-disabled-context";
 import { createLogger } from "@/lib/logger";
 import { isMaxFormat } from "@/lib/max-format";
-import { cn } from "@/lib/utils";
 import { rpcClient, type RpcError } from "@/services/rpc-client";
 
 import type { TraceRun } from "@shared/types";
@@ -18,17 +18,32 @@ function formatRpcError(error: RpcError): string {
 }
 
 type MainInputProps = {
-  value: string; currentPrompt: string; lyricsMode: boolean; maxMode: boolean;
-  isGenerating: boolean; maxChars: number; inputOverLimit: boolean;
-  hasAdvancedSelection: boolean; onChange: (value: string) => void; onSubmit: () => void;
+  value: string;
+  currentPrompt: string;
+  lyricsMode: boolean;
+  maxMode: boolean;
+  maxChars: number;
+  inputOverLimit: boolean;
+  hasAdvancedSelection: boolean;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
 };
 
 export function MainInput({
-  value, currentPrompt, lyricsMode, maxMode, isGenerating, maxChars, inputOverLimit,
-  hasAdvancedSelection, onChange, onSubmit, onConversionComplete,
+  value,
+  currentPrompt,
+  lyricsMode,
+  maxMode,
+  maxChars,
+  inputOverLimit,
+  hasAdvancedSelection,
+  onChange,
+  onSubmit,
+  onConversionComplete,
 }: MainInputProps): ReactElement {
   const { showToast } = useToast();
+  const isGenerating = useGenerationDisabled();
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -102,11 +117,8 @@ export function MainInput({
         onChange={(e): void => { onChange(e.target.value); }}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
-        disabled={isGenerating}
-        className={cn(
-          "min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface",
-          isGenerating && "opacity-70"
-        )}
+        autoDisable
+        className="min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface"
         placeholder={getPlaceholder()}
       />
       {inputOverLimit && (

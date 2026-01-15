@@ -13,8 +13,6 @@ type AdvancedOptionsGridProps = {
   polyrhythmOptions: Option[];
   timeSignatureOptions: Option[];
   timeJourneyOptions: Option[];
-  /** Whether generation is in progress (disables all options) */
-  isGenerating?: boolean;
 };
 
 export function AdvancedOptionsGrid({
@@ -25,7 +23,6 @@ export function AdvancedOptionsGrid({
   polyrhythmOptions,
   timeSignatureOptions,
   timeJourneyOptions,
-  isGenerating = false,
 }: AdvancedOptionsGridProps): ReactElement {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)]">
@@ -34,7 +31,6 @@ export function AdvancedOptionsGrid({
         options={harmonicOptions}
         value={selection.harmonicStyle}
         onValueChange={(val) => { onUpdate({ harmonicStyle: val }); }}
-        disabled={isGenerating}
         disabledByMutualExclusion={!!selection.harmonicCombination}
         placeholder="Select mode..."
         searchPlaceholder="Search modes..."
@@ -46,7 +42,6 @@ export function AdvancedOptionsGrid({
         options={harmonicCombinationOptions}
         value={selection.harmonicCombination}
         onValueChange={(val) => { onUpdate({ harmonicCombination: val }); }}
-        disabled={isGenerating}
         disabledByMutualExclusion={!!selection.harmonicStyle}
         placeholder="Select combination..."
         searchPlaceholder="Search combinations..."
@@ -58,7 +53,6 @@ export function AdvancedOptionsGrid({
         options={polyrhythmOptions}
         value={selection.polyrhythmCombination}
         onValueChange={(val) => { onUpdate({ polyrhythmCombination: val }); }}
-        disabled={isGenerating}
         placeholder="Select polyrhythm..."
         searchPlaceholder="Search polyrhythms..."
         emptyText="No polyrhythm found."
@@ -69,7 +63,6 @@ export function AdvancedOptionsGrid({
         options={timeSignatureOptions}
         value={selection.timeSignature}
         onValueChange={(val) => { onUpdate({ timeSignature: val }); }}
-        disabled={isGenerating}
         disabledByMutualExclusion={!!selection.timeSignatureJourney}
         placeholder="Select time signature..."
         searchPlaceholder="Search signatures..."
@@ -81,7 +74,6 @@ export function AdvancedOptionsGrid({
         options={timeJourneyOptions}
         value={selection.timeSignatureJourney}
         onValueChange={(val) => { onUpdate({ timeSignatureJourney: val }); }}
-        disabled={isGenerating}
         disabledByMutualExclusion={!!selection.timeSignature}
         placeholder="Select journey..."
         searchPlaceholder="Search journeys..."

@@ -15,7 +15,6 @@ type OutputPanelProps = {
   currentPrompt: string;
   currentTitle?: string;
   currentLyrics?: string;
-  isGenerating: boolean;
   generatingAction: GeneratingAction;
   maxMode: boolean;
   copied: boolean;
@@ -41,7 +40,6 @@ export function OutputPanel({
   currentPrompt,
   currentTitle,
   currentLyrics,
-  isGenerating,
   generatingAction,
   maxMode,
   copied,
@@ -66,7 +64,7 @@ export function OutputPanel({
   if (promptMode === 'quickVibes') {
     return (
       <div className="space-y-[var(--space-5)]">
-        <QuickVibesOutput prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics} isGenerating={isGenerating} hasDebugInfo={!!debugTrace} onRemix={onRemixQuickVibes} onCopy={onCopy} onDebugOpen={onDebugOpen} onRemixLyrics={onRemixLyrics} />
+        <QuickVibesOutput prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics} isRemixing={generatingAction === 'remix'} hasDebugInfo={!!debugTrace} onRemix={onRemixQuickVibes} onCopy={onCopy} onDebugOpen={onDebugOpen} onRemixLyrics={onRemixLyrics} />
       </div>
     );
   }
@@ -79,7 +77,6 @@ export function OutputPanel({
           content={currentTitle}
           onCopy={() => navigator.clipboard.writeText(currentTitle)}
           onRemix={onRemixTitle}
-          isGenerating={isGenerating}
           isRemixing={generatingAction === 'remixTitle'}
         />
       )}
@@ -99,7 +96,6 @@ export function OutputPanel({
             <PromptOutput text={currentPrompt} />
           </CardContent>
           <RemixButtonGroup
-            isGenerating={isGenerating}
             generatingAction={generatingAction}
             maxMode={maxMode}
             copied={copied}
@@ -123,7 +119,6 @@ export function OutputPanel({
           content={currentLyrics}
           onCopy={() => navigator.clipboard.writeText(currentLyrics)}
           onRemix={onRemixLyrics}
-          isGenerating={isGenerating}
           isRemixing={generatingAction === 'remixLyrics'}
           scrollable
         />

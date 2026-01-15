@@ -15,7 +15,6 @@ type OutputSectionProps = {
   content: string;
   onCopy: () => void;
   onRemix?: () => void;
-  isGenerating?: boolean;
   isRemixing?: boolean;
   scrollable?: boolean;
 };
@@ -25,7 +24,6 @@ export function OutputSection({
   content,
   onCopy,
   onRemix,
-  isGenerating = false,
   isRemixing = false,
   scrollable = false,
 }: OutputSectionProps): ReactElement {
@@ -56,7 +54,7 @@ export function OutputSection({
               variant="outline"
               size="sm"
               onClick={onRemix}
-              disabled={isGenerating}
+              autoDisable
               className="font-bold"
             >
               <Shuffle className={cn("w-3.5 h-3.5", isRemixing && "animate-spin")} />

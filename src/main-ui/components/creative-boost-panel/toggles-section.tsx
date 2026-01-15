@@ -1,6 +1,5 @@
 import { FileText, Mic, Zap } from "lucide-react";
 
-
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { getMaxModeHelperText } from "@shared/constants";
 
@@ -11,7 +10,6 @@ type TogglesSectionProps = {
   maxMode: boolean;
   lyricsMode: boolean;
   isDirectMode: boolean;
-  isGenerating: boolean;
   onWordlessVocalsChange: (checked: boolean) => void;
   onMaxModeChange: (checked: boolean) => void;
   onLyricsModeChange: (checked: boolean) => void;
@@ -22,7 +20,6 @@ export function TogglesSection({
   maxMode,
   lyricsMode,
   isDirectMode,
-  isGenerating,
   onWordlessVocalsChange,
   onMaxModeChange,
   onLyricsModeChange,
@@ -36,7 +33,8 @@ export function TogglesSection({
         helperText="(humming, oohs)"
         checked={withWordlessVocals}
         onChange={onWordlessVocalsChange}
-        disabled={isGenerating || lyricsMode}
+        disabled={lyricsMode}
+        autoDisable
       />
       <ToggleRow
         id="cb-max-mode"
@@ -44,7 +42,7 @@ export function TogglesSection({
         label="Max Mode"
         checked={maxMode}
         onChange={onMaxModeChange}
-        disabled={isGenerating}
+        autoDisable
       />
       <p className="ui-helper pl-6">{getMaxModeHelperText(maxMode)}</p>
       <ToggleRow
@@ -53,7 +51,8 @@ export function TogglesSection({
         label="Lyrics"
         checked={lyricsMode}
         onChange={onLyricsModeChange}
-        disabled={isGenerating || withWordlessVocals}
+        disabled={withWordlessVocals}
+        autoDisable
       />
       <p className="ui-helper pl-6">
         {lyricsMode

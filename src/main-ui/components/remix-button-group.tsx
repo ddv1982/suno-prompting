@@ -5,25 +5,25 @@ import { type GeneratingAction } from "@/context/app-context";
 import { cn } from "@/lib/utils";
 
 type RemixButtonGroupProps = {
-  isGenerating: boolean; generatingAction: GeneratingAction; maxMode: boolean;
+  generatingAction: GeneratingAction; maxMode: boolean;
   copied: boolean; promptOverLimit: boolean; hasDebugInfo: boolean;
   onDebugOpen: () => void; onRemixGenre: () => void; onRemixMood: () => void;
   onRemixInstruments: () => void; onRemixStyleTags: () => void; onRemixRecording: () => void;
   onRemix: () => void; onCopy: () => void;
 };
 
-function ShuffleBtn({ label, action, current, disabled, onClick }: {
-  label: string; action: GeneratingAction; current: GeneratingAction; disabled: boolean; onClick: () => void;
+function ShuffleBtn({ label, action, current, onClick }: {
+  label: string; action: GeneratingAction; current: GeneratingAction; onClick: () => void;
 }): React.ReactElement {
   return (
-    <Button variant="outline" size="sm" onClick={onClick} disabled={disabled} className="font-bold">
+    <Button variant="outline" size="sm" onClick={onClick} autoDisable className="font-bold">
       <Shuffle className={cn("w-3.5 h-3.5", current === action && "animate-spin")} />{label}
     </Button>
   );
 }
 
 export function RemixButtonGroup({
-  isGenerating, generatingAction, maxMode, copied, promptOverLimit, hasDebugInfo,
+  generatingAction, maxMode, copied, promptOverLimit, hasDebugInfo,
   onDebugOpen, onRemixGenre, onRemixMood, onRemixInstruments, onRemixStyleTags, onRemixRecording, onRemix, onCopy,
 }: RemixButtonGroupProps): React.ReactElement {
   return (
@@ -33,12 +33,12 @@ export function RemixButtonGroup({
           <Bug className="w-3.5 h-3.5" />DEBUG
         </Button>
       )}
-      <ShuffleBtn label="GENRE" action="remixGenre" current={generatingAction} disabled={isGenerating} onClick={onRemixGenre} />
-      {!maxMode && <ShuffleBtn label="MOOD" action="remixMood" current={generatingAction} disabled={isGenerating} onClick={onRemixMood} />}
-      <ShuffleBtn label="INSTRUMENTS" action="remixInstruments" current={generatingAction} disabled={isGenerating} onClick={onRemixInstruments} />
-      {maxMode && <ShuffleBtn label="STYLE" action="remixStyleTags" current={generatingAction} disabled={isGenerating} onClick={onRemixStyleTags} />}
-      {maxMode && <ShuffleBtn label="RECORDING" action="remixRecording" current={generatingAction} disabled={isGenerating} onClick={onRemixRecording} />}
-      <Button variant="outline" size="sm" onClick={onRemix} disabled={isGenerating} className="font-bold">
+      <ShuffleBtn label="GENRE" action="remixGenre" current={generatingAction} onClick={onRemixGenre} />
+      {!maxMode && <ShuffleBtn label="MOOD" action="remixMood" current={generatingAction} onClick={onRemixMood} />}
+      <ShuffleBtn label="INSTRUMENTS" action="remixInstruments" current={generatingAction} onClick={onRemixInstruments} />
+      {maxMode && <ShuffleBtn label="STYLE" action="remixStyleTags" current={generatingAction} onClick={onRemixStyleTags} />}
+      {maxMode && <ShuffleBtn label="RECORDING" action="remixRecording" current={generatingAction} onClick={onRemixRecording} />}
+      <Button variant="outline" size="sm" onClick={onRemix} autoDisable className="font-bold">
         <RefreshCw className={cn("w-3.5 h-3.5", generatingAction === 'remix' && "animate-spin")} />
         {generatingAction === 'remix' ? "REMIXING" : "REMIX"}
       </Button>

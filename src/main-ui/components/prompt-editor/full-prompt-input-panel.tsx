@@ -2,7 +2,6 @@ import { useCallback, type ReactElement } from "react";
 
 import { AdvancedPanel } from "@/components/advanced-panel";
 import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
-import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
 import { useOriginalSelection } from "@/hooks/use-original-selection";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { useRefinementType } from "@/hooks/use-refinement-type";
@@ -51,7 +50,7 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
   }, [canSubmit, handleSend]);
 
   return (
-    <GenerationDisabledProvider isDisabled={isGenerating}>
+    <>
       <ModeToggle
         editorMode={editorMode}
         maxMode={maxMode}
@@ -69,14 +68,12 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
           computedPhrase={computedMusicPhrase}
           moodCategory={moodCategory}
           onMoodCategoryChange={onMoodCategoryChange}
-          isGenerating={isGenerating}
         />
       )}
 
       <LockedPhraseInput
         value={lockedPhrase}
         editorMode={editorMode}
-        isGenerating={isGenerating}
         validation={lockedPhraseValidation}
         onChange={onLockedPhraseChange}
       />
@@ -85,7 +82,6 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
         <MoodCategoryCombobox
           value={moodCategory}
           onChange={onMoodCategoryChange}
-          disabled={isGenerating}
           helperText="Influences the emotional tone of your prompt"
         />
       )}
@@ -95,7 +91,6 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
         currentPrompt={currentPrompt}
         lyricsMode={lyricsMode}
         maxMode={maxMode}
-        isGenerating={isGenerating}
         maxChars={maxChars}
         inputOverLimit={inputOverLimit}
         hasAdvancedSelection={hasAdvancedSelection}
@@ -107,7 +102,6 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
       {lyricsMode && (
         <SongTopicInput
           value={lyricsTopic}
-          isGenerating={isGenerating}
           hasCurrentPrompt={!!currentPrompt}
           isOverLimit={lyricsTopicOverLimit}
           onChange={onLyricsTopicChange}
@@ -122,6 +116,6 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
         refined={refined}
         onSubmit={handleSend}
       />
-    </GenerationDisabledProvider>
+    </>
   );
 }

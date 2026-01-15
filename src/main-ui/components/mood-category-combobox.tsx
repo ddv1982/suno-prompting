@@ -11,6 +11,12 @@ interface MoodCategoryComboboxProps {
   value: MoodCategory | null;
   onChange: (value: MoodCategory | null) => void;
   disabled?: boolean;
+  /**
+   * When true, the combobox will automatically be disabled when inside a
+   * GenerationDisabledProvider with isDisabled=true.
+   * @default true
+   */
+  autoDisable?: boolean;
   label?: string;
   helperText?: string;
   badgeText?: string;
@@ -33,7 +39,8 @@ interface MoodCategoryComboboxProps {
 export function MoodCategoryCombobox({
   value,
   onChange,
-  disabled = false,
+  disabled,
+  autoDisable = true,
   label = "Mood",
   helperText,
   badgeText = "optional",
@@ -58,6 +65,7 @@ export function MoodCategoryCombobox({
         searchPlaceholder="Search moods..."
         emptyText="No mood found."
         disabled={disabled}
+        autoDisable={autoDisable}
         aria-label="Select mood category"
       />
       {helperText && <p className="ui-helper">{helperText}</p>}

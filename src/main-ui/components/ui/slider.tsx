@@ -1,3 +1,4 @@
+import { useAutoDisable } from "@/hooks/use-auto-disable";
 import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
@@ -9,8 +10,16 @@ interface SliderProps {
   max?: number;
   step?: number;
   disabled?: boolean;
+  /**
+   * When true, the slider will automatically be disabled when inside a
+   * GenerationDisabledProvider with isDisabled=true.
+   * Explicit `disabled` prop takes precedence over context.
+   * @default false
+   */
+  autoDisable?: boolean;
   className?: string;
   "aria-label"?: string;
+  "aria-describedby"?: string;
   showTicks?: boolean;
 }
 
@@ -20,11 +29,14 @@ export function Slider({
   min = 0,
   max = 100,
   step = 1,
-  disabled = false,
+  disabled,
+  autoDisable = false,
   className,
   "aria-label": ariaLabel,
+  "aria-describedby": ariaDescribedBy,
   showTicks = false,
 }: SliderProps): ReactElement {
+  const isDisabled = useAutoDisable(disabled, autoDisable);
   const currentValue = value[0] ?? min;
   const percentage = ((currentValue - min) / (max - min)) * 100;
 
@@ -66,8 +78,9 @@ export function Slider({
         step={step}
         value={currentValue}
         onChange={handleChange}
-        disabled={disabled}
+        disabled={isDisabled}
         aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
         className={cn(
           "absolute w-full h-6 cursor-pointer appearance-none bg-transparent",
           "disabled:cursor-not-allowed disabled:opacity-50",
