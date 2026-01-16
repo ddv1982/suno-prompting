@@ -455,39 +455,8 @@ instruments: "piano, bass"`;
   });
 
   describe('lyrics-only refinement (refinementType: "lyrics")', () => {
-    test('throws ValidationError without existing lyrics', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
-      
-      const mockConfig = createMockConfig({
-        isLyricsMode: () => true,
-      });
-
-      // Act & Assert
-      await expect(
-        refinePrompt(
-          {
-            currentPrompt: 'genre: "jazz"',
-            currentTitle: 'Test',
-            feedback: 'make it more emotional',
-            refinementType: 'lyrics',
-            // No currentLyrics provided
-          },
-          mockConfig as any
-        )
-      ).rejects.toThrow(ValidationError);
-
-      await expect(
-        refinePrompt(
-          {
-            currentPrompt: 'genre: "jazz"',
-            currentTitle: 'Test',
-            feedback: 'make it more emotional',
-            refinementType: 'lyrics',
-          },
-          mockConfig as any
-        )
-      ).rejects.toThrow('Cannot refine lyrics without existing lyrics');
-    });
+    // Note: Bootstrap behavior when no lyrics exist is tested in ai-refinement.test.ts
+    // which has proper top-level module mocking for LLM calls.
 
     test('throws ValidationError without feedback text', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');

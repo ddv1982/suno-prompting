@@ -160,15 +160,14 @@ async function refineStyleOnly(
 /**
  * Lyrics-only refinement (LLM call for lyrics, prompt unchanged).
  *
- * Refines only the lyrics using LLM, leaving the prompt text unchanged.
+ * Handles both refinement of existing lyrics and bootstrap of new lyrics.
  * Used when feedback text is provided but no style fields have changed.
  *
  * @param options - Refinement options
  * @param config - Configuration with dependencies
  * @param runtime - Optional trace runtime for debugging
- * @returns GenerationResult with unchanged prompt, updated lyrics
+ * @returns GenerationResult with unchanged prompt, updated/new lyrics
  *
- * @throws {ValidationError} When currentLyrics is missing (cannot refine non-existent lyrics)
  * @throws {ValidationError} When feedback is empty or missing
  * @throws {OllamaUnavailableError} When offline mode but Ollama is not running
  * @throws {OllamaModelMissingError} When offline mode but Gemma model is missing
@@ -180,27 +179,64 @@ async function refineLyricsOnly(
 ): Promise<GenerationResult> {
   const { currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic } = options;
 
-  // Validate: cannot refine lyrics that don't exist
-  if (!currentLyrics) {
-    throw new ValidationError('Cannot refine lyrics without existing lyrics', 'currentLyrics');
-  }
-
-  // Validate: feedback is required for lyrics refinement
+  // Validate: feedback is required for lyrics operations
   if (!feedback?.trim()) {
     throw new ValidationError('Feedback is required for lyrics refinement', 'feedback');
   }
 
+  // Determine whether to refine existing or bootstrap new lyrics
+  const lyricsAction = getLyricsAction(config.isLyricsMode(), currentLyrics);
+
   log.info('refineLyricsOnly:start', {
+    lyricsAction,
     hasLyricsTopic: !!lyricsTopic,
     feedbackLength: feedback.length,
-    currentLyricsLength: currentLyrics.length,
+    currentLyricsLength: currentLyrics?.length ?? 0,
   });
 
   // Determine offline mode and endpoint
   const isOffline = config.isUseLocalLLM();
   const ollamaEndpoint = isOffline ? config.getOllamaEndpoint() : undefined;
 
-  // Call LLM to refine lyrics
+  // Bootstrap new lyrics when none exist (same pattern as 'combined' path)
+  if (lyricsAction === 'bootstrap') {
+    const seedInput = getLyricsSeedInput(lyricsTopic, feedback);
+    const topic = getOptionalLyricsTopic(lyricsTopic);
+
+    const lyricsResult = await remixLyrics(
+      currentPrompt,
+      seedInput,
+      topic,
+      config.isMaxMode(),
+      config.getModel,
+      config.getUseSunoTags?.() ?? false,
+      config.isUseLocalLLM(),
+      config.getOllamaEndpoint(),
+      {
+        trace: runtime?.trace,
+        traceLabel: 'lyrics.bootstrap',
+      }
+    );
+
+    log.info('refineLyricsOnly:bootstrap:complete', {
+      outputLyricsLength: lyricsResult.lyrics.length,
+      isOffline,
+    });
+
+    return {
+      text: currentPrompt,
+      title: currentTitle,
+      lyrics: lyricsResult.lyrics,
+      debugTrace: undefined,
+    };
+  }
+
+  // Refine existing lyrics
+  if (!currentLyrics) {
+    // Safety check - should not reach here if getLyricsAction works correctly
+    throw new ValidationError('Cannot refine lyrics without existing lyrics', 'currentLyrics');
+  }
+
   const lyricsResult = await refineLyricsWithFeedback(
     currentLyrics,
     feedback,
@@ -214,7 +250,7 @@ async function refineLyricsOnly(
     }
   );
 
-  log.info('refineLyricsOnly:complete', {
+  log.info('refineLyricsOnly:refine:complete', {
     outputLyricsLength: lyricsResult.lyrics.length,
     isOffline,
   });

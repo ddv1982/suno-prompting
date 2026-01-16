@@ -296,6 +296,34 @@ describe('refinePrompt with local LLM (offline mode)', () => {
     // Should NOT use Ollama client for cloud mode
     expect(mockGenerateWithOllama).not.toHaveBeenCalled();
   });
+
+  test('bootstraps new lyrics when refinementType is lyrics but no currentLyrics exist', async () => {
+    const config = createMockConfig({
+      isUseLocalLLM: () => true,
+      isLyricsMode: () => true,
+    });
+
+    // Act - no currentLyrics provided, should bootstrap instead of throw
+    const result = await refinePrompt(
+      {
+        currentPrompt: 'genre: "jazz"\nmood: "smooth"',
+        currentTitle: 'Jazz Vibes',
+        feedback: 'make it more emotional',
+        refinementType: 'lyrics',
+        // No currentLyrics - should bootstrap new lyrics
+      },
+      config
+    );
+
+    // Assert - should return bootstrapped lyrics (prompt unchanged in lyrics-only mode)
+    expect(result.text).toBe('genre: "jazz"\nmood: "smooth"');
+    expect(result.title).toBe('Jazz Vibes');
+    expect(result.lyrics).toBeDefined();
+    expect(result.lyrics).toContain('Refined lyrics from Ollama');
+    
+    // Should call Ollama for lyrics bootstrap
+    expect(mockGenerateWithOllama).toHaveBeenCalled();
+  });
 });
 
 
