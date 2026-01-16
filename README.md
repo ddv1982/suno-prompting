@@ -97,7 +97,7 @@ The app automatically detects Ollama and switches to local mode.
 - **Max Mode**: Community-discovered format for higher quality output
 - **Dynamic instrument selection** from curated pools with exclusion rules
 - **Genre detection**: Keyword matching → spelling correction → LLM analysis
-- **Mood selector**: Choose from 20 mood categories (~150 unique moods) to guide emotional tone across all modes (Full Prompt, Quick Vibes, Creative Boost)
+- **Mood selector**: Choose from 20 mood categories (~200 unique moods) to guide emotional tone across all modes (Full Prompt, Quick Vibes, Creative Boost)
 - **Quick remix buttons** for mood/genre/instruments/style/recording
 - **Lyrics Mode**: Optional AI-generated structured lyrics
 - **1000-character limit** validation + contradictory tag warnings
@@ -259,7 +259,7 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 ### Genres
 
 <details>
-<summary><strong>35 Genres with Keywords & Instruments</strong></summary>
+<summary><strong>60 Genres with Keywords & Instruments</strong></summary>
 
 <!-- GENRE_TABLE_START -->
 

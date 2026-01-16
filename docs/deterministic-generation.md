@@ -136,7 +136,7 @@ Genre: "jazz electronic"
 
 #### Genre Aliases
 
-70+ alias mappings resolve common variations to canonical genres:
+90+ alias mappings resolve common variations to canonical genres:
 
 | User Input | Resolved Genre | Reason |
 |------------|----------------|--------|
@@ -272,7 +272,7 @@ Genre affinities ensure contextually appropriate selection:
 
 ### Title Generation
 
-The title system uses **269 unique words** across 5 categories with **159 genre-specific patterns**.
+The title system uses **269 unique words** across 5 categories with **200 genre-specific patterns**.
 
 #### Vocabulary
 
@@ -450,17 +450,17 @@ All choices come from carefully curated, tested databases:
 | **Mood Intensity** | 60+ base moods | 3-level scaling (mild/moderate/intense) |
 | **Era Instruments** | 4 eras × 12 | Period-specific sounds (70s/80s/90s/modern) |
 | **Ensemble Presets** | 10 presets | Genre compatibility mappings |
-| **Genre Aliases** | 70+ mappings | Hip-hop, R&B, metal, electronic, jazz variants |
+| **Genre Aliases** | 90+ mappings | Hip-hop, R&B, metal, electronic, jazz variants |
 | **Tag Weights** | 60 genres | 5 weight categories per genre |
 | **Conflict Rules** | 5 rules | Instrument-production coherence |
-| **Title Words** | 269 words | 5 categories, 170+ keyword mappings |
-| **Title Patterns** | 159 patterns | 20 genre-specific sets + defaults |
+| **Title Words** | 269 words | 5 categories, 220+ keyword mappings |
+| **Title Patterns** | 200 patterns | 23 genre-specific sets + defaults |
 | **Recording Contexts** | 141 contexts | 18 genres with authentic environments |
 | **Style Descriptors** | 200+ tags | 7 categories with genre probabilities |
 
 **All data is:**
 - Reviewed by developers
-- Tested in 3,275 automated tests (24,241 assertions)
+- Tested in 3,689 automated tests (24,863 assertions)
 - Validated for musical coherence
 - Regularly updated and expanded
 
@@ -587,8 +587,8 @@ Tags: "raw performance energy, live venue capture, warm analog console"
 
 ### Automated Testing
 
-- **3,275 tests** verify all combinations work correctly
-- **24,241 assertions** validate expected behavior
+- **3,689 tests** verify all combinations work correctly
+- **24,863 assertions** validate expected behavior
 - **100% pass rate** maintained across all refactoring
 
 ### Test Categories
@@ -626,10 +626,10 @@ The deterministic generation system provides:
 - **Quality** - Curated data, tested combinations
 - **Variety** - Controlled randomness from quality pools
 - **Reliability** - Works offline, no API failures
-- **Tested** - 3,275 tests validate correctness
-- **Topic-Aware** - 170+ keywords map descriptions to relevant titles
-- **Rich Vocabulary** - 269 words × 159 patterns = 100,000+ unique titles
-- **Smart Aliases** - 70+ genre mappings for flexible input
+- **Tested** - 3,689 tests validate correctness
+- **Topic-Aware** - 220+ keywords map descriptions to relevant titles
+- **Rich Vocabulary** - 269 words × 200 patterns = 50,000+ unique titles
+- **Smart Aliases** - 90+ genre mappings for flexible input
 - **Genre Weights** - 60 genres with tailored tag probabilities
 
 **Your role:** Guide the direction with creativity level, mood category, Quick Vibes, and optional description
