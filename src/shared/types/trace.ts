@@ -9,6 +9,12 @@ export type TraceRunAction =
   | 'generate.creativeBoost'
   | 'refine'
   | 'remix'
+  | 'remix.title'
+  | 'remix.genre'
+  | 'remix.instruments'
+  | 'remix.mood'
+  | 'remix.styleTags'
+  | 'remix.recording'
   | 'convert.max'
   | 'convert.nonMax';
 

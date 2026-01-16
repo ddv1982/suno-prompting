@@ -54,10 +54,27 @@ export async function generateDirectMode(
   const genre = enriched.extractedGenres[0] || 'pop';
   const mood = enriched.enrichment.moods[0] || 'energetic';
 
-  // Generate title and lyrics based on lyrics mode
-  const { title, lyrics } = config.isLyricsMode()
-    ? await generateDirectModeTitleAndLyrics(description, lyricsTopic, sunoStyles, genre, mood, config, runtime)
-    : { title: generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, description), lyrics: undefined };
+  // Generate title and lyrics based on lyrics mode and LLM availability
+  let title: string;
+  let lyrics: string | undefined;
+
+  if (config.isLyricsMode()) {
+    // Lyrics mode: generate both title and lyrics via LLM
+    const result = await generateDirectModeTitleAndLyrics(description, lyricsTopic, sunoStyles, genre, mood, config, runtime);
+    title = result.title;
+    lyrics = result.lyrics;
+  } else if (config.isLLMAvailable()) {
+    // No lyrics but LLM available: generate title via LLM
+    title = await generateDirectModeTitle(description || '', sunoStyles, config.getModel, config.getOllamaEndpointIfLocal(), {
+      trace: runtime?.trace,
+      traceLabel: 'title.generate',
+    });
+    lyrics = undefined;
+  } else {
+    // No lyrics and no LLM: use deterministic title
+    title = generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, description);
+    lyrics = undefined;
+  }
 
   return { text, title, lyrics, debugTrace: undefined };
 }

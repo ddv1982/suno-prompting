@@ -152,4 +152,21 @@ export class AIConfig {
   getOllamaConfig(): OllamaConfig {
     return { ...this.ollamaConfig };
   }
+
+  /**
+   * Check if any LLM is available for generation.
+   * Returns true if local LLM is enabled OR at least one cloud API key is configured.
+   */
+  isLLMAvailable(): boolean {
+    if (this.useLocalLLM) return true;
+    return Object.values(this.apiKeys).some(key => key !== null && key.trim() !== '');
+  }
+
+  /**
+   * Get Ollama endpoint for LLM calls, or undefined if using cloud provider.
+   * Centralizes the common pattern: useLocalLLM ? endpoint : undefined
+   */
+  getOllamaEndpointIfLocal(): string | undefined {
+    return this.useLocalLLM ? this.ollamaConfig.endpoint : undefined;
+  }
 }

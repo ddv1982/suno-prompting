@@ -109,8 +109,8 @@ export function buildCreativeBoostStyle(
 
 /**
  * Generate title for creative boost.
- * Uses LLM only when lyrics are enabled (title should match lyrical theme);
- * otherwise generates deterministically to minimize latency.
+ * Uses LLM when lyrics are enabled OR when LLM is available (for more creative titles);
+ * otherwise generates deterministically.
  */
 export async function generateCreativeBoostTitle(
   withLyrics: boolean,
@@ -120,11 +120,18 @@ export async function generateCreativeBoostTitle(
   mood: string,
   getModel: () => LanguageModel,
   ollamaEndpoint?: string,
-  runtime?: TraceRuntime
+  runtime?: TraceRuntime,
+  isLLMAvailable?: boolean
 ): Promise<{ title: string; debugInfo?: GenerationDebugInfo }> {
-  if (withLyrics) {
+  // Use LLM for title when lyrics are enabled OR when LLM is available
+  if (withLyrics || isLLMAvailable) {
     const topic = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
-    const result = await generateTitle(topic, genre, mood, getModel, undefined, ollamaEndpoint, {
+    const result = await generateTitle({
+      description: topic,
+      genre,
+      mood,
+      getModel,
+      ollamaEndpoint,
       trace: runtime?.trace,
       traceLabel: 'title.generate',
     });

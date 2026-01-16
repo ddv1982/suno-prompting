@@ -33,10 +33,12 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
     isMaxMode: () => false,
     isLyricsMode: () => false,
     isUseLocalLLM: () => false,
+    isLLMAvailable: () => false,
     getUseSunoTags: () => true,
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
     getOllamaEndpoint: () => 'http://127.0.0.1:11434',
+    getOllamaEndpointIfLocal: () => undefined,
     ...overrides,
   };
 }

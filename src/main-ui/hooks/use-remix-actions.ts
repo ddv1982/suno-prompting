@@ -85,7 +85,11 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       deps,
       'remixTitle',
       async () => {
-        const result = await rpcClient.remixTitle({ currentPrompt: currentSession.currentPrompt, originalInput: currentSession.originalInput });
+        const result = await rpcClient.remixTitle({
+          currentPrompt: currentSession.currentPrompt,
+          originalInput: currentSession.originalInput,
+          currentLyrics: currentSession.currentLyrics,
+        });
         return unwrapOrThrow(result);
       },
       (r) => ({ currentTitle: r.title }),

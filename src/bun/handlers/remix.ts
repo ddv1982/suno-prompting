@@ -16,28 +16,40 @@ import {
   RemixTitleSchema,
   RemixLyricsSchema,
 } from '@shared/schemas';
+import { enforceTraceSizeCap } from '@shared/trace';
 import { validatePrompt } from '@shared/validation';
 
-import { withErrorHandling, log } from './utils';
+import { createTraceRuntime, withErrorHandling, log } from './utils';
 import { validate } from './validated';
 
-import type { RPCHandlers } from '@shared/types';
+import type { TraceCollector } from '@bun/trace';
+import type { RPCHandlers, TraceRun, TraceRunAction } from '@shared/types';
 
 type RemixHandlers = Pick<
   RPCHandlers,
   'remixInstruments' | 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording' | 'remixTitle' | 'remixLyrics'
 >;
 
+type RemixActionResult = { prompt: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: TraceRun };
+
 async function runRemixAction(
+  aiEngine: AIEngine,
   name: string,
-  operation: () => RemixResult
-): Promise<{ prompt: string; versionId: string; validation: ReturnType<typeof validatePrompt> }> {
+  action: TraceRunAction,
+  operation: (trace?: TraceCollector, rng?: () => number) => RemixResult
+): Promise<RemixActionResult> {
   return withErrorHandling(name, async () => {
-    const result = operation();
     const versionId = Bun.randomUUIDv7();
+    const runtime = createTraceRuntime(aiEngine, versionId, action, 'full');
+
+    runtime.trace?.addRunEvent('run.start', action);
+    const result = operation(runtime.trace, runtime.rng);
+    runtime.trace?.addRunEvent('run.end', 'success');
+
+    const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : undefined;
     const validation = validatePrompt(result.text);
     log.info(`${name}:result`, { versionId, promptLength: result.text.length });
-    return { prompt: result.text, versionId, validation };
+    return { prompt: result.text, versionId, validation, debugTrace };
   });
 }
 
@@ -47,32 +59,50 @@ async function runSingleFieldRemix<T>(name: string, operation: () => Promise<T>)
 
 export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
   return {
-    // All prompt remix actions call deterministic functions directly (no LLM)
+    // All prompt remix actions call deterministic functions with trace support
     remixInstruments: async (params) => {
       const { currentPrompt, originalInput } = validate(RemixInstrumentsSchema, params);
-      return runRemixAction('remixInstruments', () => remixInstruments(currentPrompt, originalInput));
+      return runRemixAction(aiEngine, 'remixInstruments', 'remix.instruments', (trace, rng) =>
+        remixInstruments(currentPrompt, originalInput, trace, rng)
+      );
     },
     remixGenre: async (params) => {
       const { currentPrompt, targetGenreCount } = validate(RemixGenreSchema, params);
-      return runRemixAction('remixGenre', () => remixGenre(currentPrompt, { targetGenreCount }));
+      return runRemixAction(aiEngine, 'remixGenre', 'remix.genre', (trace, rng) =>
+        remixGenre(currentPrompt, { targetGenreCount }, trace, rng)
+      );
     },
     remixMood: async (params) => {
       const { currentPrompt } = validate(RemixMoodSchema, params);
-      return runRemixAction('remixMood', () => remixMoodInPrompt(currentPrompt));
+      return runRemixAction(aiEngine, 'remixMood', 'remix.mood', (trace, rng) =>
+        remixMoodInPrompt(currentPrompt, trace, rng)
+      );
     },
     remixStyleTags: async (params) => {
       const { currentPrompt } = validate(RemixStyleTagsSchema, params);
-      return runRemixAction('remixStyleTags', () => remixStyleTags(currentPrompt));
+      return runRemixAction(aiEngine, 'remixStyleTags', 'remix.styleTags', (trace, rng) =>
+        remixStyleTags(currentPrompt, trace, rng)
+      );
     },
     remixRecording: async (params) => {
       const { currentPrompt } = validate(RemixRecordingSchema, params);
-      return runRemixAction('remixRecording', () => remixRecording(currentPrompt));
+      return runRemixAction(aiEngine, 'remixRecording', 'remix.recording', (trace, rng) =>
+        remixRecording(currentPrompt, trace, rng)
+      );
     },
-    // Title uses LLM when lyrics mode is enabled, otherwise deterministic (via AIEngine)
+    // Title uses LLM when available - includes trace support for debug mode
     remixTitle: async (params) => {
-      const { currentPrompt, originalInput } = validate(RemixTitleSchema, params);
-      return runSingleFieldRemix('remixTitle', async () => {
-        return aiEngine.remixTitle(currentPrompt, originalInput);
+      const { currentPrompt, originalInput, currentLyrics } = validate(RemixTitleSchema, params);
+      return withErrorHandling('remixTitle', async () => {
+        const versionId = Bun.randomUUIDv7();
+        const runtime = createTraceRuntime(aiEngine, versionId, 'remix.title', 'full');
+
+        runtime.trace?.addRunEvent('run.start', 'remix.title');
+        const result = await aiEngine.remixTitle(currentPrompt, originalInput, currentLyrics, runtime);
+        runtime.trace?.addRunEvent('run.end', 'success');
+
+        const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : undefined;
+        return { title: result.title, debugTrace };
       });
     },
     // Lyrics still uses LLM (via AIEngine)

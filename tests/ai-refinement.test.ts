@@ -37,7 +37,8 @@ await mock.module('ai', () => ({
   generateText: mockGenerateText,
 }));
 
-// Mock deterministic functions
+// Mock deterministic functions - re-export all others to avoid breaking other tests
+const actualDeterministicModule = await import('@bun/prompt/deterministic');
 const mockExtractGenreFromPrompt = mock(() => 'jazz');
 const mockExtractMoodFromPrompt = mock(() => 'mellow');
 const mockRemixStyleTags = mock((prompt: string) => ({
@@ -46,6 +47,7 @@ const mockRemixStyleTags = mock((prompt: string) => ({
 }));
 
 await mock.module('@bun/prompt/deterministic', () => ({
+  ...actualDeterministicModule,
   extractGenreFromPrompt: mockExtractGenreFromPrompt,
   extractMoodFromPrompt: mockExtractMoodFromPrompt,
   remixStyleTags: mockRemixStyleTags,
@@ -61,10 +63,12 @@ function createMockConfig(overrides: Partial<RefinementConfig> = {}): Refinement
     isMaxMode: () => false,
     isLyricsMode: () => false,
     isUseLocalLLM: () => false,
+    isLLMAvailable: () => false,
     getUseSunoTags: () => true,
     getModelName: () => 'test-model',
     getProvider: () => 'groq',
     getOllamaEndpoint: () => 'http://127.0.0.1:11434',
+    getOllamaEndpointIfLocal: () => undefined,
     postProcess: async (text: string) => text,
     ...overrides,
   };

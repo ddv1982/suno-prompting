@@ -29,6 +29,7 @@ export const RemixRecordingSchema = z.object({
 export const RemixTitleSchema = z.object({
   currentPrompt: CurrentPromptSchema,
   originalInput: z.string(),
+  currentLyrics: z.string().optional(),
 });
 
 export const RemixLyricsSchema = z.object({

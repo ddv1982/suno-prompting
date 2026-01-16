@@ -33,10 +33,14 @@ const log = createLogger('Remix');
  * Generate a new song title using AI based on prompt context.
  * Supports both cloud providers and local Ollama for offline mode.
  *
+ * When lyrics are provided, the title is generated based on lyric content
+ * for more relevant, specific titles.
+ *
  * @param currentPrompt - The current prompt to extract genre/mood from
  * @param originalInput - The original user input for context
  * @param getModel - Function to get the language model
  * @param ollamaEndpoint - Optional Ollama endpoint for offline mode
+ * @param currentLyrics - Optional lyrics to base the title on
  * @returns Generated title
  */
 export async function remixTitle(
@@ -44,14 +48,24 @@ export async function remixTitle(
   originalInput: string,
   getModel: () => LanguageModel,
   ollamaEndpoint?: string,
+  currentLyrics?: string,
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ title: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
   
-  log.info('remixTitle', { genre, mood, offline: !!ollamaEndpoint });
+  log.info('remixTitle', { genre, mood, offline: !!ollamaEndpoint, hasLyrics: !!currentLyrics });
   
-  const result = await generateTitle(originalInput, genre, mood, getModel, undefined, ollamaEndpoint, traceRuntime);
+  const result = await generateTitle({
+    description: originalInput,
+    genre,
+    mood,
+    getModel,
+    ollamaEndpoint,
+    lyrics: currentLyrics,
+    trace: traceRuntime?.trace,
+    traceLabel: traceRuntime?.traceLabel,
+  });
   return { title: result.title };
 }
 

@@ -79,6 +79,8 @@ export interface EngineConfig {
   isMaxMode?: () => boolean;
   /** Returns whether lyrics mode is enabled (optional) */
   isLyricsMode?: () => boolean;
+  /** Returns whether any LLM is available (local or cloud) (optional) */
+  isLLMAvailable?: () => boolean;
   /** Returns whether to use Suno performance tags (optional) */
   getUseSunoTags?: () => boolean;
   /** Returns Ollama endpoint for direct API calls when using local LLM (optional) */
@@ -104,6 +106,8 @@ export interface GenerationConfig {
   isLyricsMode: () => boolean;
   /** Returns whether local LLM (Ollama) is enabled */
   isUseLocalLLM: () => boolean;
+  /** Returns whether any LLM is available (local or cloud) */
+  isLLMAvailable: () => boolean;
   /** Returns whether to use Suno performance tags */
   getUseSunoTags: () => boolean;
   /** Returns the model name for debug info */
@@ -112,6 +116,8 @@ export interface GenerationConfig {
   getProvider: () => AIProvider;
   /** Returns the Ollama endpoint URL */
   getOllamaEndpoint: () => string;
+  /** Returns Ollama endpoint if using local LLM, undefined otherwise */
+  getOllamaEndpointIfLocal: () => string | undefined;
 }
 
 /**

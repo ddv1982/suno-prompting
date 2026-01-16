@@ -151,15 +151,26 @@ CREATIVITY PRIORITY:
 3. Avoid clichéd music-related metaphors unless they serve the topic`;
 }
 
-export function buildTitleUserPrompt(description: string, genre: string, mood: string): string {
+export function buildTitleUserPrompt(description: string, genre: string, mood: string, lyrics?: string): string {
+  const contextFooter = `Genre: ${genre}
+Mood: ${mood}
+
+Output only the title.`;
+
+  if (lyrics) {
+    return `Create a song title based on these lyrics:
+
+${lyrics}
+
+${contextFooter}`;
+  }
+
   return `Create a song title for:
 
 Description: ${description}
-Genre: ${genre}
-Mood: ${mood}
 
 Focus on capturing what makes THIS song unique based on the description above.
 Avoid generic music imagery that could apply to any song.
 
-Output only the title.`;
+${contextFooter}`;
 }

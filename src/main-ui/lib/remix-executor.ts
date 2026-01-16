@@ -27,7 +27,7 @@ export interface RemixExecutorDeps {
 export async function executePromptRemix(
   deps: RemixExecutorDeps,
   action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
-  apiCall: () => Promise<{ prompt: string; versionId: string; validation: ValidationResult }>,
+  apiCall: () => Promise<{ prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }>,
   feedbackLabel: string,
   successMessage: string
 ): Promise<void> {
@@ -42,6 +42,10 @@ export async function executePromptRemix(
 
     if (!result?.prompt) {
       throw new Error(`Invalid result received from ${feedbackLabel}`);
+    }
+
+    if (result.debugTrace) {
+      setDebugTrace(result.debugTrace);
     }
 
     const newVersion = createVersion(
@@ -69,7 +73,7 @@ export async function executePromptRemix(
 /**
  * Executes a single-field remix action (title or lyrics only, prompt unchanged)
  */
-export async function executeSingleFieldRemix<T extends { title?: string; lyrics?: string }>(
+export async function executeSingleFieldRemix<T extends { title?: string; lyrics?: string; debugTrace?: TraceRun }>(
   deps: RemixExecutorDeps,
   action: 'remixTitle' | 'remixLyrics',
   apiCall: () => Promise<T>,
@@ -77,14 +81,20 @@ export async function executeSingleFieldRemix<T extends { title?: string; lyrics
   label: string,
   successMessage: string
 ): Promise<void> {
-  const { isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setChatMessages, showToast } = deps;
+  const { isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setDebugTrace, setChatMessages, showToast } = deps;
 
   if (isGenerating || !currentSession) return;
 
   try {
     setGeneratingAction(action);
+    setDebugTrace(undefined);
     const result = await apiCall();
     const update = getUpdate(result);
+    
+    // Update debug trace if available (e.g., from title remix with debug mode)
+    if (result.debugTrace) {
+      setDebugTrace(result.debugTrace);
+    }
     
     const newVersion = createVersion({
       prompt: currentSession.currentPrompt,

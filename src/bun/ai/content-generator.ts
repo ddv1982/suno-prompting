@@ -39,26 +39,50 @@ export type GenreDetectionResult = {
 };
 
 /**
+ * Options for generating a song title using AI.
+ */
+export interface GenerateTitleOptions {
+  /** The song description or lyrics topic */
+  description: string;
+  /** The detected or selected genre */
+  genre: string;
+  /** The detected mood */
+  mood: string;
+  /** Function to get the language model (cloud or Ollama) */
+  getModel: () => LanguageModel;
+  /** Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS) */
+  timeoutMs?: number;
+  /** Optional Ollama endpoint for direct API calls (bypasses AI SDK) */
+  ollamaEndpoint?: string;
+  /** Optional lyrics to base the title on (takes priority over description) */
+  lyrics?: string;
+  /** Optional trace collector for debugging */
+  trace?: TraceCollector;
+  /** Optional trace label for debugging */
+  traceLabel?: string;
+}
+
+/**
  * Generate a song title using AI.
  *
- * @param description - The song description or lyrics topic
- * @param genre - The detected or selected genre
- * @param mood - The detected mood
- * @param getModel - Function to get the language model (cloud or Ollama)
- * @param timeoutMs - Optional timeout in milliseconds (defaults to AI.TIMEOUT_MS)
- * @param ollamaEndpoint - Optional Ollama endpoint for direct API calls (bypasses AI SDK)
+ * When lyrics are provided, the title is generated based on lyric content
+ * for more relevant, specific titles. Otherwise uses description.
  */
-export async function generateTitle(
-  description: string,
-  genre: string,
-  mood: string,
-  getModel: () => LanguageModel,
-  timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
-  ollamaEndpoint?: string,
-  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
-): Promise<TitleResult> {
+export async function generateTitle(options: GenerateTitleOptions): Promise<TitleResult> {
+  const {
+    description,
+    genre,
+    mood,
+    getModel,
+    timeoutMs = APP_CONSTANTS.AI.TIMEOUT_MS,
+    ollamaEndpoint,
+    lyrics,
+    trace,
+    traceLabel,
+  } = options;
+
   const systemPrompt = buildTitleSystemPrompt();
-  const userPrompt = buildTitleUserPrompt(description, genre, mood);
+  const userPrompt = buildTitleUserPrompt(description, genre, mood, lyrics);
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
@@ -69,8 +93,8 @@ export async function generateTitle(
       errorContext: 'generate title',
       ollamaEndpoint,
       timeoutMs,
-      trace: traceRuntime?.trace,
-      traceLabel: traceRuntime?.traceLabel,
+      trace,
+      traceLabel,
     });
 
     return {

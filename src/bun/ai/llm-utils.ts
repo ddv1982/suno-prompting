@@ -365,7 +365,15 @@ export async function generateDirectModeTitle(
       offline: !!ollamaEndpoint,
     });
     
-    const result = await generateTitle(titleDescription, genre, mood, getModel, undefined, ollamaEndpoint, traceRuntime);
+    const result = await generateTitle({
+      description: titleDescription,
+      genre,
+      mood,
+      getModel,
+      ollamaEndpoint,
+      trace: traceRuntime?.trace,
+      traceLabel: traceRuntime?.traceLabel,
+    });
     return result.title;
   } catch (error: unknown) {
     log.warn('generateDirectModeTitle:failed', {

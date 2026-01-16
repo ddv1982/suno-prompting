@@ -52,10 +52,12 @@ export function createConfigFactories(
       isMaxMode: config.isMaxMode.bind(config),
       isLyricsMode: config.isLyricsMode.bind(config),
       isUseLocalLLM: config.isUseLocalLLM.bind(config),
+      isLLMAvailable: config.isLLMAvailable.bind(config),
       getUseSunoTags: config.getUseSunoTags.bind(config),
       getModelName: config.getModelName.bind(config),
       getProvider: config.getProvider.bind(config),
       getOllamaEndpoint: config.getOllamaEndpoint.bind(config),
+      getOllamaEndpointIfLocal: config.getOllamaEndpointIfLocal.bind(config),
     };
   }
 

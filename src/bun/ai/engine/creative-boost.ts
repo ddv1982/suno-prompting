@@ -23,6 +23,7 @@ function buildCreativeBoostConfig(config: AIConfig, proxies: ConfigProxies): Cre
   return {
     getModel: proxies.getModel,
     isDebugMode: config.isDebugMode.bind(config),
+    isLLMAvailable: config.isLLMAvailable.bind(config),
     getUseSunoTags: config.getUseSunoTags.bind(config),
     getOllamaEndpoint: () => config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined,
   };

@@ -69,22 +69,22 @@ export type RefinePromptResponse = {
 
 // Remix endpoints
 export type RemixInstrumentsParams = { currentPrompt: string; originalInput: string };
-export type RemixInstrumentsResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type RemixInstrumentsResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
 
 export type RemixGenreParams = { currentPrompt: string };
-export type RemixGenreResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type RemixGenreResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
 
 export type RemixMoodParams = { currentPrompt: string };
-export type RemixMoodResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type RemixMoodResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
 
 export type RemixStyleTagsParams = { currentPrompt: string };
-export type RemixStyleTagsResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type RemixStyleTagsResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
 
 export type RemixRecordingParams = { currentPrompt: string };
-export type RemixRecordingResponse = { prompt: string; versionId: string; validation: ValidationResult };
+export type RemixRecordingResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
 
-export type RemixTitleParams = { currentPrompt: string; originalInput: string };
-export type RemixTitleResponse = { title: string };
+export type RemixTitleParams = { currentPrompt: string; originalInput: string; currentLyrics?: string };
+export type RemixTitleResponse = { title: string; debugTrace?: TraceRun };
 
 export type RemixLyricsParams = { currentPrompt: string; originalInput: string; lyricsTopic?: string };
 export type RemixLyricsResponse = { lyrics: string };

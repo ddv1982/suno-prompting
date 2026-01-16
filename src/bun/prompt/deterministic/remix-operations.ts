@@ -5,6 +5,9 @@
  * They handle instrument selection, genre changes, mood updates, style tags,
  * and recording descriptors using rule-based logic with controlled randomness.
  *
+ * When a TraceCollector is provided, decisions are logged for debug visibility.
+ * When an rng function is provided, it's used for reproducible randomness.
+ *
  * LLM-dependent operations (remixTitle, remixLyrics) remain in ai/remix.ts
  *
  * @module prompt/deterministic/remix-operations
@@ -35,40 +38,70 @@ import { DEFAULT_GENRE } from '@shared/constants';
 
 import type { RemixResult } from './types';
 import type { GenreType } from '@bun/instruments';
+import type { TraceCollector } from '@bun/trace';
 
 // ============================================================================
 // INTERNAL HELPERS (not exported)
 // ============================================================================
 
+/** Default random function when none provided */
+const defaultRng = (): number => Math.random();
+
 /** Select a random item from array, with fallback */
-function randomFrom<T>(arr: T[], fallback: T): T {
+function randomFrom<T>(arr: T[], fallback: T, rng: () => number = defaultRng): T {
   if (arr.length === 0) return fallback;
-  return arr[Math.floor(Math.random() * arr.length)] ?? fallback;
+  return arr[Math.floor(rng() * arr.length)] ?? fallback;
 }
 
 /** Select new single genre (handles both single and multi-genre current values) */
 function selectSingleGenre(
   currentGenre: string,
-  allSingleGenres: GenreType[]
+  allSingleGenres: GenreType[],
+  rng: () => number = defaultRng
 ): string | null {
   if (isMultiGenre(currentGenre)) {
     const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== currentGenre);
-    return randomFrom(available, currentGenre);
+    return randomFrom(available, currentGenre, rng);
   }
   const available = allSingleGenres.filter(g => g !== currentGenre);
   if (available.length === 0) return null;
-  return randomFrom(available, 'ambient');
+  return randomFrom(available, 'ambient', rng);
 }
 
 /** Select multiple new genres */
 function selectMultipleGenres(
   currentGenres: string[],
   count: number,
-  allOptions: string[]
+  allOptions: string[],
+  rng: () => number = defaultRng
 ): string {
   const available = allOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
-  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  const shuffled = [...available].sort(() => rng() - 0.5);
   return shuffled.slice(0, count).join(', ');
+}
+
+/** Extract current genres from prompt's genre field */
+function extractCurrentGenres(currentPrompt: string): string[] {
+  const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
+  const fullGenreValue = genreMatch?.[1]?.trim() || '';
+  return fullGenreValue
+    .split(',')
+    .map(g => g.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** Select new genre value based on target count */
+function selectNewGenreValue(
+  currentGenres: string[],
+  targetCount: number,
+  allSingleGenres: GenreType[],
+  allGenreOptions: string[],
+  rng: () => number
+): string | null {
+  if (targetCount <= 1) {
+    return selectSingleGenre(currentGenres[0] || '', allSingleGenres, rng);
+  }
+  return selectMultipleGenres(currentGenres, targetCount, allGenreOptions, rng);
 }
 
 /** Update BPM based on genre */
@@ -155,23 +188,24 @@ export function extractMoodFromPrompt(prompt: string): string {
  *
  * @since v2.0.0 - Updated to use new tag selection functions
  */
-export function injectStyleTags(prompt: string, genre: string): string {
+export function injectStyleTags(
+  prompt: string,
+  genre: string,
+  rng: () => number = defaultRng
+): string {
   const styleTags: string[] = [];
 
-  // Use new tag selection (simplified for remix - no weighted probability)
-  const vocalTags = selectVocalTags(genre, 1, Math.random);
+  const vocalTags = selectVocalTags(genre, 1, rng);
   styleTags.push(...vocalTags);
 
-  const textureTags = selectTextureTags(2, Math.random);
+  const textureTags = selectTextureTags(2, rng);
   styleTags.push(...textureTags);
 
-  // Add recording context
-  const context = selectRecordingContext(genre, Math.random);
+  const context = selectRecordingContext(genre, rng);
   styleTags.push(context);
 
-  // Fallback if no tags selected
   if (styleTags.length === 0) {
-    const fallback = selectRecordingDescriptors(Math.random, 1);
+    const fallback = selectRecordingDescriptors(rng, 1);
     styleTags.push(...fallback);
   }
 
@@ -191,36 +225,48 @@ export function injectStyleTags(prompt: string, genre: string): string {
  *
  * @param currentPrompt - The current prompt to modify
  * @param _originalInput - Kept for API compatibility, no longer used for genre detection
+ * @param trace - Optional trace collector for debug logging
+ * @param rng - Optional random function for reproducibility
  * @returns Updated prompt with new instruments
  */
 export function remixInstruments(
   currentPrompt: string,
-  _originalInput: string
+  _originalInput: string,
+  trace?: TraceCollector,
+  rng: () => number = defaultRng
 ): RemixResult {
   const genres = extractGenresFromPrompt(currentPrompt);
   const primaryGenre = genres[0] ?? (DEFAULT_GENRE as GenreType);
 
-  // 1. New instruments - blend from multiple genres when present
   const instruments =
     genres.length > 1
-      ? selectInstrumentsForMultiGenre(genres, Math.random, 4)
-      : selectInstrumentsForGenre(primaryGenre, { maxTags: 4 });
+      ? selectInstrumentsForMultiGenre(genres, rng, 4)
+      : selectInstrumentsForGenre(primaryGenre, { maxTags: 4, rng });
 
-  // 2. New chord progression for primary genre
-  const progression = getRandomProgressionForGenre(primaryGenre);
+  const progression = getRandomProgressionForGenre(primaryGenre, rng);
   const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
 
-  // 3. New vocal style for primary genre
   const { range, delivery, technique } =
-    getVocalSuggestionsForGenre(primaryGenre);
+    getVocalSuggestionsForGenre(primaryGenre, rng);
   const vocalTags = [
     `${range.toLowerCase()} vocals`,
     `${delivery.toLowerCase()} delivery`,
     technique.toLowerCase(),
   ];
 
-  // 4. Combine all elements
   const combined = [...instruments, harmonyTag, ...vocalTags];
+
+  trace?.addDecisionEvent({
+    domain: 'instruments',
+    key: 'remixInstruments',
+    branchTaken: `${instruments.length} instruments for ${primaryGenre}`,
+    why: `Blended instrument selection from ${genres.length > 1 ? 'multi-genre pool' : 'single genre pool'}`,
+    selection: {
+      method: 'pickRandom',
+      candidatesCount: instruments.length,
+      candidatesPreview: instruments.slice(0, 5),
+    },
+  });
 
   return {
     text: replaceFieldLine(currentPrompt, 'Instruments', combined.join(', ')),
@@ -252,39 +298,38 @@ export interface RemixGenreOptions {
  *
  * @param currentPrompt - The current prompt to modify
  * @param options - Optional configuration including targetGenreCount
+ * @param trace - Optional trace collector for debug logging
+ * @param rng - Optional random function for reproducibility
  * @returns Updated prompt with new genre(s)
  */
 export function remixGenre(
   currentPrompt: string,
-  options?: RemixGenreOptions
+  options?: RemixGenreOptions,
+  trace?: TraceCollector,
+  rng: () => number = defaultRng
 ): RemixResult {
-  const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
-  const fullGenreValue = genreMatch?.[1]?.trim() || '';
-  const currentGenres = fullGenreValue
-    .split(',')
-    .map(g => g.trim().toLowerCase())
-    .filter(Boolean);
-
-  // Determine target count: use provided count, otherwise preserve current count
-  // Clamp to valid range (1-4), default to 1 if 0 or undefined when no current genres
+  const currentGenres = extractCurrentGenres(currentPrompt);
   const rawTargetCount = options?.targetGenreCount ?? currentGenres.length;
   const targetCount = Math.max(1, Math.min(4, rawTargetCount || 1));
 
   const allSingleGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
   const allGenreOptions = [...allSingleGenres, ...MULTI_GENRE_COMBINATIONS];
 
-  let newGenreValue: string;
-  if (targetCount <= 1) {
-    const selected = selectSingleGenre(currentGenres[0] || '', allSingleGenres);
-    if (selected === null) return { text: currentPrompt };
-    newGenreValue = selected;
-  } else {
-    newGenreValue = selectMultipleGenres(
-      currentGenres,
-      targetCount,
-      allGenreOptions
-    );
+  const newGenreValue = selectNewGenreValue(currentGenres, targetCount, allSingleGenres, allGenreOptions, rng);
+  if (newGenreValue === null) {
+    return { text: currentPrompt };
   }
+
+  trace?.addDecisionEvent({
+    domain: 'genre',
+    key: 'remixGenre',
+    branchTaken: newGenreValue,
+    why: `Changed from "${currentGenres.join(', ') || 'none'}" to new ${targetCount <= 1 ? 'single' : 'multi'}-genre`,
+    selection: {
+      method: targetCount <= 1 ? 'pickRandom' : 'shuffleSlice',
+      candidatesCount: targetCount <= 1 ? allSingleGenres.length : allGenreOptions.length,
+    },
+  });
 
   const result = replaceFieldLine(currentPrompt, 'Genre', newGenreValue);
   return { text: updateBpmForNewGenre(result, newGenreValue) };
@@ -298,9 +343,9 @@ export function remixGenre(
  * (e.g., passing to title generation). The 2-3 mood count creates variety
  * while avoiding overly complex mood combinations.
  */
-export function remixMood(): RemixResult & { moodLine: string } {
-  const count = Math.random() < 0.5 ? 2 : 3;
-  const shuffled = [...MOOD_POOL].sort(() => Math.random() - 0.5);
+export function remixMood(rng: () => number = defaultRng): RemixResult & { moodLine: string } {
+  const count = rng() < 0.5 ? 2 : 3;
+  const shuffled = [...MOOD_POOL].sort(() => rng() - 0.5);
   const selectedMoods = shuffled.slice(0, count);
   const moodLine = selectedMoods.join(', ');
   return { text: '', moodLine };
@@ -311,9 +356,30 @@ export function remixMood(): RemixResult & { moodLine: string } {
  *
  * Convenience wrapper that combines remixMood() generation with
  * prompt injection in a single call for the common use case.
+ *
+ * @param currentPrompt - The current prompt to modify
+ * @param trace - Optional trace collector for debug logging
+ * @param rng - Optional random function for reproducibility
  */
-export function remixMoodInPrompt(currentPrompt: string): RemixResult {
-  const { moodLine } = remixMood();
+export function remixMoodInPrompt(
+  currentPrompt: string,
+  trace?: TraceCollector,
+  rng: () => number = defaultRng
+): RemixResult {
+  const previousMood = extractMoodFromPrompt(currentPrompt);
+  const { moodLine } = remixMood(rng);
+
+  trace?.addDecisionEvent({
+    domain: 'mood',
+    key: 'remixMood',
+    branchTaken: moodLine,
+    why: `Changed from "${previousMood}" to new mood combination`,
+    selection: {
+      method: 'shuffleSlice',
+      candidatesCount: MOOD_POOL.length,
+    },
+  });
+
   return { text: replaceFieldLine(currentPrompt, 'Mood', moodLine) };
 }
 
@@ -322,10 +388,33 @@ export function remixMoodInPrompt(currentPrompt: string): RemixResult {
  *
  * Extracts genre first to ensure style tags match the current genre,
  * preventing mismatches like electronic tags on an acoustic jazz prompt.
+ *
+ * @param currentPrompt - The current prompt to modify
+ * @param trace - Optional trace collector for debug logging
+ * @param rng - Optional random function for reproducibility
  */
-export function remixStyleTags(currentPrompt: string): RemixResult {
+export function remixStyleTags(
+  currentPrompt: string,
+  trace?: TraceCollector,
+  rng: () => number = defaultRng
+): RemixResult {
   const genre = extractGenreFromPrompt(currentPrompt);
-  return { text: injectStyleTags(currentPrompt, genre) };
+  const result = injectStyleTags(currentPrompt, genre, rng);
+
+  const styleTagsMatch = result.match(/^Style Tags?:\s*(.+)$/im);
+  const newStyleTags = styleTagsMatch?.[1] || '';
+
+  trace?.addDecisionEvent({
+    domain: 'styleTags',
+    key: 'remixStyleTags',
+    branchTaken: newStyleTags,
+    why: `Selected style tags appropriate for ${genre}`,
+    selection: {
+      method: 'pickRandom',
+    },
+  });
+
+  return { text: result };
 }
 
 /**
@@ -333,8 +422,29 @@ export function remixStyleTags(currentPrompt: string): RemixResult {
  *
  * Recording descriptors add production context (studio type, mic placement, etc.)
  * that helps Suno understand the desired sonic character independent of genre.
+ *
+ * @param currentPrompt - The current prompt to modify
+ * @param trace - Optional trace collector for debug logging
+ * @param rng - Optional random function for reproducibility
  */
-export function remixRecording(currentPrompt: string): RemixResult {
-  const descriptors = selectRecordingDescriptors(Math.random, 3);
+export function remixRecording(
+  currentPrompt: string,
+  trace?: TraceCollector,
+  rng: () => number = defaultRng
+): RemixResult {
+  const descriptors = selectRecordingDescriptors(rng, 3);
+
+  trace?.addDecisionEvent({
+    domain: 'recording',
+    key: 'remixRecording',
+    branchTaken: descriptors.join(', '),
+    why: 'Selected random recording descriptors',
+    selection: {
+      method: 'shuffleSlice',
+      candidatesCount: 3,
+      candidatesPreview: descriptors,
+    },
+  });
+
   return { text: replaceRecordingLine(currentPrompt, descriptors.join(', ')) };
 }

@@ -104,17 +104,23 @@ export class AIEngine {
   // ==========================================================================
 
   /**
-   * Remix title - uses LLM when lyrics mode is enabled, otherwise deterministic.
+   * Remix title - uses LLM when available, otherwise deterministic.
    *
+   * When lyrics are provided, the LLM generates a title based on lyric content.
    * Uses Ollama model when offline mode is enabled, otherwise cloud provider.
    */
   async remixTitle(
     currentPrompt: string,
-    originalInput: string
+    originalInput: string,
+    currentLyrics?: string,
+    traceRuntime?: { readonly trace?: TraceCollector }
   ): Promise<{ title: string }> {
-    if (this.config.isLyricsMode()) {
-      const ollamaEndpoint = this.config.isUseLocalLLM() ? this.config.getOllamaEndpoint() : undefined;
-      return remixTitleImpl(currentPrompt, originalInput, this.getModel, ollamaEndpoint);
+    // Use LLM for title when lyrics mode is enabled OR when LLM is available
+    if (this.config.isLyricsMode() || this.config.isLLMAvailable()) {
+      return remixTitleImpl(currentPrompt, originalInput, this.getModel, this.config.getOllamaEndpointIfLocal(), currentLyrics, {
+        trace: traceRuntime?.trace,
+        traceLabel: 'title.generate',
+      });
     }
     const genre = extractGenreFromPrompt(currentPrompt);
     const mood = extractMoodFromPrompt(currentPrompt);

@@ -2,9 +2,9 @@
  * Initial Prompt Generation Module
  *
  * Handles initial prompt generation with three distinct paths:
- * - Deterministic path (lyrics OFF): No LLM calls, <50ms execution
- * - LLM-assisted path (lyrics ON, cloud): Genre detection, title, and lyrics via cloud LLM
- * - Offline path (lyrics ON, offline mode): Same as LLM-assisted but using local Ollama
+ * - Lyrics OFF path: Deterministic prompt, LLM title when available (fallback to deterministic)
+ * - Lyrics ON (cloud): Genre detection, title, and lyrics via cloud LLM
+ * - Lyrics ON (offline): Same as cloud but using local Ollama
  *
  * Direct Mode (Suno V5 styles) is handled by direct-mode-generation.ts
  *
@@ -40,16 +40,17 @@ type TraceRuntime = {
 };
 
 /**
- * Fully deterministic generation path (lyrics mode OFF).
+ * Generation path for lyrics mode OFF.
  *
- * No LLM calls - executes in <50ms. Uses deterministic builders
- * for prompt and title generation, avoiding network calls.
+ * Prompt generation is always deterministic (<50ms). Title generation
+ * uses LLM when available for more creative titles, otherwise falls
+ * back to deterministic title generation.
  */
-function generateInitialDeterministic(
+async function generateInitialWithoutLyrics(
   options: GenerateInitialOptions,
   config: GenerationConfig,
   runtime?: TraceRuntime
-): GenerationResult {
+): Promise<GenerationResult> {
   const { description, lockedPhrase, genreOverride } = options;
   const rng = runtime?.rng ?? Math.random;
   const trace = runtime?.trace;
@@ -66,10 +67,27 @@ function generateInitialDeterministic(
     promptText = injectLockedPhrase(promptText, lockedPhrase, config.isMaxMode());
   }
 
-  // 3. Generate deterministic title from extracted genre/mood
+  // 3. Extract genre/mood for title generation
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
-  const title = generateDeterministicTitle(genre, mood, rng, description);
+
+  // 4. Generate title - use LLM when available for more creative titles
+  let title: string;
+  if (config.isLLMAvailable()) {
+    log.info('generateInitialWithoutLyrics:llmTitle', { genre, mood, hasDescription: !!description, useLocalLLM: config.isUseLocalLLM() });
+    const titleResult = await generateTitle({
+      description: description || `${mood} ${genre} song`,
+      genre,
+      mood,
+      getModel: config.getModel,
+      ollamaEndpoint: config.getOllamaEndpointIfLocal(),
+      trace,
+      traceLabel: 'title.generate',
+    });
+    title = titleResult.title;
+  } else {
+    title = generateDeterministicTitle(genre, mood, rng, description);
+  }
 
   return {
     text: promptText,
@@ -165,7 +183,15 @@ async function generateInitialWithLyrics(
   // since both title and lyrics are required for a complete generation result
   const topic = lyricsTopic?.trim() || description;
   const [titleResult, lyricsResult] = await Promise.all([
-    generateTitle(topic, genre, mood, getModelFn, undefined, ollamaEndpoint, { trace, traceLabel: 'title.generate' }),
+    generateTitle({
+      description: topic,
+      genre,
+      mood,
+      getModel: getModelFn,
+      ollamaEndpoint,
+      trace,
+      traceLabel: 'title.generate',
+    }),
     generateLyrics(topic, genre, mood, config.isMaxMode(), getModelFn, config.getUseSunoTags(), undefined, ollamaEndpoint, { trace, traceLabel: 'lyrics.generate' }),
   ]);
 
@@ -233,7 +259,7 @@ export async function generateInitial(
   }
 
   if (!config.isLyricsMode()) {
-    return generateInitialDeterministic(options, config, runtime);
+    return generateInitialWithoutLyrics(options, config, runtime);
   }
 
   // Use offline generation with Ollama when offline mode is enabled

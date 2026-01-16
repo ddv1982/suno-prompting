@@ -1,49 +1,15 @@
 import { type AIEngine, type GenerationResult } from '@bun/ai';
-import { createRng } from '@bun/instruments/services/random';
-import { maybeCreateTraceCollector, type TraceCollector } from '@bun/trace';
 import { GenerateInitialSchema, RefinePromptSchema } from '@shared/schemas';
 import { enforceTraceSizeCap } from '@shared/trace';
 import { validatePrompt } from '@shared/validation';
 
-import { withErrorHandling, log, type ActionMeta } from './utils';
+import { createTraceRuntime, withErrorHandling, log, type ActionMeta, type TraceRuntime } from './utils';
 import { validate } from './validated';
 import { validateSunoStylesLimit, validateGenreStylesMutualExclusivity } from './validation';
 
 import type { RPCHandlers } from '@shared/types';
 
 type GenerationHandlers = Pick<RPCHandlers, 'generateInitial' | 'refinePrompt'>;
-
-type TraceRuntime = {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
-};
-
-function createTraceRuntime(
-  aiEngine: AIEngine,
-  versionId: string,
-  action: 'generate.full' | 'refine',
-): TraceRuntime {
-  const enabled = aiEngine.isDebugMode();
-  if (!enabled) return {};
-
-  const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? 1;
-  const rng = createRng(seed);
-
-  const trace = maybeCreateTraceCollector(true, {
-    runId: versionId,
-    action,
-    promptMode: 'full',
-    rng: {
-      seed,
-      algorithm: 'mulberry32',
-    },
-  });
-
-  return {
-    trace,
-    rng,
-  };
-}
 
 async function runAndValidate(
   aiEngine: AIEngine,
@@ -55,7 +21,7 @@ async function runAndValidate(
     const versionId = Bun.randomUUIDv7();
 
     const traceAction = action === 'generateInitial' ? 'generate.full' : 'refine';
-    const runtime = createTraceRuntime(aiEngine, versionId, traceAction);
+    const runtime = createTraceRuntime(aiEngine, versionId, traceAction, 'full');
 
     runtime.trace?.addRunEvent('run.start', traceAction);
     const result = await operation(runtime);

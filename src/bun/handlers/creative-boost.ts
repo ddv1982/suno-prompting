@@ -1,42 +1,13 @@
 import { type AIEngine } from '@bun/ai';
-import { createRng } from '@bun/instruments/services/random';
-import { maybeCreateTraceCollector, type TraceCollector } from '@bun/trace';
 import { GenerateCreativeBoostSchema, RefineCreativeBoostSchema } from '@shared/schemas';
 import { enforceTraceSizeCap } from '@shared/trace';
 
-import { withErrorHandling, log } from './utils';
+import { createTraceRuntime, withErrorHandling, log } from './utils';
 import { validate } from './validated';
 
 import type { RPCHandlers } from '@shared/types';
-import type { TraceRunAction } from '@shared/types/trace';
 
 type CreativeBoostHandlers = Pick<RPCHandlers, 'generateCreativeBoost' | 'refineCreativeBoost'>;
-
-type TraceRuntime = {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
-};
-
-function createTraceRuntime(
-  aiEngine: AIEngine,
-  versionId: string,
-  action: TraceRunAction
-): TraceRuntime {
-  const enabled = aiEngine.isDebugMode();
-  if (!enabled) return {};
-
-  const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? 1;
-  const rng = createRng(seed);
-
-  const trace = maybeCreateTraceCollector(true, {
-    runId: versionId,
-    action,
-    promptMode: 'creativeBoost',
-    rng: { seed, algorithm: 'mulberry32' },
-  });
-
-  return { trace, rng };
-}
 
 export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHandlers {
   return {
@@ -54,7 +25,7 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
 
       return withErrorHandling('generateCreativeBoost', async () => {
         const versionId = Bun.randomUUIDv7();
-        const runtime = createTraceRuntime(aiEngine, versionId, 'generate.creativeBoost');
+        const runtime = createTraceRuntime(aiEngine, versionId, 'generate.creativeBoost', 'creativeBoost');
 
         runtime.trace?.addRunEvent('run.start', 'generate.creativeBoost');
         const result = await aiEngine.generateCreativeBoost(
@@ -105,7 +76,7 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
 
       return withErrorHandling('refineCreativeBoost', async () => {
         const versionId = Bun.randomUUIDv7();
-        const runtime = createTraceRuntime(aiEngine, versionId, 'generate.creativeBoost');
+        const runtime = createTraceRuntime(aiEngine, versionId, 'generate.creativeBoost', 'creativeBoost');
 
         runtime.trace?.addRunEvent('run.start', 'refine.creativeBoost');
         const result = await aiEngine.refineCreativeBoost(

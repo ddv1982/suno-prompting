@@ -123,9 +123,9 @@ export async function generateCreativeBoost(
   // 3. Build style prompt
   const styleResult = buildCreativeBoostStyle(selectedGenre, maxMode, withWordlessVocals, runtime);
 
-  // 4. Generate title
+  // 4. Generate title (use LLM when available for more creative titles)
   const { title } = await generateCreativeBoostTitle(
-    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel, ollamaEndpoint, runtime
+    withLyrics, lyricsTopic, description, selectedGenre, selectedMood, config.getModel, ollamaEndpoint, runtime, config.isLLMAvailable?.()
   );
 
   // 5. Generate lyrics if requested
