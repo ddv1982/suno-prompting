@@ -177,27 +177,27 @@ describe('deterministic-builder', () => {
   describe('assembleStyleTags', () => {
     it('returns tags array', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags(['jazz'], rng);
+      const result = assembleStyleTags({ components: ['jazz'], rng });
       expect(result.tags).toBeDefined();
       expect(result.tags.length).toBeGreaterThan(0);
     });
 
     it('limits tags to reasonable count', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags(['jazz'], rng);
+      const result = assembleStyleTags({ components: ['jazz'], rng });
       expect(result.tags.length).toBeLessThanOrEqual(10);
       expect(result.tags.length).toBeGreaterThanOrEqual(6);
     });
 
     it('formatted string is comma-separated', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags(['rock'], rng);
+      const result = assembleStyleTags({ components: ['rock'], rng });
       expect(result.formatted).toContain(',');
     });
 
     it('tags are lowercase', () => {
       const rng = createSeededRng(12345);
-      const result = assembleStyleTags(['jazz'], rng);
+      const result = assembleStyleTags({ components: ['jazz'], rng });
       for (const tag of result.tags) {
         expect(tag).toBe(tag.toLowerCase());
       }
@@ -205,8 +205,8 @@ describe('deterministic-builder', () => {
 
     it('includes genre-appropriate tags', () => {
       const rng = createSeededRng(42);
-      const jazzResult = assembleStyleTags(['jazz'], rng);
-      const electronicResult = assembleStyleTags(['electronic'], createSeededRng(42));
+      const jazzResult = assembleStyleTags({ components: ['jazz'], rng });
+      const electronicResult = assembleStyleTags({ components: ['electronic'], rng: createSeededRng(42) });
 
       // Jazz and electronic should have different style tags (different sources)
       expect(jazzResult.tags).toBeDefined();

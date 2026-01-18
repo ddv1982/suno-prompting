@@ -9,6 +9,7 @@ import { z } from 'zod';
 import type { GenreType } from '@bun/instruments/genres';
 import type { MoodCategory } from '@bun/mood';
 import type { TraceCollector } from '@bun/trace';
+import type { ThematicContext } from '@shared/schemas/thematic-context';
 
 /**
  * Tag category weights for style tag assembly.
@@ -124,6 +125,8 @@ export type DeterministicOptions = {
   readonly rng?: () => number;
   /** Optional trace collector (undefined when debug mode OFF). */
   readonly trace?: TraceCollector;
+  /** Optional LLM-extracted thematic context for hybrid generation */
+  readonly thematicContext?: ThematicContext;
 };
 
 /**

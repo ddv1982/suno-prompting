@@ -42,11 +42,24 @@ export function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): s
 }
 
 /**
+ * Options for joinRecordingDescriptors function.
+ */
+export type JoinRecordingDescriptorsOptions = {
+  /** Random number generator for deterministic selection */
+  readonly rng?: () => number;
+  /** Number of descriptors to select (default: 2) */
+  readonly count?: number;
+  /** Optional trace collector for debugging */
+  readonly trace?: TraceCollector;
+};
+
+/**
  * Join recording descriptors into a comma-separated string.
  * Uses structured categories with conflict prevention.
  *
- * @param rng - Random number generator
+ * @param rng - Random number generator (or options object)
  * @param count - Number of descriptors to select
+ * @param trace - Optional trace collector
  * @returns Recording context string (comma-separated)
  *
  * @example
@@ -54,17 +67,35 @@ export function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): s
  * // "professional mastering polish, studio session warmth"
  */
 export function joinRecordingDescriptors(
-  rng: () => number = Math.random,
+  rngOrOptions: (() => number) | JoinRecordingDescriptorsOptions = Math.random,
   count: number = 2,
   trace?: TraceCollector
 ): string {
-  const selected = selectRecordingDescriptorsNew(rng, count);
+  // Support both old signature (rng, count, trace) and new options object
+  const isOptions = typeof rngOrOptions === 'object';
+  const options: JoinRecordingDescriptorsOptions = isOptions
+    ? rngOrOptions
+    : { rng: rngOrOptions, count, trace };
 
-  traceDecision(trace, {
+  const {
+    rng: optionsRng = Math.random,
+    count: optionsCount = 2,
+    trace: optionsTrace,
+  } = options;
+
+  // Use provided values based on calling convention
+  const actualRng = isOptions ? optionsRng : (rngOrOptions as () => number);
+  const actualCount = isOptions ? optionsCount : count;
+  const actualTrace = isOptions ? optionsTrace : trace;
+
+  // Select from recording descriptors
+  const selected = selectRecordingDescriptorsNew(actualRng, actualCount);
+
+  traceDecision(actualTrace, {
     domain: 'recording',
     key: 'deterministic.recording.descriptors',
     branchTaken: 'selectRecordingDescriptors',
-    why: `count=${count} selected=${selected.length}`,
+    why: `count=${actualCount} selected=${selected.length}`,
     selection: {
       method: 'shuffleSlice',
       candidates: selected,

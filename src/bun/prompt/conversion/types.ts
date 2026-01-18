@@ -21,7 +21,8 @@ export interface SectionContent {
 }
 
 /**
- * Parsed prompt structure from max mode parsing
+ * Parsed prompt structure from max mode parsing.
+ * Supports both simple prompts and full standard mode format.
  */
 export interface ParsedMaxPrompt {
   description: string;
@@ -29,6 +30,12 @@ export interface ParsedMaxPrompt {
   moods: string[];
   instruments: string[];
   sections: SectionContent[];
+  /** Style tags extracted from standard mode (if present) */
+  styleTags?: string;
+  /** Recording context extracted from standard mode (if present) */
+  recording?: string;
+  /** BPM value or range extracted from standard mode (if present) */
+  bpm?: string;
 }
 
 /**

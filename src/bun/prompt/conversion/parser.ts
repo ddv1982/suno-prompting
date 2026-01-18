@@ -86,22 +86,30 @@ interface ExtractedFields {
   genre: string | null;
   moods: string[];
   instruments: string[];
+  styleTags?: string;
+  recording?: string;
+  bpm?: string;
   processedIndices: Set<number>;
 }
 
 /**
- * Extract structured fields (genre, moods, instruments) from lines
+ * Extract structured fields from lines.
+ * Supports both simple prompts and full standard mode format with Style Tags, Recording, BPM.
  */
 function extractFields(lines: string[]): ExtractedFields {
   let genre: string | null = null;
   const moods: string[] = [];
   const instruments: string[] = [];
+  let styleTags: string | undefined;
+  let recording: string | undefined;
+  let bpm: string | undefined;
   const processedIndices = new Set<number>();
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
 
+    // Genre: Jazz
     const genreMatch = line.match(/^Genre:\s*(.+)/i);
     if (genreMatch) {
       genre = genreMatch[1]?.trim().toLowerCase() ?? null;
@@ -109,6 +117,7 @@ function extractFields(lines: string[]): ExtractedFields {
       continue;
     }
 
+    // Mood: smooth, warm, sophisticated
     const moodMatch = line.match(/^Moods?:\s*(.+)/i);
     if (moodMatch) {
       moods.push(...parseCommaSeparated(moodMatch));
@@ -116,6 +125,7 @@ function extractFields(lines: string[]): ExtractedFields {
       continue;
     }
 
+    // Instruments: piano, guitar, bass
     const instrumentMatch = line.match(/^Instruments?:\s*(.+)/i);
     if (instrumentMatch) {
       instruments.push(...parseCommaSeparated(instrumentMatch));
@@ -123,12 +133,37 @@ function extractFields(lines: string[]): ExtractedFields {
       continue;
     }
 
-    if (line.match(/^\[[\w\s]+\]$/)) {
+    // Style Tags: plate reverb, warm character, wide stereo
+    const styleTagsMatch = line.match(/^Style Tags?:\s*(.+)/i);
+    if (styleTagsMatch) {
+      styleTags = styleTagsMatch[1]?.trim();
+      processedIndices.add(i);
+      continue;
+    }
+
+    // Recording: intimate jazz club session
+    const recordingMatch = line.match(/^Recording:\s*(.+)/i);
+    if (recordingMatch) {
+      recording = recordingMatch[1]?.trim();
+      processedIndices.add(i);
+      continue;
+    }
+
+    // BPM: between 80 and 160 (or just "120")
+    const bpmMatch = line.match(/^BPM:\s*(.+)/i);
+    if (bpmMatch) {
+      bpm = bpmMatch[1]?.trim();
+      processedIndices.add(i);
+      continue;
+    }
+
+    // Mark header lines like [Mood, Genre, Key: X mode] as processed
+    if (line.match(/^\[[\w\s,:-]+\]$/)) {
       processedIndices.add(i);
     }
   }
 
-  return { genre, moods, instruments, processedIndices };
+  return { genre, moods, instruments, styleTags, recording, bpm, processedIndices };
 }
 
 /**
@@ -144,15 +179,16 @@ function findDescription(lines: string[], processedIndices: Set<number>): string
 }
 
 /**
- * Parse a non-max format prompt into structured data
+ * Parse a non-max format prompt into structured data.
+ * Extracts all standard mode fields including Style Tags, Recording, and BPM.
  */
 export function parseNonMaxPrompt(text: string): ParsedMaxPrompt {
   const lines = text.split('\n').map(l => l.trim());
-  const { genre, moods, instruments, processedIndices } = extractFields(lines);
+  const { genre, moods, instruments, styleTags, recording, bpm, processedIndices } = extractFields(lines);
   const description = findDescription(lines, processedIndices);
   const sections = extractSections(text);
 
-  return { description, genre, moods, instruments, sections };
+  return { description, genre, moods, instruments, sections, styleTags, recording, bpm };
 }
 
 // =============================================================================

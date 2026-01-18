@@ -7,7 +7,7 @@
  */
 
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -26,7 +26,7 @@ const log = createLogger('HistoryItem');
 export function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryItemProps): ReactElement {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const date = new Date(session.updatedAt);
+  const displayDate = useMemo(() => new Date(session.updatedAt).toLocaleDateString(), [session.updatedAt]);
 
   const handleDelete = async (): Promise<void> => {
     setDeleting(true);
@@ -70,7 +70,7 @@ export function HistoryItem({ session, isActive, onSelect, onDelete }: HistoryIt
               {session.currentTitle || session.originalInput || "Untitled Project"}
             </span>
             <span className="text-tiny text-sidebar-foreground/40">
-              {date.toLocaleDateString()}
+              {displayDate}
             </span>
           </div>
         </div>

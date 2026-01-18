@@ -3,6 +3,7 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { HARMONIC_STYLES, ALL_COMBINATIONS } from '@bun/instruments/modes';
 import { ALL_POLYRHYTHM_COMBINATIONS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
 import { findGenreAliasInText } from '@bun/prompt/deterministic/aliases';
+import { matchesWholeWord } from '@shared/utils/string';
 
 import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
 import type { GenreType } from '@bun/instruments/genres';
@@ -193,18 +194,21 @@ export function detectGenreFromMood(
  * Checks genre names and keywords against the description. This is the base
  * detection function without alias or mood fallbacks.
  *
+ * Uses word boundary matching to avoid false positives like:
+ * - "disco" matching "discovering"
+ * - "pop" matching "popular"
+ *
  * @internal
  */
 function detectGenreCore(description: string): GenreType | null {
-  const lower = description.toLowerCase();
   for (const key of GENRE_PRIORITY) {
     const genre = GENRE_REGISTRY[key];
-    // Match against name (case-insensitive)
-    if (lower.includes(genre.name.toLowerCase())) {
+    // Match against name (whole word only)
+    if (matchesWholeWord(description, genre.name)) {
       return key;
     }
-    // Match against keywords
-    if (genre.keywords.some((kw) => lower.includes(kw))) {
+    // Match against keywords (whole word only)
+    if (genre.keywords.some((kw) => matchesWholeWord(description, kw))) {
       return key;
     }
   }

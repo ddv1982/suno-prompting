@@ -48,7 +48,7 @@ function enrichFromGenresInternal(
   trace?: TraceCollector,
 ): EnrichmentResult {
   // Use existing pipeline functions - no duplication
-  const styleResult = assembleStyleTags(genres, rng, trace);
+  const styleResult = assembleStyleTags({ components: genres, rng, trace });
   const instrumentResult = assembleInstruments(genres, rng, trace);
   const production = buildBlendedProductionDescriptor(genres, rng);
   const vocalStyle = buildBlendedVocalDescriptor(genres, rng);

@@ -103,6 +103,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
 export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNode => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settings = useSettingsLoader();
+  const { reloadSettings } = settings;
   const isInitialMount = useRef(true);
 
   const openSettings = useCallback(() => {
@@ -111,9 +112,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
 
   // Load settings on initial mount
   useEffect(() => {
-    void settings.reloadSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void reloadSettings();
+  }, [reloadSettings]);
 
   // Reload settings when settings modal closes (skip initial mount)
   useEffect(() => {
@@ -122,9 +122,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
       return;
     }
     if (!settingsOpen) {
-      void settings.reloadSettings();
+      void reloadSettings();
     }
-  }, [settingsOpen, settings]);
+  }, [settingsOpen, reloadSettings]);
 
   // Derive LLM availability from settings:
   // LLM is available if local LLM is enabled OR at least one cloud API key is configured

@@ -178,3 +178,83 @@ Verse content`;
     expect(parsed.moods).toEqual(['happy', 'sad', 'nostalgic']);
   });
 });
+
+describe('parseNonMaxPrompt standard mode format', () => {
+  it('extracts Style Tags field', () => {
+    const prompt = 'Style Tags: plate reverb, warm character, wide stereo';
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.styleTags).toBe('plate reverb, warm character, wide stereo');
+  });
+
+  it('extracts Style Tag (singular) field', () => {
+    const prompt = 'Style Tag: lo-fi warmth, cassette saturation';
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.styleTags).toBe('lo-fi warmth, cassette saturation');
+  });
+
+  it('extracts Recording field', () => {
+    const prompt = 'Recording: intimate jazz club session';
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.recording).toBe('intimate jazz club session');
+  });
+
+  it('extracts BPM field with range format', () => {
+    const prompt = 'BPM: between 80 and 160';
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.bpm).toBe('between 80 and 160');
+  });
+
+  it('extracts BPM field with simple number', () => {
+    const prompt = 'BPM: 120';
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.bpm).toBe('120');
+  });
+
+  it('parses complete standard mode prompt', () => {
+    const prompt = `[Melancholic, Jazz, Key: D minor]
+
+Genre: Jazz
+BPM: between 80 and 160
+Mood: smooth, warm, sophisticated
+Instruments: Arpeggiated Rhodes, breathy tenor sax, walking upright bass
+Style Tags: plate reverb, warm character, wide stereo, natural dynamics
+Recording: intimate jazz club session
+
+[INTRO] Sparse Rhodes chords with brushed drums
+[VERSE] Walking bass enters with melodic sax`;
+
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.genre).toBe('jazz');
+    expect(parsed.bpm).toBe('between 80 and 160');
+    expect(parsed.moods).toEqual(['smooth', 'warm', 'sophisticated']);
+    expect(parsed.instruments).toEqual(['Arpeggiated Rhodes', 'breathy tenor sax', 'walking upright bass']);
+    expect(parsed.styleTags).toBe('plate reverb, warm character, wide stereo, natural dynamics');
+    expect(parsed.recording).toBe('intimate jazz club session');
+    // Header + 2 actual sections = 3 sections extracted (header has no content after it)
+    // The important sections (INTRO, VERSE) should be present
+    const actualSections = parsed.sections.filter(s => ['INTRO', 'VERSE'].includes(s.tag));
+    expect(actualSections).toHaveLength(2);
+    expect(actualSections[0]?.tag).toBe('INTRO');
+    expect(actualSections[1]?.tag).toBe('VERSE');
+  });
+
+  it('handles header line with mood, genre, and key', () => {
+    const prompt = `[Energetic, Rock, Key: E major]
+
+Genre: Rock
+Mood: powerful`;
+
+    const parsed = parseNonMaxPrompt(prompt);
+    // Header line should not be captured as description
+    expect(parsed.description).not.toContain('[Energetic');
+    expect(parsed.genre).toBe('rock');
+  });
+
+  it('returns undefined for missing optional fields', () => {
+    const prompt = 'Genre: Pop\nMood: happy';
+    const parsed = parseNonMaxPrompt(prompt);
+    expect(parsed.styleTags).toBeUndefined();
+    expect(parsed.recording).toBeUndefined();
+    expect(parsed.bpm).toBeUndefined();
+  });
+});

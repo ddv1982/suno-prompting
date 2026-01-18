@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import { useGenerationDisabled } from "@/context/generation-disabled-context";
 import { createLogger } from "@/lib/logger";
-import { isMaxFormat } from "@/lib/max-format";
+import { isMaxFormat, isStructuredPrompt } from "@/lib/max-format";
 import { rpcClient, type RpcError } from "@/services/rpc-client";
 
 import type { TraceRun } from "@shared/types";
@@ -60,6 +60,12 @@ export function MainInput({
     if (!pastedText.trim()) return;
 
     if (isMaxFormat(pastedText)) {
+      return;
+    }
+
+    // Only convert structured prompts (with Genre:, BPM:, section tags, etc.)
+    // Simple descriptions should go through normal generation flow
+    if (!isStructuredPrompt(pastedText)) {
       return;
     }
 

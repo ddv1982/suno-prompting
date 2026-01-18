@@ -49,6 +49,7 @@ import { getTagWeightsForGenre } from './weights';
 import type { StyleTagsResult, TagCategoryWeights } from './types';
 import type { GenreType } from '@bun/instruments/genres';
 import type { TraceCollector } from '@bun/trace';
+import type { ThematicContext } from '@shared/schemas/thematic-context';
 
 /**
  * Maximum tag counts per category for deterministic selection.
@@ -78,45 +79,11 @@ function collectWeightedTags(
   addUnique: (tag: string) => void,
   rng: () => number
 ): void {
-  // Vocal: genre-aware weights (e.g., jazz ~80%, electronic ~40%, ambient ~15%)
-  applyWeightedSelection(
-    weights.vocal,
-    () => selectVocalTags(primaryGenre, TAG_CATEGORY_MAX_COUNTS.vocal, rng),
-    addUnique,
-    rng
-  );
-
-  // Spatial: stereo imaging and reverb (e.g., ambient ~85%, electronic ~70%, folk ~35%)
-  applyWeightedSelection(
-    weights.spatial,
-    () => selectSpatialTags(TAG_CATEGORY_MAX_COUNTS.spatial, rng),
-    addUnique,
-    rng
-  );
-
-  // Harmonic: tonal character (e.g., classical ~70%, jazz ~50%, electronic ~30%)
-  applyWeightedSelection(
-    weights.harmonic,
-    () => selectHarmonicTags(TAG_CATEGORY_MAX_COUNTS.harmonic, rng),
-    addUnique,
-    rng
-  );
-
-  // Dynamic: compression and loudness (e.g., metal ~70%, hardstyle ~70%, ambient ~25%)
-  applyWeightedSelection(
-    weights.dynamic,
-    () => selectDynamicTags(TAG_CATEGORY_MAX_COUNTS.dynamic, rng),
-    addUnique,
-    rng
-  );
-
-  // Temporal: timing and groove (e.g., afrobeat ~55%, drumandbass ~55%, ambient ~20%)
-  applyWeightedSelection(
-    weights.temporal,
-    () => selectTemporalTags(TAG_CATEGORY_MAX_COUNTS.temporal, rng),
-    addUnique,
-    rng
-  );
+  applyWeightedSelection(weights.vocal, () => selectVocalTags(primaryGenre, TAG_CATEGORY_MAX_COUNTS.vocal, rng), addUnique, rng);
+  applyWeightedSelection(weights.spatial, () => selectSpatialTags(TAG_CATEGORY_MAX_COUNTS.spatial, rng), addUnique, rng);
+  applyWeightedSelection(weights.harmonic, () => selectHarmonicTags(TAG_CATEGORY_MAX_COUNTS.harmonic, rng), addUnique, rng);
+  applyWeightedSelection(weights.dynamic, () => selectDynamicTags(TAG_CATEGORY_MAX_COUNTS.dynamic, rng), addUnique, rng);
+  applyWeightedSelection(weights.temporal, () => selectTemporalTags(TAG_CATEGORY_MAX_COUNTS.temporal, rng), addUnique, rng);
 }
 
 /**
@@ -152,28 +119,104 @@ function applyWeightedSelection(
 
 /**
  * Select random moods from a genre's mood pool.
- *
- * @param genre - Target genre
- * @param count - Number of moods to select
- * @param rng - Random number generator
- * @returns Array of selected moods
- *
- * @example
- * selectMoodsForGenre('jazz', 2, Math.random)
- * // ['smooth', 'warm']
  */
-function selectMoodsForGenre(
-  genre: GenreType,
-  count: number,
+function selectMoodsForGenre(genre: GenreType, count: number, rng: () => number): string[] {
+  const moods = GENRE_REGISTRY[genre]?.moods ?? [];
+  if (moods.length === 0) return [];
+  return [...moods].sort(() => rng() - 0.5).slice(0, count).map((m) => m.toLowerCase());
+}
+
+/**
+ * Add production descriptor tags based on genre count.
+ */
+function addProductionTags(
+  components: GenreType[],
+  addUnique: (tag: string) => void,
+  rng: () => number
+): void {
+  if (components.length > 1) {
+    const blended = buildBlendedProductionDescriptor(components, rng);
+    for (const part of blended.split(',').map((p) => p.trim().toLowerCase())) {
+      if (part) addUnique(part);
+    }
+  } else {
+    const production = buildProductionDescriptorMulti(rng);
+    addUnique(production.reverb);
+    addUnique(production.texture);
+    addUnique(production.stereo);
+    addUnique(production.dynamic);
+  }
+}
+
+/**
+ * Collect mood tags from all genre components.
+ */
+function collectMoodTags(
+  components: GenreType[],
+  addUnique: (tag: string) => void,
   rng: () => number
 ): string[] {
-  const genreDef = GENRE_REGISTRY[genre];
-  const moods = genreDef?.moods ?? [];
+  const collectedMoodTags: string[] = [];
+  for (const genre of components) {
+    for (const mood of selectMoodsForGenre(genre, 2, rng)) {
+      addUnique(mood);
+      collectedMoodTags.push(mood.toLowerCase());
+    }
+  }
+  return collectedMoodTags;
+}
 
-  if (moods.length === 0) return [];
+/**
+ * Append thematic content from LLM context to style tags.
+ * Adds first 2 themes + scene phrase (if available).
+ */
+function appendThematicThemes(
+  thematicContext: ThematicContext | undefined,
+  addUnique: (tag: string) => void,
+  trace?: TraceCollector
+): void {
+  if (!thematicContext) return;
 
-  const shuffled = [...moods].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count).map((m) => m.toLowerCase());
+  // Add first 2 themes
+  const themesToAppend = thematicContext.themes.slice(0, 2);
+  for (const theme of themesToAppend) {
+    addUnique(theme);
+  }
+
+  // Add scene phrase if available
+  const scene = thematicContext.scene?.trim();
+  if (scene) {
+    addUnique(scene);
+  }
+
+  traceDecision(trace, {
+    domain: 'styleTags',
+    key: 'deterministic.styleTags.thematicContext',
+    branchTaken: 'thematic-appended',
+    why: `Appended ${themesToAppend.length} themes${scene ? ' + scene phrase' : ''} from LLM context`,
+    selection: { method: 'shuffleSlice', candidates: scene ? [...themesToAppend, scene] : themesToAppend },
+  });
+}
+
+/**
+ * Apply tag limit and trace dropped tags.
+ */
+function applyTagLimit(
+  allTags: string[],
+  limit: number,
+  trace?: TraceCollector
+): string[] {
+  if (allTags.length <= limit) return allTags;
+
+  const droppedTags = allTags.slice(limit);
+  traceDecision(trace, {
+    domain: 'styleTags',
+    key: 'deterministic.styleTags.truncation',
+    branchTaken: 'tags-truncated',
+    why: `Tag limit (${limit}) exceeded. ${droppedTags.length} tags dropped: ${droppedTags.join(', ')}`,
+  });
+
+  return allTags.slice(0, limit);
 }
 
 /**
@@ -274,18 +317,48 @@ export function selectMoodsForCreativity(
  */
 export { applyWeightedSelection };
 
+/**
+ * Options for assembleStyleTags function.
+ */
+export type AssembleStyleTagsOptions = {
+  /** Array of genre components (supports single or multi-genre) */
+  readonly components: GenreType[];
+  /** Random number generator for deterministic selection */
+  readonly rng?: () => number;
+  /** Optional trace collector for debugging */
+  readonly trace?: TraceCollector;
+  /** Optional thematic context from LLM extraction */
+  readonly thematicContext?: ThematicContext;
+};
+
+/**
+ * Assemble style tags for deterministic prompt generation.
+ *
+ * Supports two call signatures:
+ * 1. Options object (preferred): `assembleStyleTags({ components, rng, trace, thematicContext })`
+ * 2. Legacy array: `assembleStyleTags(components[], rng, trace)` - kept for backward compatibility
+ *
+ * @param componentsOrOptions - Either an options object (preferred) or array of genre components
+ * @param rng - Random number generator (only used with array signature)
+ * @param trace - Trace collector (only used with array signature)
+ */
 export function assembleStyleTags(
-  components: GenreType[],
+  componentsOrOptions: GenreType[] | AssembleStyleTagsOptions,
   rng: () => number = Math.random,
   trace?: TraceCollector
 ): StyleTagsResult {
+  // Support both old signature (GenreType[], rng, trace) and new options object
+  const options: AssembleStyleTagsOptions = Array.isArray(componentsOrOptions)
+    ? { components: componentsOrOptions, rng, trace }
+    : componentsOrOptions;
+
+  const { components, rng: optionsRng = Math.random, trace: optionsTrace, thematicContext } = options;
+  const actualRng = Array.isArray(componentsOrOptions) ? rng : optionsRng;
+  const actualTrace = Array.isArray(componentsOrOptions) ? trace : optionsTrace;
   const primaryGenre = components[0] ?? 'pop';
+
   const allTags: string[] = [];
   const seenTags = new Set<string>();
-
-  // Get genre-specific weights for tag category selection
-  const weights = getTagWeightsForGenre(primaryGenre);
-
   const addUnique = (tag: string): void => {
     const lower = tag.toLowerCase();
     if (!seenTags.has(lower)) {
@@ -294,94 +367,38 @@ export function assembleStyleTags(
     }
   };
 
-  // ==========================================================================
-  // PRIORITY 1: Production descriptor elements (ALWAYS INCLUDED - never dropped)
-  // Multi-dimensional for maximum variety (30,600 combinations for single-genre)
-  // ==========================================================================
-  if (components.length > 1) {
-    // For multi-genre, use blended production descriptor
-    const blended = buildBlendedProductionDescriptor(components, rng);
-    const parts = blended.split(',').map((p) => p.trim().toLowerCase());
-    for (const part of parts) {
-      if (part) addUnique(part);
-    }
-  } else {
-    // For single genre, use multi-dimensional production (30,600 combinations)
-    const production = buildProductionDescriptorMulti(rng);
-    addUnique(production.reverb);
-    addUnique(production.texture);
-    addUnique(production.stereo);
-    addUnique(production.dynamic);
-  }
+  // Priority 1: Production descriptor elements (4 tags)
+  addProductionTags(components, addUnique, actualRng);
 
-  // ==========================================================================
-  // PRIORITY 2: Recording context (ALWAYS INCLUDED - never dropped)
-  // Genre-specific context selection (141 contexts across 18 genres)
-  // Note: We add a mixing call to break LCG patterns from production selection
-  // ==========================================================================
-  rng(); // Mixing call to improve variety distribution
-  const recordingContext = selectRecordingContext(primaryGenre, rng);
-  addUnique(recordingContext);
+  // Priority 2: Recording context (1 tag)
+  actualRng(); // Mixing call to break LCG patterns
+  addUnique(selectRecordingContext(primaryGenre, actualRng));
 
-  // ==========================================================================
-  // PRIORITY 3: Mood tags from genre mood pools (2 per genre component)
-  // Track mood tags separately for header/display use
-  // ==========================================================================
-  const collectedMoodTags: string[] = [];
-  for (const genre of components) {
-    const moods = selectMoodsForGenre(genre, 2, rng);
-    for (const mood of moods) {
-      addUnique(mood);
-      collectedMoodTags.push(mood.toLowerCase());
-    }
-  }
+  // Priority 3: Mood tags (2 per genre component)
+  const collectedMoodTags = collectMoodTags(components, addUnique, actualRng);
 
-  // ==========================================================================
-  // PRIORITY 4: Texture tags (2 tags)
-  // ==========================================================================
-  const textureTags = selectTextureTags(2, rng);
-  for (const tag of textureTags) {
+  // Priority 4: Thematic context (themes + scene) - user's unique intent
+  appendThematicThemes(thematicContext, addUnique, actualTrace);
+
+  // Priority 5: Texture tags (2 tags) - generic, can be cut
+  for (const tag of selectTextureTags(2, actualRng)) {
     addUnique(tag);
   }
 
-  // ==========================================================================
-  // PRIORITY 5-9: Weighted category tags (probability-based, may be dropped)
-  // ==========================================================================
-  collectWeightedTags(weights, primaryGenre, addUnique, rng);
+  // Priority 6-10: Weighted category tags
+  collectWeightedTags(getTagWeightsForGenre(primaryGenre), primaryGenre, addUnique, actualRng);
 
-  // ==========================================================================
-  // TAG LIMIT: Cap at 10 total tags
-  // Production (4) + Recording (1) are always included (5 tags)
-  // Remaining 5 slots filled by: moods (2-4) + texture (2) + weighted categories
-  // ==========================================================================
+  // Apply tag limit
   const TAG_LIMIT = 10;
-  const droppedTags = allTags.length > TAG_LIMIT ? allTags.slice(TAG_LIMIT) : [];
-  const finalTags = allTags.slice(0, TAG_LIMIT);
+  const finalTags = applyTagLimit(allTags, TAG_LIMIT, actualTrace);
 
-  // Trace dropped tags if any
-  if (droppedTags.length > 0) {
-    traceDecision(trace, {
-      domain: 'styleTags',
-      key: 'deterministic.styleTags.truncation',
-      branchTaken: 'tags-truncated',
-      why: `Tag limit (${TAG_LIMIT}) exceeded. ${droppedTags.length} tags dropped: ${droppedTags.join(', ')}`,
-    });
-  }
-
-  traceDecision(trace, {
+  traceDecision(actualTrace, {
     domain: 'styleTags',
     key: 'deterministic.styleTags.assemble',
     branchTaken: components.length > 1 ? 'multi-genre' : 'single-genre',
-    why: `primary=${primaryGenre} components=${components.join(' ')} tags=${finalTags.length} weights=vocal:${weights.vocal}/spatial:${weights.spatial}`,
-    selection: {
-      method: 'shuffleSlice',
-      candidates: finalTags,
-    },
+    why: `primary=${primaryGenre} components=${components.join(' ')} tags=${finalTags.length}${thematicContext ? ' +thematic' : ''}`,
+    selection: { method: 'shuffleSlice', candidates: finalTags },
   });
 
-  return {
-    tags: finalTags,
-    formatted: finalTags.join(', '),
-    moodTags: collectedMoodTags,
-  };
+  return { tags: finalTags, formatted: finalTags.join(', '), moodTags: collectedMoodTags };
 }

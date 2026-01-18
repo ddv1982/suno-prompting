@@ -85,3 +85,6 @@ export {
 
 // Trace schemas
 export { TraceRunSchema, zTraceRun, type TraceRunInput } from './trace';
+
+// Thematic context schemas
+export { ThematicContextSchema, type ThematicContext } from './thematic-context';

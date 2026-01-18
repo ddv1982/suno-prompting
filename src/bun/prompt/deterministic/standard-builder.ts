@@ -25,9 +25,16 @@ import type { DeterministicOptions, DeterministicResult, StyleTagsResult } from 
 import type { GenreType } from '@bun/instruments/genres';
 import type { MoodCategory } from '@bun/mood';
 import type { TraceCollector } from '@bun/trace';
+import type { ThematicContext } from '@shared/schemas/thematic-context';
 
 /**
- * Resolve moods based on category override, creativity level, or genre defaults.
+ * Resolve moods based on thematic context, category override, creativity level, or genre defaults.
+ *
+ * Priority (highest to lowest):
+ * 1. ThematicContext moods (LLM-extracted) - REPLACE genre moods entirely
+ * 2. MoodCategory (user-selected)
+ * 3. Creativity-based compound moods (creativityLevel > 60)
+ * 4. Genre-derived moods from style tags
  */
 function resolveMoodsWithOverrides(
   styleResult: StyleTagsResult,
@@ -35,8 +42,23 @@ function resolveMoodsWithOverrides(
   moodCategory: MoodCategory | undefined,
   creativityLevel: number,
   rng: () => number,
-  trace?: TraceCollector
+  trace?: TraceCollector,
+  thematicContext?: ThematicContext
 ): readonly string[] {
+  // Priority 1: Thematic context moods REPLACE genre moods entirely
+  if (thematicContext && thematicContext.moods.length > 0) {
+    const moods = thematicContext.moods.slice(0, 3);
+    traceDecision(trace, {
+      domain: 'mood',
+      key: 'deterministic.moods.source',
+      branchTaken: 'thematicContext',
+      why: `thematicContext provided with ${moods.length} moods; replacing genre moods`,
+      selection: { method: 'shuffleSlice', candidates: moods },
+    });
+    return moods;
+  }
+
+  // Priority 2: Mood category override
   if (moodCategory) {
     const categoryMoods = selectMoodsForCategory(moodCategory, 3, rng);
     const moods = categoryMoods.length > 0 ? categoryMoods : styleResult.moodTags.slice(0, 3);
@@ -123,7 +145,7 @@ function resolveMoodsWithOverrides(
 export function buildDeterministicStandardPrompt(
   options: DeterministicOptions,
 ): DeterministicResult {
-  const { description, genreOverride, moodCategory, creativityLevel = 50, seed, rng: providedRng, trace } = options;
+  const { description, genreOverride, moodCategory, creativityLevel = 50, seed, rng: providedRng, trace, thematicContext } = options;
 
   // Determine RNG: use provided rng, or create seeded rng from seed, or default to Math.random
   const rng = providedRng ?? (seed !== undefined ? createSeededRng(seed) : Math.random);
@@ -135,6 +157,16 @@ export function buildDeterministicStandardPrompt(
       key: 'deterministic.standard.seed',
       branchTaken: 'seeded-rng',
       why: `seed=${seed} provided; using seeded RNG for reproducibility`,
+    });
+  }
+
+  // Trace thematic context usage
+  if (thematicContext) {
+    traceDecision(trace, {
+      domain: 'other',
+      key: 'deterministic.standard.thematicContext',
+      branchTaken: 'hybrid-merge',
+      why: `thematicContext provided; will merge LLM moods (${thematicContext.moods.length}), themes (${thematicContext.themes.length}), and scene`,
     });
   }
 
@@ -150,11 +182,18 @@ export function buildDeterministicStandardPrompt(
   const instrumentsResult = assembleInstruments(components, rng, trace);
 
   // 3. Assemble style tags - blends moods from all genre components
-  const styleResult = assembleStyleTags(components, rng, trace);
+  // Pass thematicContext to append first 2 themes to style tags
+  const styleResult = assembleStyleTags({
+    components,
+    rng,
+    trace,
+    thematicContext,
+  });
 
-  // 3b. Resolve moods based on category, creativity, or genre defaults
+  // 3b. Resolve moods based on thematic context, category, creativity, or genre defaults
+  // Thematic context moods REPLACE genre moods entirely
   const moods = resolveMoodsWithOverrides(
-    styleResult, primaryGenre, moodCategory, creativityLevel, rng, trace
+    styleResult, primaryGenre, moodCategory, creativityLevel, rng, trace, thematicContext
   );
 
   // 4. Get BPM range - uses blended range for multi-genre
@@ -176,6 +215,7 @@ export function buildDeterministicStandardPrompt(
   });
 
   // 8. Select primary mood for header (capitalize first letter)
+  // When thematicContext is provided, use first LLM mood for header
   const primaryMood = moods[0] ?? 'Energetic';
   const capitalizedMood = primaryMood.charAt(0).toUpperCase() + primaryMood.slice(1);
 
@@ -184,8 +224,8 @@ export function buildDeterministicStandardPrompt(
     articulateInstrument(i, rng),
   );
 
-  // 10. Get recording context (same as MAX MODE for remix compatibility)
-  const recordingContext = joinRecordingDescriptors(rng, 2, trace);
+  // 10. Get recording context (production/studio descriptors)
+  const recordingContext = joinRecordingDescriptors({ rng, count: 2, trace });
 
   // 11. Format the STANDARD MODE prompt
   const rawPrompt = `[${capitalizedMood}, ${genreDisplayName}, ${keyMode}]

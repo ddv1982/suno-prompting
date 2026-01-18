@@ -176,8 +176,18 @@ export function buildMaxFormatPrompt(fields: MaxFormatFields): string {
 // =============================================================================
 
 /**
+ * Check if parsed prompt has all required fields for direct conversion (no LLM needed).
+ */
+function hasCompleteStandardModeFields(parsed: ParsedMaxPrompt): boolean {
+  return !!(parsed.styleTags && parsed.recording);
+}
+
+/**
  * Convert a non-max format prompt to Max Mode format
  * Returns unchanged if already in max format
+ * 
+ * When converting from standard mode format (with Style Tags, Recording, BPM),
+ * preserves those existing fields instead of regenerating them via LLM.
  * 
  * Genre priority:
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
@@ -190,22 +200,37 @@ export async function convertToMaxFormat(
   options: ConversionOptions = {}
 ): Promise<MaxConversionResult> {
   const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint } = options;
+  
   // Check if already in max format
   if (isMaxFormat(text)) {
     return { convertedPrompt: text, wasConverted: false };
   }
 
-  // Parse the input
+  // Parse the input (extracts all fields including Style Tags, Recording, BPM)
   const parsed = parseNonMaxPrompt(text);
 
   // Resolve effective genre using shared utility
   const genre = resolveGenre(parsed.genre, seedGenres, sunoStyles);
 
-  // Use provided bpmRange if available, otherwise infer from genre
-  const bpm = bpmRange ?? inferBpm(genre.forLookup);
+  // Use parsed BPM if available, then provided bpmRange, then infer from genre
+  const bpm = parsed.bpm ?? bpmRange ?? inferBpm(genre.forLookup);
 
-  // Enhance with AI (generate style tags and recording)
-  const aiResult = await enhanceWithAI(parsed, getModel, ollamaEndpoint);
+  // Determine style tags and recording:
+  // - If standard mode fields exist, use them directly (no LLM call)
+  // - Otherwise, call LLM to generate them
+  let styleTags: string;
+  let recording: string;
+
+  if (hasCompleteStandardModeFields(parsed) && parsed.styleTags && parsed.recording) {
+    // Preserve existing standard mode fields - no LLM needed
+    styleTags = parsed.styleTags;
+    recording = parsed.recording;
+  } else {
+    // Generate missing fields via LLM
+    const aiResult = await enhanceWithAI(parsed, getModel, ollamaEndpoint);
+    styleTags = parsed.styleTags ?? aiResult.styleTags;
+    recording = parsed.recording ?? aiResult.recording;
+  }
 
   // Build instruments string with articulations (genre-aware defaults)
   const baseInstruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
@@ -222,8 +247,8 @@ export async function convertToMaxFormat(
     genre: genre.forOutput,
     bpm,
     instruments,
-    styleTags: aiResult.styleTags,
-    recording: aiResult.recording,
+    styleTags,
+    recording,
   });
 
   return { 

@@ -10,6 +10,7 @@ import { createLogger } from '@bun/logger';
 import { findGenreAliasInText } from '@bun/prompt/deterministic/aliases';
 import { parseGenreComponents } from '@bun/prompt/genre-parser';
 import { traceDecision } from '@bun/trace';
+import { matchesWholeWord } from '@shared/utils/string';
 
 import { ALL_GENRE_KEYS } from './constants';
 
@@ -81,11 +82,15 @@ export function parseMultiGenre(description: string): GenreType | null {
 const MAX_DETECTED_GENRES = 4;
 
 /**
- * Match genres from a list against lowercased description text.
+ * Match genres from a list against description text using word boundary matching.
  * Mutates detected and seen arrays for efficiency.
+ *
+ * Uses word boundary matching to avoid false positives like:
+ * - "disco" matching "discovering"
+ * - "pop" matching "popular"
  */
 function matchGenresFromList(
-  lower: string,
+  description: string,
   genreKeys: readonly GenreType[],
   detected: GenreType[],
   seen: Set<GenreType>
@@ -95,8 +100,8 @@ function matchGenresFromList(
     if (seen.has(key)) continue;
 
     const genre = GENRE_REGISTRY[key];
-    const nameMatch = lower.includes(genre.name.toLowerCase());
-    const keywordMatch = genre.keywords.some((kw) => lower.includes(kw));
+    const nameMatch = matchesWholeWord(description, genre.name);
+    const keywordMatch = genre.keywords.some((kw) => matchesWholeWord(description, kw));
 
     if (nameMatch || keywordMatch) {
       detected.push(key);
@@ -124,15 +129,14 @@ export function detectAllGenres(description: string): GenreType[] {
     return [];
   }
 
-  const lower = description.toLowerCase();
   const detected: GenreType[] = [];
   const seen = new Set<GenreType>();
 
   // 1. Check priority genres first (most common/important)
-  matchGenresFromList(lower, GENRE_PRIORITY, detected, seen);
+  matchGenresFromList(description, GENRE_PRIORITY, detected, seen);
 
   // 2. Check remaining genres not in priority list
-  matchGenresFromList(lower, ALL_GENRE_KEYS, detected, seen);
+  matchGenresFromList(description, ALL_GENRE_KEYS, detected, seen);
 
   // 3. Check for genre aliases if we have room
   if (detected.length < MAX_DETECTED_GENRES) {
