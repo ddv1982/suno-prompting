@@ -38,42 +38,126 @@ function selectMultipleUnique<T>(items: readonly T[], count: number, rng: () => 
 // =============================================================================
 
 /**
+ * Modifiers to enhance detected genres at high creativity levels.
+ * These are prefixes/suffixes that make a genre more experimental
+ * without completely replacing it.
+ */
+const HIGH_CREATIVITY_MODIFIERS: readonly string[] = [
+  'dark', 'lo-fi', 'experimental', 'psychedelic', 'industrial',
+  'glitch', 'noise', 'drone', 'cosmic', 'post',
+];
+
+const ADVENTUROUS_MODIFIERS: readonly string[] = [
+  'neo', 'synth', 'acid', 'space', 'hyper', 'micro', 'art',
+];
+
+/**
  * Select genres appropriate for the creativity level.
  *
  * Selection strategy varies by level:
- * - low: Single pure genres only
+ * - low: Single pure genres only (uses detected or random)
  * - safe: Prefer established multi-genre combinations from registry
  * - normal: Mix of single genres and two-genre blends
- * - adventurous: Always blends, sometimes three genres
- * - high: Experimental fusions of unusual genre pairs
+ * - adventurous: Enhances detected genre with modifier, or blends multiple
+ * - high: Enhances detected genre with experimental modifier, or random fusion
+ *
+ * IMPORTANT: When genres are detected from description, they are used as the
+ * BASE and enhanced with modifiers - not replaced. This preserves user intent.
  *
  * @param level - Creativity level (low, safe, normal, adventurous, high)
- * @param seedGenres - User-provided seed genres to incorporate
+ * @param seedGenres - User-provided seed genres or detected genres to incorporate
  * @param rng - Random number generator for deterministic selection
  * @returns Selected genre string (single or space-separated blend)
  *
  * @example
  * selectGenreForLevel('low', [], () => 0.5);
- * // "jazz" (single genre)
+ * // "jazz" (random single genre)
  *
  * @example
- * selectGenreForLevel('adventurous', [], () => 0.5);
- * // "ambient electronic rock" (multi-genre blend)
+ * selectGenreForLevel('high', ['ambient'], () => 0.5);
+ * // "dark ambient" (detected genre enhanced with modifier)
  *
  * @example
- * selectGenreForLevel('normal', ['jazz', 'rock'], () => 0.1);
- * // "jazz rock" (uses seed genres)
+ * selectGenreForLevel('high', [], () => 0.5);
+ * // "noise gospel" (no detection, random experimental fusion)
  */
 export function selectGenreForLevel(
   level: CreativityLevel,
   seedGenres: string[],
   rng: () => number
 ): string {
-  // If user provided seed genres, use them with appropriate blending
+  // If user provided/detected genres, use them with appropriate enhancement
   if (seedGenres.length > 0) {
-    return selectFromSeeds(level, seedGenres, rng);
+    return enhanceDetectedGenres(level, seedGenres, rng);
   }
 
+  // No genres detected - use level-appropriate random selection
+  return selectRandomForLevel(level, rng);
+}
+
+/**
+ * Enhance detected genres based on creativity level.
+ * Preserves the detected genre as base and applies level-appropriate modifications.
+ */
+function enhanceDetectedGenres(
+  level: CreativityLevel,
+  detectedGenres: string[],
+  rng: () => number
+): string {
+  const primaryGenre = detectedGenres[0] ?? 'pop';
+  const pool = CREATIVITY_POOLS[level];
+
+  switch (level) {
+    case 'low':
+      // Just use the detected genre as-is
+      return primaryGenre;
+
+    case 'safe':
+      // Use detected genre, maybe add a second detected genre
+      if (detectedGenres.length > 1 && rng() < SAFE_MULTI_GENRE_PROBABILITY) {
+        const secondGenre = detectedGenres[1] ?? '';
+        return `${primaryGenre} ${secondGenre}`;
+      }
+      return primaryGenre;
+
+    case 'normal':
+      // Sometimes blend detected genres, sometimes add from pool
+      if (detectedGenres.length > 1 && rng() < NORMAL_BLEND_PROBABILITY) {
+        return detectedGenres.slice(0, 2).join(' ');
+      }
+      if (rng() < NORMAL_BLEND_PROBABILITY) {
+        const addition = selectRandom(pool.genres.filter(g => g !== primaryGenre), rng);
+        return `${primaryGenre} ${addition}`;
+      }
+      return primaryGenre;
+
+    case 'adventurous':
+      // Add an adventurous modifier to the detected genre
+      const advModifier = selectRandom(ADVENTUROUS_MODIFIERS, rng);
+      if (detectedGenres.length > 1) {
+        const secondGenre = detectedGenres[1] ?? '';
+        return `${advModifier} ${primaryGenre} ${secondGenre}`;
+      }
+      return `${advModifier} ${primaryGenre}`;
+
+    case 'high':
+      // Add an experimental modifier to the detected genre
+      const highModifier = selectRandom(HIGH_CREATIVITY_MODIFIERS, rng);
+      return `${highModifier} ${primaryGenre}`;
+
+    default:
+      return primaryGenre;
+  }
+}
+
+/**
+ * Select random genres when no detection occurred.
+ * This is the fallback for when user's description has no recognizable genre keywords.
+ */
+function selectRandomForLevel(
+  level: CreativityLevel,
+  rng: () => number
+): string {
   const pool = CREATIVITY_POOLS[level];
 
   switch (level) {
@@ -102,7 +186,7 @@ export function selectGenreForLevel(
       return adventurousGenres.join(' ');
 
     case 'high':
-      // Experimental fusion: combine unusual genres
+      // Experimental fusion: combine unusual genres (only when no detection)
       const base = selectRandom(HIGH_BASE_GENRES, rng);
       const fusion = selectRandom(HIGH_FUSION_GENRES, rng);
       return `${base} ${fusion}`;
@@ -110,26 +194,6 @@ export function selectGenreForLevel(
     default:
       return selectRandom(pool.genres, rng);
   }
-}
-
-/**
- * Select genres from user-provided seeds with appropriate blending.
- */
-function selectFromSeeds(
-  level: CreativityLevel,
-  seedGenres: string[],
-  rng: () => number
-): string {
-  const pool = CREATIVITY_POOLS[level];
-
-  if (!pool.allowBlending || pool.maxGenres === 1) {
-    // Just return the first seed
-    return seedGenres[0] ?? selectRandom(pool.genres, rng);
-  }
-
-  // Blend seeds up to max allowed
-  const count = Math.min(seedGenres.length, pool.maxGenres);
-  return seedGenres.slice(0, count).join(' ');
 }
 
 // =============================================================================

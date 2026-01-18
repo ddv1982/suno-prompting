@@ -9,6 +9,7 @@
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import { createLogger } from '@bun/logger';
 import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt, extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
+import { detectAllGenres } from '@bun/prompt/deterministic/genre';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 
 import { injectWordlessVocals } from './vocals';
@@ -49,8 +50,12 @@ export type GenerationDebugInfo = {
 
 /**
  * Resolve genre for creative boost.
- * Uses seed genres when available to avoid LLM calls; falls back to
- * topic-based detection only when necessary for lyrics generation.
+ * 
+ * Priority order:
+ * 1. Seed genres (explicit user selection)
+ * 2. Description-based detection (keywords in user's description)
+ * 3. Lyrics topic detection via LLM (only when lyrics mode is ON)
+ * 4. Empty array (let creativity level decide)
  */
 export async function resolveGenreForCreativeBoost(
   seedGenres: string[],
@@ -58,26 +63,42 @@ export async function resolveGenreForCreativeBoost(
   withLyrics: boolean,
   getModel: () => LanguageModel,
   ollamaEndpoint?: string,
-  runtime?: TraceRuntime
+  runtime?: TraceRuntime,
+  description?: string
 ): Promise<{ genres: string[]; debugInfo?: GenreDetectionDebugInfo }> {
-  // If we have seed genres, use them
+  // Priority 1: If we have seed genres, use them
   if (seedGenres.length > 0) {
+    log.info('resolveGenreForCreativeBoost:seedGenres', { genres: seedGenres });
     return { genres: seedGenres };
   }
 
-  // Detect genre from lyrics topic if lyrics mode is ON and topic provided
+  // Priority 2: Detect genre from description using keyword matching (no LLM needed)
+  if (description?.trim()) {
+    const detectedFromDescription = detectAllGenres(description);
+    if (detectedFromDescription.length > 0) {
+      log.info('resolveGenreForCreativeBoost:fromDescription', { 
+        description: description.substring(0, 50), 
+        genres: detectedFromDescription 
+      });
+      return { genres: detectedFromDescription };
+    }
+  }
+
+  // Priority 3: Detect genre from lyrics topic if lyrics mode is ON and topic provided
   if (withLyrics && lyricsTopic?.trim()) {
     const result = await detectGenreFromTopic(lyricsTopic.trim(), getModel, undefined, ollamaEndpoint, {
       trace: runtime?.trace,
       traceLabel: 'genre.detectFromTopic',
     });
-    log.info('resolveGenreForCreativeBoost:detected', { topic: lyricsTopic, genre: result.genre });
+    log.info('resolveGenreForCreativeBoost:fromTopic', { topic: lyricsTopic, genre: result.genre });
     return {
       genres: [result.genre],
       debugInfo: result.debugInfo,
     };
   }
 
+  // Priority 4: No genre detected - creativity level will decide
+  log.info('resolveGenreForCreativeBoost:none', { withLyrics, hasDescription: !!description });
   return { genres: [] };
 }
 

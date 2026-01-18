@@ -110,9 +110,9 @@ export async function generateCreativeBoost(
 
   const ollamaEndpoint = config.getOllamaEndpoint?.();
 
-  // 1. Resolve genre (detect from lyrics topic if needed)
+  // 1. Resolve genre (detect from description or lyrics topic)
   const { genres: resolvedGenres } = await resolveGenreForCreativeBoost(
-    seedGenres, lyricsTopic, withLyrics, config.getModel, ollamaEndpoint, runtime
+    seedGenres, lyricsTopic, withLyrics, config.getModel, ollamaEndpoint, runtime, description
   );
 
   // 2. Select genre and mood based on creativity level
