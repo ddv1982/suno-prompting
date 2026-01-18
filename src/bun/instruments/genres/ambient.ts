@@ -61,8 +61,17 @@ export const AMBIENT_GENRE: GenreDefinition = {
         'theremin', 'waterphone', 'glass armonica', 'didgeridoo',
       ],
     },
+    // Sustained melodic instruments for long beautiful lines
+    sustainedMelodic: {
+      pick: { min: 0, max: 1 },
+      chanceToInclude: 0.35,
+      instruments: [
+        'cello', 'violin', 'strings', 'flute', 'oboe',
+        'duduk', 'erhu', 'clarinet', 'harmonium',
+      ],
+    },
   },
-  poolOrder: ['pads', 'texture', 'melodic', 'piano', 'organic', 'movement', 'rare'],
+  poolOrder: ['pads', 'texture', 'melodic', 'sustainedMelodic', 'piano', 'organic', 'movement', 'rare'],
   maxTags: 5,
   exclusionRules: [
     ['singing bowls', 'crystal bowls'],
@@ -73,6 +82,12 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['guitar', 'e-bow guitar'],
     ['processed guitar', 'e-bow guitar'],
     ['granular synth', 'wavetable synth'],
+    // Sustained melodic exclusions
+    ['cello', 'violin'],
+    ['flute', 'bansuri'],
+    ['flute', 'shakuhachi'],
+    ['oboe', 'duduk'],
+    ['harmonium', 'drone'],
   ],
   bpm: { min: 50, max: 80, typical: 65 },
   moods: ['Dreamy', 'Ethereal', 'Meditative', 'Calm', 'Floaty', 'Spacious', 'Otherworldly', 'Serene', 'Hypnotic'],
