@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
 /**
- * Schema for LLM-extracted thematic context.
+ * Schema for LLM-extracted thematic context (raw from LLM).
  *
  * Used to validate structured output from thematic extraction LLM calls.
- * The schema enforces strict constraints to ensure high-quality context.
+ * Allows 1-5 themes for flexibility with LLM outputs; normalization to
+ * exactly 3 themes happens in parseThematicResponse().
  *
  * @example
  * ```typescript
@@ -16,12 +17,17 @@ import { z } from 'zod';
  * ```
  */
 export const ThematicContextSchema = z.object({
-  /** Exactly 3 thematic keywords capturing the essence */
-  themes: z.tuple([z.string(), z.string(), z.string()]),
+  /** 1-5 thematic keywords (normalized to exactly 3 after parsing) */
+  themes: z.array(z.string()).min(1).max(5),
   /** 2-3 emotional mood descriptors */
   moods: z.array(z.string()).min(2).max(3),
   /** 5-10 word scene/setting phrase (10-100 chars) */
   scene: z.string().min(10).max(100),
 });
 
-export type ThematicContext = z.infer<typeof ThematicContextSchema>;
+/** Thematic context with exactly 3 themes (after normalization) */
+export type ThematicContext = {
+  themes: [string, string, string];
+  moods: string[];
+  scene: string;
+};

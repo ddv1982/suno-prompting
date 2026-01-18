@@ -48,9 +48,8 @@ const THEMATIC_EXTRACTION_TIMEOUT_MS = 3000;
  * Attempts to extract thematic context from description using LLM.
  * Returns null if LLM unavailable or extraction fails (graceful fallback).
  *
- * Uses Promise.race pattern: gives LLM up to 3 seconds to respond,
- * but deterministic result is computed in parallel and ready instantly.
- * This ensures we never block on slow LLM responses.
+ * Uses AbortController for proper timeout cancellation - when timeout fires,
+ * the LLM request is actually aborted (not just ignored) to save resources.
  */
 async function extractThematicContextIfAvailable(
   description: string | undefined,
@@ -70,20 +69,20 @@ async function extractThematicContextIfAvailable(
     return null;
   }
 
+  // Use AbortController for proper timeout cancellation
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => { controller.abort(); }, THEMATIC_EXTRACTION_TIMEOUT_MS);
+
   try {
-    // Race: LLM extraction vs timeout - whichever finishes first wins
-    const thematicPromise = extractThematicContext({
+    const thematicContext = await extractThematicContext({
       description,
       getModel: config.getModel,
       ollamaEndpoint: config.getOllamaEndpointIfLocal(),
       trace,
+      signal: controller.signal,
     });
 
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => { resolve(null); }, THEMATIC_EXTRACTION_TIMEOUT_MS);
-    });
-
-    const thematicContext = await Promise.race([thematicPromise, timeoutPromise]);
+    clearTimeout(timeoutId);
 
     if (thematicContext) {
       traceDecision(trace, {
@@ -97,27 +96,33 @@ async function extractThematicContextIfAvailable(
           candidates: thematicContext.themes,
         },
       });
-    } else {
+    }
+
+    return thematicContext;
+  } catch (error: unknown) {
+    clearTimeout(timeoutId);
+
+    // Log but don't throw - graceful fallback to deterministic
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const isAbort = error instanceof Error && error.name === 'AbortError';
+
+    if (isAbort) {
       traceDecision(trace, {
         domain: 'other',
         key: 'generation.thematic.fallback',
         branchTaken: 'timeout',
         why: `Thematic extraction timed out after ${THEMATIC_EXTRACTION_TIMEOUT_MS}ms; using pure deterministic`,
       });
+    } else {
+      log.warn('extractThematicContextIfAvailable:failed', { error: message });
+
+      traceDecision(trace, {
+        domain: 'other',
+        key: 'generation.thematic.fallback',
+        branchTaken: 'extraction-error',
+        why: `Thematic extraction failed: ${message}; using pure deterministic`,
+      });
     }
-
-    return thematicContext;
-  } catch (error: unknown) {
-    // Log but don't throw - graceful fallback to deterministic
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    log.warn('extractThematicContextIfAvailable:failed', { error: message });
-
-    traceDecision(trace, {
-      domain: 'other',
-      key: 'generation.thematic.fallback',
-      branchTaken: 'extraction-error',
-      why: `Thematic extraction failed: ${message}; using pure deterministic`,
-    });
 
     return null;
   }

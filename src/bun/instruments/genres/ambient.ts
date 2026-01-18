@@ -84,9 +84,12 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['granular synth', 'wavetable synth'],
     // Sustained melodic exclusions
     ['cello', 'violin'],
+    ['strings', 'cello'],
+    ['strings', 'violin'],
     ['flute', 'bansuri'],
     ['flute', 'shakuhachi'],
     ['oboe', 'duduk'],
+    ['clarinet', 'oboe'],
     ['harmonium', 'drone'],
   ],
   bpm: { min: 50, max: 80, typical: 65 },

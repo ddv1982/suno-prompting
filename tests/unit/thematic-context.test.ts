@@ -58,31 +58,53 @@ describe('ThematicContextSchema', () => {
   });
 
   describe('themes validation', () => {
-    test('rejects themes with only 2 elements', () => {
-      const invalid = {
-        themes: ['alien', 'bioluminescent'], // Only 2
+    test('accepts themes with 1 element (min allowed)', () => {
+      const valid = {
+        themes: ['alien'], // 1 is allowed, will be normalized to 3
         moods: ['wondrous', 'curious'],
         scene: 'first steps into an alien jungle',
       };
 
-      const result = ThematicContextSchema.safeParse(invalid);
-      expect(result.success).toBe(false);
+      const result = ThematicContextSchema.safeParse(valid);
+      expect(result.success).toBe(true);
     });
 
-    test('rejects themes with 4 elements', () => {
-      const invalid = {
-        themes: ['alien', 'bioluminescent', 'discovery', 'exploration'], // 4 elements
+    test('accepts themes with 2 elements', () => {
+      const valid = {
+        themes: ['alien', 'bioluminescent'], // 2 is allowed, will be normalized to 3
         moods: ['wondrous', 'curious'],
         scene: 'first steps into an alien jungle',
       };
 
-      const result = ThematicContextSchema.safeParse(invalid);
-      expect(result.success).toBe(false);
+      const result = ThematicContextSchema.safeParse(valid);
+      expect(result.success).toBe(true);
     });
 
-    test('rejects themes with 1 element', () => {
+    test('accepts themes with 4 elements', () => {
+      const valid = {
+        themes: ['alien', 'bioluminescent', 'discovery', 'exploration'], // 4 is allowed, will be normalized to 3
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      };
+
+      const result = ThematicContextSchema.safeParse(valid);
+      expect(result.success).toBe(true);
+    });
+
+    test('accepts themes with 5 elements (max allowed)', () => {
+      const valid = {
+        themes: ['a', 'b', 'c', 'd', 'e'], // 5 is max allowed
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      };
+
+      const result = ThematicContextSchema.safeParse(valid);
+      expect(result.success).toBe(true);
+    });
+
+    test('rejects themes with 6 elements (over max)', () => {
       const invalid = {
-        themes: ['alien'], // Only 1
+        themes: ['a', 'b', 'c', 'd', 'e', 'f'], // 6 is over max
         moods: ['wondrous', 'curious'],
         scene: 'first steps into an alien jungle',
       };
@@ -328,10 +350,11 @@ describe('extractThematicContext', () => {
         generateText: () => Promise.resolve({ text: 'this is not json' }),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
-        description: 'exploring an alien jungle with bioluminescent plants',
+        description: 'malformed json test description here',
         getModel: createMockGetModel(),
         
       });
@@ -350,10 +373,11 @@ describe('extractThematicContext', () => {
         generateText: () => Promise.resolve({ text: invalidResponse }),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
-        description: 'exploring an alien jungle with bioluminescent plants',
+        description: 'missing field test description here',
         getModel: createMockGetModel(),
         
       });
@@ -361,26 +385,29 @@ describe('extractThematicContext', () => {
       expect(result).toBeNull();
     });
 
-    test('returns null on valid JSON but wrong themes count', async () => {
-      const invalidResponse = JSON.stringify({
-        themes: ['alien', 'bioluminescent'], // Only 2, needs exactly 3
+    test('accepts valid JSON with 2 themes (normalized to 3)', async () => {
+      const validResponse = JSON.stringify({
+        themes: ['alien', 'bioluminescent'], // 2 is now allowed
         moods: ['wondrous', 'curious'],
         scene: 'first steps into an alien jungle',
       });
 
       void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: invalidResponse }),
+        generateText: () => Promise.resolve({ text: validResponse }),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
-        description: 'exploring an alien jungle with bioluminescent plants',
+        description: 'two themes test description here',
         getModel: createMockGetModel(),
         
       });
 
-      expect(result).toBeNull();
+      // 2 themes is now valid, normalized to 3
+      expect(result).not.toBeNull();
+      expect(result?.themes).toEqual(['alien', 'bioluminescent', 'alien']);
     });
   });
 
@@ -390,10 +417,11 @@ describe('extractThematicContext', () => {
         generateText: () => Promise.reject(new Error('Timeout: AbortError')),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
-        description: 'exploring an alien jungle with bioluminescent plants',
+        description: 'timeout test description here',
         getModel: createMockGetModel(),
         
       });
@@ -406,10 +434,11 @@ describe('extractThematicContext', () => {
         generateText: () => Promise.reject(new Error('API key not configured')),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
-        description: 'exploring an alien jungle with bioluminescent plants',
+        description: 'llm unavailable test description',
         getModel: createMockGetModel(),
         
       });
@@ -422,10 +451,11 @@ describe('extractThematicContext', () => {
         generateText: () => Promise.reject(new Error('Network error: ECONNREFUSED')),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
-        description: 'exploring an alien jungle with bioluminescent plants',
+        description: 'network error test description',
         getModel: createMockGetModel(),
         
       });
@@ -492,14 +522,15 @@ describe('extractThematicContext', () => {
       expect(result?.themes).toEqual(['alien', 'bioluminescent', 'discovery']);
     });
 
-    test('handles JSON with markdown code fence (should fail)', async () => {
-      const responseWithMarkdown = '```json\n{"themes":["a","b","c"],"moods":["x","y"],"scene":"short scene"}\n```';
+    test('handles JSON with markdown code fence (should now work)', async () => {
+      const responseWithMarkdown = '```json\n{"themes":["a","b","c"],"moods":["x","y"],"scene":"short scene here"}\n```';
 
       void mock.module('ai', () => ({
         generateText: () => Promise.resolve({ text: responseWithMarkdown }),
       }));
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
 
       const result = await extract({
         description: 'exploring an alien jungle with bioluminescent plants',
@@ -507,8 +538,142 @@ describe('extractThematicContext', () => {
         
       });
 
-      // JSON.parse will fail on markdown-wrapped JSON
-      expect(result).toBeNull();
+      // Markdown fence is now stripped before parsing
+      expect(result).not.toBeNull();
+      expect(result?.themes).toEqual(['a', 'b', 'c']);
+    });
+  });
+
+  describe('caching', () => {
+    test('returns cached result for same description', async () => {
+      let callCount = 0;
+      const validResponse = JSON.stringify({
+        themes: ['alien', 'bioluminescent', 'discovery'],
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      });
+
+      void mock.module('ai', () => ({
+        generateText: () => {
+          callCount++;
+          return Promise.resolve({ text: validResponse });
+        },
+      }));
+
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
+
+      const result1 = await extract({
+        description: 'exploring an alien jungle',
+        getModel: createMockGetModel(),
+      });
+
+      const result2 = await extract({
+        description: 'exploring an alien jungle',
+        getModel: createMockGetModel(),
+      });
+
+      expect(result1).toEqual(result2);
+      expect(callCount).toBe(1); // Only one LLM call
+    });
+
+    test('cache is case-insensitive', async () => {
+      let callCount = 0;
+      const validResponse = JSON.stringify({
+        themes: ['alien', 'bioluminescent', 'discovery'],
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      });
+
+      void mock.module('ai', () => ({
+        generateText: () => {
+          callCount++;
+          return Promise.resolve({ text: validResponse });
+        },
+      }));
+
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
+
+      await extract({
+        description: 'Exploring An Alien Jungle',
+        getModel: createMockGetModel(),
+      });
+
+      await extract({
+        description: 'exploring an alien jungle',
+        getModel: createMockGetModel(),
+      });
+
+      expect(callCount).toBe(1); // Only one LLM call due to case-insensitive cache
+    });
+  });
+
+  describe('theme normalization', () => {
+    test('normalizes 1 theme to 3 by repeating', async () => {
+      const response = JSON.stringify({
+        themes: ['alien'],
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      });
+
+      void mock.module('ai', () => ({
+        generateText: () => Promise.resolve({ text: response }),
+      }));
+
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
+
+      const result = await extract({
+        description: 'exploring an alien jungle with many plants',
+        getModel: createMockGetModel(),
+      });
+
+      expect(result?.themes).toEqual(['alien', 'alien', 'alien']);
+    });
+
+    test('normalizes 2 themes to 3 by repeating first', async () => {
+      const response = JSON.stringify({
+        themes: ['alien', 'jungle'],
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      });
+
+      void mock.module('ai', () => ({
+        generateText: () => Promise.resolve({ text: response }),
+      }));
+
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
+
+      const result = await extract({
+        description: 'exploring alien jungles with plants',
+        getModel: createMockGetModel(),
+      });
+
+      expect(result?.themes).toEqual(['alien', 'jungle', 'alien']);
+    });
+
+    test('takes first 3 themes when 4 provided', async () => {
+      const response = JSON.stringify({
+        themes: ['a', 'b', 'c', 'd'],
+        moods: ['wondrous', 'curious'],
+        scene: 'first steps into an alien jungle',
+      });
+
+      void mock.module('ai', () => ({
+        generateText: () => Promise.resolve({ text: response }),
+      }));
+
+      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
+      clearThematicCache();
+
+      const result = await extract({
+        description: 'exploring alien jungles with lots of plants',
+        getModel: createMockGetModel(),
+      });
+
+      expect(result?.themes).toEqual(['a', 'b', 'c']);
     });
   });
 });

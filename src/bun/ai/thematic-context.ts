@@ -23,6 +23,19 @@ const log = createLogger('ThematicContext');
 /** Minimum description length for extraction (chars) */
 const MIN_DESCRIPTION_LENGTH = 10;
 
+/** Maximum cache size for thematic context */
+const MAX_CACHE_SIZE = 10;
+
+/** Cache for thematic context to avoid redundant LLM calls */
+const thematicCache = new Map<string, ThematicContext>();
+
+/**
+ * Clear the thematic context cache (for testing).
+ */
+export function clearThematicCache(): void {
+  thematicCache.clear();
+}
+
 /**
  * System prompt for thematic context extraction.
  * Designed to return only valid JSON without markdown formatting.
@@ -54,6 +67,8 @@ export interface ExtractThematicContextOptions {
   readonly ollamaEndpoint?: string;
   /** Optional trace collector */
   readonly trace?: TraceCollector;
+  /** Optional abort signal for cancellation */
+  readonly signal?: AbortSignal;
 }
 
 /**
@@ -64,14 +79,42 @@ function buildUserPrompt(description: string): string {
 }
 
 /**
+ * Strip markdown code fences from LLM response.
+ * LLMs often wrap JSON in ```json ... ``` despite instructions.
+ */
+function stripMarkdownFence(text: string): string {
+  return text.replace(/^```(?:json)?\n?|\n?```$/g, '').trim();
+}
+
+/**
  * Parses and validates the LLM response as ThematicContext.
  * Returns null if parsing or validation fails.
  */
+/**
+ * Normalize themes to exactly 3 elements.
+ * If fewer than 3, pad with the first theme; if more, take first 3.
+ */
+function normalizeThemes(themes: string[]): [string, string, string] {
+  if (themes.length >= 3) {
+    return [themes[0], themes[1], themes[2]] as [string, string, string];
+  }
+  const first = themes[0] ?? 'unknown';
+  const second = themes[1] ?? first;
+  const third = themes[2] ?? first;
+  return [first, second, third];
+}
+
 function parseThematicResponse(rawResponse: string): ThematicContext | null {
   try {
-    const parsed: unknown = JSON.parse(rawResponse);
+    const cleaned = stripMarkdownFence(rawResponse);
+    const parsed: unknown = JSON.parse(cleaned);
     const validated = ThematicContextSchema.parse(parsed);
-    return validated;
+    // Normalize themes to exactly 3
+    const normalized: ThematicContext = {
+      ...validated,
+      themes: normalizeThemes(validated.themes),
+    };
+    return normalized;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown parse error';
     log.warn('parseThematicResponse:failed', { error: message });
@@ -101,7 +144,8 @@ async function extractWithOllama(
  */
 async function extractWithCloud(
   getModel: () => LanguageModel,
-  userPrompt: string
+  userPrompt: string,
+  signal?: AbortSignal
 ): Promise<string> {
   log.info('extractThematicContext:cloud');
 
@@ -109,7 +153,8 @@ async function extractWithCloud(
     model: getModel(),
     system: THEMATIC_EXTRACTION_SYSTEM_PROMPT,
     prompt: userPrompt,
-    maxRetries: 0, // No retries - caller handles timeout via Promise.race
+    maxRetries: 1, // One retry for transient failures
+    abortSignal: signal,
   });
 
   return text;
@@ -140,7 +185,7 @@ async function extractWithCloud(
 export async function extractThematicContext(
   options: ExtractThematicContextOptions
 ): Promise<ThematicContext | null> {
-  const { description, getModel, ollamaEndpoint, trace } = options;
+  const { description, getModel, ollamaEndpoint, trace, signal } = options;
 
   // Early return for empty or short descriptions
   const trimmed = description?.trim();
@@ -154,6 +199,20 @@ export async function extractThematicContext(
     return null;
   }
 
+  // Check cache first
+  const cacheKey = trimmed.toLowerCase();
+  const cached = thematicCache.get(cacheKey);
+  if (cached) {
+    traceDecision(trace, {
+      domain: 'other',
+      key: 'thematic.extraction.cache',
+      branchTaken: 'cache-hit',
+      why: `Cache hit for description; returning cached context`,
+    });
+    log.info('extractThematicContext:cacheHit', { themes: cached.themes });
+    return cached;
+  }
+
   const userPrompt = buildUserPrompt(trimmed);
 
   try {
@@ -162,7 +221,7 @@ export async function extractThematicContext(
     if (ollamaEndpoint) {
       rawResponse = await extractWithOllama(ollamaEndpoint, userPrompt);
     } else {
-      rawResponse = await extractWithCloud(getModel, userPrompt);
+      rawResponse = await extractWithCloud(getModel, userPrompt, signal);
     }
 
     // Parse and validate JSON response
@@ -177,6 +236,13 @@ export async function extractThematicContext(
       });
       return null;
     }
+
+    // Cache the result
+    if (thematicCache.size >= MAX_CACHE_SIZE) {
+      const firstKey = thematicCache.keys().next().value;
+      if (firstKey) thematicCache.delete(firstKey);
+    }
+    thematicCache.set(cacheKey, validated);
 
     traceDecision(trace, {
       domain: 'other',
