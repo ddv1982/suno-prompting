@@ -32,10 +32,10 @@ function CopyButton({ label, copiedLabel, onClick }: {
   );
 }
 
-type QuickVibesOutputProps = {
+interface QuickVibesOutputProps {
   prompt: string; title?: string; lyrics?: string; isRemixing: boolean; hasDebugInfo: boolean;
   onRemix: () => void; onCopy: () => void; onDebugOpen: () => void; onRemixLyrics?: () => void;
-};
+}
 
 export function QuickVibesOutput({ prompt, title, lyrics, isRemixing, hasDebugInfo, onRemix, onCopy, onDebugOpen, onRemixLyrics }: QuickVibesOutputProps): ReactElement {
   const contentOnly = stripMaxModeHeader(prompt);

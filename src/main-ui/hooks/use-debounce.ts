@@ -23,7 +23,7 @@ import { useState, useEffect } from 'react';
  * const isDebouncing = searchQuery !== debouncedQuery;
  * ```
  */
-export function useDebounce<T>(value: T, delay: number = 300): T {
+export function useDebounce<T>(value: T, delay = 300): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
  * );
  * ```
  */
-export function useDebouncedValue<T>(value: T, delay: number = 300): {
+export function useDebouncedValue<T>(value: T, delay = 300): {
   debouncedValue: T;
   isDebouncing: boolean;
 } {

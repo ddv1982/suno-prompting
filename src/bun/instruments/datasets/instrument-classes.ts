@@ -120,10 +120,10 @@ export function isOrchestralColorInstrument(instrument: string): boolean {
   return ORCHESTRAL_COLOR_SET.has(instrument.toLowerCase());
 }
 
-export type InstrumentToGenresIndex = {
+export interface InstrumentToGenresIndex {
   readonly genresByInstrument: Map<string, Set<string>>;
   readonly canonicalByLower: Map<string, string>;
-};
+}
 
 export function buildInstrumentToGenresIndex(): InstrumentToGenresIndex {
   const genresByInstrument = new Map<string, Set<string>>();

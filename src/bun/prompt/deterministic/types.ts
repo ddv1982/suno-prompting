@@ -30,7 +30,7 @@ import type { ThematicContext } from '@shared/schemas/thematic-context';
  * };
  * ```
  */
-export type TagCategoryWeights = {
+export interface TagCategoryWeights {
   /** Probability of including vocal-related tags (0.0-1.0) */
   readonly vocal: number;
   /** Probability of including spatial/reverb tags (0.0-1.0) */
@@ -41,7 +41,7 @@ export type TagCategoryWeights = {
   readonly dynamic: number;
   /** Probability of including timing/groove tags (0.0-1.0) */
   readonly temporal: number;
-};
+}
 
 /**
  * Default tag category weights used when no genre-specific weights exist.
@@ -63,7 +63,7 @@ export const DEFAULT_TAG_WEIGHTS = {
 /**
  * Options for deterministic prompt generation.
  */
-export type DeterministicOptions = {
+export interface DeterministicOptions {
   /** User's song description/concept */
   readonly description: string;
   /** Genre override from Advanced Mode selector */
@@ -127,24 +127,24 @@ export type DeterministicOptions = {
   readonly trace?: TraceCollector;
   /** Optional LLM-extracted thematic context for hybrid generation */
   readonly thematicContext?: ThematicContext;
-};
+}
 
 /**
  * Result from deterministic prompt generation.
  */
-export type DeterministicResult = {
+export interface DeterministicResult {
   /** The generated prompt text */
   readonly text: string;
   /** Detected or selected primary genre (first component for multi-genre) */
   readonly genre: GenreType | null;
   /** Debug metadata (when debug mode enabled) */
   readonly metadata?: DeterministicMetadata;
-};
+}
 
 /**
  * Debug metadata from deterministic generation.
  */
-export type DeterministicMetadata = {
+export interface DeterministicMetadata {
   readonly detectedGenre: GenreType | null;
   /** Full genre string (can be compound like "jazz rock") */
   readonly usedGenre: string;
@@ -153,12 +153,12 @@ export type DeterministicMetadata = {
   readonly vocalStyle: string;
   readonly styleTags: readonly string[];
   readonly recordingContext: string;
-};
+}
 
 /**
  * Result type for genre resolution supporting both single and multi-genre.
  */
-export type ResolvedGenre = {
+export interface ResolvedGenre {
   /** Detected genre from description (null if override used or random fallback) */
   detected: GenreType | null;
   /** Display string - full genre string for prompt output (e.g., "jazz rock") */
@@ -167,17 +167,17 @@ export type ResolvedGenre = {
   primaryGenre: GenreType;
   /** All valid genre components for multi-genre blending */
   components: GenreType[];
-};
+}
 
 /**
  * Result from instrument assembly.
  */
-export type InstrumentAssemblyResult = {
+export interface InstrumentAssemblyResult {
   readonly instruments: readonly string[];
   readonly formatted: string;
   readonly chordProgression: string;
   readonly vocalStyle: string;
-};
+}
 
 /**
  * Result from style tag assembly.
@@ -186,14 +186,14 @@ export type InstrumentAssemblyResult = {
  * The moodTags array contains just the mood-related tags for use in headers
  * and mood-specific displays, separate from production/recording tags.
  */
-export type StyleTagsResult = {
+export interface StyleTagsResult {
   /** All style tags in priority order (production → recording → mood → etc.) */
   readonly tags: readonly string[];
   /** Formatted comma-separated string of all tags */
   readonly formatted: string;
   /** Mood tags only (from genre mood pool), for header and mood display */
   readonly moodTags: readonly string[];
-};
+}
 
 /**
  * Standard result type for remix operations.
@@ -201,9 +201,9 @@ export type StyleTagsResult = {
  * All remix functions return a consistent shape to enable uniform
  * handling in the UI and simplified composition of remix operations.
  */
-export type RemixResult = {
+export interface RemixResult {
   readonly text: string;
-};
+}
 
 /**
  * Multi-dimensional production descriptor for Suno V5.
@@ -222,7 +222,7 @@ export type RemixResult = {
  *   dynamic: 'punchy mix'
  * }
  */
-export type ProductionDescriptor = {
+export interface ProductionDescriptor {
   /** Reverb type describing spatial audio processing (e.g., 'hall reverb', 'plate reverb') */
   readonly reverb: string;
   /** Recording texture describing overall sonic character (e.g., 'warm character', 'polished production') */
@@ -231,7 +231,7 @@ export type ProductionDescriptor = {
   readonly stereo: string;
   /** Dynamic descriptor describing compression and loudness control (e.g., 'punchy mix', 'natural dynamics') */
   readonly dynamic: string;
-};
+}
 
 /**
  * Zod validation schema for ProductionDescriptor.

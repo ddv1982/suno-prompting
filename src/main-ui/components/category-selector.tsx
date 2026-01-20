@@ -4,11 +4,11 @@ import { QUICK_VIBES_CATEGORY_LIST } from "@shared/quick-vibes-categories";
 import type { QuickVibesCategory } from "@shared/types";
 import type { ReactElement } from "react";
 
-type CategorySelectorProps = {
+interface CategorySelectorProps {
   selectedCategory: QuickVibesCategory | null;
   onSelect: (category: QuickVibesCategory | null) => void;
   disabled?: boolean;
-};
+}
 
 export function CategorySelector({
   selectedCategory,

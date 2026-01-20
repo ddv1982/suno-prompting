@@ -82,7 +82,7 @@ describe('injectBpm', () => {
     const prompt = 'Genre: jazz\nBPM: 96\nMood: smooth';
     const result = injectBpm(prompt, 'punk'); // Punk has range 150-200
     
-    const bpmMatch = result.match(/BPM: (\d+)/);
+    const bpmMatch = /BPM: (\d+)/.exec(result);
     expect(bpmMatch).not.toBeNull();
     
     const bpm = parseInt(bpmMatch![1]!, 10);
@@ -94,7 +94,7 @@ describe('injectBpm', () => {
     const prompt = 'genre: "jazz"\nbpm: "96"\nmood: "smooth"';
     const result = injectBpm(prompt, 'punk');
     
-    const bpmMatch = result.match(/bpm: "(\d+)"/);
+    const bpmMatch = /bpm: "(\d+)"/.exec(result);
     expect(bpmMatch).not.toBeNull();
     
     const bpm = parseInt(bpmMatch![1]!, 10);
@@ -118,7 +118,7 @@ describe('injectBpm', () => {
     const prompt = 'Genre: jazz fusion\nBPM: 120\nMood: smooth';
     const result = injectBpm(prompt, 'jazz fusion');
     
-    const bpmMatch = result.match(/BPM: (\d+)/);
+    const bpmMatch = /BPM: (\d+)/.exec(result);
     expect(bpmMatch).not.toBeNull();
     
     const jazzBpm = GENRE_REGISTRY.jazz?.bpm;

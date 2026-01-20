@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
 
-type LogoMarkProps = {
+interface LogoMarkProps {
   size?: number;
   className?: string;
-};
+}
 
 export function LogoMark({ size = 32, className }: LogoMarkProps): ReactElement {
   return (

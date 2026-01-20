@@ -7,12 +7,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionLabel } from "@/components/ui/section-label";
 import { cn } from "@/lib/utils";
 
-type RequestMessage = { role: string; content: string };
-type ParsedRequest = { model?: string; messages?: RequestMessage[]; [key: string]: unknown };
-type RequestInspectorProps = {
+interface RequestMessage { role: string; content: string }
+interface ParsedRequest { model?: string; messages?: RequestMessage[]; [key: string]: unknown }
+interface RequestInspectorProps {
   requestBody: string; responseBody: string; provider: string;
   onCopy: (text: string, section: string) => void; copiedSection: string | null;
-};
+}
 
 const ROLE_COLORS: Record<string, string> = {
   system: "bg-purple-500/20 text-purple-400 border-purple-500/30",
@@ -118,7 +118,7 @@ export function RequestInspector({ requestBody, responseBody, provider, onCopy, 
           ))}
 
           <div className="pt-2"><SectionLabel>Response Body</SectionLabel></div>
-          <MessageCard role="assistant" content={responseBody} isExpanded={true} onToggle={() => {}} 
+          <MessageCard role="assistant" content={responseBody} isExpanded={true} onToggle={(): void => { /* no-op for always-expanded response */ }} 
             onCopy={() => { onCopy(responseBody, 'response'); }} isCopied={copiedSection === 'response'} />
         </div>
       )}

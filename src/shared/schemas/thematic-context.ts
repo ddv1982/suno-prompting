@@ -26,8 +26,8 @@ export const ThematicContextSchema = z.object({
 });
 
 /** Thematic context with exactly 3 themes (after normalization) */
-export type ThematicContext = {
+export interface ThematicContext {
   themes: [string, string, string];
   moods: string[];
   scene: string;
-};
+}

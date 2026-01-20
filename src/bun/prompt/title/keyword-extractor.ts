@@ -293,7 +293,7 @@ function extractCategoryKeywords(
     // This prevents false positives like "nightingale" matching "night"
     const regex = new RegExp(`\\b${keyword}\\b`, 'i');
     if (regex.test(descLower)) {
-      result[categoryName] = [...(result[categoryName] || []), ...words];
+      result[categoryName] = [...(result[categoryName] ?? []), ...words];
     }
   }
 }

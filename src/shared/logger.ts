@@ -5,11 +5,11 @@
 
 type LogData = Record<string, unknown>;
 
-export type Logger = {
+export interface Logger {
   info: (action: string, data?: LogData) => void;
   warn: (action: string, data?: LogData) => void;
   error: (action: string, error: unknown, data?: LogData) => void;
-};
+}
 
 function formatMessage(namespace: string, action: string, data?: LogData): string {
   const prefix = `[${namespace}] ${action}`;

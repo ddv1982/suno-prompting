@@ -110,7 +110,7 @@ function extractFields(lines: string[]): ExtractedFields {
     if (!line) continue;
 
     // Genre: Jazz
-    const genreMatch = line.match(/^Genre:\s*(.+)/i);
+    const genreMatch = /^Genre:\s*(.+)/i.exec(line);
     if (genreMatch) {
       genre = genreMatch[1]?.trim().toLowerCase() ?? null;
       processedIndices.add(i);
@@ -118,7 +118,7 @@ function extractFields(lines: string[]): ExtractedFields {
     }
 
     // Mood: smooth, warm, sophisticated
-    const moodMatch = line.match(/^Moods?:\s*(.+)/i);
+    const moodMatch = /^Moods?:\s*(.+)/i.exec(line);
     if (moodMatch) {
       moods.push(...parseCommaSeparated(moodMatch));
       processedIndices.add(i);
@@ -126,7 +126,7 @@ function extractFields(lines: string[]): ExtractedFields {
     }
 
     // Instruments: piano, guitar, bass
-    const instrumentMatch = line.match(/^Instruments?:\s*(.+)/i);
+    const instrumentMatch = /^Instruments?:\s*(.+)/i.exec(line);
     if (instrumentMatch) {
       instruments.push(...parseCommaSeparated(instrumentMatch));
       processedIndices.add(i);
@@ -134,7 +134,7 @@ function extractFields(lines: string[]): ExtractedFields {
     }
 
     // Style Tags: plate reverb, warm character, wide stereo
-    const styleTagsMatch = line.match(/^Style Tags?:\s*(.+)/i);
+    const styleTagsMatch = /^Style Tags?:\s*(.+)/i.exec(line);
     if (styleTagsMatch) {
       styleTags = styleTagsMatch[1]?.trim();
       processedIndices.add(i);
@@ -142,7 +142,7 @@ function extractFields(lines: string[]): ExtractedFields {
     }
 
     // Recording: intimate jazz club session
-    const recordingMatch = line.match(/^Recording:\s*(.+)/i);
+    const recordingMatch = /^Recording:\s*(.+)/i.exec(line);
     if (recordingMatch) {
       recording = recordingMatch[1]?.trim();
       processedIndices.add(i);
@@ -150,7 +150,7 @@ function extractFields(lines: string[]): ExtractedFields {
     }
 
     // BPM: between 80 and 160 (or just "120")
-    const bpmMatch = line.match(/^BPM:\s*(.+)/i);
+    const bpmMatch = /^BPM:\s*(.+)/i.exec(line);
     if (bpmMatch) {
       bpm = bpmMatch[1]?.trim();
       processedIndices.add(i);
@@ -158,7 +158,7 @@ function extractFields(lines: string[]): ExtractedFields {
     }
 
     // Mark header lines like [Mood, Genre, Key: X mode] as processed
-    if (line.match(/^\[[\w\s,:-]+\]$/)) {
+    if (/^\[[\w\s,:-]+\]$/.exec(line)) {
       processedIndices.add(i);
     }
   }
@@ -172,7 +172,7 @@ function extractFields(lines: string[]): ExtractedFields {
 function findDescription(lines: string[], processedIndices: Set<number>): string {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line || processedIndices.has(i) || line.match(/^\[[\w\s]+\]/)) continue;
+    if (!line || processedIndices.has(i) || (/^\[[\w\s]+\]/.exec(line))) continue;
     return line;
   }
   return '';

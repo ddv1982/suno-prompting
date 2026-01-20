@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { type GeneratingAction } from "@/context/app-context";
 import { cn } from "@/lib/utils";
 
-type RemixButtonGroupProps = {
+interface RemixButtonGroupProps {
   generatingAction: GeneratingAction; maxMode: boolean;
   copied: boolean; promptOverLimit: boolean; hasDebugInfo: boolean;
   onDebugOpen: () => void; onRemixGenre: () => void; onRemixMood: () => void;
   onRemixInstruments: () => void; onRemixStyleTags: () => void; onRemixRecording: () => void;
   onRemix: () => void; onCopy: () => void;
-};
+}
 
 function ShuffleBtn({ label, action, current, onClick }: {
   label: string; action: GeneratingAction; current: GeneratingAction; onClick: () => void;

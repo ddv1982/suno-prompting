@@ -19,7 +19,7 @@ import type { Logger } from '@/lib/logger';
  * Common dependencies for generation actions.
  * Shared between Quick Vibes, Creative Boost, and other generation hooks.
  */
-export type GenerationActionDeps = {
+export interface GenerationActionDeps {
   isGenerating: boolean;
   currentSession: PromptSession | null;
   generateId: () => string;
@@ -35,7 +35,7 @@ export type GenerationActionDeps = {
   completeOptimistic?: () => void;
   /** Error during generation, reset optimistic UI */
   errorOptimistic?: () => void;
-};
+}
 
 /**
  * Creates SessionDeps from GenerationActionDeps.
@@ -61,7 +61,7 @@ export function createSessionDeps(
 /**
  * Options for executing a generation action.
  */
-export type ExecuteGenerationOptions<TResult extends GenerationResultBase> = {
+export interface ExecuteGenerationOptions<TResult extends GenerationResultBase> {
   /** The generating action type to set during execution */
   action: GeneratingAction;
   /** Async function that performs the API call */
@@ -82,7 +82,7 @@ export type ExecuteGenerationOptions<TResult extends GenerationResultBase> = {
   log: Logger;
   /** Optional callback after successful completion */
   onSuccess?: () => void;
-};
+}
 
 /**
  * Hook that provides a reusable execute function for generation actions.

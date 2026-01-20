@@ -236,9 +236,9 @@ describe('ModeToggle source verification', () => {
       'src/main-ui/components/prompt-editor/mode-toggle.tsx'
     ).text();
 
-    // Verify the props type doesn't include isGenerating
-    const propsMatch = source.match(/type ModeToggleProps = \{[\s\S]*?\}/);
+    // Verify the props interface doesn't include isGenerating
+    const propsMatch = /interface ModeToggleProps \{[\s\S]*?\}/.exec(source);
     expect(propsMatch).not.toBeNull();
-    expect(propsMatch![0]).not.toContain('isGenerating');
+    expect(propsMatch?.[0]).not.toContain('isGenerating');
   });
 });

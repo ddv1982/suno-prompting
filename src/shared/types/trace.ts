@@ -18,7 +18,7 @@ export type TraceRunAction =
   | 'convert.max'
   | 'convert.nonMax';
 
-export type TraceRun = {
+export interface TraceRun {
   readonly version: TraceVersion;
   readonly runId: string;
   readonly capturedAt: string;
@@ -37,15 +37,15 @@ export type TraceRun = {
     readonly truncatedForCap: boolean;
   };
   readonly events: TraceEvent[];
-};
+}
 
 export type TraceEvent = TraceRunEvent | TraceDecisionEvent | TraceLLMCallEvent | TraceErrorEvent;
 
-export type TraceBaseEvent = {
+export interface TraceBaseEvent {
   readonly id: string;
   readonly ts: string;
   readonly tMs: number;
-};
+}
 
 export type TraceRunEvent = TraceBaseEvent & {
   readonly type: 'run.start' | 'run.end';
@@ -76,11 +76,11 @@ export type TraceDecisionEvent = TraceBaseEvent & {
   };
 };
 
-export type TraceProviderInfo = {
+export interface TraceProviderInfo {
   readonly id: AIProvider | 'ollama';
   readonly model: string;
   readonly locality: 'cloud' | 'local';
-};
+}
 
 export type TraceLLMCallEvent = TraceBaseEvent & {
   readonly type: 'llm.call';
@@ -96,7 +96,7 @@ export type TraceLLMCallEvent = TraceBaseEvent & {
       readonly totalChars: number;
       readonly preview: string;
     };
-    readonly messages?: Array<{ role: 'system' | 'user' | 'assistant' | 'tool'; content: string }>;
+    readonly messages?: { role: 'system' | 'user' | 'assistant' | 'tool'; content: string }[];
   };
   readonly response: {
     readonly previewText: string;
@@ -108,13 +108,13 @@ export type TraceLLMCallEvent = TraceBaseEvent & {
     readonly tokensIn?: number;
     readonly tokensOut?: number;
   };
-  readonly attempts?: Array<{
+  readonly attempts?: {
     readonly attempt: number;
     readonly startedAt: string;
     readonly endedAt: string;
     readonly latencyMs: number;
     readonly error?: { type: string; message: string; status?: number; providerRequestId?: string };
-  }>;
+  }[];
 };
 
 export type TraceErrorType =

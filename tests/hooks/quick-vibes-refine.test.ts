@@ -6,12 +6,12 @@ import { describe, test, expect } from 'bun:test';
  * Bug 2 Fix: UI state should be respected for category
  */
 
-type QuickVibesInput = {
+interface QuickVibesInput {
   sunoStyles: string[];
   customDescription: string;
   category: string | null;
   withWordlessVocals: boolean;
-};
+}
 
 type StoredInput = {
   sunoStyles?: string[];

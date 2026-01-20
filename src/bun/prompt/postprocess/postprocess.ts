@@ -32,7 +32,7 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMod
   if (!lockedPhrase) return prompt;
 
   // Try quoted format first: instruments: "piano, guitar"
-  const quotedMatch = prompt.match(/^(instruments:\s*")([^"]*)/mi);
+  const quotedMatch = /^(instruments:\s*")([^"]*)/mi.exec(prompt);
   if (quotedMatch) {
     const existingValue = (quotedMatch[2] ?? '').trim();
     const separator = existingValue ? ', ' : '';
@@ -44,7 +44,7 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMod
 
   // Try unquoted format: instruments: piano, guitar OR Instruments: piano, guitar
   // Use [^\S\n]* for horizontal whitespace only (not newlines), and * to handle empty content
-  const unquotedMatch = prompt.match(/^(instruments:[^\S\n]*)([^"\n]*)$/mi);
+  const unquotedMatch = /^(instruments:[^\S\n]*)([^"\n]*)$/mi.exec(prompt);
   if (unquotedMatch) {
     const existingValue = (unquotedMatch[2] ?? '').trim();
     // If no existing value, ensure space after colon; if existing, add comma separator
@@ -103,7 +103,7 @@ export async function enforceLengthLimit(
  * Dependencies for post-processing prompts.
  * Provides character limits and LLM-based rewriting functions.
  */
-export type PostProcessDeps = {
+export interface PostProcessDeps {
   /** Maximum allowed character count */
   readonly maxChars: number;
   /** Minimum allowed character count (below this, return original) */
@@ -114,7 +114,7 @@ export type PostProcessDeps = {
   readonly condense: (text: string) => Promise<string>;
   /** LLM function to condense and deduplicate repeated words */
   readonly condenseWithDedup: (text: string, repeatedWords: string[]) => Promise<string>;
-};
+}
 
 /**
  * Post-processes a generated prompt for quality and compliance.

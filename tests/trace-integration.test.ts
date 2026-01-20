@@ -17,7 +17,7 @@ import {
 import { AIGenerationError, OllamaUnavailableError, OllamaTimeoutError, ValidationError } from '@shared/errors';
 
 import type { TraceCollectorInit } from '@bun/trace';
-import type { TraceLLMCallEvent, TraceDecisionEvent, TraceErrorEvent } from '@shared/types/trace';
+import type { TraceDecisionEvent } from '@shared/types/trace';
 
 
 // ========================================================================
@@ -124,7 +124,7 @@ describe('TraceCollector', () => {
       });
 
       const trace = collector.finalize();
-      const event = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+      const event = trace.events.find((e) => e.type === 'llm.call')!;
 
       expect(event).toBeDefined();
       expect(event.type).toBe('llm.call');
@@ -181,7 +181,7 @@ describe('TraceCollector', () => {
       });
 
       const trace = collector.finalize();
-      const event = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+      const event = trace.events.find((e) => e.type === 'llm.call')!;
 
       expect(event.provider.id).toBe('ollama');
       expect(event.provider.model).toBe('gemma3:4b');
@@ -217,7 +217,7 @@ describe('TraceCollector', () => {
       });
 
       const trace = collector.finalize();
-      const event = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+      const event = trace.events.find((e) => e.type === 'llm.call')!;
       const attempts = event.attempts;
 
       expect(attempts).toHaveLength(2);
@@ -262,10 +262,10 @@ describe('TraceCollector', () => {
       
       expect(trace.stats.hadErrors).toBe(true);
       
-      const llmEvent = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+      const llmEvent = trace.events.find((e) => e.type === 'llm.call')!;
       expect(llmEvent.attempts?.[0]?.error?.providerRequestId).toBe('req-abc123');
       
-      const errorEvent = trace.events.find((e) => e.type === 'error') as TraceErrorEvent;
+      const errorEvent = trace.events.find((e) => e.type === 'error')!;
       expect(errorEvent.error.type).toBe('ai.generation');
     });
 
@@ -290,7 +290,7 @@ describe('TraceCollector', () => {
         });
 
         const trace = collector.finalize();
-        const event = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+        const event = trace.events.find((e) => e.type === 'llm.call')!;
 
         // All should have the same structure
         expect(event.type).toBe('llm.call');
@@ -478,7 +478,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event).toBeDefined();
     expect(event.type).toBe('decision');
@@ -504,7 +504,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.selection).toBeDefined();
     expect(event.selection?.method).toBe('pickRandom');
@@ -528,7 +528,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.selection?.method).toBe('shuffleSlice');
     expect(event.selection?.candidatesCount).toBe(5);
@@ -549,7 +549,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.selection?.method).toBe('weightedChance');
     expect(event.selection?.rolls).toEqual([0.72]);
@@ -571,7 +571,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.selection?.method).toBe('index');
     expect(event.selection?.chosenIndex).toBe(3);
@@ -599,7 +599,7 @@ describe('traceDecision', () => {
       });
 
       const trace = collector.finalize();
-      const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+      const event = trace.events.find((e) => e.type === 'decision')!;
 
       expect(event.domain).toBe(domain);
     }
@@ -636,7 +636,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.branchTaken.length).toBeLessThan(500);
     expect(event.branchTaken).toContain('[TRUNCATED]');
@@ -654,7 +654,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.why.length).toBeLessThan(1000);
     expect(event.why).toContain('[TRUNCATED]');
@@ -678,7 +678,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.selection?.candidatesPreview?.length).toBeLessThanOrEqual(10);
     expect(event.selection?.candidatesCount).toBe(20);
@@ -695,7 +695,7 @@ describe('traceDecision', () => {
     });
 
     const trace = collector.finalize();
-    const event = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const event = trace.events.find((e) => e.type === 'decision')!;
 
     expect(event.branchTaken).toContain('[REDACTED]');
     expect(event.why).toContain('[REDACTED]');

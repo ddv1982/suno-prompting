@@ -16,7 +16,7 @@ import { LLMProviderToggle } from "./llm-provider-toggle";
 import { ModelSection } from "./model-section";
 import { OllamaSettings } from "./ollama-settings";
 
-type SettingsModalProps = { isOpen: boolean; onClose: () => void };
+interface SettingsModalProps { isOpen: boolean; onClose: () => void }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.ReactElement {
   const [state, actions] = useSettingsModalState(isOpen);

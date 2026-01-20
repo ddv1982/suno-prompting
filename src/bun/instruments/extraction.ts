@@ -1,9 +1,9 @@
 import { ALIAS_TO_CANONICAL } from '@bun/instruments/registry';
 
-export type ExtractionResult = {
+export interface ExtractionResult {
   readonly found: readonly string[];
   readonly unrecognized: readonly string[];
-};
+}
 
 const INSTRUMENT_CONTEXT_PATTERNS = [
   /\bwith\s+(?:a\s+)?(.+?)(?:\s+and\s+|\s*,\s*|\s*$)/gi,

@@ -6,7 +6,7 @@ import { SUNO_V5_STYLES, SUNO_V5_STYLE_DISPLAY_NAMES } from "@shared/suno-v5-sty
 
 import type { ReactElement } from "react";
 
-type SunoStylesMultiSelectProps = {
+interface SunoStylesMultiSelectProps {
   selected: string[];
   onChange: (styles: string[]) => void;
   maxSelections?: number;
@@ -14,9 +14,9 @@ type SunoStylesMultiSelectProps = {
   autoDisable?: boolean;
   helperText?: string;
   badgeText?: "optional" | "disabled";
-};
+}
 
-type StyleOption = { value: string; label: string };
+interface StyleOption { value: string; label: string }
 
 export function SunoStylesMultiSelect({
   selected,

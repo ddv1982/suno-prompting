@@ -21,7 +21,7 @@ import type { MoodCategory } from "@bun/mood";
 import type { AdvancedSelection } from "@shared/types";
 import type { ReactElement } from "react";
 
-type AdvancedPanelProps = {
+interface AdvancedPanelProps {
   selection: AdvancedSelection;
   onUpdate: (updates: Partial<AdvancedSelection>) => void;
   onClear: () => void;
@@ -30,7 +30,7 @@ type AdvancedPanelProps = {
   moodCategory?: MoodCategory | null;
   /** Callback when mood category changes */
   onMoodCategoryChange: (category: MoodCategory | null) => void;
-};
+}
 
 // All options for Combobox (sorted alphabetically by label)
 const HARMONIC_OPTIONS = Object.entries(HARMONIC_DISPLAY_NAMES)

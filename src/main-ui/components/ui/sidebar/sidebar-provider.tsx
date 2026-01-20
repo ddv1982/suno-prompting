@@ -15,7 +15,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContextValue = {
+interface SidebarContextValue {
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
@@ -62,9 +62,7 @@ const SidebarProvider = React.forwardRef<
     const [_open, _setOpen] = React.useState(() => {
       if (openProp !== undefined) return openProp
       if (typeof document !== "undefined") {
-        const match = document.cookie.match(
-          new RegExp(`${SIDEBAR_COOKIE_NAME}=([^;]+)`) 
-        )
+        const match = new RegExp(`${SIDEBAR_COOKIE_NAME}=([^;]+)`).exec(document.cookie)
         if (match?.[1] === "true") return true
         if (match?.[1] === "false") return false
       }

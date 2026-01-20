@@ -106,7 +106,7 @@ export function getWord(
   const pool = pools[category] ?? EMOTION_WORDS;
 
   // If topic keywords are available, prioritize them OVER mood filtering
-  if (topicKeywords && topicKeywords[category] && topicKeywords[category].length > 0) {
+  if (topicKeywords?.[category] && topicKeywords[category].length > 0) {
     const topicRelevant = pool.filter(word => topicKeywords[category]?.includes(word));
     if (topicRelevant.length > 0) {
       // Use topic keywords directly without mood filtering

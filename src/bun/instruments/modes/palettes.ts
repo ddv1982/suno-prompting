@@ -1,16 +1,16 @@
 import { getInstrumentsByCategory, type InstrumentCategory } from '@bun/instruments/registry';
 
-export type PoolConfig = {
+export interface PoolConfig {
   readonly min: number;
   readonly max: number;
   readonly chance?: number;
-};
+}
 
-export type ModePalette = {
+export interface ModePalette {
   readonly name: string;
   readonly pools: Partial<Record<InstrumentCategory, PoolConfig>>;
   readonly maxTags: number;
-};
+}
 
 export const EXCLUSION_RULES: readonly [string, string][] = [
   ['felt piano', 'Rhodes'],

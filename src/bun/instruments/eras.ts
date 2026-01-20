@@ -92,7 +92,7 @@ export const INSTRUMENT_ERAS: readonly InstrumentEra[] = ['70s', '80s', '90s', '
  */
 export function selectEraInstruments(
   era: InstrumentEra,
-  count: number = 3,
+  count = 3,
   rng: () => number = Math.random,
 ): string[] {
   const pool = ERA_INSTRUMENTS[era];

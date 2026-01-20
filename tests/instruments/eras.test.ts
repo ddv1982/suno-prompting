@@ -16,7 +16,7 @@ describe('Era-Tagged Instruments', () => {
       expect(ERA_INSTRUMENTS['70s']).toBeDefined();
       expect(ERA_INSTRUMENTS['80s']).toBeDefined();
       expect(ERA_INSTRUMENTS['90s']).toBeDefined();
-      expect(ERA_INSTRUMENTS['modern']).toBeDefined();
+      expect(ERA_INSTRUMENTS.modern).toBeDefined();
     });
 
     it('should have at least 8 instruments per era', () => {

@@ -15,8 +15,9 @@ export default [
     ],
   },
 
-  // Base TypeScript configuration with strict type checking
+  // Base TypeScript configuration with strict type checking and stylistic rules
   ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
 
   // Language options for TypeScript files
   {
@@ -84,7 +85,7 @@ export default [
       // TypeScript strict patterns
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': [
-        'warn',
+        'error',
         {
           allowExpressions: true,
           allowTypedFunctionExpressions: true,
@@ -99,9 +100,8 @@ export default [
       ],
       '@typescript-eslint/strict-boolean-expressions': 'off', // Too restrictive for React patterns
 
-      // Relaxed strict rules with justification:
-      // Non-null assertions are used in music theory code where array lookups are guaranteed by math
-      '@typescript-eslint/no-non-null-assertion': 'warn',
+      // Non-null assertions forbidden in source code (tests have separate override)
+      '@typescript-eslint/no-non-null-assertion': 'error',
       // Template literals with numbers are safe and readable
       '@typescript-eslint/restrict-template-expressions': [
         'error',
@@ -125,20 +125,27 @@ export default [
           },
         },
       ],
-      // Some fire-and-forget promises are intentional (initial loads, effects)
-      '@typescript-eslint/no-floating-promises': 'warn',
-      // Redundant type constituents are sometimes useful for documentation
-      '@typescript-eslint/no-redundant-type-constituents': 'warn',
+      // All promises must be handled or explicitly voided
+      '@typescript-eslint/no-floating-promises': 'error',
+      // Redundant type constituents should be removed
+      '@typescript-eslint/no-redundant-type-constituents': 'error',
+      // Prefer ?? over || but allow || for strings (empty string is often treated as falsy intentionally)
+      '@typescript-eslint/prefer-nullish-coalescing': [
+        'error',
+        {
+          ignorePrimitives: { string: true },
+        },
+      ],
 
       // Code quality
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       'prefer-const': 'error',
       'no-var': 'error',
 
       // Complexity limits
-      'max-lines-per-function': ['warn', { max: 100, skipBlankLines: true, skipComments: true }],
-      complexity: ['warn', 15],
+      'max-lines-per-function': ['error', { max: 100, skipBlankLines: true, skipComments: true }],
+      complexity: ['error', 15],
     },
   },
 
@@ -180,6 +187,10 @@ export default [
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
       // Tests intentionally test deprecated functions for backward compatibility
       '@typescript-eslint/no-deprecated': 'off',
+      // Empty functions are common for test mocks and stubs
+      '@typescript-eslint/no-empty-function': 'off',
+      // Tests may use || for falsy defaults intentionally
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
     },
   },
 
@@ -194,16 +205,4 @@ export default [
     },
   },
 
-  // Components using deprecated validation functions during migration to Zod schemas
-  // TODO: Remove this override once components are migrated to use new schema-based validation
-  {
-    files: [
-      'src/main-ui/components/creative-boost-panel/creative-boost-panel.tsx',
-      'src/main-ui/components/prompt-editor/full-prompt-input-panel.tsx',
-      'src/main-ui/components/quick-vibes-panel/quick-vibes-panel.tsx',
-    ],
-    rules: {
-      '@typescript-eslint/no-deprecated': 'warn', // Warn during migration period, will be error once migrated
-    },
-  },
 ];

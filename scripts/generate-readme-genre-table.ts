@@ -31,9 +31,9 @@ export const COUNT_MARKERS = {
   ORCHESTRAL_COUNT: 'ORCHESTRAL_COUNT',
 } as const;
 
-type Options = {
+interface Options {
   readonly includeOptionalPools: boolean;
-};
+}
 
 const DEFAULT_OPTIONS: Options = {
   includeOptionalPools: true,

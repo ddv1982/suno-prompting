@@ -12,9 +12,9 @@ import { RunEventCard } from './run-event-card';
 import type { TraceEvent } from '@shared/types';
 import type { ReactElement } from 'react';
 
-type TimelineEventProps = {
+interface TimelineEventProps {
   event: TraceEvent;
-};
+}
 
 function formatTimestamp(tMs: number): string {
   if (tMs < 1000) return `+${tMs}ms`;

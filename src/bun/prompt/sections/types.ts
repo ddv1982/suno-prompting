@@ -17,7 +17,7 @@ export type SectionType = 'INTRO' | 'VERSE' | 'CHORUS' | 'BRIDGE' | 'OUTRO';
  * Template definition for a single section.
  * Contains multiple template variations for variety.
  */
-export type SectionTemplate = {
+export interface SectionTemplate {
   /** Section type identifier */
   readonly type: SectionType;
   /** Array of template strings with placeholders */
@@ -26,24 +26,24 @@ export type SectionTemplate = {
   readonly instrumentCount: number;
   /** Energy level of the section (affects instrument selection) */
   readonly energy: 'low' | 'medium' | 'high';
-};
+}
 
 /**
  * Context for building sections, containing genre-specific data.
  */
-export type SectionContext = {
+export interface SectionContext {
   /** Target genre for instrument and mood selection */
   readonly genre: GenreType;
   /** Random number generator for deterministic output */
   readonly rng: () => number;
   /** Pre-selected instruments for the track (to ensure variety) */
   readonly trackInstruments?: readonly string[];
-};
+}
 
 /**
  * Result from building a single section.
  */
-export type SectionResult = {
+export interface SectionResult {
   /** The section type */
   readonly type: SectionType;
   /** Formatted section string ready for prompt */
@@ -52,16 +52,16 @@ export type SectionResult = {
   readonly instruments: readonly string[];
   /** Mood descriptors used */
   readonly moods: readonly string[];
-};
+}
 
 /**
  * Result from building all sections.
  */
-export type AllSectionsResult = {
+export interface AllSectionsResult {
   /** Array of all section results */
   readonly sections: readonly SectionResult[];
   /** Combined formatted text for all sections */
   readonly text: string;
   /** All instruments used across sections */
   readonly allInstruments: readonly string[];
-};
+}

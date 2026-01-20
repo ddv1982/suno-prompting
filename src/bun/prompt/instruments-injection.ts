@@ -99,7 +99,7 @@ export function injectInstrumentTags(
   const maxItems = options?.maxItems ?? DEFAULT_MAX_ITEMS;
 
   // Max format: instruments: "piano, bass"
-  const quotedMatch = prompt.match(/^(instruments:\s*")([^"]*)"/mi);
+  const quotedMatch = /^(instruments:\s*")([^"]*)"/mi.exec(prompt);
   if (quotedMatch) {
     const existingValue = (quotedMatch[2] ?? '').trim();
     const merged = mergeInstrumentTagsIntoCsv(existingValue, tags, { maxItems, stripVocalStyleItems: true });
@@ -107,7 +107,7 @@ export function injectInstrumentTags(
   }
 
   // Non-max format: Instruments: piano, bass
-  const unquotedMatch = prompt.match(/^(Instruments:[^\S\n]*)([^\n]*)$/m);
+  const unquotedMatch = /^(Instruments:[^\S\n]*)([^\n]*)$/m.exec(prompt);
   if (unquotedMatch) {
     const existingValue = (unquotedMatch[2] ?? '').trim();
     const merged = mergeInstrumentTagsIntoCsv(existingValue, tags, { maxItems, stripVocalStyleItems: true });

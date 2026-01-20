@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import type { PromptMode } from "@shared/types";
 import type { ReactElement } from "react";
 
-type ModeSelectorProps = {
+interface ModeSelectorProps {
   promptMode: PromptMode;
   onPromptModeChange: (mode: PromptMode) => void;
-};
+}
 
 export function ModeSelector({ promptMode, onPromptModeChange }: ModeSelectorProps): ReactElement {
   const helperText = {

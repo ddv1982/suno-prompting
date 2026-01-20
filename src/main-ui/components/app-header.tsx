@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 
 import type { ReactElement } from "react";
 
-type HeaderProps = {
+interface HeaderProps {
   onOpenSettings: () => void;
-};
+}
 
 export function Header({ onOpenSettings }: HeaderProps): ReactElement {
   return (

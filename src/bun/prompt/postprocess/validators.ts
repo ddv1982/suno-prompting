@@ -98,7 +98,7 @@ export function metaRemovalSuccessful(text: string): boolean {
  * Check if deterministic dedup was sufficient.
  * Returns true if duplicate word count is below threshold.
  */
-export function dedupSuccessful(text: string, threshold: number = 3): boolean {
+export function dedupSuccessful(text: string, threshold = 3): boolean {
   const repeated = detectRepeatedWords(text);
   return repeated.length <= threshold;
 }
@@ -149,8 +149,8 @@ export function validateAndFixFormat(text: string): string {
   const trimmed = text.trim();
   if (trimmed.startsWith('[')) return trimmed;
 
-  const genreMatch = trimmed.match(/^Genre:\s*(.+)$/m);
-  const moodMatch = trimmed.match(/^Mood:\s*([^,]+)/m);
+  const genreMatch = /^Genre:\s*(.+)$/m.exec(trimmed);
+  const moodMatch = /^Mood:\s*([^,]+)/m.exec(trimmed);
 
   const genre = genreMatch?.[1]?.trim() || 'Cinematic';
   const mood = moodMatch?.[1]?.trim() || 'Evocative';

@@ -62,8 +62,8 @@ describe('useDebounce integration patterns', () => {
   });
 
   test('isDebouncing pattern detects pending updates', () => {
-    const currentValue: string = 'new value';
-    const debouncedValue: string = 'old value';
+    const currentValue = 'new value' as string;
+    const debouncedValue = 'old value' as string;
     
     const isDebouncing = currentValue !== debouncedValue;
     

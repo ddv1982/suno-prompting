@@ -182,7 +182,7 @@ describe('extractGenresFromPrompt (multi)', () => {
  * whether they are compound genres like "jazz fusion" or single genres.
  */
 function extractRawGenreValues(prompt: string): string[] {
-  const match = prompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
+  const match = /^genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(prompt);
   if (!match?.[1]) return [];
   return match[1].split(',').map(g => g.trim()).filter(Boolean);
 }
@@ -374,7 +374,7 @@ instruments: "guitar, drums"`;
       // Run multiple times to verify mood count
       const results = Array.from({ length: 20 }, () => remixMoodInPrompt(basePrompt));
       results.forEach(r => {
-        const moodMatch = r.text.match(/mood:\s*"?([^"\n]+)/i);
+        const moodMatch = /mood:\s*"?([^"\n]+)/i.exec(r.text);
         const moods = moodMatch?.[1]?.split(',').map(m => m.trim()).filter(Boolean) || [];
         expect(moods.length).toBeGreaterThanOrEqual(2);
         expect(moods.length).toBeLessThanOrEqual(3);
@@ -502,7 +502,7 @@ instruments: "guitar, drums"`;
 
     it('replaces recording with new descriptors', () => {
       const result = remixRecording(basePrompt);
-      const recordingMatch = result.text.match(/recording:\s*"?([^"\n]+)/i);
+      const recordingMatch = /recording:\s*"?([^"\n]+)/i.exec(result.text);
       // Recording descriptors may contain internal commas (e.g., "tape recorder, close-up, raw")
       // so we just verify the field was replaced with non-empty content
       expect(recordingMatch?.[1]).toBeDefined();

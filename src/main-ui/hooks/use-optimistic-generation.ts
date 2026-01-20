@@ -2,11 +2,11 @@ import { useOptimistic, useTransition } from 'react';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
 
-type OptimisticGenerationState = {
+interface OptimisticGenerationState {
   readonly isOptimistic: boolean;
   readonly optimisticAction: GeneratingAction;
   readonly showSkeleton: boolean;
-};
+}
 
 type OptimisticAction = 
   | { type: 'start'; action: GeneratingAction }

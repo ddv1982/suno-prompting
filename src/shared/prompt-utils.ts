@@ -79,7 +79,7 @@ export function isStructuredPrompt(text: string): boolean {
  * Clean and normalize a title string.
  * Removes leading/trailing quotes and whitespace.
  */
-export function cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
+export function cleanTitle(title: string | undefined, fallback = 'Untitled'): string {
   return title?.trim().replace(/^["']|["']$/g, '') || fallback;
 }
 
@@ -90,11 +90,11 @@ export function cleanLyrics(lyrics: string | undefined): string | undefined {
   return lyrics?.trim() || undefined;
 }
 
-export type ParsedCombinedResponse = {
+export interface ParsedCombinedResponse {
   prompt: string;
   title?: string;
   lyrics?: string;
-};
+}
 
 /**
  * Parse a combined JSON response from LLM (prompt + optional title/lyrics).

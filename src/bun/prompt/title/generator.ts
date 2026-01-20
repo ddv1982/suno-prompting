@@ -87,7 +87,7 @@ export function generateDeterministicTitle(
 export function generateTitleOptions(
   genre: string,
   mood: string,
-  count: number = 3,
+  count = 3,
   rng: () => number = Math.random,
   description?: string
 ): string[] {

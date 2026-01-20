@@ -9,7 +9,7 @@ import type { QuickVibesCategory } from '@shared/types';
 /**
  * Options for generating Quick Vibes prompts.
  */
-export type GenerateQuickVibesOptions = {
+export interface GenerateQuickVibesOptions {
   /** Category for deterministic generation (e.g., 'lofi-study', 'cafe-coffeeshop') */
   category: QuickVibesCategory | null;
   /** Custom description when no category is selected */
@@ -18,12 +18,12 @@ export type GenerateQuickVibesOptions = {
   withWordlessVocals: boolean;
   /** Suno V5 style tags for direct mode */
   sunoStyles: string[];
-};
+}
 
 /**
  * Options for refining Quick Vibes prompts.
  */
-export type RefineQuickVibesOptions = {
+export interface RefineQuickVibesOptions {
   /** Current prompt to refine */
   currentPrompt: string;
   /** Current title (optional) */
@@ -38,4 +38,4 @@ export type RefineQuickVibesOptions = {
   category?: QuickVibesCategory | null;
   /** Suno V5 style tags for direct mode */
   sunoStyles: string[];
-};
+}

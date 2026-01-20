@@ -3,7 +3,7 @@ import { redactSecretsInText, truncateCandidates, truncateTextWithMarker } from 
 import type { TraceCollector } from './collector';
 import type { TraceDecisionDomain, TraceDecisionEvent } from '@shared/types/trace';
 
-export type TraceDecisionInput = {
+export interface TraceDecisionInput {
   readonly domain: TraceDecisionDomain;
   readonly key: string;
   readonly branchTaken: string;
@@ -14,7 +14,7 @@ export type TraceDecisionInput = {
     readonly candidates?: readonly string[];
     readonly rolls?: readonly number[];
   };
-};
+}
 
 const LIMITS = {
   branchTakenChars: 240,

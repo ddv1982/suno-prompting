@@ -22,14 +22,14 @@ const NARROW_RANGE_SPREAD = 60;
 /**
  * Result type for blended BPM range calculations.
  */
-export type BpmRangeResult = {
+export interface BpmRangeResult {
   /** Minimum BPM of the blended range */
   readonly min: number;
   /** Maximum BPM of the blended range */
   readonly max: number;
   /** True if the range is an intersection of overlapping genres, false if it's a narrowed union */
   readonly isIntersection: boolean;
-};
+}
 
 /**
  * Get blended BPM range from multiple genre components.
@@ -40,7 +40,7 @@ export function getBlendedBpmRange(genre: string): BpmRangeResult | null {
   if (components.length === 0) return null;
 
   // Collect BPM ranges from all genres
-  const ranges: Array<{ min: number; max: number }> = [];
+  const ranges: { min: number; max: number }[] = [];
 
   for (const g of components) {
     const def = GENRE_REGISTRY[g];

@@ -7,6 +7,6 @@
 
 import type { TraceRun } from '@shared/types';
 
-export type DebugDrawerBodyProps = {
+export interface DebugDrawerBodyProps {
   debugTrace: TraceRun;
-};
+}

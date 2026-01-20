@@ -2,7 +2,7 @@ import { describe, it, expect, mock, beforeEach } from "bun:test";
 
 import { AIEngine } from "@bun/ai/engine";
 
-let generateTextCalls: number = 0;
+let generateTextCalls = 0;
 
 const mockGenerateText = mock(async () => {
   generateTextCalls++;
@@ -64,7 +64,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
       "", "", ["rock", "jazz", "funk"], [], false, true, false, 3
     );
 
-    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
     const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
 
     expect(genres).toHaveLength(3);
@@ -77,7 +77,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
       "", "", ["rock"], [], false, true, false, 1
     );
 
-    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
     const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
 
     expect(genres).toHaveLength(1);
@@ -90,7 +90,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
       "", "", ["rock", "jazz", "funk", "pop"], [], false, true, false, 4
     );
 
-    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
     const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
 
     expect(genres).toHaveLength(4);
@@ -209,7 +209,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
       "make it jazzy", "", "", ["rock", "jazz", "funk"], [], false, true, false, 3
     );
 
-    const genreMatch = result.text.match(/genre:\s*"?([^"\n]+?)(?:"|$)/im);
+    const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
     const genres = genreMatch?.[1]?.split(",").map(g => g.trim()).filter(Boolean) || [];
 
     expect(genres).toHaveLength(3);

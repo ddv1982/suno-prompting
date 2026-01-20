@@ -6,11 +6,11 @@
 
 export const TRACE_TRUNCATION_MARKER = '…[TRUNCATED]' as const;
 
-export type TruncateResult = {
+export interface TruncateResult {
   readonly text: string;
   readonly truncated: boolean;
   readonly originalLength: number;
-};
+}
 
 function clampNonNegativeInt(value: number): number {
   if (!Number.isFinite(value)) return 0;
@@ -52,10 +52,10 @@ export function truncateTextWithMarker(
   };
 }
 
-export type CandidateTruncationOptions = {
+export interface CandidateTruncationOptions {
   readonly maxItems: number;
   readonly maxCharsPerItem: number;
-};
+}
 
 export const DEFAULT_CANDIDATE_TRUNCATION: CandidateTruncationOptions = {
   maxItems: 10,

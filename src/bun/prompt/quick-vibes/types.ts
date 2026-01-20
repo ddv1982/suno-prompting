@@ -10,7 +10,7 @@ import type { MoodCategory } from '@bun/mood';
 import type { TraceCollector } from '@bun/trace';
 import type { QuickVibesCategory } from '@shared/types';
 
-export type QuickVibesTemplate = {
+export interface QuickVibesTemplate {
   /** Genre options for this category */
   genres: readonly string[];
   /** Instrument combination options */
@@ -23,7 +23,7 @@ export type QuickVibesTemplate = {
     nouns: readonly string[];
     contexts: readonly string[];
   };
-};
+}
 
 export interface BuildQuickVibesOptions {
   /** Whether to include wordless vocals in instruments */

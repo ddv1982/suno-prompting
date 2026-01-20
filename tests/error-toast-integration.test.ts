@@ -339,7 +339,7 @@ describe("Error Toast Integration", () => {
       // Verify error categorization
       // AIGenerationError, StorageError, OllamaUnavailableError, OllamaModelMissingError -> error
       // ValidationError -> warning
-      const expectedTypes: Array<"error" | "warning"> = ["error", "error", "error", "error", "warning"];
+      const expectedTypes: ("error" | "warning")[] = ["error", "error", "error", "error", "warning"];
       errors.forEach((error, i) => {
         const expectedType = getErrorToastType(error);
         expect(expectedType).toBe(expectedTypes[i]!);

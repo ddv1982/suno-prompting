@@ -88,11 +88,11 @@ describe('SUNO_V5_STYLE_DISPLAY_NAMES', () => {
   });
 
   it('handles standard title case correctly', () => {
-    expect(SUNO_V5_STYLE_DISPLAY_NAMES['jazz']).toBe('Jazz');
-    expect(SUNO_V5_STYLE_DISPLAY_NAMES['rock']).toBe('Rock');
-    expect(SUNO_V5_STYLE_DISPLAY_NAMES['pop']).toBe('Pop');
-    expect(SUNO_V5_STYLE_DISPLAY_NAMES['soul']).toBe('Soul');
-    expect(SUNO_V5_STYLE_DISPLAY_NAMES['disco']).toBe('Disco');
+    expect(SUNO_V5_STYLE_DISPLAY_NAMES.jazz).toBe('Jazz');
+    expect(SUNO_V5_STYLE_DISPLAY_NAMES.rock).toBe('Rock');
+    expect(SUNO_V5_STYLE_DISPLAY_NAMES.pop).toBe('Pop');
+    expect(SUNO_V5_STYLE_DISPLAY_NAMES.soul).toBe('Soul');
+    expect(SUNO_V5_STYLE_DISPLAY_NAMES.disco).toBe('Disco');
   });
 
   it('handles K-Pop special case correctly', () => {
@@ -116,7 +116,7 @@ describe('SUNO_V5_STYLE_DISPLAY_NAMES', () => {
   });
 
   it('handles EDM special case correctly', () => {
-    expect(SUNO_V5_STYLE_DISPLAY_NAMES['edm']).toBe('EDM');
+    expect(SUNO_V5_STYLE_DISPLAY_NAMES.edm).toBe('EDM');
   });
 
   it('handles numeric prefixed styles correctly (16-bit)', () => {
@@ -195,7 +195,7 @@ describe('isSunoV5Style', () => {
   });
 
   it('correctly narrows type for valid styles', () => {
-    const maybeStyle: string = 'jazz';
+    const maybeStyle = 'jazz';
     if (isSunoV5Style(maybeStyle)) {
       // TypeScript should now know this is SunoV5Style
       const validStyle: typeof SUNO_V5_STYLES[number] = maybeStyle;

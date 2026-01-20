@@ -1,6 +1,6 @@
 import { type PromptSession, type PromptVersion } from "@shared/types";
 
-export type ChatMessage = { role: "user" | "ai"; content: string };
+export interface ChatMessage { role: "user" | "ai"; content: string }
 
 function formatVersionMessage(action: "Generated" | "Refined", version: PromptVersion): string {
   const titlePart = version.title ? ` - "${version.title}"` : "";

@@ -25,14 +25,14 @@ function getCanSubmit(input: QuickVibesInput, originalInput: QuickVibesInput | n
   }).success;
 }
 
-type QuickVibesPanelProps = {
+interface QuickVibesPanelProps {
   input: QuickVibesInput; originalInput?: QuickVibesInput | null; withWordlessVocals: boolean; maxMode: boolean;
   isGenerating: boolean; hasCurrentPrompt: boolean; onInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void; onMaxModeChange: (value: boolean) => void;
   onGenerate: () => void; onRefine: (feedback: string) => Promise<boolean>;
-};
+}
 
-type QuickVibesPanelHandlers = {
+interface QuickVibesPanelHandlers {
   refined: boolean;
   handleCategorySelect: (categoryId: QuickVibesCategory | null) => void;
   handleSunoStylesChange: (styles: string[]) => void;
@@ -40,15 +40,15 @@ type QuickVibesPanelHandlers = {
   handleMoodCategoryChange: (category: MoodCategory | null) => void;
   handleKeyDown: (event: React.KeyboardEvent) => void;
   handleSubmit: () => void;
-};
+}
 
-type QuickVibesPanelState = {
+interface QuickVibesPanelState {
   isRefineMode: boolean;
   isDirectMode: boolean;
   canSubmit: boolean;
-};
+}
 
-type QuickVibesHandlerArgs = {
+interface QuickVibesHandlerArgs {
   input: QuickVibesInput;
   isRefineMode: boolean;
   isGenerating: boolean;
@@ -56,7 +56,7 @@ type QuickVibesHandlerArgs = {
   onInputChange: (input: QuickVibesInput) => void;
   onGenerate: () => void;
   onRefine: (feedback: string) => Promise<boolean>;
-};
+}
 
 function useQuickVibesPanelHandlers({ input, isRefineMode, isGenerating, canSubmit, onInputChange, onGenerate, onRefine }: QuickVibesHandlerArgs): QuickVibesPanelHandlers {
   const { refined, handleRefine } = useRefinedFeedback(onRefine);
@@ -102,7 +102,7 @@ function useQuickVibesPanelHandlers({ input, isRefineMode, isGenerating, canSubm
   };
 }
 
-type QuickVibesPanelContentProps = {
+interface QuickVibesPanelContentProps {
   input: QuickVibesInput;
   state: QuickVibesPanelState;
   handlers: QuickVibesPanelHandlers;
@@ -111,7 +111,7 @@ type QuickVibesPanelContentProps = {
   isGenerating: boolean;
   onWordlessVocalsChange: (value: boolean) => void;
   onMaxModeChange: (value: boolean) => void;
-};
+}
 
 function QuickVibesPanelContent({
   input,

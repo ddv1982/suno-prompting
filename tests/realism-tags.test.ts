@@ -296,7 +296,7 @@ describe('realism-tags', () => {
 
   describe('GENRE_VOCAL_PROBABILITY constant', () => {
     it('has default key', () => {
-      expect(GENRE_VOCAL_PROBABILITY['default']).toBeDefined();
+      expect(GENRE_VOCAL_PROBABILITY.default).toBeDefined();
     });
 
     it('all values are between 0.0 and 1.0', () => {
@@ -318,13 +318,13 @@ describe('realism-tags', () => {
     });
 
     it('has default value of 0.5', () => {
-      expect(GENRE_VOCAL_PROBABILITY['default']).toBe(0.5);
+      expect(GENRE_VOCAL_PROBABILITY.default).toBe(0.5);
     });
   });
 
   describe('GENRE_ELECTRONIC_RATIO constant', () => {
     it('has default key', () => {
-      expect(GENRE_ELECTRONIC_RATIO['default']).toBeDefined();
+      expect(GENRE_ELECTRONIC_RATIO.default).toBeDefined();
     });
 
     it('all values are between 0.0 and 1.0', () => {
@@ -352,7 +352,7 @@ describe('realism-tags', () => {
     });
 
     it('has default value of 0.0', () => {
-      expect(GENRE_ELECTRONIC_RATIO['default']).toBe(0.0);
+      expect(GENRE_ELECTRONIC_RATIO.default).toBe(0.0);
     });
   });
 

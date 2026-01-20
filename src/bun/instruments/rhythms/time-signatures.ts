@@ -1,7 +1,7 @@
 export type Subdivision = 'quarter' | 'eighth';
 export type Complexity = 'standard' | 'moderate' | 'complex' | 'very_complex';
 
-export type TimeSignatureDefinition = {
+export interface TimeSignatureDefinition {
   readonly name: string;
   readonly signature: string;
   readonly beats: number;
@@ -14,7 +14,7 @@ export type TimeSignatureDefinition = {
   readonly famousExamples: readonly string[];
   readonly bestGenres: readonly string[];
   readonly complexity: Complexity;
-};
+}
 
 export const TIME_SIGNATURES = {
   time_4_4: {
@@ -235,7 +235,7 @@ export const TIME_SIGNATURES = {
 
 export type TimeSignatureType = keyof typeof TIME_SIGNATURES;
 
-export type TimeSignatureJourneyDefinition = {
+export interface TimeSignatureJourneyDefinition {
   readonly name: string;
   readonly signatures: readonly TimeSignatureType[];
   readonly keywords: readonly string[];
@@ -248,7 +248,7 @@ export type TimeSignatureJourneyDefinition = {
     readonly bridgeOutro?: string;
   };
   readonly bestGenres: readonly string[];
-};
+}
 
 export const TIME_SIGNATURE_JOURNEYS = {
   prog_odyssey: {

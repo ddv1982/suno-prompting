@@ -2,12 +2,12 @@ import { APP_CONSTANTS } from '@shared/constants';
 
 import type { QuickVibesCategory } from '@shared/types';
 
-export type QuickVibesCategoryDefinition = {
+export interface QuickVibesCategoryDefinition {
   label: string;
   description: string;
   keywords: string[];
   exampleOutput: string;
-};
+}
 
 export const QUICK_VIBES_CATEGORIES: Record<QuickVibesCategory, QuickVibesCategoryDefinition> = {
   // Existing 6 categories

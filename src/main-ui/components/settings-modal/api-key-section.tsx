@@ -10,7 +10,7 @@ import type { ReactElement } from "react";
 const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
 const selectClassName = "border-border data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-[var(--height-control-md)] w-full min-w-0 rounded-md border bg-input/30 px-[var(--space-3)] py-[var(--space-1)] text-[length:var(--text-footnote)] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
 
-type ApiKeySectionProps = {
+interface ApiKeySectionProps {
   provider: AIProvider;
   apiKeys: APIKeys;
   showKey: boolean;
@@ -19,7 +19,7 @@ type ApiKeySectionProps = {
   onProviderChange: (provider: AIProvider) => void;
   onApiKeyChange: (value: string) => void;
   onToggleShowKey: () => void;
-};
+}
 
 export function ApiKeySection({
   provider,

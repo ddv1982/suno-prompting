@@ -53,7 +53,7 @@ const CONTRADICTORY_PAIRS = [
     ['minimal', 'complex'],
     ['analog', 'digital'],
     ['monophonic', 'polyphonic'],
-] as const satisfies ReadonlyArray<readonly [string, string]>;
+] as const satisfies readonly (readonly [string, string])[];
 
 export function validatePrompt(prompt: string): ValidationResult {
     const result: ValidationResult = {

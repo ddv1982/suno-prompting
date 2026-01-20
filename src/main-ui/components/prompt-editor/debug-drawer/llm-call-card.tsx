@@ -18,7 +18,7 @@ import type { ReactElement } from 'react';
 /** Duration in ms to show "Copied!" feedback before reverting */
 const COPY_FEEDBACK_DURATION_MS = 1500;
 
-type LLMCallCardProps = { event: TraceLLMCallEvent };
+interface LLMCallCardProps { event: TraceLLMCallEvent }
 
 function formatLatency(ms: number | undefined): string {
   if (ms === undefined) return '-';
@@ -85,7 +85,7 @@ function AttemptsSection({ attempts }: { attempts: TraceLLMCallEvent['attempts']
 
 function AdvancedSection({ request, response }: { request: TraceLLMCallEvent['request']; response: TraceLLMCallEvent['response'] }): ReactElement | null {
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const hasAdvanced = Boolean(request.messages || response.rawText);
+  const hasAdvanced = Boolean(request.messages ?? response.rawText);
   if (!hasAdvanced) return null;
   return (
     <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>

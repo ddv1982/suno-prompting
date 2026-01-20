@@ -5,7 +5,7 @@ import { getMaxModeHelperText } from "@shared/constants";
 
 import type { ReactElement } from "react";
 
-type TogglesSectionProps = {
+interface TogglesSectionProps {
   withWordlessVocals: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
@@ -13,7 +13,7 @@ type TogglesSectionProps = {
   onWordlessVocalsChange: (checked: boolean) => void;
   onMaxModeChange: (checked: boolean) => void;
   onLyricsModeChange: (checked: boolean) => void;
-};
+}
 
 export function TogglesSection({
   withWordlessVocals,

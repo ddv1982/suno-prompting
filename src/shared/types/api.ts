@@ -7,24 +7,24 @@ import type { TraceRun } from '@shared/types/trace';
 import type { ValidationResult } from '@shared/validation';
 
 // Generation endpoints
-export type GenerateInitialParams = { 
+export interface GenerateInitialParams { 
   description: string; 
   lockedPhrase?: string; 
   lyricsTopic?: string;
   genreOverride?: string;
   /** Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
   sunoStyles?: string[];
-};
-export type GenerateInitialResponse = { 
+}
+export interface GenerateInitialResponse { 
   prompt: string;
   title?: string;
   lyrics?: string;
   versionId: string; 
   validation: ValidationResult; 
   debugTrace?: TraceRun;
-};
+}
 
-export type RefinePromptParams = { 
+export interface RefinePromptParams { 
   currentPrompt: string; 
   /** Feedback text for lyrics refinement (optional for style-only refinement) */
   feedback?: string; 
@@ -57,42 +57,42 @@ export type RefinePromptParams = {
     /** Changed mood category */
     moodCategory?: string | null;
   };
-};
-export type RefinePromptResponse = { 
+}
+export interface RefinePromptResponse { 
   prompt: string; 
   title?: string; 
   lyrics?: string; 
   versionId: string; 
   validation: ValidationResult; 
   debugTrace?: TraceRun;
-};
+}
 
 // Remix endpoints
-export type RemixInstrumentsParams = { currentPrompt: string; originalInput: string };
-export type RemixInstrumentsResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
+export interface RemixInstrumentsParams { currentPrompt: string; originalInput: string }
+export interface RemixInstrumentsResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
 
-export type RemixGenreParams = { currentPrompt: string };
-export type RemixGenreResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
+export interface RemixGenreParams { currentPrompt: string }
+export interface RemixGenreResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
 
-export type RemixMoodParams = { currentPrompt: string };
-export type RemixMoodResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
+export interface RemixMoodParams { currentPrompt: string }
+export interface RemixMoodResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
 
-export type RemixStyleTagsParams = { currentPrompt: string };
-export type RemixStyleTagsResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
+export interface RemixStyleTagsParams { currentPrompt: string }
+export interface RemixStyleTagsResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
 
-export type RemixRecordingParams = { currentPrompt: string };
-export type RemixRecordingResponse = { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun };
+export interface RemixRecordingParams { currentPrompt: string }
+export interface RemixRecordingResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
 
-export type RemixTitleParams = { currentPrompt: string; originalInput: string; currentLyrics?: string };
-export type RemixTitleResponse = { title: string; debugTrace?: TraceRun };
+export interface RemixTitleParams { currentPrompt: string; originalInput: string; currentLyrics?: string }
+export interface RemixTitleResponse { title: string; debugTrace?: TraceRun }
 
-export type RemixLyricsParams = { currentPrompt: string; originalInput: string; lyricsTopic?: string };
-export type RemixLyricsResponse = { lyrics: string };
+export interface RemixLyricsParams { currentPrompt: string; originalInput: string; lyricsTopic?: string }
+export interface RemixLyricsResponse { lyrics: string }
 
 // Settings endpoints
-export type SetDebugModeParams = { debugMode: boolean };
+export interface SetDebugModeParams { debugMode: boolean }
 
-export type SaveAllSettingsParams = {
+export interface SaveAllSettingsParams {
   provider: AIProvider;
   apiKeys: APIKeys;
   model: string;
@@ -101,9 +101,9 @@ export type SaveAllSettingsParams = {
   maxMode: boolean;
   lyricsMode: boolean;
   useLocalLLM?: boolean; // Optional for backwards compatibility
-};
+}
 
-export type GetAllSettingsResponse = {
+export interface GetAllSettingsResponse {
   provider: AIProvider;
   apiKeys: APIKeys;
   model: string;
@@ -112,32 +112,32 @@ export type GetAllSettingsResponse = {
   maxMode: boolean;
   lyricsMode: boolean;
   useLocalLLM: boolean;
-};
+}
 
 // Session endpoints
-export type GetHistoryResponse = { sessions: PromptSession[] };
-export type SaveSessionParams = { session: PromptSession };
-export type DeleteSessionParams = { id: string };
+export interface GetHistoryResponse { sessions: PromptSession[] }
+export interface SaveSessionParams { session: PromptSession }
+export interface DeleteSessionParams { id: string }
 
 // Simple settings endpoints
-export type SetApiKeyParams = { apiKey: string };
-export type SetModelParams = { model: string };
-export type SetSunoTagsParams = { useSunoTags: boolean };
-export type SetMaxModeParams = { maxMode: boolean };
-export type SetLyricsModeParams = { lyricsMode: boolean };
-export type SetUseLocalLLMParams = { useLocalLLM: boolean };
+export interface SetApiKeyParams { apiKey: string }
+export interface SetModelParams { model: string }
+export interface SetSunoTagsParams { useSunoTags: boolean }
+export interface SetMaxModeParams { maxMode: boolean }
+export interface SetLyricsModeParams { lyricsMode: boolean }
+export interface SetUseLocalLLMParams { useLocalLLM: boolean }
 
 // Quick Vibes endpoints
-export type GetPromptModeResponse = { promptMode: PromptMode };
-export type SetPromptModeParams = { promptMode: PromptMode };
-export type SetPromptModeResponse = { success: boolean };
+export interface GetPromptModeResponse { promptMode: PromptMode }
+export interface SetPromptModeParams { promptMode: PromptMode }
+export interface SetPromptModeResponse { success: boolean }
 
 // Creative Boost Mode endpoints
-export type GetCreativeBoostModeResponse = { creativeBoostMode: CreativeBoostMode };
-export type SetCreativeBoostModeParams = { creativeBoostMode: CreativeBoostMode };
-export type SetCreativeBoostModeResponse = { success: boolean };
+export interface GetCreativeBoostModeResponse { creativeBoostMode: CreativeBoostMode }
+export interface SetCreativeBoostModeParams { creativeBoostMode: CreativeBoostMode }
+export interface SetCreativeBoostModeResponse { success: boolean }
 
-export type GenerateQuickVibesParams = {
+export interface GenerateQuickVibesParams {
   category: QuickVibesCategory | null;
   customDescription: string;
   withWordlessVocals: boolean;
@@ -145,16 +145,16 @@ export type GenerateQuickVibesParams = {
   sunoStyles: string[];
   /** Optional mood category to influence prompt generation */
   moodCategory?: MoodCategory | null;
-};
+}
 
-export type GenerateQuickVibesResponse = {
+export interface GenerateQuickVibesResponse {
   prompt: string;
   title?: string;
   versionId: string;
   debugTrace?: TraceRun;
-};
+}
 
-export type RefineQuickVibesParams = {
+export interface RefineQuickVibesParams {
   currentPrompt: string;
   currentTitle?: string;
   description?: string;
@@ -163,26 +163,26 @@ export type RefineQuickVibesParams = {
   category?: QuickVibesCategory | null;
   /** Suno V5 styles (0-4 selections, mutually exclusive with category) */
   sunoStyles?: string[];
-};
+}
 
-export type RefineQuickVibesResponse = {
+export interface RefineQuickVibesResponse {
   prompt: string;
   title?: string;
   versionId: string;
   debugTrace?: TraceRun;
-};
+}
 
 // Max Mode Format Conversion
-export type ConvertToMaxFormatParams = { text: string };
-export type ConvertToMaxFormatResponse = {
+export interface ConvertToMaxFormatParams { text: string }
+export interface ConvertToMaxFormatResponse {
   convertedPrompt: string;
   wasConverted: boolean;
   versionId: string;
   debugTrace?: TraceRun;
-};
+}
 
 // Creative Boost endpoints
-export type GenerateCreativeBoostParams = {
+export interface GenerateCreativeBoostParams {
   creativityLevel: number;
   seedGenres: string[];
   /** Suno V5 styles (0-4 selections, mutually exclusive with seedGenres) */
@@ -192,17 +192,17 @@ export type GenerateCreativeBoostParams = {
   withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;
-};
+}
 
-export type GenerateCreativeBoostResponse = {
+export interface GenerateCreativeBoostResponse {
   prompt: string;              // Full style/genre description
   title: string;               // Generated title
   lyrics?: string;             // Generated lyrics (when withLyrics: true)
   versionId: string;
   debugTrace?: TraceRun;
-};
+}
 
-export type RefineCreativeBoostParams = {
+export interface RefineCreativeBoostParams {
   currentPrompt: string;
   currentTitle: string;
   currentLyrics?: string;
@@ -217,47 +217,47 @@ export type RefineCreativeBoostParams = {
   withLyrics: boolean;
   /** Optional genre count enforcement for non-Direct Mode refinement. */
   targetGenreCount?: number;
-};
+}
 
-export type RefineCreativeBoostResponse = {
+export interface RefineCreativeBoostResponse {
   prompt: string;
   title: string;
   lyrics?: string;
   versionId: string;
   debugTrace?: TraceRun;
-};
+}
 
 // Ollama endpoints
 /** Response from checking Ollama server status */
-export type CheckOllamaStatusResponse = {
+export interface CheckOllamaStatusResponse {
   /** Whether Ollama server is reachable */
   available: boolean;
   /** Whether Gemma 3 4B model is installed */
   hasGemma: boolean;
   /** Current Ollama endpoint URL */
   endpoint: string;
-};
+}
 
 /** Response from getting Ollama settings */
-export type OllamaSettingsResponse = {
+export interface OllamaSettingsResponse {
   endpoint: string;
   temperature: number;
   maxTokens: number;
   contextLength: number;
-};
+}
 
 /** Parameters for setting Ollama configuration */
-export type SetOllamaSettingsParams = {
+export interface SetOllamaSettingsParams {
   endpoint?: string;
   temperature?: number;
   maxTokens?: number;
   contextLength?: number;
-};
+}
 
 /** Response from checking LLM availability */
-export type CheckLLMAvailabilityResponse = {
+export interface CheckLLMAvailabilityResponse {
   /** Whether the LLM is available for generation */
   available: boolean;
   /** Reason why LLM is unavailable (null when available) */
   reason: 'no_api_key' | 'ollama_offline' | 'model_missing' | null;
-};
+}

@@ -8,12 +8,12 @@ import { APP_CONSTANTS } from "@shared/constants";
 import type { EditorMode } from "@shared/types";
 import type { ReactElement } from "react";
 
-type LockedPhraseInputProps = {
+interface LockedPhraseInputProps {
   value: string;
   editorMode: EditorMode;
   validation: { isValid: boolean; error: string | null };
   onChange: (value: string) => void;
-};
+}
 
 export function LockedPhraseInput({
   value,

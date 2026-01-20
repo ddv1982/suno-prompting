@@ -279,7 +279,7 @@ export function getAmbientInstruments(options?: InstrumentSelectionOptions): str
   return getGenreInstruments('ambient', options);
 }
 
-export type ModeSelectionInput = {
+export interface ModeSelectionInput {
   genre: GenreType | null;
   combination: CombinationType | null;
   singleMode: HarmonicStyle | null;
@@ -287,7 +287,7 @@ export type ModeSelectionInput = {
   timeSignature: TimeSignatureType | null;
   timeSignatureJourney: TimeSignatureJourneyType | null;
   reasoning: string;
-};
+}
 
 export function buildGuidanceFromSelection(
   selection: ModeSelectionInput,

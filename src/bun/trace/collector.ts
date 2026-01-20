@@ -7,7 +7,7 @@ import type {
   TraceRunAction,
 } from '@shared/types/trace';
 
-export type TraceCollectorInit = {
+export interface TraceCollectorInit {
   readonly runId: string;
   readonly action: TraceRunAction;
   readonly promptMode: PromptMode;
@@ -15,9 +15,9 @@ export type TraceCollectorInit = {
     readonly seed: number;
     readonly algorithm: 'mulberry32' | 'lcg' | 'other';
   };
-};
+}
 
-export type TraceCollector = {
+export interface TraceCollector {
   /** True only when a collector is present (debug mode ON). */
   readonly enabled: true;
 
@@ -30,7 +30,7 @@ export type TraceCollector = {
   addErrorEvent: (error: TraceErrorEvent['error']) => void;
 
   finalize: () => TraceRun;
-};
+}
 
 function nowIso(ms: number): string {
   return new Date(ms).toISOString();

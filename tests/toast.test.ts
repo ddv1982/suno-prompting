@@ -85,7 +85,7 @@ describe("Toast Component", () => {
     test("Toast type includes all variants", () => {
       // This is a compile-time check, but we can verify the types exist
       // by importing and checking the component accepts all types
-      const validTypes: Array<"success" | "error" | "info" | "warning"> = [
+      const validTypes: ("success" | "error" | "info" | "warning")[] = [
         "success",
         "error", 
         "info",

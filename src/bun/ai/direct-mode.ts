@@ -15,15 +15,15 @@ import type { TraceCollector } from '@bun/trace';
 
 export type DirectModeConfig = EngineConfig;
 
-export type DirectModeBuildOptions = {
+export interface DirectModeBuildOptions {
   maxMode?: boolean;
-};
+}
 
-export type DirectModeTraceRuntime = {
+export interface DirectModeTraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: Rng;
   readonly moodCategory?: MoodCategory | null;
-};
+}
 
 /**
  * Build enriched prompt for Direct Mode (styles preserved as-is).
@@ -97,12 +97,12 @@ export function buildDirectModeResult(
   };
 }
 
-export type DirectModeGenerateOptions = {
+export interface DirectModeGenerateOptions {
   sunoStyles: string[];
   description?: string;
   debugLabel?: string;
   maxMode?: boolean;
-};
+}
 
 /**
  * Generate a Direct Mode result.

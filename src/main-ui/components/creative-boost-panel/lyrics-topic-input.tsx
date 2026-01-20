@@ -9,11 +9,11 @@ import type { ReactElement } from "react";
 
 const MAX_LYRICS_TOPIC_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS;
 
-type LyricsTopicInputProps = {
+interface LyricsTopicInputProps {
   value: string;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
-};
+}
 
 export function LyricsTopicInput({
   value,

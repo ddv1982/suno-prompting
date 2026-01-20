@@ -4,12 +4,12 @@ import { type ReactElement } from "react";
 import { SectionLabel } from "@/components/ui/section-label";
 import { ToggleRow } from "@/components/ui/toggle-row";
 
-type LLMProviderToggleProps = {
+interface LLMProviderToggleProps {
   useLocalLLM: boolean;
   hasApiKey: boolean;
   loading: boolean;
   onToggle: (value: boolean) => void;
-};
+}
 
 export function LLMProviderToggle({
   useLocalLLM,

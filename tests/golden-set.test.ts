@@ -26,7 +26,7 @@ import type { GenreType } from '@bun/instruments/genres';
 /**
  * Golden set entry defining expected prompt behavior.
  */
-type GoldenSetEntry = {
+interface GoldenSetEntry {
   /** Unique seed for reproducibility */
   seed: number;
   /** Description to generate prompt from */
@@ -41,7 +41,7 @@ type GoldenSetEntry = {
   creativityLevel?: number;
   /** Optional: test description for clarity */
   testDescription?: string;
-};
+}
 
 /**
  * Golden Set Entries
@@ -486,7 +486,7 @@ describe('Golden Set Regression Tests', () => {
       expect(result.text).toBeDefined();
       expect(result.genre).toBe('jazz');
       // Low creativity should use simple moods
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
     });
 
@@ -506,13 +506,13 @@ describe('Golden Set Regression Tests', () => {
       expect(result.text).toBeDefined();
       expect(result.genre).toBe('jazz');
       // High creativity should include compound moods (containing spaces)
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
     });
   });
 
   describe('Genre Alias Resolution', () => {
-    const aliasTests: Array<{ alias: string; expectedGenre: GenreType }> = [
+    const aliasTests: { alias: string; expectedGenre: GenreType }[] = [
       { alias: 'hip hop', expectedGenre: 'trap' },
       { alias: 'r&b', expectedGenre: 'rnb' },
       { alias: 'heavy metal', expectedGenre: 'metal' },

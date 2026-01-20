@@ -5,7 +5,7 @@ import { ToggleRow } from "@/components/ui/toggle-row";
 
 import type { ReactElement } from "react";
 
-type FeatureTogglesProps = {
+interface FeatureTogglesProps {
   useSunoTags: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
@@ -15,7 +15,7 @@ type FeatureTogglesProps = {
   onMaxModeChange: (value: boolean) => void;
   onLyricsModeChange: (value: boolean) => void;
   onDebugModeChange: (value: boolean) => void;
-};
+}
 
 export function FeatureToggles({
   useSunoTags,

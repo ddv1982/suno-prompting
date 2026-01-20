@@ -1,16 +1,16 @@
-export type InstrumentPool = {
+export interface InstrumentPool {
   readonly pick: { readonly min: number; readonly max: number };
   readonly instruments: readonly string[];
   readonly chanceToInclude?: number;
-};
+}
 
-export type BpmRange = {
+export interface BpmRange {
   readonly min: number;
   readonly max: number;
   readonly typical: number;
-};
+}
 
-export type GenreDefinition = {
+export interface GenreDefinition {
   readonly name: string;
   readonly keywords: readonly string[];
   readonly description: string;
@@ -20,4 +20,4 @@ export type GenreDefinition = {
   readonly exclusionRules?: readonly [string, string][];
   readonly bpm?: BpmRange;
   readonly moods?: readonly string[];
-};
+}

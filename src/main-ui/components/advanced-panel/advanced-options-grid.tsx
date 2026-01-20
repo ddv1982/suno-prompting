@@ -3,9 +3,9 @@ import { AdvancedOption } from "./advanced-option";
 import type { AdvancedSelection } from "@shared/types";
 import type { ReactElement } from "react";
 
-type Option = { value: string; label: string };
+interface Option { value: string; label: string }
 
-type AdvancedOptionsGridProps = {
+interface AdvancedOptionsGridProps {
   selection: AdvancedSelection;
   onUpdate: (updates: Partial<AdvancedSelection>) => void;
   harmonicOptions: Option[];
@@ -13,7 +13,7 @@ type AdvancedOptionsGridProps = {
   polyrhythmOptions: Option[];
   timeSignatureOptions: Option[];
   timeJourneyOptions: Option[];
-};
+}
 
 export function AdvancedOptionsGrid({
   selection,

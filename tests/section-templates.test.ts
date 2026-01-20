@@ -213,7 +213,7 @@ describe('section-templates', () => {
       });
 
       it('uses genre-appropriate moods for jazz', () => {
-        const genreDef = GENRE_REGISTRY['jazz'];
+        const genreDef = GENRE_REGISTRY.jazz;
         const jazzMoods = (genreDef.moods ?? []).map((m) => m.toLowerCase());
 
         // Run multiple times to verify mood selection

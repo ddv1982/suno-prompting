@@ -7,7 +7,7 @@ import { GENRE_DISPLAY_NAMES, GENRE_COMBINATION_DISPLAY_NAMES } from "@shared/la
 
 import type { ReactElement } from "react";
 
-type GenreMultiSelectProps = {
+interface GenreMultiSelectProps {
   selected: string[];
   onChange: (genres: string[]) => void;
   maxSelections?: number;
@@ -15,9 +15,9 @@ type GenreMultiSelectProps = {
   autoDisable?: boolean;
   helperText?: string;
   badgeText?: "optional" | "disabled";
-};
+}
 
-type GenreOption = { value: string; label: string; type: "single" | "multi" };
+interface GenreOption { value: string; label: string; type: "single" | "multi" }
 
 export function GenreMultiSelect({
   selected,

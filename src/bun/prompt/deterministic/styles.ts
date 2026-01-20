@@ -320,7 +320,7 @@ export { applyWeightedSelection };
 /**
  * Options for assembleStyleTags function.
  */
-export type AssembleStyleTagsOptions = {
+export interface AssembleStyleTagsOptions {
   /** Array of genre components (supports single or multi-genre) */
   readonly components: GenreType[];
   /** Random number generator for deterministic selection */
@@ -329,7 +329,7 @@ export type AssembleStyleTagsOptions = {
   readonly trace?: TraceCollector;
   /** Optional thematic context from LLM extraction */
   readonly thematicContext?: ThematicContext;
-};
+}
 
 /**
  * Assemble style tags for deterministic prompt generation.

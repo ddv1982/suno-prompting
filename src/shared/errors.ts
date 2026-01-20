@@ -93,7 +93,7 @@ export class OllamaUnavailableError extends AppError {
  * Includes installation instructions for the user.
  */
 export class OllamaModelMissingError extends AppError {
-    constructor(model: string = 'gemma3:4b') {
+    constructor(model = 'gemma3:4b') {
         super(
             `Model ${model} not found. Run 'ollama pull ${model}' to install it.`,
             'OLLAMA_MODEL_MISSING'
@@ -121,7 +121,7 @@ export class OllamaTimeoutError extends AppError {
  * Extracts error message from unknown error type.
  * Use this instead of repeating `error instanceof Error ? error.message : fallback` pattern.
  */
-export function getErrorMessage(error: unknown, fallback: string = 'Unknown error'): string {
+export function getErrorMessage(error: unknown, fallback = 'Unknown error'): string {
     if (error instanceof Error) {
         return error.message;
     }

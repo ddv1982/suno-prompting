@@ -52,7 +52,7 @@ import type {
 import type { PromptMode, CreativeBoostMode } from '@shared/types/domain';
 
 // Handler function types for backend implementation
-export type RPCHandlers = {
+export interface RPCHandlers {
   generateInitial: (params: GenerateInitialParams) => Promise<GenerateInitialResponse>;
   refinePrompt: (params: RefinePromptParams) => Promise<RefinePromptResponse>;
   remixInstruments: (params: RemixInstrumentsParams) => Promise<RemixInstrumentsResponse>;
@@ -94,9 +94,9 @@ export type RPCHandlers = {
   checkOllamaStatus: (params: Record<string, never>) => Promise<CheckOllamaStatusResponse>;
   getOllamaSettings: (params: Record<string, never>) => Promise<OllamaSettingsResponse>;
   setOllamaSettings: (params: SetOllamaSettingsParams) => Promise<{ success: boolean }>;
-};
+}
 
-export type SunoRPCSchema = {
+export interface SunoRPCSchema {
   bun: RPCSchema<{
     requests: {
       generateInitial: {
@@ -267,4 +267,4 @@ export type SunoRPCSchema = {
     requests: Record<string, never>;
     messages: Record<string, never>;
   }>;
-};
+}

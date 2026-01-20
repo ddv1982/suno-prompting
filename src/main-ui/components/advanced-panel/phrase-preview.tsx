@@ -3,9 +3,9 @@ import { SectionLabel } from "@/components/ui/section-label";
 
 import type { ReactElement } from "react";
 
-type PhrasePreviewProps = {
+interface PhrasePreviewProps {
   phrase: string;
-};
+}
 
 export function PhrasePreview({ phrase }: PhrasePreviewProps): ReactElement | null {
   if (!phrase) return null;

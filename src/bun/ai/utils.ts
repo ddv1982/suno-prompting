@@ -24,7 +24,7 @@ import type { LanguageModel } from 'ai';
  * These quotes are formatting artifacts, not part of the actual title.
  * Stripping them ensures consistent display in the UI.
  */
-export function cleanTitle(title: string | undefined, fallback: string = 'Untitled'): string {
+export function cleanTitle(title: string | undefined, fallback = 'Untitled'): string {
   return title?.trim().replace(/^["']|["']$/g, '') || fallback;
 }
 

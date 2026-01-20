@@ -1,6 +1,6 @@
 import { getBackingVocalsForGenre } from '@bun/prompt/vocal-descriptors';
 
-export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags: boolean = false): string {
+export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags = false): string {
   const maxModeInstructions = maxMode 
     ? `CRITICAL REQUIREMENT: The VERY FIRST LINE of your output MUST be exactly:
 ///*****///
@@ -101,7 +101,7 @@ export function buildLyricsUserPrompt(
   description: string, 
   genre: string, 
   mood: string,
-  useSunoTags: boolean = false
+  useSunoTags = false
 ): string {
   let backingVocalGuidance = '';
   

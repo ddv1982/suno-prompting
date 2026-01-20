@@ -13,7 +13,7 @@ import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
 import type { Rng } from '@bun/instruments/services/random';
 
 
-export type InstrumentSelectionOptions = {
+export interface InstrumentSelectionOptions {
   readonly userInstruments?: readonly string[];
   readonly maxTags?: number;
   readonly multiGenre?: {
@@ -29,7 +29,7 @@ export type InstrumentSelectionOptions = {
     readonly count: { readonly min: number; readonly max: number };
   };
   readonly rng?: Rng;
-};
+}
 
 function hasExclusion(
   selected: readonly string[],
@@ -117,16 +117,16 @@ function pickFromList(
   return pickUniqueTokens(shuffled, selected, count, exclusionRules);
 }
 
-type QuotaConfig = {
+interface QuotaConfig {
   readonly enabled: boolean;
   readonly count: { readonly min: number; readonly max: number };
-};
+}
 
-type QuotaTargets = {
+interface QuotaTargets {
   readonly multi: number;
   readonly foundational: number;
   readonly orchestral: number;
-};
+}
 
 function isOrchestralGenre(genre: GenreType): boolean {
   return genre === 'cinematic' || genre === 'classical' || genre === 'videogame';

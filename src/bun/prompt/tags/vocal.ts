@@ -155,7 +155,7 @@ export const GENRE_VOCAL_PROBABILITY: Record<string, number> = {
  */
 export function selectVocalTags(genre: string, count: number, rng: () => number = Math.random): string[] {
   const normalizedGenre = genre.toLowerCase().trim();
-  const probability = GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY['default'] ?? 0.50;
+  const probability = GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY.default ?? 0.50;
   
   // Check vocal probability with RNG roll
   if (rng() > probability) {

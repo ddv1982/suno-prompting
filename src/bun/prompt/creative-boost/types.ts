@@ -9,14 +9,14 @@
 import type { MoodCategory } from '@bun/mood';
 import type { CreativityLevel } from '@shared/types';
 
-export type CreativityPool = {
+export interface CreativityPool {
   /** Genre options appropriate for this creativity level */
   genres: readonly string[];
   /** Whether to allow blending multiple genres */
   allowBlending: boolean;
   /** Maximum number of genres to blend */
   maxGenres: number;
-};
+}
 
 export interface BuildCreativeBoostOptions {
   /** Creativity level (0-100, mapped to CreativityLevel) */

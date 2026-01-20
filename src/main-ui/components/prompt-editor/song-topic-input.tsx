@@ -7,14 +7,14 @@ import { APP_CONSTANTS } from "@shared/constants";
 
 import type { ReactElement } from "react";
 
-type SongTopicInputProps = {
+interface SongTopicInputProps {
   value: string;
   hasCurrentPrompt: boolean;
   isOverLimit: boolean;
   onChange: (value: string) => void;
   /** Optional keyboard handler for Enter key to trigger generation. */
   onKeyDown?: (e: React.KeyboardEvent) => void;
-};
+}
 
 export function SongTopicInput({
   value,

@@ -19,10 +19,10 @@ import type { LanguageModel } from 'ai';
 
 const log = createLogger('CreativeBoostHelpers');
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 /**
  * Default fallback topic when no lyrics topic or description is provided.
@@ -34,19 +34,19 @@ export const DEFAULT_LYRICS_TOPIC = 'creative expression';
 /**
  * Debug info for genre detection.
  */
-export type GenreDetectionDebugInfo = {
+export interface GenreDetectionDebugInfo {
   systemPrompt: string;
   userPrompt: string;
   detectedGenre: string;
-};
+}
 
 /**
  * Debug info for title/lyrics generation.
  */
-export type GenerationDebugInfo = {
+export interface GenerationDebugInfo {
   systemPrompt: string;
   userPrompt: string;
-};
+}
 
 /**
  * Resolve genre for creative boost.

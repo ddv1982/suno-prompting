@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import type { CreativeBoostMode } from "@shared/types";
 import type { ReactElement } from "react";
 
-type CreativeBoostModeToggleProps = {
+interface CreativeBoostModeToggleProps {
   mode: CreativeBoostMode;
   isDirectMode: boolean;
   onModeChange: (mode: CreativeBoostMode) => void;
-};
+}
 
 export function CreativeBoostModeToggle({
   mode,

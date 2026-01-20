@@ -29,14 +29,14 @@ import type { TraceCollector } from '@bun/trace';
  * };
  * ```
  */
-export type CoherenceResult = {
+export interface CoherenceResult {
   /** Whether the combination is coherent */
   readonly valid: boolean;
   /** List of detected conflicts (empty if valid) */
   readonly conflicts: readonly string[];
   /** Suggestions for fixing conflicts (optional) */
   readonly suggestions?: readonly string[];
-};
+}
 
 /**
  * Conflict rule definition.
@@ -44,7 +44,7 @@ export type CoherenceResult = {
  * Each rule specifies patterns that indicate musically incoherent
  * combinations when both instrument and production patterns match.
  */
-type ConflictRule = {
+interface ConflictRule {
   /** Unique identifier for this conflict rule */
   readonly id: string;
   /** Human-readable description of the conflict */
@@ -53,7 +53,7 @@ type ConflictRule = {
   readonly instrumentPatterns: readonly string[];
   /** Production patterns that conflict with the instruments */
   readonly productionPatterns: readonly string[];
-};
+}
 
 /**
  * Conflict rules for coherence checking.

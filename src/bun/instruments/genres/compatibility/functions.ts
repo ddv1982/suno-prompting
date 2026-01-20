@@ -58,8 +58,8 @@ export function isValidScore(score: CompatibilityScore): boolean {
  * @param genre - Genre key to check compatibility for
  * @returns Array of compatible genre keys with their scores
  */
-export function getCompatibleGenres(genre: string): Array<{ genre: string; score: CompatibilityScore }> {
-  const compatible: Array<{ genre: string; score: CompatibilityScore }> = [];
+export function getCompatibleGenres(genre: string): { genre: string; score: CompatibilityScore }[] {
+  const compatible: { genre: string; score: CompatibilityScore }[] = [];
 
   // Check direct entries for this genre
   const directEntries = GENRE_COMPATIBILITY[genre];

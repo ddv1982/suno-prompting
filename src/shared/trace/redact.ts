@@ -8,11 +8,11 @@ export const TRACE_REDACTION_TOKEN = '[REDACTED]' as const;
 
 const REPLACEMENT_TEXT = TRACE_REDACTION_TOKEN;
 
-type RedactionRule = {
+interface RedactionRule {
   readonly name: string;
   readonly pattern: RegExp;
   readonly replace: (match: string, ...groups: readonly string[]) => string;
-};
+}
 
 // Minimum patterns from the spec (plus a few safe variants).
 const REDACTION_RULES: readonly RedactionRule[] = [

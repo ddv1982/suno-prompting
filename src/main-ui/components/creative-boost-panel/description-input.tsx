@@ -9,13 +9,13 @@ import type { ReactElement } from "react";
 
 const MAX_DESCRIPTION_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS;
 
-type DescriptionInputProps = {
+interface DescriptionInputProps {
   value: string;
   isRefineMode: boolean;
   isDirectMode: boolean;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
-};
+}
 
 export function DescriptionInput({
   value,

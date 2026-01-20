@@ -12,13 +12,13 @@ import type { ReactElement } from "react";
  * Provides consistent UX with Creative Boost submit button.
  * Shows different states for generating/refining modes.
  */
-type FullWidthSubmitButtonProps = {
+interface FullWidthSubmitButtonProps {
   isGenerating: boolean;
   isRefineMode: boolean;
   disabled: boolean;
   refined?: boolean;
   onSubmit: () => void;
-};
+}
 
 export function FullWidthSubmitButton({
   isGenerating,

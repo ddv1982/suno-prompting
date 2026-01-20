@@ -21,13 +21,13 @@ export type RpcErrorCode =
   /** Fallback for unrecognized errors. */
   | 'UNKNOWN';
 
-export type RpcError = {
+export interface RpcError {
   readonly code: RpcErrorCode;
   /** Safe, renderer-friendly summary (never raw provider / stack). */
   readonly message: string;
   /** Optional, allowlisted metadata for debugging/UI decisions (size-bounded). */
   readonly details?: Record<string, unknown>;
-};
+}
 
 const MAX_TEXT_LEN = 500;
 const MAX_DETAILS_TEXT_LEN = 500;

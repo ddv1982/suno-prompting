@@ -4,7 +4,7 @@ import { AIEngine } from "@bun/ai/engine";
 import { MAX_MODE_SIGNATURE } from "@shared/max-format";
 
 // Track generateText calls to detect conversion AI calls
-let generateTextCalls: number = 0;
+let generateTextCalls = 0;
 
 // Mock the AI SDK generateText
 const mockGenerateText = mock(async (_args?: unknown) => {

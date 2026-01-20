@@ -270,7 +270,7 @@ describe('deterministic-builder', () => {
     });
 
     it('uses genre-specific contexts for known genres', () => {
-      const genres: Array<[string, string[]]> = [
+      const genres: [string, string[]][] = [
         ['jazz', [
           'intimate jazz club',
           'small jazz ensemble',
@@ -547,8 +547,8 @@ describe('deterministic-builder', () => {
         });
 
         // Extract BPM ranges
-        const lofiBpm = lofiResult.text.match(/between (\d+) and (\d+)/);
-        const punkBpm = punkResult.text.match(/between (\d+) and (\d+)/);
+        const lofiBpm = /between (\d+) and (\d+)/.exec(lofiResult.text);
+        const punkBpm = /between (\d+) and (\d+)/.exec(punkResult.text);
 
         expect(lofiBpm).toBeTruthy();
         expect(punkBpm).toBeTruthy();
@@ -640,8 +640,8 @@ describe('deterministic-builder', () => {
         expect(result1.genre).toBe('jazz');
 
         // BPM ranges should match (based on genre)
-        const bpm1 = result1.text.match(/bpm: "([^"]+)"/)?.[1];
-        const bpm2 = result2.text.match(/bpm: "([^"]+)"/)?.[1];
+        const bpm1 = (/bpm: "([^"]+)"/.exec(result1.text))?.[1];
+        const bpm2 = (/bpm: "([^"]+)"/.exec(result2.text))?.[1];
         expect(bpm1).toBe(bpm2);
       });
 
@@ -1260,7 +1260,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - check that at least one compound mood appears in the Mood field
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       if (moodMatch?.[1]) {
@@ -1285,7 +1285,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - check that simple moods are used (no compound moods)
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       if (moodMatch?.[1]) {
@@ -1310,7 +1310,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - extract mood field and verify compound mood is valid
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       if (moodMatch?.[1]) {
@@ -1340,7 +1340,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - check that compound mood appears in style tags
-      const styleTagsMatch = result.text.match(/style tags:\s*"([^"]+)"/);
+      const styleTagsMatch = /style tags:\s*"([^"]+)"/.exec(result.text);
       expect(styleTagsMatch).toBeTruthy();
       
       if (styleTagsMatch?.[1]) {
@@ -1364,7 +1364,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - check that no compound mood appears in style tags
-      const styleTagsMatch = result.text.match(/style tags:\s*"([^"]+)"/);
+      const styleTagsMatch = /style tags:\s*"([^"]+)"/.exec(result.text);
       expect(styleTagsMatch).toBeTruthy();
       
       if (styleTagsMatch?.[1]) {
@@ -1387,7 +1387,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - should use simple moods
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       if (moodMatch?.[1]) {
@@ -1411,7 +1411,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - should use simple moods
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       if (moodMatch?.[1]) {
@@ -1435,7 +1435,7 @@ describe('Compound Mood Integration', () => {
       });
 
       // Assert - should use compound moods
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       if (moodMatch?.[1]) {
@@ -1461,7 +1461,7 @@ describe('Compound Mood Integration', () => {
 
       // Assert - moodCategory should take priority, so moods should be from calm category
       // Compound moods should NOT be present because moodCategory overrides
-      const moodMatch = result.text.match(/Mood:\s*([^\n]+)/);
+      const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
       
       // The mood should be from the calm category, not a compound mood

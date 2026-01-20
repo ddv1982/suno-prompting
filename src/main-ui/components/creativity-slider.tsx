@@ -9,11 +9,11 @@ import { getCreativityLevel } from "@shared/creative-boost-utils";
 import type { CreativitySliderValue } from "@shared/types";
 import type { ReactElement } from "react";
 
-type CreativitySliderProps = {
+interface CreativitySliderProps {
   value: CreativitySliderValue;
   onChange: (value: CreativitySliderValue) => void;
   disabled?: boolean;
-};
+}
 
 export function CreativitySlider({ value, onChange, disabled }: CreativitySliderProps): ReactElement {
   const level = getCreativityLevel(value);

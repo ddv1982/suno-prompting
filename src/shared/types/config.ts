@@ -2,11 +2,11 @@
 
 export type AIProvider = 'groq' | 'openai' | 'anthropic';
 
-export type APIKeys = {
+export interface APIKeys {
   groq: string | null;
   openai: string | null;
   anthropic: string | null;
-};
+}
 
 export const DEFAULT_API_KEYS: APIKeys = {
   groq: null,
@@ -15,7 +15,7 @@ export const DEFAULT_API_KEYS: APIKeys = {
 };
 
 /** Ollama local LLM configuration */
-export type OllamaConfig = {
+export interface OllamaConfig {
   /** Ollama server endpoint URL */
   endpoint: string;
   /** Temperature for generation (0-1) */
@@ -24,11 +24,11 @@ export type OllamaConfig = {
   maxTokens: number;
   /** Context window length */
   contextLength: number;
-};
+}
 
 import type { PromptMode, CreativeBoostMode } from '@shared/types/domain';
 
-export type AppConfig = {
+export interface AppConfig {
   provider: AIProvider;
   apiKeys: APIKeys;
   model: string;
@@ -44,4 +44,4 @@ export type AppConfig = {
   ollamaConfig?: OllamaConfig;
   /** Ollama model name for local LLM (e.g., 'gemma3:4b') */
   ollamaModel?: string;
-};
+}

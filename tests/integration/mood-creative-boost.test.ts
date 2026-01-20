@@ -48,7 +48,7 @@ function containsMoodFromCategory(text: string, category: MoodCategory): boolean
 /**
  * Create a deterministic RNG for testing.
  */
-function createFixedRng(seed: number = 0.5): () => number {
+function createFixedRng(seed = 0.5): () => number {
   return () => seed;
 }
 

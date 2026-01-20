@@ -72,11 +72,11 @@ describe("CreativeBoostModeToggle", () => {
     test("accepts required props interface", () => {
       // Type-level verification that the props shape is correct
       // Note: isGenerating was removed - disabled state now uses autoDisable via context
-      type ExpectedProps = {
+      interface ExpectedProps {
         mode: CreativeBoostMode;
         isDirectMode: boolean;
         onModeChange: (mode: CreativeBoostMode) => void;
-      };
+      }
       
       // Compile-time check - validates the type structure
       const _typeCheck: ExpectedProps = {

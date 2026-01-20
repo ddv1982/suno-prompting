@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 import type { ReactElement, ReactNode } from "react";
 
-type MultiSelectComboboxProps<T> = {
+interface MultiSelectComboboxProps<T> {
   selected: string[];
   onChange: (values: string[]) => void;
   options: T[];
@@ -28,14 +28,14 @@ type MultiSelectComboboxProps<T> = {
   emptyText?: string;
   helperText?: string;
   badgeText?: "optional" | "disabled";
-};
+}
 
-type SelectedBadgesProps = {
+interface SelectedBadgesProps {
   selected: string[];
   getDisplayLabel: (value: string) => string;
   onRemove: (value: string) => void;
   isDisabled: boolean;
-};
+}
 
 function SelectedBadges({ selected, getDisplayLabel, onRemove, isDisabled }: SelectedBadgesProps): ReactElement | null {
   if (selected.length === 0) return null;

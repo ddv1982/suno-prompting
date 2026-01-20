@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 /**
  * Common props for submit buttons across panels.
  */
-export type PanelSubmitButtonProps = {
+export interface PanelSubmitButtonProps {
   /** Whether generation is in progress */
   isGenerating: boolean;
   /** Whether in refine mode (editing existing output) */
@@ -32,12 +32,12 @@ export type PanelSubmitButtonProps = {
   refineLabel?: string;
   /** Label to display in refine direct mode */
   refineDirectModeLabel?: string;
-};
+}
 
 /**
  * Common props for description/feedback text inputs across panels.
  */
-export type PanelDescriptionInputProps = {
+export interface PanelDescriptionInputProps {
   /** Current input value */
   value: string;
   /** Whether in refine mode */
@@ -72,12 +72,12 @@ export type PanelDescriptionInputProps = {
   badge?: string;
   /** Whether to disable in direct mode (non-refine) */
   disableInDirectMode?: boolean;
-};
+}
 
 /**
  * Toggle configuration for panel toggles section.
  */
-export type PanelToggleConfig = {
+export interface PanelToggleConfig {
   /** Unique ID for the toggle */
   id: string;
   /** Icon to display */
@@ -94,17 +94,17 @@ export type PanelToggleConfig = {
   disabled?: boolean;
   /** Show N/A badge when disabled */
   showNaBadge?: boolean;
-};
+}
 
 /**
  * Props for the toggles section component.
  */
-export type PanelTogglesSectionProps = {
+export interface PanelTogglesSectionProps {
   /** Array of toggle configurations */
   toggles: PanelToggleConfig[];
   /** Additional helper texts to display below toggles */
-  additionalHelperTexts?: Array<{
+  additionalHelperTexts?: {
     text: string;
     condition?: boolean;
-  }>;
-};
+  }[];
+}

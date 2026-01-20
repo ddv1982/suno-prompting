@@ -8,14 +8,14 @@ import type { MoodCategory } from "@bun/mood";
 import type { CreativeBoostInput } from "@shared/types";
 import type { ReactElement } from "react";
 
-type ModeSpecificInputsProps = {
+interface ModeSpecificInputsProps {
   input: CreativeBoostInput;
   isSimpleMode: boolean;
   isDirectMode: boolean;
   onMoodCategoryChange: (category: MoodCategory | null) => void;
   onGenresChange: (genres: string[]) => void;
   onSunoStylesChange: (styles: string[]) => void;
-};
+}
 
 export function ModeSpecificInputs({
   input,

@@ -11,32 +11,32 @@ import type { LanguageModel } from 'ai';
 const log = createLogger('ContentGenerator');
 
 /** All available genre keys from the registry */
-const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as Array<keyof typeof GENRE_REGISTRY>;
+const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as (keyof typeof GENRE_REGISTRY)[];
 
-export type ContentDebugInfo = {
+export interface ContentDebugInfo {
   systemPrompt: string;
   userPrompt: string;
-};
+}
 
-export type TitleResult = {
+export interface TitleResult {
   title: string;
   debugInfo: ContentDebugInfo;
-};
+}
 
-export type LyricsResult = {
+export interface LyricsResult {
   lyrics: string;
   debugInfo: ContentDebugInfo;
-};
+}
 
 /**
  * Result from LLM-based genre detection.
  * Includes debug info to show the prompts used in the debug drawer,
  * allowing users to see how genre was inferred from their lyrics topic.
  */
-export type GenreDetectionResult = {
+export interface GenreDetectionResult {
   genre: string;
   debugInfo: ContentDebugInfo & { detectedGenre: string };
-};
+}
 
 /**
  * Options for generating a song title using AI.
@@ -125,7 +125,7 @@ export async function generateLyrics(
   mood: string,
   maxMode: boolean,
   getModel: () => LanguageModel,
-  useSunoTags: boolean = false,
+  useSunoTags = false,
   timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
   ollamaEndpoint?: string,
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }

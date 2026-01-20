@@ -8,11 +8,11 @@ import { DebugDrawerBody } from "./debug-drawer";
 import type { TraceRun } from "@shared/types";
 import type { ReactElement } from "react";
 
-type DebugSheetProps = {
+interface DebugSheetProps {
   debugTrace: TraceRun | undefined;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-};
+}
 
 export function DebugSheet({ debugTrace, open, onOpenChange }: DebugSheetProps): ReactElement | null {
   if (!debugTrace) return null;

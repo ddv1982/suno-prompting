@@ -14,7 +14,7 @@ import type { LanguageModel } from 'ai';
 
 const log = createLogger('LLMUtils');
 
-export type CallLLMOptions = {
+export interface CallLLMOptions {
   getModel: () => LanguageModel;
   systemPrompt: string;
   userPrompt: string;
@@ -35,14 +35,14 @@ export type CallLLMOptions = {
 
   /** Optional provider options passed to AI SDK (and recorded in trace, redacted+truncated). */
   providerOptions?: Record<string, unknown>;
-};
+}
 
-type AttemptTraceError = {
+interface AttemptTraceError {
   readonly type: string;
   readonly message: string;
   readonly status?: number;
   readonly providerRequestId?: string;
-};
+}
 
 function isAIProvider(value: string): value is AIProvider {
   return value === 'groq' || value === 'openai' || value === 'anthropic';
@@ -87,7 +87,7 @@ function computePromptSummary(systemPrompt: string, userPrompt: string): {
   readonly messageCount: number;
   readonly totalChars: number;
   readonly preview: string;
-  readonly messages: Array<{ role: 'system' | 'user'; content: string }>;
+  readonly messages: { role: 'system' | 'user'; content: string }[];
 } {
   const messageCount = 2;
   const totalChars = systemPrompt.length + userPrompt.length;

@@ -181,7 +181,7 @@ export function buildBlendedProductionDescriptor(
 export function selectInstrumentsForMultiGenre(
   genres: GenreType[],
   rng: Rng = Math.random,
-  maxInstruments: number = 3
+  maxInstruments = 3
 ): string[] {
   if (genres.length === 0) return [];
 
@@ -196,12 +196,14 @@ export function selectInstrumentsForMultiGenre(
   // Dedupe
   const unique = [...new Set(allInstruments)];
 
-  // Shuffle and take maxInstruments
+  // Shuffle and take maxInstruments (Fisher-Yates)
   for (let i = unique.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    const temp = unique[i] as string;
-    unique[i] = unique[j] as string;
-    unique[j] = temp;
+    const temp = unique[i];
+    if (temp !== undefined && unique[j] !== undefined) {
+      unique[i] = unique[j];
+      unique[j] = temp;
+    }
   }
 
   // Articulate each instrument
@@ -297,7 +299,7 @@ export const _testHelpers = {
 /**
  * Result type for multi-genre guidance including all blended elements.
  */
-export type MultiGenreGuidance = {
+export interface MultiGenreGuidance {
   readonly vocal: string;
   readonly production: string;
   readonly instruments: string[];
@@ -305,7 +307,7 @@ export type MultiGenreGuidance = {
   readonly harmonicStyle: HarmonicStyle | null;
   readonly timeSignature: TimeSignatureType | null;
   readonly polyrhythm: PolyrhythmType | null;
-};
+}
 
 /**
  * Build complete multi-genre performance guidance including all blended elements.

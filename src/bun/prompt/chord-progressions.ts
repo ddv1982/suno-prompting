@@ -17,14 +17,14 @@
 // Named chord progressions based on professional prompt patterns
 // These add harmonic structure guidance to prompts
 
-export type ChordProgression = {
+export interface ChordProgression {
   readonly name: string;
   readonly pattern: string;
   readonly numerals: string;
   readonly mood: readonly string[];
   readonly genres: readonly string[];
   readonly description: string;
-};
+}
 
 // Pop Essentials
 const POP_PROGRESSIONS: Record<string, ChordProgression> = {
@@ -333,10 +333,10 @@ export function buildProgressionShort(
   return `${progression.name} (${progression.pattern})`;
 }
 
-type ProgressionPattern = {
+interface ProgressionPattern {
   readonly keywords: readonly string[];
   readonly progressionKey: string;
-};
+}
 
 const PROGRESSION_PATTERNS: readonly ProgressionPattern[] = [
   { keywords: ['2-5-1', 'ii-v-i', 'two five one'], progressionKey: 'the_two_five_one' },
@@ -393,7 +393,7 @@ export function injectChordProgression(
   const progression = getRandomProgressionForGenre(genre, rng);
   const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
 
-  const quotedMatch = prompt.match(/^(instruments:\s*")([^"]*)"/mi);
+  const quotedMatch = /^(instruments:\s*")([^"]*)"/mi.exec(prompt);
   if (quotedMatch) {
     const existing = quotedMatch[2]?.trim();
     const newValue = existing ? `${existing}, ${harmonyTag}` : harmonyTag;

@@ -73,20 +73,20 @@ describe('Articulations', () => {
 
   describe('INSTRUMENT_CATEGORIES mapping', () => {
     it('maps guitar instruments to guitar category', () => {
-      expect(INSTRUMENT_CATEGORIES['guitar']).toBe('guitar');
+      expect(INSTRUMENT_CATEGORIES.guitar).toBe('guitar');
       expect(INSTRUMENT_CATEGORIES['acoustic guitar']).toBe('guitar');
-      expect(INSTRUMENT_CATEGORIES['Telecaster']).toBe('guitar');
+      expect(INSTRUMENT_CATEGORIES.Telecaster).toBe('guitar');
     });
 
     it('maps piano instruments to piano category', () => {
-      expect(INSTRUMENT_CATEGORIES['piano']).toBe('piano');
-      expect(INSTRUMENT_CATEGORIES['Rhodes']).toBe('piano');
-      expect(INSTRUMENT_CATEGORIES['Wurlitzer']).toBe('piano');
+      expect(INSTRUMENT_CATEGORIES.piano).toBe('piano');
+      expect(INSTRUMENT_CATEGORIES.Rhodes).toBe('piano');
+      expect(INSTRUMENT_CATEGORIES.Wurlitzer).toBe('piano');
     });
 
     it('maps brass instruments to brass category', () => {
-      expect(INSTRUMENT_CATEGORIES['trumpet']).toBe('brass');
-      expect(INSTRUMENT_CATEGORIES['trombone']).toBe('brass');
+      expect(INSTRUMENT_CATEGORIES.trumpet).toBe('brass');
+      expect(INSTRUMENT_CATEGORIES.trombone).toBe('brass');
       expect(INSTRUMENT_CATEGORIES['french horn']).toBe('brass');
     });
   });

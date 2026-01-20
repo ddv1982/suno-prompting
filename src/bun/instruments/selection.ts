@@ -22,7 +22,7 @@ import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourney
  * @module instruments/selection
  */
 
-export type ModeSelection = {
+export interface ModeSelection {
   genre: GenreType | null;
   combination: CombinationType | null;
   singleMode: HarmonicStyle | null;
@@ -30,7 +30,7 @@ export type ModeSelection = {
   timeSignature: TimeSignatureType | null;
   timeSignatureJourney: TimeSignatureJourneyType | null;
   reasoning: string;
-};
+}
 
 /** Resolve genre from override string */
 function resolveGenreOverride(genreOverride: string): GenreType | null {

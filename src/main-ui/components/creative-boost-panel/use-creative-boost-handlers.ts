@@ -4,7 +4,7 @@ import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 import type { CreativeBoostInput, CreativitySliderValue } from "@shared/types";
 
-type UseCreativeBoostHandlersProps = {
+interface UseCreativeBoostHandlersProps {
   input: CreativeBoostInput;
   isGenerating: boolean;
   isRefineMode: boolean;
@@ -12,9 +12,9 @@ type UseCreativeBoostHandlersProps = {
   onLyricsModeChange: (mode: boolean) => void;
   onGenerate: () => void;
   onRefine: (feedback: string) => void;
-};
+}
 
-export type CreativeBoostHandlers = {
+export interface CreativeBoostHandlers {
   handleCreativityChange: (value: CreativitySliderValue) => void;
   handleGenresChange: (genres: string[]) => void;
   handleSunoStylesChange: (styles: string[]) => void;
@@ -24,7 +24,7 @@ export type CreativeBoostHandlers = {
   handleLyricsToggleChange: (checked: boolean) => void;
   handleKeyDown: (e: React.KeyboardEvent) => void;
   handleSubmit: () => void;
-};
+}
 
 export function useCreativeBoostHandlers({
   input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine,

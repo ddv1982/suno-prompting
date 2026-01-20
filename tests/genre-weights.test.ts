@@ -58,7 +58,7 @@ describe('Genre Tag Weights', () => {
   describe('weight value validation', () => {
     test('all weights are valid numbers between 0 and 1', () => {
       // Arrange
-      const invalidWeights: Array<{ genre: string; field: string; value: number }> = [];
+      const invalidWeights: { genre: string; field: string; value: number }[] = [];
 
       // Act
       for (const genre of ALL_GENRE_KEYS) {
@@ -79,7 +79,7 @@ describe('Genre Tag Weights', () => {
 
     test('no weights are exactly 0 (should have some probability)', () => {
       // Arrange
-      const zeroWeights: Array<{ genre: string; field: string }> = [];
+      const zeroWeights: { genre: string; field: string }[] = [];
 
       // Act
       for (const genre of ALL_GENRE_KEYS) {

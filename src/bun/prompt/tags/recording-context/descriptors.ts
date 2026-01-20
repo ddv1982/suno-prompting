@@ -47,7 +47,7 @@ import { selectFromSubcategory, selectRandomKey } from './helpers';
  */
 export function selectRecordingDescriptors(
   rng: () => number = Math.random,
-  count: number = 3,
+  count = 3,
   genre?: string
 ): string[] {
   const selected: string[] = [];

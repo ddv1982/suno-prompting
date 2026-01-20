@@ -11,10 +11,10 @@ export type ActionMeta = Record<string, unknown>;
 /**
  * Runtime context for trace collection during handler execution.
  */
-export type TraceRuntime = {
+export interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 /**
  * Interface for objects that can report debug mode status.

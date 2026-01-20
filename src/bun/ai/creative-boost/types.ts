@@ -82,7 +82,7 @@ export interface RefineDirectModeOptions {
  * This consolidates all context needed for the postProcessCreativeBoostResponse()
  * pipeline to avoid threading 15+ parameters through multiple function calls.
  */
-export type PostProcessParams = {
+export interface PostProcessParams {
   /** Raw style output from LLM before max mode conversion */
   rawStyle: string;
   /** Whether to apply max mode formatting (community format for realism) */
@@ -118,4 +118,4 @@ export type PostProcessParams = {
   chordProgression?: string;
   /** Genre-appropriate BPM range for max mode conversion */
   bpmRange?: string;
-};
+}

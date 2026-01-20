@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 import type { ReactNode, ReactElement } from "react";
 
-type ToggleRowProps = {
+interface ToggleRowProps {
   id: string;
   icon: ReactNode;
   label: string;
@@ -21,7 +21,7 @@ type ToggleRowProps = {
   autoDisable?: boolean;
   showNaBadge?: boolean;
   onChange: (checked: boolean) => void;
-};
+}
 
 export function ToggleRow({
   id,

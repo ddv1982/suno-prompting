@@ -17,9 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import type { TraceErrorEvent } from '@shared/types';
 import type { ReactElement } from 'react';
 
-type ErrorCardProps = {
+interface ErrorCardProps {
   event: TraceErrorEvent;
-};
+}
 
 export function ErrorCard({ event }: ErrorCardProps): ReactElement {
   const { error } = event;
@@ -38,7 +38,7 @@ export function ErrorCard({ event }: ErrorCardProps): ReactElement {
       <div className="text-sm text-destructive">{error.message}</div>
 
       {/* Details */}
-      {(error.status || error.providerRequestId) && (
+      {(error.status ?? error.providerRequestId) && (
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t pt-2">
           {error.status && <span>Status: {error.status}</span>}
           {error.providerRequestId && (

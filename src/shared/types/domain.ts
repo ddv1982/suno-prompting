@@ -22,7 +22,7 @@ export type CreativitySliderValue = 0 | 25 | 50 | 75 | 100;
 export type QuickVibesCategory = QuickVibesCategoryType;
 
 // Quick Vibes input state
-export type QuickVibesInput = {
+export interface QuickVibesInput {
   category: QuickVibesCategory | null;
   customDescription: string;
   withWordlessVocals: boolean;
@@ -30,11 +30,11 @@ export type QuickVibesInput = {
   sunoStyles: string[];
   /** Optional mood category to influence prompt generation */
   moodCategory: MoodCategory | null;
-};
+}
 
 // Creative Boost input state
 // Note: maxMode and lyricsMode are handled by global SettingsContext (same as Quick Vibes)
-export type CreativeBoostInput = {
+export interface CreativeBoostInput {
   creativityLevel: CreativitySliderValue;  // 5 discrete positions: 0, 25, 50, 75, 100
   seedGenres: string[];                    // 0-4 genre keys (from registry or combinations)
   /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
@@ -44,7 +44,7 @@ export type CreativeBoostInput = {
   withWordlessVocals: boolean;             // Humming, oohs
   /** Optional mood category to influence prompt generation */
   moodCategory: MoodCategory | null;
-};
+}
 
 export const EMPTY_CREATIVE_BOOST_INPUT = {
   creativityLevel: 50,
@@ -62,7 +62,7 @@ export type EditorMode = 'simple' | 'advanced';
 // Creative Boost panel mode (Simple shows fewer options)
 export type CreativeBoostMode = 'simple' | 'advanced';
 
-export type AdvancedSelection = {
+export interface AdvancedSelection {
   harmonicStyle: string | null;
   harmonicCombination: string | null;
   polyrhythmCombination: string | null;
@@ -71,7 +71,7 @@ export type AdvancedSelection = {
   seedGenres: string[];  // 0-4 genres or genre combinations
   /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
   sunoStyles: string[];
-};
+}
 
 export const EMPTY_ADVANCED_SELECTION = {
   harmonicStyle: null,
@@ -83,7 +83,7 @@ export const EMPTY_ADVANCED_SELECTION = {
   sunoStyles: [],
 } as const satisfies AdvancedSelection;
 
-export type PromptVersion = {
+export interface PromptVersion {
   id: string;
   content: string;
   title?: string;
@@ -92,9 +92,9 @@ export type PromptVersion = {
   lockedPhrase?: string;
   timestamp: string;
   debugTrace?: TraceRun;
-};
+}
 
-export type PromptSession = {
+export interface PromptSession {
   id: string;
   originalInput: string;
   lyricsTopic?: string;
@@ -108,10 +108,10 @@ export type PromptSession = {
   promptMode?: PromptMode;
   quickVibesInput?: QuickVibesInput;
   creativeBoostInput?: CreativeBoostInput;
-};
+}
 
 /** Options for prompt format conversion with performance guidance */
-export type ConversionOptions = {
+export interface ConversionOptions {
   /** Seed genres for style guidance */
   readonly seedGenres?: string[];
   /** Suno-specific style tags */
@@ -126,4 +126,4 @@ export type ConversionOptions = {
   readonly bpmRange?: string;
   /** Ollama endpoint for local LLM mode */
   readonly ollamaEndpoint?: string;
-};
+}

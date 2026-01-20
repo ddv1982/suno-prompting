@@ -7,14 +7,14 @@ import { Switch } from "@/components/ui/switch";
 import type { EditorMode } from "@shared/types";
 import type { ReactElement } from "react";
 
-type ModeToggleProps = {
+interface ModeToggleProps {
   editorMode: EditorMode;
   maxMode: boolean;
   lyricsMode: boolean;
   onEditorModeChange: (mode: EditorMode) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
-};
+}
 
 export function ModeToggle({
   editorMode,

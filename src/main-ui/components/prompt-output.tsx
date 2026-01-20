@@ -38,9 +38,9 @@ const SUNO_V5_TAGS_PATTERN = /^::.+::$/;
 // Component
 // =============================================================================
 
-type PromptOutputProps = {
+interface PromptOutputProps {
   text: string;
-};
+}
 
 /**
  * Renders prompt text with syntax highlighting for different line types.

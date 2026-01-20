@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
 
-type AdvancedOptionProps = {
+interface AdvancedOptionProps {
   label: string;
   options: { value: string; label: string }[];
   value: string | null;
@@ -15,7 +15,7 @@ type AdvancedOptionProps = {
   searchPlaceholder?: string;
   emptyText?: string;
   className?: string;
-};
+}
 
 export function AdvancedOption({
   label,
@@ -43,7 +43,7 @@ export function AdvancedOption({
         options={options}
         value={value}
         onValueChange={onValueChange}
-        disabled={disabled || isDisabledByExclusion}
+        disabled={(disabled ?? false) || isDisabledByExclusion}
         autoDisable
         placeholder={placeholder}
         searchPlaceholder={searchPlaceholder}

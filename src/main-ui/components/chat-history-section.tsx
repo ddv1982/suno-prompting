@@ -9,12 +9,12 @@ import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
 
-type ChatHistorySectionProps = {
+interface ChatHistorySectionProps {
   chatMessages: ChatMessage[];
   isGenerating: boolean;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
-};
+}
 
 export function ChatHistorySection({
   chatMessages,

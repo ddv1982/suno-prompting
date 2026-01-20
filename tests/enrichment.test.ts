@@ -367,8 +367,8 @@ describe('test helpers', () => {
 
   test('exposes SUNO_STYLE_GENRE_MAP', () => {
     expect(_testHelpers.SUNO_STYLE_GENRE_MAP).toBeDefined();
-    expect(_testHelpers.SUNO_STYLE_GENRE_MAP['jazz']).toBe('jazz');
-    expect(_testHelpers.SUNO_STYLE_GENRE_MAP['shoegaze']).toBe('dreampop');
+    expect(_testHelpers.SUNO_STYLE_GENRE_MAP.jazz).toBe('jazz');
+    expect(_testHelpers.SUNO_STYLE_GENRE_MAP.shoegaze).toBe('dreampop');
   });
 
   test('getDefaultEnrichment returns pop-based enrichment', () => {

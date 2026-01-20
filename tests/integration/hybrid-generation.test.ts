@@ -131,7 +131,7 @@ describe('Hybrid Generation Integration', () => {
       );
 
       // Recording should NOT contain scene phrase (scene goes to style tags)
-      const recordingMatch = result.text.match(/recording:\s*"([^"]+)"/i);
+      const recordingMatch = /recording:\s*"([^"]+)"/i.exec(result.text);
       if (recordingMatch?.[1]) {
         expect(recordingMatch[1].toLowerCase()).not.toContain('first steps');
         expect(recordingMatch[1].toLowerCase()).not.toContain('alien jungle');
@@ -288,7 +288,7 @@ describe('Hybrid Generation Integration', () => {
       // LLM moods should replace genre moods in style tags
       expect(result.text.toLowerCase()).toContain('wondrous');
       // Recording should contain production descriptors, not scene
-      const recordingMatch = result.text.match(/recording:\s*"([^"]+)"/i);
+      const recordingMatch = /recording:\s*"([^"]+)"/i.exec(result.text);
       if (recordingMatch?.[1]) {
         expect(recordingMatch[1].toLowerCase()).not.toContain('first steps');
       }

@@ -159,8 +159,8 @@ describe('Merge Logic', () => {
 
       // Style Tags should contain at least one theme from first 2
       // Due to TAG_LIMIT, not all may fit
-      const hasAlien = result.text.match(/Style Tags:.*alien/i);
-      const hasBioluminescent = result.text.match(/Style Tags:.*bioluminescent/i);
+      const hasAlien = /Style Tags:.*alien/i.exec(result.text);
+      const hasBioluminescent = /Style Tags:.*bioluminescent/i.exec(result.text);
       expect(hasAlien || hasBioluminescent).toBeTruthy();
 
       // Third theme should NEVER be in style tags
@@ -264,8 +264,8 @@ describe('Merge Logic', () => {
 
       // Style tags should contain at least one theme from first 2
       // Due to TAG_LIMIT, not all may fit
-      const hasCosmic = result.text.match(/style tags:.*cosmic/i);
-      const hasInterstellar = result.text.match(/style tags:.*interstellar/i);
+      const hasCosmic = /style tags:.*cosmic/i.exec(result.text);
+      const hasInterstellar = /style tags:.*interstellar/i.exec(result.text);
       expect(hasCosmic || hasInterstellar).toBeTruthy();
 
       // Third theme should NEVER be in style tags

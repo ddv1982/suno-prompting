@@ -65,9 +65,7 @@ function buildCategoryToGenresMapping(): Map<MoodCategory, GenreType[]> {
  * @returns Array of compatible genre types
  */
 export function getGenresForCategory(category: MoodCategory): GenreType[] {
-  if (!categoryToGenresCache) {
-    categoryToGenresCache = buildCategoryToGenresMapping();
-  }
+  categoryToGenresCache ??= buildCategoryToGenresMapping();
   return categoryToGenresCache.get(category) ?? [];
 }
 

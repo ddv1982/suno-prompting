@@ -86,7 +86,7 @@ describe('Error classes', () => {
     });
 
     test('supports all operation types', () => {
-      const operations: Array<'read' | 'write' | 'decrypt' | 'encrypt'> = ['read', 'write', 'decrypt', 'encrypt'];
+      const operations: ('read' | 'write' | 'decrypt' | 'encrypt')[] = ['read', 'write', 'decrypt', 'encrypt'];
       for (const op of operations) {
         const error = new StorageError(`${op} failed`, op);
         expect(error.operation).toBe(op);

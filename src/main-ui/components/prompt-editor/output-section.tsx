@@ -10,14 +10,14 @@ import { APP_CONSTANTS } from "@shared/constants";
 
 import type { ReactElement } from "react";
 
-type OutputSectionProps = {
+interface OutputSectionProps {
   label: string;
   content: string;
   onCopy: () => void;
   onRemix?: () => void;
   isRemixing?: boolean;
   scrollable?: boolean;
-};
+}
 
 export function OutputSection({
   label,

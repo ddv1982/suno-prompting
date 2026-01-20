@@ -37,10 +37,10 @@ import type { ThematicContext } from '@shared/schemas/thematic-context';
 
 const log = createLogger('Generation');
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 /** Maximum time to wait for thematic extraction before falling back to deterministic */
 const THEMATIC_EXTRACTION_TIMEOUT_MS = APP_CONSTANTS.AI.THEMATIC_EXTRACTION_TIMEOUT_MS;
@@ -279,7 +279,7 @@ function buildPromptForMode(
 async function generateInitialWithLyrics(
   options: GenerateInitialOptions,
   config: GenerationConfig,
-  useOffline: boolean = false,
+  useOffline = false,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { description, lockedPhrase, lyricsTopic, genreOverride } = options;

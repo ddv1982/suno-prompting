@@ -2,8 +2,8 @@ import { describe, it, expect, mock, beforeEach } from "bun:test";
 
 import { AIEngine } from "@bun/ai/engine";
 
-let generateTextCalls: number = 0;
-let generateTextCallArgs: Array<{ system?: string; prompt?: string }> = [];
+let generateTextCalls = 0;
+let generateTextCallArgs: { system?: string; prompt?: string }[] = [];
 
 const mockGenerateText = mock(async (args: unknown) => {
   generateTextCallArgs.push(args as { system?: string; prompt?: string });

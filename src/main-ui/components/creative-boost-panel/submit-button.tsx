@@ -7,14 +7,14 @@ import { cn } from "@/lib/utils";
 
 import type { ReactElement } from "react";
 
-type SubmitButtonProps = {
+interface SubmitButtonProps {
   isGenerating: boolean;
   isRefineMode: boolean;
   isDirectMode: boolean;
   canSubmit: boolean;
   refined?: boolean;
   onSubmit: () => void;
-};
+}
 
 export function SubmitButton({
   isGenerating,

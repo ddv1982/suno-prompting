@@ -19,9 +19,9 @@ import { cn } from '@/lib/utils';
 import type { TraceDecisionEvent, TraceDecisionDomain } from '@shared/types';
 import type { ReactElement } from 'react';
 
-type DecisionCardProps = {
+interface DecisionCardProps {
   event: TraceDecisionEvent;
-};
+}
 
 function getDomainColor(domain: TraceDecisionDomain): string {
   switch (domain) {

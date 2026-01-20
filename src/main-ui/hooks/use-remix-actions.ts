@@ -15,7 +15,7 @@ function unwrapOrThrow<T>(result: { ok: true; value: T } | { ok: false; error: R
   throw new Error(formatRpcError(result.error));
 }
 
-export type RemixActions = {
+export interface RemixActions {
   handleRemixInstruments: () => Promise<void>;
   handleRemixGenre: () => Promise<void>;
   handleRemixMood: () => Promise<void>;
@@ -23,7 +23,7 @@ export type RemixActions = {
   handleRemixRecording: () => Promise<void>;
   handleRemixTitle: () => Promise<void>;
   handleRemixLyrics: () => Promise<void>;
-};
+}
 
 export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
   const { currentSession } = deps;

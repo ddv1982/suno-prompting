@@ -30,7 +30,7 @@ type RemixHandlers = Pick<
   'remixInstruments' | 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording' | 'remixTitle' | 'remixLyrics'
 >;
 
-type RemixActionResult = { prompt: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: TraceRun };
+interface RemixActionResult { prompt: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: TraceRun }
 
 async function runRemixAction(
   aiEngine: AIEngine,

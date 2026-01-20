@@ -67,9 +67,7 @@ function buildCategoryToStylesMapping(): Map<MoodCategory, string[]> {
  * @returns Array of compatible Suno V5 style names
  */
 export function getSunoStylesForCategory(category: MoodCategory): string[] {
-  if (!categoryToStylesCache) {
-    categoryToStylesCache = buildCategoryToStylesMapping();
-  }
+  categoryToStylesCache ??= buildCategoryToStylesMapping();
   return categoryToStylesCache.get(category) ?? [];
 }
 

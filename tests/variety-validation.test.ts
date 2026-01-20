@@ -102,7 +102,7 @@ describe('Statistical Variety Validation', () => {
   test('recording contexts show variety across runs', () => {
     const iterations = 100;
     const contexts = new Set<string>();
-    const jazzContexts = GENRE_RECORDING_CONTEXTS['jazz'] ?? [];
+    const jazzContexts = GENRE_RECORDING_CONTEXTS.jazz ?? [];
     
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['jazz'], seedRng(i));
@@ -120,7 +120,7 @@ describe('Statistical Variety Validation', () => {
   test('validates variety for rock genre', () => {
     const iterations = 100;
     const contexts = new Set<string>();
-    const rockContexts = GENRE_RECORDING_CONTEXTS['rock'] ?? [];
+    const rockContexts = GENRE_RECORDING_CONTEXTS.rock ?? [];
     
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['rock'], seedRng(i));
@@ -138,7 +138,7 @@ describe('Statistical Variety Validation', () => {
   test('validates variety for electronic genre', () => {
     const iterations = 100;
     const contexts = new Set<string>();
-    const electronicContexts = GENRE_RECORDING_CONTEXTS['electronic'] ?? [];
+    const electronicContexts = GENRE_RECORDING_CONTEXTS.electronic ?? [];
     
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['electronic'], seedRng(i));
@@ -212,7 +212,7 @@ describe('Statistical Variety Validation', () => {
     
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['jazz'], seedRng(i));
-      const jazzContexts = GENRE_RECORDING_CONTEXTS['jazz'] ?? [];
+      const jazzContexts = GENRE_RECORDING_CONTEXTS.jazz ?? [];
       
       const hasContext = result.tags.some(tag => jazzContexts.includes(tag));
       if (hasContext) {

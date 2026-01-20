@@ -9,12 +9,12 @@ import type { ReactElement } from "react";
 
 type StatusType = "working" | "ready" | "local";
 
-type EditorStatusFooterProps = {
+interface EditorStatusFooterProps {
   isGenerating: boolean;
   /** Whether we're in optimistic state (before server confirms) */
   isOptimistic?: boolean;
   currentModel?: string;
-};
+}
 
 export function EditorStatusFooter({ 
   isGenerating, 

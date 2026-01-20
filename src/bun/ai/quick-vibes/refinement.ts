@@ -31,9 +31,9 @@ import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('QuickVibesRefinement');
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
-};
+}
 
 /**
  * Simple hash function for feedback string to seed RNG.

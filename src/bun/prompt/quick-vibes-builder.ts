@@ -65,7 +65,7 @@ export function postProcessQuickVibes(text: string): string {
   
   // Remove any leaked meta-lines (lines starting with Category:, Keywords:, etc.)
   result = result.split('\n')
-    .filter(line => !line.match(/^(Category|Keywords|Example|User's|Note|Output):/i))
+    .filter(line => !(/^(Category|Keywords|Example|User's|Note|Output):/i.exec(line)))
     .join(' ')
     .trim();
   

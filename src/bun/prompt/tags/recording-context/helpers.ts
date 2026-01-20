@@ -24,10 +24,9 @@ export function selectRandomKey<T extends Record<string, unknown>>(
   obj: T,
   rng: () => number
 ): keyof T {
-  const keys = Object.keys(obj) as Array<keyof T>;
+  const keys = Object.keys(obj) as (keyof T)[];
   const index = Math.floor(rng() * keys.length);
-  const selected = keys[index];
-  if (selected !== undefined) return selected;
-  // Fallback to first key (should never happen with non-empty objects)
-  return keys[0] as keyof T;
+  // Index is always valid since 0 <= index < keys.length
+  // Use nullish coalescing with first key as fallback for type safety
+  return keys[index] ?? keys[0] ?? ('' as keyof T);
 }

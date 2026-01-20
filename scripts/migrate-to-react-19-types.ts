@@ -11,12 +11,12 @@
 import { readdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
-type FileChange = {
+interface FileChange {
   path: string;
   oldContent: string;
   newContent: string;
   changed: boolean;
-};
+}
 
 const SRC_DIR = join(import.meta.dir, '..', 'src');
 
@@ -62,9 +62,9 @@ function migrateFileContent(content: string): { content: string; changed: boolea
   if (!hasReactElementImport) {
     // Find existing React type imports and add ReactElement
     const reactTypeImportRegex = /import\s+type\s+\{([^}]+)\}\s+from\s+['"]react['"]/;
-    const typeMatch = newContent.match(reactTypeImportRegex);
+    const typeMatch = reactTypeImportRegex.exec(newContent);
     
-    if (typeMatch && typeMatch[1]) {
+    if (typeMatch?.[1]) {
       // Add ReactElement to existing type import
       const imports = typeMatch[1].trim();
       const newImports = imports + ', ReactElement';
@@ -72,7 +72,7 @@ function migrateFileContent(content: string): { content: string; changed: boolea
     } else {
       // Check if there's a regular import from react (for hooks, etc.)
       const reactImportRegex = /import\s+\{([^}]+)\}\s+from\s+['"]react['"]/;
-      const regularMatch = newContent.match(reactImportRegex);
+      const regularMatch = reactImportRegex.exec(newContent);
       
       if (regularMatch) {
         // Don't modify the regular import, add a separate type import after it
@@ -82,8 +82,8 @@ function migrateFileContent(content: string): { content: string; changed: boolea
         );
       } else {
         // Add new type import at the top (after any existing imports)
-        const firstImportMatch = newContent.match(/^import\s+/m);
-        if (firstImportMatch && firstImportMatch.index !== undefined) {
+        const firstImportMatch = /^import\s+/m.exec(newContent);
+        if (firstImportMatch?.index !== undefined) {
           const insertPos = firstImportMatch.index;
           newContent = 
             newContent.slice(0, insertPos) +

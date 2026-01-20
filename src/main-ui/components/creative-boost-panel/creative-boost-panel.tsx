@@ -15,7 +15,7 @@ import { useCreativeBoostHandlers } from "./use-creative-boost-handlers";
 import type { MoodCategory } from "@bun/mood";
 import type { CreativeBoostInput, CreativeBoostMode } from "@shared/types";
 
-type CreativeBoostPanelProps = {
+interface CreativeBoostPanelProps {
   input: CreativeBoostInput;
   maxMode: boolean;
   lyricsMode: boolean;
@@ -28,7 +28,7 @@ type CreativeBoostPanelProps = {
   onLyricsModeChange: (mode: boolean) => void;
   onGenerate: () => void;
   onRefine: (feedback: string) => Promise<boolean>;
-};
+}
 
 export function CreativeBoostPanel({
   input, maxMode, lyricsMode, isGenerating, hasCurrentPrompt, creativeBoostMode,

@@ -44,14 +44,14 @@ export function truncatePrompt(prompt: string, maxLength: number = MAX_CHARS): s
 /**
  * Options for joinRecordingDescriptors function.
  */
-export type JoinRecordingDescriptorsOptions = {
+export interface JoinRecordingDescriptorsOptions {
   /** Random number generator for deterministic selection */
   readonly rng?: () => number;
   /** Number of descriptors to select (default: 2) */
   readonly count?: number;
   /** Optional trace collector for debugging */
   readonly trace?: TraceCollector;
-};
+}
 
 /**
  * Join recording descriptors into a comma-separated string.
@@ -68,7 +68,7 @@ export type JoinRecordingDescriptorsOptions = {
  */
 export function joinRecordingDescriptors(
   rngOrOptions: (() => number) | JoinRecordingDescriptorsOptions = Math.random,
-  count: number = 2,
+  count = 2,
   trace?: TraceCollector
 ): string {
   // Support both old signature (rng, count, trace) and new options object

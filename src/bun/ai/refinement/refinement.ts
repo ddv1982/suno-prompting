@@ -33,10 +33,10 @@ import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Refinement');
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 type LyricsAction = 'none' | 'refineExisting' | 'bootstrap';
 

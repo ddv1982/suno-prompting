@@ -2,7 +2,7 @@ import { describe, it, expect, mock, beforeEach } from "bun:test";
 
 import { AIEngine } from "@bun/ai/engine";
 
-let generateTextCalls: number = 0;
+let generateTextCalls = 0;
 
 const mockGenerateText = mock(async () => {
   generateTextCalls++;

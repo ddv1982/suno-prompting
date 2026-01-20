@@ -126,7 +126,8 @@ export class StorageManager {
         // Smart default: if no explicit useLocalLLM setting and no API keys, default to true
         let useLocalLLM = config.useLocalLLM;
         if (useLocalLLM === undefined) {
-            const hasAnyKey = Object.values(apiKeys).some(key => key !== null && key.trim() !== '');
+            const apiKeyValues = Object.values(apiKeys) as (string | null)[];
+            const hasAnyKey = apiKeyValues.some((key): key is string => key !== null && key.trim() !== '');
             useLocalLLM = !hasAnyKey; // Default to local if no keys
         }
         

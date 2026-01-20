@@ -262,7 +262,7 @@ describe('getAmbientInstruments', () => {
     for (let i = 0; i < 50; i++) {
       const guidance = getAmbientInstruments().toLowerCase();
       // Check for "- bells" as bullet to avoid matching "glass bells"
-      const hasBells = guidance.includes('- bells') || guidance.match(/^bells$/m) !== null;
+      const hasBells = guidance.includes('- bells') || (/^bells$/m.exec(guidance)) !== null;
       const hasBowls = guidance.includes('singing bowls');
       expect(hasBells && hasBowls).toBe(false);
     }

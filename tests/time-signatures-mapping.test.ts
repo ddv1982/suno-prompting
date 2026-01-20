@@ -388,8 +388,8 @@ describe('frequency-weighted selection', () => {
     }
 
     // time_4_4 and time_6_8 should appear more frequently than time_5_4
-    const highFreqCount = (counts['time_4_4'] ?? 0) + (counts['time_6_8'] ?? 0);
-    const lowFreqCount = counts['time_5_4'] ?? 0;
+    const highFreqCount = (counts.time_4_4 ?? 0) + (counts.time_6_8 ?? 0);
+    const lowFreqCount = counts.time_5_4 ?? 0;
 
     // High frequency signatures should dominate
     expect(highFreqCount).toBeGreaterThan(lowFreqCount);

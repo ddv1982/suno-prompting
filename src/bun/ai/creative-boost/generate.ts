@@ -26,10 +26,10 @@ import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('CreativeBoostGenerate');
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 /**
  * Direct Mode generation - Suno V5 styles preserved as-is, prompt enriched

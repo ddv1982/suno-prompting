@@ -11,9 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import type { TraceRunEvent } from '@shared/types';
 import type { ReactElement } from 'react';
 
-type RunEventCardProps = {
+interface RunEventCardProps {
   event: TraceRunEvent;
-};
+}
 
 export function RunEventCard({ event }: RunEventCardProps): ReactElement {
   const isStart = event.type === 'run.start';

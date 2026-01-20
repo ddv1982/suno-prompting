@@ -73,7 +73,7 @@ export function parseVocalStyleDescriptorToTags(vocalStyle: string): string[] {
 
   const [rangePart, deliveryPart, techniquePart] = parts;
 
-  const tags: Array<string | null> = [
+  const tags: (string | null)[] = [
     rangePart ? parseRangeTag(rangePart) : null,
     deliveryPart ? parseDeliveryTag(deliveryPart) : null,
     techniquePart ? parseTechniqueTag(techniquePart) : null,

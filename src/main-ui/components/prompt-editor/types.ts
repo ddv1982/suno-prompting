@@ -5,17 +5,17 @@ import { type TraceRun, type EditorMode, type AdvancedSelection, type PromptMode
 import { type ValidationResult } from "@shared/validation";
 
 /** State for the current prompt output display */
-export type OutputState = {
+export interface OutputState {
   /** The generated/refined prompt text */
   currentPrompt: string;
   /** Optional song title */
   currentTitle?: string;
   /** Optional generated lyrics */
   currentLyrics?: string;
-};
+}
 
 /** State for user input fields in full prompt mode */
-export type InputState = {
+export interface InputState {
   /** User's pending input text */
   pendingInput: string;
   /** Locked phrase to preserve across generations */
@@ -28,10 +28,10 @@ export type InputState = {
   computedMusicPhrase: string;
   /** Selected mood category for simple mode (null = auto) */
   moodCategory: MoodCategory | null;
-};
+}
 
 /** State for generation/loading status */
-export type GenerationState = {
+export interface GenerationState {
   /** Whether a generation is in progress */
   isGenerating: boolean;
   /** Which specific action is generating */
@@ -46,10 +46,10 @@ export type GenerationState = {
   isOptimistic: boolean;
   /** Whether to show skeleton loading UI */
   showSkeleton: boolean;
-};
+}
 
 /** State for various mode toggles */
-export type ModeState = {
+export interface ModeState {
   /** Max Mode enabled (structured output format) */
   maxMode: boolean;
   /** Lyrics generation enabled */
@@ -60,26 +60,26 @@ export type ModeState = {
   promptMode: PromptMode;
   /** Creative Boost mode (simple/advanced) */
   creativeBoostMode: CreativeBoostMode;
-};
+}
 
 /** Quick Vibes mode state */
-export type QuickVibesState = {
+export interface QuickVibesState {
   /** Quick Vibes input (category, description, styles) */
   input: QuickVibesInput;
   /** Original input from session (for refine mode change detection) */
   originalInput?: QuickVibesInput | null;
   /** Whether wordless vocals are enabled */
   withWordlessVocals: boolean;
-};
+}
 
 /** Creative Boost mode state */
-export type CreativeBoostState = {
+export interface CreativeBoostState {
   /** Creative Boost input (description, genres, styles) */
   input: CreativeBoostInput;
-};
+}
 
 /** Handlers for remix operations */
-export type RemixHandlers = {
+export interface RemixHandlers {
   onRemix: () => void;
   onRemixQuickVibes: () => void;
   onRemixInstruments: () => void;
@@ -89,10 +89,10 @@ export type RemixHandlers = {
   onRemixRecording: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
-};
+}
 
 /** Handlers for editor operations and state changes */
-export type EditorHandlers = {
+export interface EditorHandlers {
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onLyricsTopicChange: (topic: string) => void;
@@ -114,20 +114,20 @@ export type EditorHandlers = {
   onRefineCreativeBoost: (feedback: string) => Promise<boolean>;
   onCopy: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
-};
+}
 
 /** Configuration values for the editor */
-export type EditorConfig = {
+export interface EditorConfig {
   /** Maximum characters allowed in prompt */
   maxChars: number;
   /** Current AI model being used */
   currentModel: string;
   /** Whether using local LLM (Ollama) instead of cloud provider */
   useLocalLLM: boolean;
-};
+}
 
 /** Combined props for PromptEditor component - groups related props for cleaner API */
-export type PromptEditorProps = {
+export interface PromptEditorProps {
   output: OutputState;
   input: InputState;
   generation: GenerationState;
@@ -137,4 +137,4 @@ export type PromptEditorProps = {
   remix: RemixHandlers;
   handlers: EditorHandlers;
   config: EditorConfig;
-};
+}

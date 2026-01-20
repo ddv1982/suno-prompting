@@ -444,7 +444,7 @@ describe('enforceTraceSizeCap', () => {
       const capped = enforceTraceSizeCap(trace);
       expect(capped.stats.truncatedForCap).toBe(true);
 
-      const llm = capped.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+      const llm = capped.events.find((e) => e.type === 'llm.call')!;
       expect(llm.request.messages).toBeUndefined();
       expect(llm.response.rawText).toBeUndefined();
     });
@@ -492,7 +492,7 @@ describe('enforceTraceSizeCap', () => {
 
       const capped = enforceTraceSizeCap(trace);
 
-      const anyLlm = capped.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+      const anyLlm = capped.events.find((e) => e.type === 'llm.call')!;
       // Preview should be compacted (truncated)
       expect(anyLlm.request.inputSummary.preview.length).toBeLessThan(5000);
     });
@@ -518,7 +518,7 @@ describe('enforceTraceSizeCap', () => {
 
       const capped = enforceTraceSizeCap(trace);
 
-      const decision = capped.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+      const decision = capped.events.find((e) => e.type === 'decision')!;
       expect(decision.why.length).toBeLessThan(10_000);
       expect(decision.why).toContain(TRACE_TRUNCATION_MARKER);
     });
@@ -723,7 +723,7 @@ describe('generateTraceSummaryText', () => {
       },
     }));
 
-    const llm = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+    const llm = trace.events.find((e) => e.type === 'llm.call')!;
     expect(llm.telemetry?.latencyMs).toBe(1500);
     expect(llm.telemetry?.tokensIn).toBe(100);
     expect(llm.telemetry?.tokensOut).toBe(250);
@@ -751,7 +751,7 @@ describe('generateTraceSummaryText', () => {
       ],
     }));
 
-    const llm = trace.events.find((e) => e.type === 'llm.call') as TraceLLMCallEvent;
+    const llm = trace.events.find((e) => e.type === 'llm.call')!;
     const attempts = llm.attempts;
     expect(attempts).toHaveLength(2);
     expect(attempts?.[0]?.error).toBeDefined();
@@ -769,7 +769,7 @@ describe('generateTraceSummaryText', () => {
       },
     }));
 
-    const decision = trace.events.find((e) => e.type === 'decision') as TraceDecisionEvent;
+    const decision = trace.events.find((e) => e.type === 'decision')!;
     expect(decision.selection?.method).toBe('pickRandom');
     expect(decision.selection?.chosenIndex).toBe(3);
     expect(decision.selection?.candidatesCount).toBe(10);

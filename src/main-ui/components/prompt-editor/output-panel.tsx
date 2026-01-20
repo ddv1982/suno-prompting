@@ -11,7 +11,7 @@ import type { GeneratingAction } from "@/context/app-context";
 import type { TraceRun } from "@shared/types";
 import type { ReactElement } from "react";
 
-type OutputPanelProps = {
+interface OutputPanelProps {
   promptMode: 'full' | 'quickVibes' | 'creativeBoost';
   currentPrompt: string;
   currentTitle?: string;
@@ -36,7 +36,7 @@ type OutputPanelProps = {
   onRemix: () => void;
   onCopy: () => void;
   onDebugOpen: () => void;
-};
+}
 
 export function OutputPanel({
   promptMode,

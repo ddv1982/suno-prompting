@@ -18,10 +18,10 @@ import type { GenerateInitialOptions } from './types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 /**
  * Generate prompt in Direct Mode (Suno V5 styles selected).

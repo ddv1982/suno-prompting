@@ -93,8 +93,8 @@ export async function remixLyrics(
   lyricsTopic: string | undefined,
   maxMode: boolean,
   getModel: () => LanguageModel,
-  useSunoTags: boolean = false,
-  isOffline: boolean = false,
+  useSunoTags = false,
+  isOffline = false,
   ollamaEndpoint?: string,
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ lyrics: string }> {

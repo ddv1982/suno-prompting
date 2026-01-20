@@ -28,14 +28,14 @@ const getDescriptionHelperText = (
   return null; // Placeholder has examples
 };
 
-type DescriptionInputProps = {
+interface DescriptionInputProps {
   value: string;
   category: QuickVibesCategory | null;
   isRefineMode: boolean;
   isDirectMode: boolean;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
-};
+}
 
 export function DescriptionInput({
   value,

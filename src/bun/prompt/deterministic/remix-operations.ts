@@ -82,7 +82,7 @@ function selectMultipleGenres(
 
 /** Extract current genres from prompt's genre field */
 function extractCurrentGenres(currentPrompt: string): string[] {
-  const genreMatch = currentPrompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
+  const genreMatch = /^genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(currentPrompt);
   const fullGenreValue = genreMatch?.[1]?.trim() || '';
   return fullGenreValue
     .split(',')
@@ -131,7 +131,7 @@ function updateBpmForNewGenre(prompt: string, newGenreValue: string): string {
  * operations need a single primary genre for lookups.
  */
 export function extractGenreFromPrompt(prompt: string): GenreType {
-  const match = prompt.match(/^genre:\s*"?([^"\n,]+)/im);
+  const match = /^genre:\s*"?([^"\n,]+)/im.exec(prompt);
   const extracted = match?.[1]?.trim().toLowerCase();
   if (!extracted) return DEFAULT_GENRE as GenreType;
   return extracted in GENRE_REGISTRY
@@ -150,7 +150,7 @@ export function extractGenreFromPrompt(prompt: string): GenreType {
  * preventing empty arrays that would break downstream selection logic.
  */
 export function extractGenresFromPrompt(prompt: string): GenreType[] {
-  const match = prompt.match(/^genre:\s*"?([^"\n]+?)(?:"|$)/im);
+  const match = /^genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(prompt);
   if (!match?.[1]) return [DEFAULT_GENRE as GenreType];
 
   const genres = match[1]
@@ -170,9 +170,9 @@ export function extractGenresFromPrompt(prompt: string): GenreType[] {
  */
 export function extractMoodFromPrompt(prompt: string): string {
   const match =
-    prompt.match(/^mood:\s*"?([^"\n]+)/im) ||
-    prompt.match(/^Mood:\s*([^\n]+)/im);
-  return match?.[1]?.trim() || 'emotional';
+    /^mood:\s*"?([^"\n]+)/im.exec(prompt) ??
+    /^Mood:\s*([^\n]+)/im.exec(prompt);
+  return match?.[1]?.trim() ?? 'emotional';
 }
 
 // ============================================================================
@@ -401,7 +401,7 @@ export function remixStyleTags(
   const genre = extractGenreFromPrompt(currentPrompt);
   const result = injectStyleTags(currentPrompt, genre, rng);
 
-  const styleTagsMatch = result.match(/^Style Tags?:\s*(.+)$/im);
+  const styleTagsMatch = /^Style Tags?:\s*(.+)$/im.exec(result);
   const newStyleTags = styleTagsMatch?.[1] || '';
 
   trace?.addDecisionEvent({

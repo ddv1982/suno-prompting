@@ -49,7 +49,7 @@ function containsMoodFromTemplate(text: string, template: QuickVibesTemplate): b
 /**
  * Create a deterministic RNG for testing.
  */
-function createFixedRng(seed: number = 0.5): () => number {
+function createFixedRng(seed = 0.5): () => number {
   return () => seed;
 }
 
@@ -59,7 +59,7 @@ function createFixedRng(seed: number = 0.5): () => number {
 
 describe('Quick Vibes with mood category integration', () => {
   describe('returns prompt with mood from selected category when moodCategory provided', () => {
-    const testCases: Array<{ category: QuickVibesCategory; moodCategory: MoodCategory }> = [
+    const testCases: { category: QuickVibesCategory; moodCategory: MoodCategory }[] = [
       { category: 'lofi-study', moodCategory: 'calm' },
       { category: 'cafe-coffeeshop', moodCategory: 'energetic' },
       { category: 'ambient-focus', moodCategory: 'atmospheric' },

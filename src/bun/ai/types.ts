@@ -25,7 +25,7 @@ import type { LanguageModel } from 'ai';
  * };
  * ```
  */
-export type GenerationResult = {
+export interface GenerationResult {
   /** The generated prompt text */
   text: string;
   /** Optional song title */
@@ -34,21 +34,21 @@ export type GenerationResult = {
   lyrics?: string;
   /** Debug trace timeline (when debug mode is enabled) */
   debugTrace?: TraceRun;
-};
+}
 
 /**
  * Parsed response from combined generation (prompt + title + optional lyrics).
  *
  * Used when parsing JSON responses from LLM that include multiple outputs.
  */
-export type ParsedCombinedResponse = {
+export interface ParsedCombinedResponse {
   /** The generated prompt */
   prompt: string;
   /** The generated title */
   title: string;
   /** Optional generated lyrics */
   lyrics?: string;
-};
+}
 
 /**
  * Function type for building debug information from LLM interactions.

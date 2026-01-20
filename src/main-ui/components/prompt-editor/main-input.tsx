@@ -17,7 +17,7 @@ function formatRpcError(error: RpcError): string {
   return error.message;
 }
 
-type MainInputProps = {
+interface MainInputProps {
   value: string;
   currentPrompt: string;
   lyricsMode: boolean;
@@ -28,7 +28,7 @@ type MainInputProps = {
   onChange: (value: string) => void;
   onSubmit: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
-};
+}
 
 export function MainInput({
   value,

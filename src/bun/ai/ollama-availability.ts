@@ -26,7 +26,7 @@ interface CachedStatus {
 
 /** Response from Ollama /api/tags endpoint */
 interface OllamaTagsResponse {
-  models?: Array<{ name: string }>;
+  models?: { name: string }[];
 }
 
 /** Cache TTL in milliseconds */

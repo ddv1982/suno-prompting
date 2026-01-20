@@ -2,50 +2,50 @@ import type { MoodCategory } from "@bun/mood";
 import type { AdvancedSelection, EditorMode, RefinementType, StyleChanges, TraceRun } from "@shared/types";
 
 /** Input state and handlers */
-export type InputState = {
+export interface InputState {
   pendingInput: string;
   lockedPhrase: string;
   lyricsTopic: string;
   onPendingInputChange: (input: string) => void;
   onLockedPhraseChange: (phrase: string) => void;
   onLyricsTopicChange: (topic: string) => void;
-};
+}
 
 /** Mood category state and handlers (for simple mode) */
-export type MoodCategoryState = {
+export interface MoodCategoryState {
   moodCategory: MoodCategory | null;
   onMoodCategoryChange: (category: MoodCategory | null) => void;
-};
+}
 
 /** Mode state and handlers */
-export type ModeState = {
+export interface ModeState {
   editorMode: EditorMode;
   maxMode: boolean;
   lyricsMode: boolean;
   onEditorModeChange: (mode: EditorMode) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
-};
+}
 
 /** Advanced selection state and handlers */
-export type AdvancedState = {
+export interface AdvancedState {
   advancedSelection: AdvancedSelection;
   computedMusicPhrase: string;
   hasAdvancedSelection: boolean;
   onAdvancedSelectionUpdate: (updates: Partial<AdvancedSelection>) => void;
   onAdvancedSelectionClear: () => void;
-};
+}
 
 /** Validation and limits */
-export type ValidationState = {
+export interface ValidationState {
   maxChars: number;
   lockedPhraseValidation: { isValid: boolean; error: string | null };
   inputOverLimit: boolean;
   lyricsTopicOverLimit: boolean;
-};
+}
 
 /** Generation state and handlers */
-export type GenerationState = {
+export interface GenerationState {
   currentPrompt: string;
   isGenerating: boolean;
   onGenerate: (input: string, refinementType?: RefinementType, styleChanges?: StyleChanges) => Promise<boolean>;
@@ -55,7 +55,7 @@ export type GenerationState = {
     versionId: string,
     debugTrace?: TraceRun
   ) => Promise<void>;
-};
+}
 
 /** Combined props for FullPromptInputPanel component */
 export type FullPromptInputPanelProps = InputState &

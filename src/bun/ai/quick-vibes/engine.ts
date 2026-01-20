@@ -24,10 +24,10 @@ import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('QuickVibesEngine');
 
-type TraceRuntime = {
+interface TraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: () => number;
-};
+}
 
 /**
  * Generates a Quick Vibes prompt based on category or custom description.

@@ -55,20 +55,20 @@ export function getErrorToastType(error: unknown): 'error' | 'warning' {
   return 'error';
 }
 
-export type GenerationResultBase = {
+export interface GenerationResultBase {
   prompt: string;
   title?: string;
   lyrics?: string;
   versionId: string;
   debugTrace?: TraceRun;
-};
+}
 
-export type ModeInputUpdate = {
+export interface ModeInputUpdate {
   quickVibesInput?: QuickVibesInput;
   creativeBoostInput?: CreativeBoostInput;
-};
+}
 
-export type SessionDeps = {
+export interface SessionDeps {
   currentSession: PromptSession | null;
   generateId: () => string;
   saveSession: (session: PromptSession) => Promise<void>;
@@ -78,7 +78,7 @@ export type SessionDeps = {
   setGeneratingAction: (action: GeneratingAction) => void;
   showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
   log: Logger;
-};
+}
 
 /**
  * Creates a new version entry for the session history

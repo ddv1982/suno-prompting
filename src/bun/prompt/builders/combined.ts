@@ -9,12 +9,12 @@ import { buildSystemPrompt } from './standard';
 /**
  * Refinement context for refining existing prompts
  */
-export type RefinementContext = {
+export interface RefinementContext {
   currentPrompt: string;
   currentTitle: string;
   currentLyrics?: string;
   lyricsTopic?: string;
-};
+}
 
 /**
  * Combined system prompt for generating style prompt + title in one call

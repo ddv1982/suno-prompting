@@ -21,11 +21,11 @@ export type InstrumentCategory = 'harmonic' | 'pad' | 'color' | 'movement' | 'ra
  * @property category - The functional category of the instrument
  * @property aliases - Alternative names that map to this canonical name
  */
-export type InstrumentEntry = {
+export interface InstrumentEntry {
   readonly canonical: string;
   readonly category: InstrumentCategory;
   readonly aliases: readonly string[];
-};
+}
 
 export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   // Harmonic anchors

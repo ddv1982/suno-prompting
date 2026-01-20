@@ -169,7 +169,7 @@ export function parseCreativeBoostResponse(text: string): {
       .trim();
 
     // Try to extract JSON if there's extra text around it
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    const jsonMatch = /\{[\s\S]*\}/.exec(cleaned);
     if (jsonMatch) {
       cleaned = jsonMatch[0];
     }

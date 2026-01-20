@@ -25,20 +25,20 @@ export type StyleChanges = StyleChangesInput;
  * Refinement context for auto-detected refinement.
  * Passed from frontend to backend to route the refinement.
  */
-export type RefinementContext = {
+export interface RefinementContext {
   /** The detected refinement type */
   type: RefinementType;
   /** Style changes to apply (only present for 'style' or 'combined' types) */
   styleChanges?: StyleChanges;
   /** Feedback text for lyrics refinement (only present for 'lyrics' or 'combined' types) */
   feedbackText?: string;
-};
+}
 
 /**
  * Original advanced selection values captured when a prompt is generated.
  * Used to detect what fields have changed for style refinement.
  */
-export type OriginalAdvancedSelection = {
+export interface OriginalAdvancedSelection {
   /** Original seed genres selected at generation time */
   seedGenres: string[];
   /** Original Suno V5 style keys selected at generation time */
@@ -61,4 +61,4 @@ export type OriginalAdvancedSelection = {
   timeSignatureJourney?: string | null;
   /** Original mood category at generation time */
   moodCategory?: string | null;
-};
+}
