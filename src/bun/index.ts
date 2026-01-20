@@ -4,6 +4,7 @@ import { AIEngine } from '@bun/ai';
 import { createHandlers } from '@bun/handlers';
 import { createLogger } from '@bun/logger';
 import { StorageManager } from '@bun/storage';
+import { APP_CONSTANTS } from '@shared/constants';
 import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
@@ -60,7 +61,7 @@ const storage = new StorageManager();
 const handlers = createHandlers(aiEngine, storage);
 
 const rpc = BrowserView.defineRPC<SunoRPCSchema>({
-    maxRequestTime: 30000,
+    maxRequestTime: APP_CONSTANTS.AI.RPC_TIMEOUT_MS,
     handlers: {
         requests: {
             generateInitial: handlers.generateInitial,

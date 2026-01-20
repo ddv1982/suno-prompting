@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { Header } from "@/components/app-header";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { HistorySidebar } from "@/components/history-sidebar";
+import { PanelErrorBoundary } from "@/components/panel-error-boundary";
 import { PromptEditorContainer } from "@/components/prompt-editor-container";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ToastProvider } from "@/components/ui/toast";
@@ -24,10 +25,16 @@ function App(): ReactNode {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden">
-        <HistorySidebar sessions={sessions} currentSessionId={currentSession?.id || null} onSelectSession={selectSession} onDeleteSession={deleteSession} onNewProject={newProject} />
+        <PanelErrorBoundary panelName="History Sidebar">
+          <HistorySidebar sessions={sessions} currentSessionId={currentSession?.id || null} onSelectSession={selectSession} onDeleteSession={deleteSession} onNewProject={newProject} />
+        </PanelErrorBoundary>
         <SidebarInset className="flex flex-1 min-w-0 flex-col bg-background">
           <Header onOpenSettings={() => { setSettingsOpen(true); }} />
-          <main className="flex-1 min-h-0 overflow-auto"><PromptEditorContainer /></main>
+          <main className="flex-1 min-h-0 overflow-auto">
+            <PanelErrorBoundary panelName="Prompt Editor">
+              <PromptEditorContainer />
+            </PanelErrorBoundary>
+          </main>
         </SidebarInset>
       </div>
       <Suspense fallback={null}>{settingsOpen && <SettingsModal isOpen={settingsOpen} onClose={() => { setSettingsOpen(false); }} />}</Suspense>

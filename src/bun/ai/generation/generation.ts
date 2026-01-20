@@ -25,6 +25,7 @@ import {
 import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { traceDecision } from '@bun/trace';
+import { APP_CONSTANTS } from '@shared/constants';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
 import { generateDirectMode } from './direct-mode-generation';
@@ -42,7 +43,7 @@ type TraceRuntime = {
 };
 
 /** Maximum time to wait for thematic extraction before falling back to deterministic */
-const THEMATIC_EXTRACTION_TIMEOUT_MS = 3000;
+const THEMATIC_EXTRACTION_TIMEOUT_MS = APP_CONSTANTS.AI.THEMATIC_EXTRACTION_TIMEOUT_MS;
 
 /**
  * Attempts to extract thematic context from description using LLM.

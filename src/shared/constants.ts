@@ -56,7 +56,12 @@ export const APP_CONSTANTS = {
     AI: {
         MAX_RETRIES: 10,
         MAX_LENGTH_RETRIES: 10,
+        /** Global timeout for AI operations (90 seconds) */
         TIMEOUT_MS: 90000,
+        /** RPC request timeout - shorter than AI timeout for responsive errors (30 seconds) */
+        RPC_TIMEOUT_MS: 30000,
+        /** Timeout for thematic context extraction before falling back to deterministic (3 seconds) */
+        THEMATIC_EXTRACTION_TIMEOUT_MS: 3000,
         DEFAULT_PROVIDER: 'groq' as const,
         DEFAULT_MODEL: 'openai/gpt-oss-120b',
         DEFAULT_USE_SUNO_TAGS: true,

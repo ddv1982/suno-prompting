@@ -1,16 +1,14 @@
 import { useState, useCallback, useMemo, useEffect, useRef, type ReactElement, type ReactNode } from 'react';
 
-import { createLogger } from '@/lib/logger';
 import { rpcClient } from '@/services/rpc-client';
 import { type MoodCategory } from '@bun/mood';
+import { fireAndForget } from '@shared/fire-and-forget';
 import { buildMusicPhrase } from '@shared/music-phrase';
 import { type EditorMode, type AdvancedSelection, type QuickVibesInput, type PromptMode, type CreativeBoostInput, type CreativeBoostMode, EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types';
 
 import { EditorActionsContext } from './editor-actions-context';
 import { EditorStateContext } from './editor-state-context';
 import { type EditorStateContextType, type EditorActionsContextType } from './types';
-
-const log = createLogger('Editor');
 const EMPTY_QUICK_VIBES_INPUT: QuickVibesInput = { category: null, customDescription: '', withWordlessVocals: false, sunoStyles: [], moodCategory: null };
 
 type NullableAdvancedField = 'harmonicStyle' | 'harmonicCombination' | 'polyrhythmCombination' | 'timeSignature' | 'timeSignatureJourney';
@@ -27,25 +25,21 @@ function loadPersistedModes(
   setPromptModeState: (mode: PromptMode) => void,
   setCreativeBoostModeState: (mode: CreativeBoostMode) => void
 ): void {
-  void rpcClient
-    .getPromptMode({})
-    .then((result) => {
+  fireAndForget(
+    rpcClient.getPromptMode({}).then((result) => {
       setPromptModeState(result.ok ? result.value.promptMode : ('full' as PromptMode));
-    })
-    .catch((e: unknown) => {
-      log.error('loadPromptMode:failed', e);
-    });
+    }),
+    'loadPromptMode'
+  );
 
-  void rpcClient
-    .getCreativeBoostMode({})
-    .then((result) => {
+  fireAndForget(
+    rpcClient.getCreativeBoostMode({}).then((result) => {
       setCreativeBoostModeState(
         result.ok ? result.value.creativeBoostMode : ('simple' as CreativeBoostMode)
       );
-    })
-    .catch((e: unknown) => {
-      log.error('loadCreativeBoostMode:failed', e);
-    });
+    }),
+    'loadCreativeBoostMode'
+  );
 }
 
 /**
@@ -81,15 +75,11 @@ export function EditorProvider({ children }: EditorProviderProps): ReactElement 
   // Fire-and-forget save setters (no rollback needed for UI preferences)
   const setPromptMode = useCallback((mode: PromptMode) => {
     setPromptModeState(mode);
-    void rpcClient.setPromptMode({ promptMode: mode }).catch((e: unknown) => {
-      log.error('setPromptMode:failed', e);
-    });
+    fireAndForget(rpcClient.setPromptMode({ promptMode: mode }), 'setPromptMode');
   }, []);
   const setCreativeBoostMode = useCallback((mode: CreativeBoostMode) => {
     setCreativeBoostModeState(mode);
-    void rpcClient.setCreativeBoostMode({ creativeBoostMode: mode }).catch((e: unknown) => {
-      log.error('setCreativeBoostMode:failed', e);
-    });
+    fireAndForget(rpcClient.setCreativeBoostMode({ creativeBoostMode: mode }), 'setCreativeBoostMode');
   }, []);
 
   const computedMusicPhrase = useMemo(() => buildMusicPhrase(advancedSelection), [advancedSelection]);
