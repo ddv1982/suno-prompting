@@ -22,7 +22,7 @@ export function PromptEditorContainer(): ReactElement {
   const { editorMode, promptMode, creativeBoostMode, advancedSelection, lockedPhrase, pendingInput, lyricsTopic, moodCategory, computedMusicPhrase, quickVibesInput, withWordlessVocals, creativeBoostInput, setEditorMode, setPromptMode, setCreativeBoostMode, updateAdvancedSelection, clearAdvancedSelection, setLockedPhrase, setPendingInput, setLyricsTopic, setMoodCategory, setQuickVibesInput, setWithWordlessVocals, setCreativeBoostInput } = useEditorContext();
 
   // -- Generation State & Handlers --
-  const { isGenerating, generatingAction, chatMessages, validation, debugTrace, handleGenerate, handleCopy, handleRemix, handleRemixInstruments, handleRemixGenre, handleRemixMood, handleRemixStyleTags, handleRemixRecording, handleRemixTitle, handleRemixLyrics, handleGenerateQuickVibes, handleRemixQuickVibes, handleRefineQuickVibes, handleConversionComplete, handleGenerateCreativeBoost, handleRefineCreativeBoost } = useGenerationContext();
+  const { isGenerating, generatingAction, chatMessages, validation, debugTrace, isOptimistic, showSkeleton, handleGenerate, handleCopy, handleRemix, handleRemixInstruments, handleRemixGenre, handleRemixMood, handleRemixStyleTags, handleRemixRecording, handleRemixTitle, handleRemixLyrics, handleGenerateQuickVibes, handleRemixQuickVibes, handleRefineQuickVibes, handleConversionComplete, handleGenerateCreativeBoost, handleRefineCreativeBoost } = useGenerationContext();
 
   // -- Memoized Prop Groups --
   const output: OutputState = useMemo(() => ({
@@ -36,8 +36,8 @@ export function PromptEditorContainer(): ReactElement {
   }), [pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase, moodCategory]);
 
   const generation: GenerationState = useMemo(() => ({
-    isGenerating, generatingAction, validation, debugTrace, chatMessages,
-  }), [isGenerating, generatingAction, validation, debugTrace, chatMessages]);
+    isGenerating, generatingAction, validation, debugTrace, chatMessages, isOptimistic, showSkeleton,
+  }), [isGenerating, generatingAction, validation, debugTrace, chatMessages, isOptimistic, showSkeleton]);
 
   const modes: ModeState = useMemo(() => ({
     maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode,

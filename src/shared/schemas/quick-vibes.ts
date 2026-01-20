@@ -11,10 +11,16 @@ export const GenerateQuickVibesSchema = z.object({
   customDescription: z.string().max(APP_CONSTANTS.QUICK_VIBES_MAX_CHARS),
   withWordlessVocals: z.boolean(),
   sunoStyles: SunoStylesSchema,
-}).refine(
-  (data) => !(data.category !== null && data.sunoStyles.length > 0),
-  { message: 'Cannot use both Category and Suno V5 Styles. Please select only one.', path: ['sunoStyles'] }
-);
+}).superRefine((data, ctx) => {
+  // Category and Suno Styles are mutually exclusive
+  if (data.category !== null && data.sunoStyles.length > 0) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Cannot use both Category and Suno V5 Styles. Please select only one.',
+      path: ['sunoStyles'],
+    });
+  }
+});
 
 export const RefineQuickVibesSchema = z.object({
   currentPrompt: z.string().min(1, 'Current prompt is required'),
@@ -24,10 +30,16 @@ export const RefineQuickVibesSchema = z.object({
   withWordlessVocals: z.boolean(),
   category: QuickVibesCategorySchema.optional(),
   sunoStyles: SunoStylesSchema.optional().default([]),
-}).refine(
-  (data) => !(data.category !== null && data.category !== undefined && (data.sunoStyles?.length ?? 0) > 0),
-  { message: 'Cannot use both Category and Suno V5 Styles. Please select only one.', path: ['sunoStyles'] }
-);
+}).superRefine((data, ctx) => {
+  // Category and Suno Styles are mutually exclusive
+  if (data.category !== null && data.category !== undefined && (data.sunoStyles?.length ?? 0) > 0) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Cannot use both Category and Suno V5 Styles. Please select only one.',
+      path: ['sunoStyles'],
+    });
+  }
+});
 
 export type GenerateQuickVibesInput = z.infer<typeof GenerateQuickVibesSchema>;
 export type RefineQuickVibesInput = z.infer<typeof RefineQuickVibesSchema>;

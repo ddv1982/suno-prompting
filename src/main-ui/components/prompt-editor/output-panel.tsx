@@ -1,4 +1,5 @@
 import { OutputSection } from "@/components/prompt-editor/output-section";
+import { OutputSkeleton } from "@/components/prompt-editor/output-skeleton";
 import { PromptOutput } from "@/components/prompt-output";
 import { QuickVibesOutput } from "@/components/quick-vibes-output";
 import { RemixButtonGroup } from "@/components/remix-button-group";
@@ -22,6 +23,8 @@ type OutputPanelProps = {
   charCount: number;
   maxChars: number;
   debugTrace?: TraceRun;
+  /** Whether to show skeleton loading UI during optimistic generation */
+  showSkeleton?: boolean;
   onRemixQuickVibes: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
@@ -47,6 +50,7 @@ export function OutputPanel({
   charCount,
   maxChars,
   debugTrace,
+  showSkeleton = false,
   onRemixQuickVibes,
   onRemixTitle,
   onRemixLyrics,
@@ -59,6 +63,11 @@ export function OutputPanel({
   onCopy,
   onDebugOpen,
 }: OutputPanelProps): ReactElement | null {
+  // Show skeleton during optimistic generation when no current prompt
+  if (showSkeleton && !currentPrompt) {
+    return <OutputSkeleton />;
+  }
+
   if (!currentPrompt) return null;
 
   if (promptMode === 'quickVibes') {

@@ -6,7 +6,7 @@ import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
 import { FormLabel } from "@/components/ui/form-label";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
-import { canSubmitQuickVibes, canRefineQuickVibes } from "@shared/submit-validation";
+import { QuickVibesSubmitSchema, QuickVibesRefineSchema } from "@shared/schemas/submit-validation";
 import { isSunoV5Style } from "@shared/suno-v5-styles";
 
 import { DescriptionInput } from "./description-input";
@@ -18,11 +18,11 @@ import type { QuickVibesCategory, QuickVibesInput } from "@shared/types";
 
 function getCanSubmit(input: QuickVibesInput, originalInput: QuickVibesInput | null | undefined, isRefineMode: boolean): boolean {
   const submitInput = { category: input.category, customDescription: input.customDescription, sunoStyles: input.sunoStyles };
-  if (!isRefineMode) return canSubmitQuickVibes(submitInput);
-  return canRefineQuickVibes({
+  if (!isRefineMode) return QuickVibesSubmitSchema.safeParse(submitInput).success;
+  return QuickVibesRefineSchema.safeParse({
     ...submitInput,
     original: originalInput ? { category: originalInput.category, customDescription: originalInput.customDescription, sunoStyles: originalInput.sunoStyles } : null,
-  });
+  }).success;
 }
 
 type QuickVibesPanelProps = {

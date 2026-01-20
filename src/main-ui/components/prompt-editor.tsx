@@ -22,7 +22,7 @@ import type { ReactElement } from "react";
 export function PromptEditor({ output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config }: PromptEditorProps): ReactElement {
   const { currentPrompt, currentTitle, currentLyrics } = output;
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
-  const { isGenerating, generatingAction, validation, debugTrace, chatMessages } = generation;
+  const { isGenerating, generatingAction, validation, debugTrace, chatMessages, isOptimistic, showSkeleton } = generation;
   const { maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode } = modes;
   const { maxChars, currentModel } = config;
   const { isLLMAvailable } = useSettingsContext();
@@ -55,6 +55,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
           promptMode={promptMode} currentPrompt={currentPrompt} currentTitle={currentTitle} currentLyrics={currentLyrics}
           generatingAction={generatingAction} maxMode={maxMode} copied={copied}
           promptOverLimit={promptOverLimit} charCount={charCount} maxChars={maxChars} debugTrace={debugTrace}
+          showSkeleton={showSkeleton}
           onRemixQuickVibes={remix.onRemixQuickVibes} onRemixTitle={remix.onRemixTitle} onRemixLyrics={remix.onRemixLyrics}
           onRemixGenre={remix.onRemixGenre} onRemixMood={remix.onRemixMood} onRemixInstruments={remix.onRemixInstruments}
           onRemixStyleTags={remix.onRemixStyleTags} onRemixRecording={remix.onRemixRecording} onRemix={remix.onRemix}
@@ -106,7 +107,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
               onGenerate={handlers.onGenerate} onConversionComplete={handlers.onConversionComplete} />
           )}
 
-          <EditorStatusFooter isGenerating={isGenerating} currentModel={currentModel} />
+          <EditorStatusFooter isGenerating={isGenerating} isOptimistic={isOptimistic} currentModel={currentModel} />
         </div>
       </div>
     </section>

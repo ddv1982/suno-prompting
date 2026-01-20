@@ -318,7 +318,7 @@ describe('production-elements', () => {
   describe('buildProductionDescriptor (legacy function)', () => {
     it('returns comma-separated string format', () => {
       const rng = createSeededRng(42);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result = buildProductionDescriptor(rng);
       
       expect(typeof result).toBe('string');
@@ -327,7 +327,7 @@ describe('production-elements', () => {
 
     it('includes all 4 production dimensions', () => {
       const rng = createSeededRng(42);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result = buildProductionDescriptor(rng);
       
       // Should have format "reverb, texture, stereo, dynamic"
@@ -337,7 +337,7 @@ describe('production-elements', () => {
 
     it('maintains backward compatibility with existing tests', () => {
       const rng = createSeededRng(42);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result = buildProductionDescriptor(rng);
       
       // Should be a non-empty string with commas
@@ -349,9 +349,9 @@ describe('production-elements', () => {
       const rng1 = createSeededRng(555);
       const rng2 = createSeededRng(555);
       
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result1 = buildProductionDescriptor(rng1);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result2 = buildProductionDescriptor(rng2);
       
       expect(result1).toBe(result2);
@@ -359,7 +359,7 @@ describe('production-elements', () => {
 
     it('all parts are lowercase', () => {
       const rng = createSeededRng(42);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result = buildProductionDescriptor(rng);
       
       expect(result).toBe(result.toLowerCase());
@@ -369,7 +369,7 @@ describe('production-elements', () => {
       const rng1 = createSeededRng(888);
       const rng2 = createSeededRng(888);
       
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const legacyResult = buildProductionDescriptor(rng1);
       const multiResult = buildProductionDescriptorMulti(rng2);
       
@@ -384,7 +384,7 @@ describe('production-elements', () => {
       // Generate 100 different descriptors
       for (let i = 0; i < 100; i++) {
         const rng = createSeededRng(i);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+         
         const result = buildProductionDescriptor(rng);
         results.add(result);
       }
@@ -394,7 +394,7 @@ describe('production-elements', () => {
     });
 
     it('works with default Math.random RNG', () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       const result = buildProductionDescriptor();
       
       expect(typeof result).toBe('string');
@@ -649,7 +649,7 @@ describe('production-elements', () => {
         const rng1 = createSeededRng(i);
         const rng2 = createSeededRng(i);
         
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+         
         const legacy = buildProductionDescriptor(rng1);
         const multi = buildProductionDescriptorMulti(rng2);
         

@@ -5,7 +5,7 @@ import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
 import { useOriginalSelection } from "@/hooks/use-original-selection";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
 import { useRefinementType } from "@/hooks/use-refinement-type";
-import { canSubmitFullPrompt, canRefineFullPrompt } from "@shared/submit-validation";
+import { FullPromptSubmitSchema, FullPromptRefineSchema } from "@shared/schemas/submit-validation";
 
 import { FullWidthSubmitButton } from "./full-width-submit-button";
 import { LockedPhraseInput } from "./locked-phrase-input";
@@ -31,9 +31,9 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
     currentSelection: advancedSelection, originalSelection, feedbackText: pendingInput, lyricsMode, hasCurrentPrompt: !!currentPrompt, moodCategory,
   });
 
-  // Validation: initial generation uses canSubmitFullPrompt, refine mode uses canRefineFullPrompt
-  const canSubmitContent = canSubmitFullPrompt({ description: pendingInput, lyricsTopic, lyricsMode, hasAdvancedSelection, sunoStyles: advancedSelection.sunoStyles });
-  const canRefine = canRefineFullPrompt({ feedbackText: pendingInput, styleChanges, lyricsMode });
+  // Validation: initial generation uses FullPromptSubmitSchema, refine mode uses FullPromptRefineSchema
+  const canSubmitContent = FullPromptSubmitSchema.safeParse({ description: pendingInput, lyricsTopic, lyricsMode, hasAdvancedSelection, sunoStyles: advancedSelection.sunoStyles }).success;
+  const canRefine = FullPromptRefineSchema.safeParse({ feedbackText: pendingInput, styleChanges, lyricsMode }).success;
   const canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && (currentPrompt ? canRefine : canSubmitContent);
 
   const handleSend = useCallback(async (): Promise<void> => {

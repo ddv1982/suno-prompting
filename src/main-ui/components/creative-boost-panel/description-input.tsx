@@ -50,20 +50,17 @@ export function DescriptionInput({
         className="min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface"
         placeholder={
           isRefineMode
-            ? "How should the creative boost change? (e.g., 'more upbeat', 'add ethnic elements', 'darker mood')"
+            ? "How should it change? (e.g., 'more upbeat', 'ethnic elements') or leave blank to regenerate"
             : isDirectMode
               ? "Description not used with Suno V5 Styles"
-              : "I want something that sounds like..."
+              : "Describe the mood, style, or direction (e.g., 'dark cinematic orchestral')"
         }
       />
-      <p className="ui-helper">
-        {isRefineMode
-          ? "Optionally describe how you'd like to adjust the output, or leave blank to regenerate."
-          : isDirectMode
-            ? "Description is not used when Suno V5 Styles are selected."
-            : "Optionally describe the mood, style, or direction for your music."
-        }
-      </p>
+      {isDirectMode && !isRefineMode && (
+        <p className="ui-helper">
+          Description is not used when Suno V5 Styles are selected.
+        </p>
+      )}
     </div>
   );
 }

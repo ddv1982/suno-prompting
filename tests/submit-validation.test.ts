@@ -1,12 +1,28 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
-  canSubmitFullPrompt,
-  canRefineFullPrompt,
-  canSubmitQuickVibes,
-  canRefineQuickVibes,
-  canSubmitCreativeBoost,
-} from '@shared/submit-validation';
+  FullPromptSubmitSchema,
+  FullPromptRefineSchema,
+  QuickVibesSubmitSchema,
+  QuickVibesRefineSchema,
+  CreativeBoostSubmitSchema,
+} from '@shared/schemas/submit-validation';
+
+// Helper functions that wrap the schemas for backward-compatible test syntax
+const canSubmitFullPrompt = (input: Parameters<typeof FullPromptSubmitSchema.safeParse>[0]): boolean =>
+  FullPromptSubmitSchema.safeParse(input).success;
+
+const canRefineFullPrompt = (input: Parameters<typeof FullPromptRefineSchema.safeParse>[0]): boolean =>
+  FullPromptRefineSchema.safeParse(input).success;
+
+const canSubmitQuickVibes = (input: Parameters<typeof QuickVibesSubmitSchema.safeParse>[0]): boolean =>
+  QuickVibesSubmitSchema.safeParse(input).success;
+
+const canRefineQuickVibes = (input: Parameters<typeof QuickVibesRefineSchema.safeParse>[0]): boolean =>
+  QuickVibesRefineSchema.safeParse(input).success;
+
+const canSubmitCreativeBoost = (input: Parameters<typeof CreativeBoostSubmitSchema.safeParse>[0]): boolean =>
+  CreativeBoostSubmitSchema.safeParse(input).success;
 
 describe('canSubmitFullPrompt', () => {
   test('returns false when no input provided', () => {

@@ -40,11 +40,8 @@ export function LyricsTopicInput({
         autoDisable
         maxLength={MAX_LYRICS_TOPIC_CHARS}
         className="min-h-16 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface"
-        placeholder="Theme or subject for lyrics..."
+        placeholder="What should the lyrics be about? (e.g., 'lost love', 'summer road trip')"
       />
-      <p className="ui-helper">
-        What should the lyrics be about?
-      </p>
     </div>
   );
 }

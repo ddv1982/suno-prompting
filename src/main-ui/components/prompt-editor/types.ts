@@ -42,6 +42,10 @@ export type GenerationState = {
   debugTrace?: TraceRun;
   /** Chat history messages */
   chatMessages: ChatMessage[];
+  /** Whether we're in optimistic state (before server confirms) */
+  isOptimistic: boolean;
+  /** Whether to show skeleton loading UI */
+  showSkeleton: boolean;
 };
 
 /** State for various mode toggles */

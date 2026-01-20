@@ -29,6 +29,12 @@ export type GenerationActionDeps = {
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
   showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
+  /** Start optimistic UI feedback */
+  startOptimistic?: (action: GeneratingAction) => void;
+  /** Complete optimistic UI (server confirmed) */
+  completeOptimistic?: () => void;
+  /** Error during generation, reset optimistic UI */
+  errorOptimistic?: () => void;
 };
 
 /**
@@ -95,6 +101,9 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
     isGenerating,
     setGeneratingAction,
     setChatMessages,
+    startOptimistic,
+    completeOptimistic,
+    errorOptimistic,
   } = deps;
 
   const execute = useCallback(async <TResult extends GenerationResultBase>(
@@ -117,6 +126,8 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
     } = options;
 
     try {
+      // Start optimistic UI immediately
+      startOptimistic?.(action);
       setGeneratingAction(action);
 
       if (feedback) {
@@ -139,15 +150,19 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
         feedback
       );
 
+      // Complete optimistic UI on success
+      completeOptimistic?.();
       onSuccess?.();
       return true;
     } catch (error: unknown) {
+      // Reset optimistic UI on error
+      errorOptimistic?.();
       handleGenerationError(error, errorContext, setChatMessages, sessionDeps.showToast, log);
       return false;
     } finally {
       setGeneratingAction('none');
     }
-  }, [isGenerating, setGeneratingAction, setChatMessages]);
+  }, [isGenerating, setGeneratingAction, setChatMessages, startOptimistic, completeOptimistic, errorOptimistic]);
 
   return { execute };
 }

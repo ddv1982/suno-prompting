@@ -178,6 +178,8 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       // Allow console.info for benchmark and statistics output in tests
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      // Tests intentionally test deprecated functions for backward compatibility
+      '@typescript-eslint/no-deprecated': 'off',
     },
   },
 
@@ -189,6 +191,19 @@ export default [
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+
+  // Components using deprecated validation functions during migration to Zod schemas
+  // TODO: Remove this override once components are migrated to use new schema-based validation
+  {
+    files: [
+      'src/main-ui/components/creative-boost-panel/creative-boost-panel.tsx',
+      'src/main-ui/components/prompt-editor/full-prompt-input-panel.tsx',
+      'src/main-ui/components/quick-vibes-panel/quick-vibes-panel.tsx',
+    ],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'warn', // Warn during migration period, will be error once migrated
     },
   },
 ];

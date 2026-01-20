@@ -42,6 +42,9 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
     setChatMessages: stateCtx.setChatMessages,
     setValidation: stateCtx.setValidation,
     showToast,
+    startOptimistic: stateCtx.startOptimistic,
+    completeOptimistic: stateCtx.completeOptimistic,
+    errorOptimistic: stateCtx.errorOptimistic,
   }), [
     stateCtx.isGenerating,
     currentSession,
@@ -52,6 +55,9 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
     stateCtx.setChatMessages,
     stateCtx.setValidation,
     showToast,
+    stateCtx.startOptimistic,
+    stateCtx.completeOptimistic,
+    stateCtx.errorOptimistic,
   ]);
 
   const remixActions = useRemixActions(baseDeps);

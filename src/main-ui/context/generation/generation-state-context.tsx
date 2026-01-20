@@ -1,6 +1,7 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { useGenerationState } from '@/hooks/use-generation-state';
+import { useOptimisticGeneration } from '@/hooks/use-optimistic-generation';
 
 import type { GenerationStateContextValue } from './types';
 
@@ -16,9 +17,19 @@ export function useGenerationStateContext(): GenerationStateContextValue {
 
 export function GenerationStateProvider({ children }: { children: ReactNode }): ReactNode {
   const state = useGenerationState();
+  const optimistic = useOptimisticGeneration();
+
+  const value = useMemo<GenerationStateContextValue>(() => ({
+    ...state,
+    isOptimistic: optimistic.isOptimistic,
+    showSkeleton: optimistic.showSkeleton,
+    startOptimistic: optimistic.startOptimistic,
+    completeOptimistic: optimistic.completeOptimistic,
+    errorOptimistic: optimistic.errorOptimistic,
+  }), [state, optimistic]);
 
   return (
-    <GenerationStateContext.Provider value={state}>
+    <GenerationStateContext.Provider value={value}>
       {children}
     </GenerationStateContext.Provider>
   );

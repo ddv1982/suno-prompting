@@ -27,10 +27,20 @@ export interface GenerationStateContextValue {
   chatMessages: ChatMessage[];
   validation: ValidationResult;
   debugTrace: TraceRun | undefined;
+  /** Whether we're in optimistic state (before server confirms) */
+  isOptimistic: boolean;
+  /** Whether to show skeleton loading UI */
+  showSkeleton: boolean;
   setGeneratingAction: (action: GeneratingAction) => void;
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setValidation: (v: ValidationResult) => void;
   setDebugTrace: (trace: TraceRun | undefined) => void;
+  /** Start optimistic state with given action */
+  startOptimistic: (action: GeneratingAction) => void;
+  /** Complete optimistic state (server confirmed) */
+  completeOptimistic: () => void;
+  /** Error during generation, reset optimistic state */
+  errorOptimistic: () => void;
 }
 
 /** Session operations context - provides session management */

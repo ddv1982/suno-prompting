@@ -2,7 +2,7 @@ import { type ReactElement } from "react";
 
 import { CreativitySlider } from "@/components/creativity-slider";
 import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
-import { canSubmitCreativeBoost } from "@shared/submit-validation";
+import { CreativeBoostSubmitSchema } from "@shared/schemas/submit-validation";
 
 import { CreativeBoostModeToggle } from "./creative-boost-mode-toggle";
 import { DescriptionInput } from "./description-input";
@@ -41,13 +41,13 @@ export function CreativeBoostPanel({
   const { refined, handleRefine } = useRefinedFeedback(onRefine);
 
   // Use centralized validation for submit eligibility
-  const canSubmit = canSubmitCreativeBoost({
+  const canSubmit = CreativeBoostSubmitSchema.safeParse({
     description: input.description,
     lyricsTopic: input.lyricsTopic,
     lyricsMode,
     sunoStyles: input.sunoStyles,
     seedGenres: input.seedGenres,
-  });
+  }).success;
 
   const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleWordlessVocalsChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine: handleRefine });
 

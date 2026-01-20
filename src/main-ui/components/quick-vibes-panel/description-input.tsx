@@ -17,15 +17,15 @@ const getDescriptionHelperText = (
   isRefineMode: boolean,
   isDirectMode: boolean,
   category: QuickVibesCategory | null
-): string => {
+): string | null => {
   if (isRefineMode) {
     if (category) return `Will refine toward "${getCategoryLabel(category)}". Add feedback or leave blank.`;
     if (isDirectMode) return "Update Suno V5 styles above and/or update the description to regenerate the title.";
-    return "Describe how you'd like to adjust the current vibe, or select a category above.";
+    return null; // Placeholder already explains
   }
   if (isDirectMode) return "Used to generate a title. Styles are output exactly as selected.";
   if (category) return `Category "${getCategoryLabel(category)}" selected. Add custom details or leave blank.`;
-  return "Describe the mood, setting, or activity for your music.";
+  return null; // Placeholder has examples
 };
 
 type DescriptionInputProps = {
@@ -46,6 +46,7 @@ export function DescriptionInput({
   onKeyDown,
 }: DescriptionInputProps): ReactElement {
   const charCount = value.length;
+  const helperText = getDescriptionHelperText(isRefineMode, isDirectMode, category);
 
   const getPlaceholder = (): string => {
     if (isRefineMode) {
@@ -89,9 +90,7 @@ export function DescriptionInput({
         className="min-h-20 resize-none text-[length:var(--text-footnote)] p-4 rounded-xl bg-surface"
         placeholder={getPlaceholder()}
       />
-      <p className="ui-helper">
-        {getDescriptionHelperText(isRefineMode, isDirectMode, category)}
-      </p>
+      {helperText && <p className="ui-helper">{helperText}</p>}
     </div>
   );
 }

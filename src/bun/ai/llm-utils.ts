@@ -143,6 +143,15 @@ async function callLLMWithoutTrace(options: CallLLMOptions): Promise<string> {
         maxRetries: retries,
         abortSignal: AbortSignal.timeout(timeout),
         providerOptions: providerOptions as Parameters<typeof generateText>[0]['providerOptions'],
+        onFinish: ({ response, usage, finishReason }) => {
+          log.info('generateText:onFinish', {
+            finishReason,
+            inputTokens: usage.inputTokens,
+            outputTokens: usage.outputTokens,
+            totalTokens: (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0),
+            modelId: response.modelId,
+          });
+        },
       });
       rawResponse = text;
     }
@@ -194,6 +203,10 @@ async function executeCloudAttempt(
   const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
   log.info('callLLM:cloud', { errorContext, timeout, attempt, totalAllowedAttempts: totalAttempts });
   const startMs = Date.now();
+
+  // Capture onFinish data for trace telemetry (onFinish is always called by AI SDK)
+  const finishData = { tokensIn: 0, tokensOut: 0, finishReason: 'unknown', modelId: '' };
+
   const result = await generateText({
     model: getModel(),
     system: systemPrompt,
@@ -201,13 +214,32 @@ async function executeCloudAttempt(
     maxRetries: 0, // Manual retries in trace mode
     abortSignal: AbortSignal.timeout(timeout),
     providerOptions: providerOptions as Parameters<typeof generateText>[0]['providerOptions'],
+    onFinish: ({ response, usage, finishReason }) => {
+      finishData.tokensIn = usage.inputTokens ?? 0;
+      finishData.tokensOut = usage.outputTokens ?? 0;
+      finishData.finishReason = finishReason;
+      finishData.modelId = response.modelId;
+      log.info('generateText:onFinish', {
+        finishReason,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        totalTokens: (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0),
+        modelId: response.modelId,
+      });
+    },
   });
   const latencyMs = Date.now() - startMs;
+
   return {
     text: result.text,
-    modelId: result.response.modelId,
+    modelId: finishData.modelId || result.response.modelId,
     latencyMs,
-    telemetry: { latencyMs, finishReason: result.finishReason, tokensIn: result.usage.inputTokens, tokensOut: result.usage.outputTokens },
+    telemetry: {
+      latencyMs,
+      finishReason: finishData.finishReason,
+      tokensIn: finishData.tokensIn,
+      tokensOut: finishData.tokensOut,
+    },
   };
 }
 

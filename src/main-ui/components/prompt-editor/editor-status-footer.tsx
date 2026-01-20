@@ -11,20 +11,23 @@ type StatusType = "working" | "ready" | "local";
 
 type EditorStatusFooterProps = {
   isGenerating: boolean;
+  /** Whether we're in optimistic state (before server confirms) */
+  isOptimistic?: boolean;
   currentModel?: string;
 };
 
 export function EditorStatusFooter({ 
   isGenerating, 
+  isOptimistic = false,
   currentModel, 
 }: EditorStatusFooterProps): ReactElement {
   const { isLLMAvailable, useLocalLLM } = useSettingsContext();
 
-  // Determine status: working takes precedence, then local/ready
+  // Determine status: optimistic or generating shows working, then local/ready
   const status: StatusType = useMemo(() => {
-    if (isGenerating) return "working";
+    if (isOptimistic || isGenerating) return "working";
     return useLocalLLM ? "local" : "ready";
-  }, [isGenerating, useLocalLLM]);
+  }, [isOptimistic, isGenerating, useLocalLLM]);
 
   // Determine model name to display
   const modelDisplay = useMemo(() => {

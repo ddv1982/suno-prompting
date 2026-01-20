@@ -155,6 +155,14 @@ async function extractWithCloud(
     prompt: userPrompt,
     maxRetries: 1, // One retry for transient failures
     abortSignal: signal,
+    onFinish: ({ usage, finishReason }) => {
+      log.info('extractThematicContext:onFinish', {
+        finishReason,
+        promptTokens: usage.inputTokens,
+        completionTokens: usage.outputTokens,
+        totalTokens: (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0),
+      });
+    },
   });
 
   return text;

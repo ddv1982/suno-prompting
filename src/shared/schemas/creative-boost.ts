@@ -3,14 +3,28 @@ import { z } from 'zod';
 import { APP_CONSTANTS, VALID_CREATIVITY_LEVELS } from '@shared/constants';
 import { SeedGenresSchema, SunoStylesSchema } from '@shared/schemas/common';
 
-const CreativityLevelSchema = z.number().refine(
-  (val): val is typeof VALID_CREATIVITY_LEVELS[number] =>
-    VALID_CREATIVITY_LEVELS.includes(val as typeof VALID_CREATIVITY_LEVELS[number]),
-  { message: 'Invalid creativity level. Must be 0, 25, 50, 75, or 100' }
-);
+const CreativityLevelSchema = z.number().superRefine((val, ctx) => {
+  if (!VALID_CREATIVITY_LEVELS.includes(val as typeof VALID_CREATIVITY_LEVELS[number])) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `Invalid creativity level: ${val}. Must be one of: ${VALID_CREATIVITY_LEVELS.join(', ')}`,
+    });
+  }
+});
 
-const genreStylesMutualExclusivity = (data: { seedGenres: string[]; sunoStyles: string[] }): boolean =>
-  !(data.seedGenres.length > 0 && data.sunoStyles.length > 0);
+/** Validates that seed genres and Suno styles are not both provided */
+function validateGenreStyleExclusivity(
+  data: { seedGenres: string[]; sunoStyles: string[] },
+  ctx: z.RefinementCtx
+): void {
+  if (data.seedGenres.length > 0 && data.sunoStyles.length > 0) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Cannot use both Seed Genres and Suno V5 Styles. Please select only one.',
+      path: ['sunoStyles'],
+    });
+  }
+}
 
 export const GenerateCreativeBoostSchema = z.object({
   creativityLevel: CreativityLevelSchema,
@@ -21,10 +35,7 @@ export const GenerateCreativeBoostSchema = z.object({
   withWordlessVocals: z.boolean(),
   maxMode: z.boolean(),
   withLyrics: z.boolean(),
-}).refine(genreStylesMutualExclusivity, {
-  message: 'Cannot use both Seed Genres and Suno V5 Styles. Please select only one.',
-  path: ['sunoStyles'],
-});
+}).superRefine(validateGenreStyleExclusivity);
 
 export const RefineCreativeBoostSchema = z.object({
   currentPrompt: z.string().min(1, 'Current prompt is required for refinement'),
@@ -39,10 +50,7 @@ export const RefineCreativeBoostSchema = z.object({
   maxMode: z.boolean(),
   withLyrics: z.boolean(),
   targetGenreCount: z.number().int().min(0).max(4).optional(), // 0 means "no enforcement" (preserve LLM output)
-}).refine(genreStylesMutualExclusivity, {
-  message: 'Cannot use both Seed Genres and Suno V5 Styles. Please select only one.',
-  path: ['sunoStyles'],
-});
+}).superRefine(validateGenreStyleExclusivity);
 
 export type GenerateCreativeBoostInput = z.infer<typeof GenerateCreativeBoostSchema>;
 export type RefineCreativeBoostInput = z.infer<typeof RefineCreativeBoostSchema>;

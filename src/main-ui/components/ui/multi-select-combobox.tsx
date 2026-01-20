@@ -80,7 +80,7 @@ export function MultiSelectCombobox<T>({
   };
 
   const isMaxed = selected.length >= maxSelections;
-  const displayHelperText = helperText ?? `${selected.length}/${maxSelections} selected (optional)`;
+  const displayHelperText = helperText ?? `${selected.length}/${maxSelections} selected`;
 
   return (
     <div className="space-y-2">
