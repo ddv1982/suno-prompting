@@ -1,5 +1,7 @@
 export class BrowserWindow {
   constructor(config: unknown);
+  on(event: 'focus' | 'close' | 'resize' | 'move', handler: (event: unknown) => void): void;
+  webview: BrowserView;
 }
 
 export class BrowserView {
