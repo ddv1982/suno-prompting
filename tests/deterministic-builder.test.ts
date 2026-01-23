@@ -4,6 +4,7 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
+  detectGenreKeywordsOnly,
   _testHelpers,
 } from '@bun/prompt/deterministic';
 import { applyWeightedSelection } from '@bun/prompt/deterministic/styles';
@@ -11,7 +12,6 @@ import { selectRecordingContext } from '@bun/prompt/tags';
 import { APP_CONSTANTS } from '@shared/constants';
 
 const {
-  detectGenreKeywordsOnly,
   selectRandomGenre,
   parseMultiGenre,
   assembleInstruments,

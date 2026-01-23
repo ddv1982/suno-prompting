@@ -11,7 +11,7 @@
 export { generateInitial } from './generation';
 
 // Types
-export type { GenerateInitialOptions } from './types';
+export type { GenerateInitialOptions, TraceRuntime } from './types';
 
 // Direct mode generation (for advanced use cases)
 export { generateDirectMode } from './direct-mode-generation';

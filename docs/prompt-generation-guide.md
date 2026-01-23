@@ -1,39 +1,423 @@
-# Deterministic Prompt Generation - How It Works
+# Prompt Generation Guide
 
-This guide explains how the app generates Suno prompts **instantly without AI**, making smart choices based on your inputs using curated databases of genres, instruments, moods, and production styles.
+This guide explains how the app generates Suno-ready prompts, what output formats are available, and how your choices affect the final result. The app uses a **hybrid architecture** combining deterministic prompt building with optional LLM enrichment to create professional prompts **instantly**.
 
 ## Table of Contents
 
-1. [What is Deterministic Generation?](#what-is-deterministic-generation)
-2. [How Your Choices Affect Output](#how-your-choices-affect-output)
-3. [Behind the Scenes: Decision Making](#behind-the-scenes-decision-making)
-4. [Style Tags (MAX Mode)](#style-tags-max-mode)
-5. [Randomness with Control](#randomness-with-control)
-6. [Performance](#performance-why-its-instant)
-7. [Data Sources](#data-sources)
-8. [User Control vs Automation](#user-control-vs-automation)
-9. [Examples](#examples-input--output)
-10. [Quality Assurance](#quality-assurance)
+1. [Output Formats Overview](#output-formats-overview)
+2. [Generation Architecture](#generation-architecture)
+3. [Standard Mode Output](#standard-mode-output)
+4. [MAX Mode Output](#max-mode-output)
+5. [Quick Vibes Output](#quick-vibes-output)
+6. [Lyrics Output](#lyrics-output)
+7. [Direct Mode Output](#direct-mode-output)
+8. [How Prompt Generation Works](#how-prompt-generation-works)
+9. [How Your Choices Affect Output](#how-your-choices-affect-output)
+10. [Behind the Scenes: Decision Making](#behind-the-scenes-decision-making)
+11. [Style Tags (MAX Mode Details)](#style-tags-max-mode)
+12. [Randomness with Control](#randomness-with-control)
+13. [Performance](#performance-why-its-instant)
+14. [Data Sources](#data-sources)
+15. [User Control vs Automation](#user-control-vs-automation)
+16. [Examples](#examples-input--output)
+17. [Quality Assurance](#quality-assurance)
 
 ---
 
-## What is Deterministic Generation?
+## Output Formats Overview
 
-**Deterministic generation** means the app creates prompts using pre-built databases instead of calling an AI service.
+The app generates different prompt formats depending on your settings:
 
-### Key Benefits
+| Mode | Best For | Character Limit | Key Features |
+|------|----------|-----------------|--------------|
+| **Standard** | Most songs | ~800 chars | Structured sections, genre/mood/instruments |
+| **MAX** | Organic/acoustic genres | ~1000 chars | Production tags, recording context, realism focus |
+| **Quick Vibes** | Background/ambient | ~60 chars | Simple, category-based templates |
+| **Direct** | Suno V5 experts | ~500 chars | Raw Suno V5 styles, minimal processing |
+
+### Quick Comparison
+
+```
+STANDARD MODE:
+[Melancholic, Jazz, Key: D minor]
+Genre: jazz
+BPM: 110
+Mood: smooth, warm
+Instruments: Rhodes, upright bass, brushed drums
+[INTRO] Warm piano chords...
+
+MAX MODE:
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+genre: "jazz"
+instruments: "Rhodes, upright bass, brushed drums"
+style tags: "intimate performance, warm analog"
+recording: "jazz club, vintage microphone"
+
+QUICK VIBES:
+lo-fi hip hop, Rhodes, vinyl crackle, relaxed, study beats
+
+DIRECT MODE:
+Smooth Jazz, Neo-Soul, Intimate
+Rhodes, Upright Bass, Brushed Drums
+warm, sophisticated, late-night
+```
+
+---
+
+## Generation Architecture
+
+The app uses a **hybrid architecture** combining deterministic prompt building with optional LLM enrichment:
+
+### Core Components
+
+| Component | Method | Speed | Purpose |
+|-----------|--------|-------|---------|
+| **Prompt Building** | Deterministic | <1ms | Genre, instruments, mood, structure |
+| **Thematic Context** | LLM (optional) | ~500ms | Extract themes/moods from description |
+| **Title Generation** | LLM or Deterministic | ~300ms or <1ms | Context-aware titles |
+| **Lyrics Generation** | LLM only | ~1-2s | Full lyrics with structure |
+| **Genre Detection** | Deterministic first, LLM fallback | <1ms or ~200ms | Keywords → LLM topic analysis |
+
+### How It Works
+
+1. **Prompt generation is ALWAYS deterministic** - Uses curated databases for instant, predictable results
+2. **LLM enriches when available** - Extracts thematic context to inform deterministic choices
+3. **Graceful fallback** - When LLM unavailable, falls back to pure deterministic (no degradation)
+
+### Path Comparison
+
+| Path | Deterministic | LLM (when available) |
+|------|---------------|----------------------|
+| **Lyrics OFF** | Prompt, genre detection | Thematic context, title |
+| **Lyrics ON** | Prompt, genre keywords | Thematic context, genre from topic, title, lyrics |
+| **Direct Mode** | Style formatting | Thematic context |
+
+---
+
+## Standard Mode Output
+
+Standard mode generates structured prompts with clear sections for Suno to interpret.
+
+### Output Structure
+
+```
+[Mood, Genre/Style, Key: key/mode]
+
+Genre: {detected or selected genre}
+BPM: {tempo range or specific value}
+Mood: {2-3 mood descriptors}
+Instruments: {3-5 instruments with optional articulations}
+
+[INTRO] {opening description}
+[VERSE] {verse character}
+[CHORUS] {chorus energy}
+[BRIDGE] {contrast or development}
+[OUTRO] {closing}
+```
+
+### Field Breakdown
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Header** | Summary line with mood, genre, key | `[Melancholic, Jazz, Key: D minor]` |
+| **Genre** | Primary genre (detected or overridden) | `jazz`, `rock`, `electronic` |
+| **BPM** | Tempo guidance | `between 80 and 120`, `110` |
+| **Mood** | Emotional descriptors | `smooth, warm, intimate` |
+| **Instruments** | Curated from genre pools | `Rhodes, tenor sax, upright bass` |
+| **Sections** | Song structure with descriptions | `[VERSE] Gentle melody enters...` |
+
+### Example: Jazz Ballad
+
+**Input:**
+- Description: "smooth jazz ballad for a rainy evening"
+- Mode: Standard
+- Lyrics: OFF
+
+**Output:**
+```
+[Smooth, Jazz, Key: Eb major]
+
+Genre: jazz
+BPM: between 80 and 110
+Mood: smooth, warm, intimate
+Instruments: Rhodes, tenor sax, upright bass, brushed drums
+
+[INTRO] Gentle Rhodes chords with soft brushes
+[VERSE] Tenor sax melody over walking bass
+[CHORUS] Full band, emotional crescendo
+[BRIDGE] Solo piano moment, introspective
+[OUTRO] Fade with Rhodes and distant sax
+```
+
+---
+
+## MAX Mode Output
+
+MAX mode uses a community-discovered format that produces higher quality, more realistic output. Best for organic genres (jazz, blues, folk, country, rock).
+
+### Output Structure
+
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+
+genre: "{genre}"
+bpm: "{tempo}"
+mood: "{mood descriptors}"
+instruments: "{instrument list}"
+style tags: "{production descriptors}"
+recording: "{recording context}"
+```
+
+### Field Breakdown
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **MAX Headers** | Quality flags for Suno | `[Is_MAX_MODE: MAX](MAX)` |
+| **genre** | Quoted genre string | `"acoustic, folk singer-songwriter"` |
+| **bpm** | Quoted tempo | `"95"` |
+| **mood** | Emotional character | `"intimate, heartfelt, raw"` |
+| **instruments** | Performance-focused | `"fingerpicked acoustic guitar, breathy vocals"` |
+| **style tags** | Production qualities | `"raw performance, natural dynamics, tape warmth"` |
+| **recording** | Environment context | `"one person, one guitar, vintage microphone"` |
+
+### Style Tags Categories
+
+| Category | Examples | When Used |
+|----------|----------|-----------|
+| **Vocal Performance** | breathy vocals, powerful belt, intimate whisper | Vocal tracks |
+| **Spatial Audio** | wide stereo, intimate mono, spacious reverb | All genres |
+| **Texture** | warm saturation, crisp highs, vintage grain | Production focus |
+| **Dynamic Range** | compressed, punchy transients, wide dynamics | Energy control |
+| **Temporal Effects** | subtle reverb, tape delay, chorus depth | Atmosphere |
+
+### Example: Acoustic Folk
+
+**Input:**
+- Description: "intimate acoustic folk song"
+- Mode: MAX
+- Lyrics: OFF
+
+**Output:**
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+
+genre: "acoustic, folk singer-songwriter"
+bpm: "95"
+mood: "intimate, heartfelt, nostalgic"
+instruments: "fingerpicked acoustic guitar, soft vocals, light percussion"
+style tags: "raw performance energy, natural room sound, warm analog console"
+recording: "home studio, single microphone, authentic capture"
+```
+
+### When to Use MAX Mode
+
+| Genre Type | Recommendation |
+|------------|----------------|
+| Jazz, Blues, Folk, Country | ✅ Highly recommended |
+| Rock, Soul, Acoustic | ✅ Great results |
+| Pop, Indie | ✅ Good results |
+| EDM, House, Techno | ❌ Use Standard mode |
+| Synthwave, Electronic | ❌ Use Standard mode |
+
+---
+
+## Quick Vibes Output
+
+Quick Vibes generates simplified ~60-character prompts optimized for ambient and background music.
+
+### Output Structure
+
+```
+{genre}, {instruments}, {mood}, {vibe descriptor}
+```
+
+### Category Presets
+
+| Category | Output Style | Example |
+|----------|--------------|---------|
+| **Lo-fi / Study** | Chill beats focus | `lo-fi hip hop, Rhodes, vinyl crackle, relaxed, study beats` |
+| **Cafe / Coffee** | Jazz ambiance | `cafe jazz, acoustic guitar, warm, cozy afternoon` |
+| **Ambient / Focus** | Atmospheric | `ambient, synth pad, ethereal, meditative soundscape` |
+| **Late Night** | Mellow vibes | `downtempo, Rhodes, mellow, nocturnal` |
+| **Workout** | High energy | `EDM, driving synth, powerful, intense energy` |
+
+### Example: Study Session
+
+**Input:**
+- Category: Lo-fi / Study
+- Mood Override: Focus
+
+**Output:**
+```
+lo-fi hip hop, Rhodes piano, vinyl crackle, soft drums, focused, study beats
+```
+
+---
+
+## Lyrics Output
+
+When Lyrics Mode is enabled, the app generates structured lyrics with Suno-compatible tags.
+
+### Lyrics Structure Tags
+
+| Tag | Purpose | Example Usage |
+|-----|---------|---------------|
+| `[VERSE]` | Main storytelling sections | `[VERSE]\nWalking down the empty street...` |
+| `[CHORUS]` | Repeated hook/refrain | `[CHORUS]\nWe're gonna make it through...` |
+| `[BRIDGE]` | Contrast section | `[BRIDGE]\nBut then I realized...` |
+| `[INTRO]` | Opening (often instrumental) | `[INTRO]` |
+| `[OUTRO]` | Closing section | `[OUTRO]\nFading into the night...` |
+| `[PRE-CHORUS]` | Build to chorus | `[PRE-CHORUS]\nHere it comes...` |
+
+### Example: With Lyrics
+
+**Input:**
+- Description: "uplifting pop song about new beginnings"
+- Lyrics Mode: ON
+- Topic: "starting fresh after heartbreak"
+
+**Output (Prompt):**
+```
+[Uplifting, Pop, Key: G major]
+
+Genre: pop
+BPM: 118
+Mood: hopeful, bright, empowering
+Instruments: acoustic guitar, piano, drums, strings
+
+[INTRO] Bright guitar arpeggios
+[VERSE] Building energy, storytelling
+[CHORUS] Full band, anthemic
+[BRIDGE] Stripped back, emotional
+[OUTRO] Triumphant finale
+```
+
+**Output (Lyrics):**
+```
+[VERSE]
+I packed my bags and closed the door
+Left behind what hurt before
+The morning sun feels warm and new
+A different view, a different you
+
+[PRE-CHORUS]
+No more looking back
+I'm on a brand new track
+
+[CHORUS]
+Starting over, starting fresh
+Leaving behind the mess
+Every step I take is mine
+Watch me rise and shine
+
+[VERSE]
+The road ahead is wide and clear
+No room for doubt, no space for fear
+With every mile I find my way
+Today's the day, today's the day
+
+[CHORUS]
+Starting over, starting fresh
+Leaving behind the mess
+Every step I take is mine
+Watch me rise and shine
+
+[OUTRO]
+Rise and shine...
+```
+
+---
+
+## Direct Mode Output
+
+Direct Mode bypasses genre detection and uses Suno V5 styles exactly as provided. For users who know exactly what Suno styles they want.
+
+> **Note:** Direct Mode still uses LLM (when available) for thematic context extraction from your description, which enriches the mood descriptors in the output.
+
+### Output Structure
+
+```
+{Suno V5 Style 1}, {Style 2}, {Style 3}
+{Instruments}
+{Mood descriptors}
+```
+
+### When to Use Direct Mode
+
+- You know the exact Suno V5 style names
+- You want precise control over style combinations
+- You're experimenting with specific Suno features
+
+### Example: Direct Mode
+
+**Input:**
+- Suno V5 Styles: ["Smooth Jazz", "Neo-Soul", "Intimate"]
+- Description: "late night vibes"
+
+**Output:**
+```
+Smooth Jazz, Neo-Soul, Intimate
+Rhodes, Upright Bass, Brushed Drums
+warm, sophisticated, late-night, smoky
+```
+
+### Available Suno V5 Styles
+
+The app includes 900+ official Suno V5 styles searchable in Advanced Mode. Examples:
+
+| Category | Styles |
+|----------|--------|
+| **Jazz** | Smooth Jazz, Bebop, Cool Jazz, Jazz Fusion, Acid Jazz |
+| **Electronic** | Deep House, Tech House, Progressive House, Melodic Techno |
+| **Rock** | Classic Rock, Indie Rock, Alternative Rock, Post-Rock |
+| **Pop** | Synth Pop, Dream Pop, Indie Pop, Chamber Pop |
+
+---
+
+---
+
+## How Prompt Generation Works
+
+### The Deterministic Core
+
+The app builds prompts using pre-built databases instead of generating them with AI:
 
 - **Instant** - Generates prompts in 0.03-0.04ms (100x faster than AI)
 - **Predictable** - Same inputs always produce the same outputs
-- **Offline** - Works without internet connection
+- **Offline-capable** - Works without internet connection
 - **Consistent** - No AI randomness or hallucinations
 - **Testable** - Every combination is tested and validated
 
-### When It's Used
+### Optional LLM Enrichment
 
-- **Creative Boost Mode** - All creativity levels use deterministic generation
+When LLM is available, the app enhances the deterministic output:
+
+- **Thematic Context** - Extracts themes, moods, and scenes from your description
+- **Title Generation** - Creates titles that match the extracted themes
+- **Genre Detection** - Analyzes lyrics topics when no genre keywords found in description
+- **Lyrics** - Generates full structured lyrics (Lyrics ON mode only)
+
+### Fallback Behavior
+
+| LLM Status | Prompt | Title | Thematic Context |
+|------------|--------|-------|------------------|
+| **Available** | Deterministic + enriched | LLM-generated | Extracted |
+| **Unavailable** | Pure deterministic | Deterministic | Skipped |
+
+**Result:** Same quality prompts either way, with richer context when LLM available.
+
+### When Deterministic Is Used
+
+- **Creative Boost Mode** - All creativity levels use deterministic prompt building
 - **Quick Vibes Mode** - All categories use deterministic templates
-- **Standard Generation** - When you don't need AI creativity
+- **Standard Generation** - Deterministic prompt with optional LLM enrichment
 - **MAX Mode** - Adds production tags deterministically
 
 ---

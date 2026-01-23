@@ -268,3 +268,71 @@ describe('generateInitial - offline mode with Ollama', () => {
     expect(mockCheckOllamaAvailable).not.toHaveBeenCalled();
   });
 });
+
+describe('generateInitial - genre detection priority', () => {
+  test('detects genre from description keywords even when lyrics topic is provided', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isUseLocalLLM: () => true,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: true,
+      hasGemma: true,
+    });
+
+    // Description contains "rock" keyword, lyricsTopic is "love" (which might suggest pop)
+    // Genre should be detected from description ("rock"), not inferred from topic
+    const result = await generateInitial(
+      { description: 'A rock song', lyricsTopic: 'love' },
+      config
+    );
+
+    expect(result.text).toBeDefined();
+    expect(result.text.toLowerCase()).toContain('rock');
+    expect(result.text.toLowerCase()).not.toMatch(/genre:\s*pop/);
+  });
+
+  test('falls back to LLM topic detection when no genre keywords in description', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isUseLocalLLM: () => true,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: true,
+      hasGemma: true,
+    });
+
+    // Description has no genre keywords, so LLM should detect from lyricsTopic
+    const result = await generateInitial(
+      { description: 'A beautiful song', lyricsTopic: 'love' },
+      config
+    );
+
+    expect(result.text).toBeDefined();
+    // Should have some genre (could be anything LLM detects from "love")
+    expect(result.text.toLowerCase()).toMatch(/genre:/);
+  });
+
+  test('uses genre override over both description and topic', async () => {
+    const config = createMockConfig({
+      isLyricsMode: () => true,
+      isUseLocalLLM: () => true,
+    });
+
+    mockCheckOllamaAvailable.mockResolvedValueOnce({
+      available: true,
+      hasGemma: true,
+    });
+
+    // genreOverride should take priority over both description keywords and topic
+    const result = await generateInitial(
+      { description: 'A rock song', lyricsTopic: 'love', genreOverride: 'jazz' },
+      config
+    );
+
+    expect(result.text).toBeDefined();
+    expect(result.text.toLowerCase()).toContain('jazz');
+  });
+});

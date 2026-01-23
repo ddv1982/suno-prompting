@@ -33,8 +33,8 @@ export {
   findGenreAliasInText,
 } from './aliases';
 
-// Re-export multi-genre detection
-export { detectAllGenres } from './genre';
+// Re-export genre detection
+export { detectAllGenres, detectGenreKeywordsOnly } from './genre';
 
 // Re-export coherence validation
 export type { CoherenceResult } from './coherence';
@@ -65,7 +65,7 @@ export {
 } from './remix-operations';
 
 // Re-export test helpers
-import { detectGenreKeywordsOnly, selectRandomGenre, parseMultiGenre } from './genre';
+import { selectRandomGenre, parseMultiGenre } from './genre';
 import { joinRecordingDescriptors, selectMusicalKey, selectMusicalMode, selectKeyAndMode } from './helpers';
 import { assembleInstruments } from './instruments';
 import { assembleStyleTags } from './styles';
@@ -74,9 +74,9 @@ import { assembleStyleTags } from './styles';
  * @internal
  * Test helpers for unit testing internal functions.
  * Do not use in production code.
+ * Note: detectGenreKeywordsOnly is now a public export, not included here.
  */
 export const _testHelpers = {
-  detectGenreKeywordsOnly,
   selectRandomGenre,
   parseMultiGenre,
   assembleInstruments,

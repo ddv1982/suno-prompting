@@ -489,12 +489,13 @@ Optional mood category selector available in Full Mode, Quick Vibes, and Creativ
 <details>
 <summary><strong>Generation & Remix Dataflow</strong></summary>
 
-**Style/Prompt generation is ALWAYS deterministic** (no LLM, <50ms) using curated data pools.
-LLM is only used for lyrics and title generation when Lyrics Mode is enabled.
+**Prompt generation is ALWAYS deterministic** using curated data pools.
+LLM enriches output with thematic context and titles when available, with graceful fallback to pure deterministic.
 
 **Architecture:**
-- **Style/Prompt**: Always deterministic - uses genre/instrument/mood pools
-- **Title**: Deterministic when Lyrics OFF, LLM when Lyrics ON (to match lyrics theme)
+- **Prompt**: Always deterministic - uses genre/instrument/mood pools
+- **Thematic Context**: LLM extraction when available (enriches prompt)
+- **Title**: LLM when available, deterministic fallback
 - **Lyrics**: LLM only (when Lyrics Mode enabled)
 
 **LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
@@ -506,9 +507,13 @@ flowchart TB
     end
 
     subgraph "Always Deterministic"
-        STYLE[Style/Prompt<br/>Builder]
+        PROMPT[Prompt<br/>Builder]
         DATA[(Genre, Instrument,<br/>Mood Pools)]
-        DTITLE[Deterministic<br/>Title]
+    end
+
+    subgraph "LLM Enrichment (Optional)"
+        CONTEXT[Thematic<br/>Context]
+        TITLE[Title Gen]
     end
 
     subgraph Decision
@@ -516,33 +521,39 @@ flowchart TB
     end
 
     subgraph "LLM (Lyrics Mode Only)"
-        LTITLE[Title Gen]
         LYRICS[Lyrics Gen/Refine]
+        GENRE[Genre from<br/>Topic]
     end
 
     subgraph Provider
-        PROV{LLM<br/>Provider}
+        PROV{LLM<br/>Available?}
         OLLAMA[Ollama Local]
         CLOUD[Cloud API]
+        FALLBACK[Deterministic<br/>Fallback]
     end
 
     subgraph Output
         RESULT[Final Result]
     end
 
-    UI --> STYLE
-    STYLE -.-> DATA
-    STYLE --> LYR
-    LYR -->|OFF| DTITLE
-    DTITLE --> RESULT
-    LYR -->|ON| LTITLE
+    UI --> PROMPT
+    PROMPT -.-> DATA
+    PROMPT --> CONTEXT
+    CONTEXT --> TITLE
+    TITLE --> LYR
+    LYR -->|OFF| RESULT
     LYR -->|ON| LYRICS
-    LTITLE --> PROV
+    LYR -->|ON| GENRE
+    CONTEXT --> PROV
+    TITLE --> PROV
     LYRICS --> PROV
+    GENRE --> PROV
     PROV -->|Local| OLLAMA
     PROV -->|Cloud| CLOUD
+    PROV -->|No| FALLBACK
     OLLAMA --> RESULT
     CLOUD --> RESULT
+    FALLBACK --> RESULT
 
     classDef det fill:#28a745,stroke:#1e7e34,color:#fff
     classDef ai fill:#fd7e14,stroke:#dc6a12,color:#fff
@@ -550,31 +561,33 @@ flowchart TB
     classDef provider fill:#007bff,stroke:#0069d9,color:#fff
     classDef output fill:#17a2b8,stroke:#138496,color:#fff
     classDef decision fill:#6f42c1,stroke:#5a32a3,color:#fff
+    classDef fallback fill:#ffc107,stroke:#d39e00,color:#000
 
-    class STYLE,DTITLE det
-    class LTITLE,LYRICS ai
+    class PROMPT det
+    class CONTEXT,TITLE,LYRICS,GENRE ai
     class DATA data
     class OLLAMA,CLOUD provider
     class PROV,LYR decision
     class RESULT output
+    class FALLBACK fallback
 ```
 
 | Operation | LLM Calls | Latency (Cloud) | Latency (Local) | Notes |
 |-----------|-----------|-----------------|-----------------|-------|
-| Generate (Lyrics OFF) | 0 | <50ms | <50ms | Style + title: deterministic |
-| Generate (Lyrics ON) | 2-3 | ~2s | ~1-3s* | Style: deterministic, Title + lyrics: LLM |
+| Generate (Lyrics OFF) | 0-2 | <50ms - ~550ms | <50ms - ~600ms | Deterministic prompt, +LLM for context/title when available |
+| Generate (Lyrics ON) | 2-4 | ~2s | ~1-3s* | Deterministic prompt, LLM for context/genre/title/lyrics |
 | Refine (Lyrics OFF) | 0 | <50ms | <50ms | Deterministic style remix |
 | Refine (Lyrics ON) | 1 | ~1s | ~1-2s* | Style: deterministic, Lyrics: LLM |
 | Quick Vibes | 0 | <50ms | <50ms | Category templates |
-| Creative Boost | 0-3 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle |
+| Creative Boost | 0-4 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle and LLM availability |
 | Remix (6 buttons) | 0 | <10ms | <10ms | All deterministic |
 | Remix Lyrics | 1 | ~1s | ~1-2s* | LLM-based |
 
 *Local latency varies by hardware (CPU vs GPU, model size)
 
-**Why deterministic for style?** Faster response (~50ms), predictable results, no API costs, consistent quality.
+**Why hybrid?** Deterministic prompt ensures instant, predictable core output. LLM enrichment adds thematic depth when available without blocking.
 
-📖 **[Deterministic Generation Deep Dive](docs/deterministic-generation.md)** - Technical details on genre aliases, tag weights, coherence validation, and multi-genre detection.
+📖 **[Prompt Generation Guide](docs/prompt-generation-guide.md)** - Complete guide to output formats (Standard, MAX, Quick Vibes, Direct), how prompts are generated, and customization options.
 
 </details>
 
