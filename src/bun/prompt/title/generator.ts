@@ -7,8 +7,9 @@
  * @module prompt/title/generator
  */
 
+import { extractKeywordsForTitle } from '@bun/keywords';
+
 import { GENRE_TITLE_PATTERNS, DEFAULT_PATTERNS } from './datasets/modifiers';
-import { extractKeywords } from './keyword-extractor';
 import { selectRandom, interpolatePattern } from './patterns';
 
 // =============================================================================
@@ -60,7 +61,7 @@ export function generateDeterministicTitle(
   const pattern = selectRandom(patterns, rng);
 
   // Extract topic keywords if description provided
-  const topicKeywords = description ? extractKeywords(description) : undefined;
+  const topicKeywords = description ? extractKeywordsForTitle(description) : undefined;
 
   // Interpolate with mood-filtered and topic-aware words
   return interpolatePattern(pattern, mood, rng, topicKeywords);

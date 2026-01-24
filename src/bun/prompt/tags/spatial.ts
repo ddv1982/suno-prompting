@@ -3,6 +3,8 @@
  * @module prompt/tags/spatial
  */
 
+import { selectRandomN } from '@shared/utils/random';
+
 /**
  * Spatial audio and reverb descriptors for stereo imaging.
  * Controls perceived space and depth in the mix.
@@ -76,6 +78,5 @@ export function selectSpatialTags(count: number, rng: () => number = Math.random
     allTags.push(...category);
   }
   
-  const shuffled = [...allTags].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
 }

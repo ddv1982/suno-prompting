@@ -174,7 +174,7 @@ describe('Statistical Variety Validation', () => {
     expect(allCombinations.size).toBeGreaterThanOrEqual(totalRuns * 0.7);
   });
 
-  test('tag count consistency (8-10 tags per prompt)', () => {
+  test('tag count consistency (8-15 tags per prompt)', () => {
     const iterations = 100;
     const tagCounts: number[] = [];
     
@@ -189,9 +189,9 @@ describe('Statistical Variety Validation', () => {
     
     console.info(`Tag counts - Min: ${minTags}, Max: ${maxTags}, Avg: ${avgTags.toFixed(1)}`);
     
-    // Verify tags are within expected range (6-10 based on assembleStyleTags implementation)
+    // Verify tags are within expected range (6-15 based on assembleStyleTags implementation with increased limit)
     expect(minTags).toBeGreaterThanOrEqual(6);
-    expect(maxTags).toBeLessThanOrEqual(10);
+    expect(maxTags).toBeLessThanOrEqual(15);
   });
 
   test('no duplicate tags within single prompt', () => {

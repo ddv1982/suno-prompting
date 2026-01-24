@@ -17,15 +17,12 @@ export {
   selectRecordingContext,
 } from './recording-context/index';
 
-// Legacy export (deprecated - kept for backward compatibility, will be removed in v3.0.0)
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export { RECORDING_DESCRIPTORS } from './recording-context/index';
-
 // Vocal performance tags
 export {
   VOCAL_PERFORMANCE_TAGS,
   GENRE_VOCAL_PROBABILITY,
   selectVocalTags,
+  selectVocalTagsWithCharacter,
 } from './vocal';
 
 // Spatial audio tags

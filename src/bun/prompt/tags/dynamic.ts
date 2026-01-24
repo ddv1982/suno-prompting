@@ -3,6 +3,8 @@
  * @module prompt/tags/dynamic
  */
 
+import { selectRandomN } from '@shared/utils/random';
+
 /**
  * Dynamic range and compression descriptors.
  * Controls perceived loudness and dynamics.
@@ -65,6 +67,5 @@ export function selectDynamicTags(count: number, rng: () => number = Math.random
     allTags.push(...category);
   }
   
-  const shuffled = [...allTags].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
 }

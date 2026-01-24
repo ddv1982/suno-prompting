@@ -15,7 +15,7 @@ import {
   EXTENDED_PATTERNS,
 } from '@bun/prompt/title/datasets/extended';
 import { GENRE_TITLE_PATTERNS, DEFAULT_PATTERNS } from '@bun/prompt/title/datasets/modifiers';
-import { getWord, interpolatePattern } from '@bun/prompt/title/patterns';
+import { interpolatePattern } from '@bun/prompt/title/patterns';
 
 // =============================================================================
 // Seeded RNG for deterministic tests
@@ -119,29 +119,6 @@ describe('Extended Title Datasets', () => {
 
 describe('Extended Pattern Interpolation', () => {
   const rng = createSeededRng(42);
-
-  describe('getWord() with extended categories', () => {
-    test('returns valid number', () => {
-      const word = getWord('number', 'energetic', rng);
-      expect(NUMBER_WORDS).toContain(word);
-    });
-
-    test('returns valid place', () => {
-      const word = getWord('place', 'dreamy', rng);
-      expect(PLACE_WORDS).toContain(word);
-    });
-
-    test('returns valid single word', () => {
-      const word = getWord('single', 'melancholic', rng);
-      expect(SINGLE_WORDS).toContain(word);
-    });
-
-    test('returns complete question (as-is without filtering)', () => {
-      const word = getWord('question', 'aggressive', rng);
-      expect(QUESTION_WORDS).toContain(word);
-      expect(word.endsWith('?')).toBe(true);
-    });
-  });
 
   describe('interpolatePattern() with extended placeholders', () => {
     test('{number} produces valid number', () => {

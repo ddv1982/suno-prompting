@@ -10,6 +10,7 @@ import { GENRE_REGISTRY, type GenreType } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
 import { extractGenresFromPrompt } from '@bun/prompt/deterministic';
 import { replaceFieldLine } from '@bun/prompt/remix';
+import { selectRandomN } from '@shared/utils/random';
 
 const log = createLogger('CreativeBoostHelpers');
 
@@ -25,9 +26,7 @@ function selectRandomGenres(excludeGenres: string[], count: number): string[] {
   const excludeSet = new Set(excludeGenres.map(g => g.toLowerCase()));
   const available = allGenres.filter(g => !excludeSet.has(g.toLowerCase()));
 
-  // Shuffle and take count genres
-  const shuffled = [...available].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(available, Math.min(count, available.length));
 }
 
 /**

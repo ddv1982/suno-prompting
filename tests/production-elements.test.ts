@@ -8,7 +8,6 @@ import {
   GENRE_PRODUCTION_STYLES,
   DEFAULT_PRODUCTION_STYLE,
   getProductionSuggestionsForGenre,
-  buildProductionDescriptor,
   buildProductionDescriptorMulti,
 } from '@bun/prompt/production-elements';
 
@@ -312,97 +311,6 @@ describe('production-elements', () => {
   });
 
   // =============================================================================
-  // Tests: buildProductionDescriptor Backward Compatibility
-  // =============================================================================
-
-  describe('buildProductionDescriptor (legacy function)', () => {
-    it('returns comma-separated string format', () => {
-      const rng = createSeededRng(42);
-       
-      const result = buildProductionDescriptor(rng);
-      
-      expect(typeof result).toBe('string');
-      expect(result).toContain(',');
-    });
-
-    it('includes all 4 production dimensions', () => {
-      const rng = createSeededRng(42);
-       
-      const result = buildProductionDescriptor(rng);
-      
-      // Should have format "reverb, texture, stereo, dynamic"
-      const parts = result.split(', ');
-      expect(parts.length).toBe(4);
-    });
-
-    it('maintains backward compatibility with existing tests', () => {
-      const rng = createSeededRng(42);
-       
-      const result = buildProductionDescriptor(rng);
-      
-      // Should be a non-empty string with commas
-      expect(result.length).toBeGreaterThan(10);
-      expect(result.split(', ').length).toBe(4);
-    });
-
-    it('produces deterministic output with same seed', () => {
-      const rng1 = createSeededRng(555);
-      const rng2 = createSeededRng(555);
-      
-       
-      const result1 = buildProductionDescriptor(rng1);
-       
-      const result2 = buildProductionDescriptor(rng2);
-      
-      expect(result1).toBe(result2);
-    });
-
-    it('all parts are lowercase', () => {
-      const rng = createSeededRng(42);
-       
-      const result = buildProductionDescriptor(rng);
-      
-      expect(result).toBe(result.toLowerCase());
-    });
-
-    it('internally uses buildProductionDescriptorMulti', () => {
-      const rng1 = createSeededRng(888);
-      const rng2 = createSeededRng(888);
-      
-       
-      const legacyResult = buildProductionDescriptor(rng1);
-      const multiResult = buildProductionDescriptorMulti(rng2);
-      
-      // Legacy should be: "reverb, texture, stereo, dynamic"
-      const expectedFormat = `${multiResult.reverb}, ${multiResult.texture}, ${multiResult.stereo}, ${multiResult.dynamic}`;
-      expect(legacyResult).toBe(expectedFormat);
-    });
-
-    it('generates variety across multiple calls', () => {
-      const results = new Set<string>();
-      
-      // Generate 100 different descriptors
-      for (let i = 0; i < 100; i++) {
-        const rng = createSeededRng(i);
-         
-        const result = buildProductionDescriptor(rng);
-        results.add(result);
-      }
-      
-      // Should have at least 90 unique combinations out of 100
-      expect(results.size).toBeGreaterThanOrEqual(90);
-    });
-
-    it('works with default Math.random RNG', () => {
-       
-      const result = buildProductionDescriptor();
-      
-      expect(typeof result).toBe('string');
-      expect(result.split(', ').length).toBe(4);
-    });
-  });
-
-  // =============================================================================
   // Tests: Genre Production Styles
   // =============================================================================
 
@@ -641,21 +549,6 @@ describe('production-elements', () => {
       
       // With 30,600 possible combinations, we should easily get 900+ unique in 1000 tries
       expect(uniqueDescriptors.size).toBeGreaterThanOrEqual(900);
-    });
-
-    it('legacy format maintains consistency with multi format', () => {
-      // Verify that legacy and multi use the same selection logic
-      for (let i = 0; i < 10; i++) {
-        const rng1 = createSeededRng(i);
-        const rng2 = createSeededRng(i);
-        
-         
-        const legacy = buildProductionDescriptor(rng1);
-        const multi = buildProductionDescriptorMulti(rng2);
-        
-        const expected = `${multi.reverb}, ${multi.texture}, ${multi.stereo}, ${multi.dynamic}`;
-        expect(legacy).toBe(expected);
-      }
     });
 
     it('production descriptors are suitable for Suno V5 prompts', () => {

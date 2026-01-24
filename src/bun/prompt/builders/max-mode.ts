@@ -11,6 +11,7 @@ import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genr
 import { CONTEXT_INTEGRATION_INSTRUCTIONS, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
 import { MAX_MODE_HEADER } from '@bun/prompt/tags';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
+import { selectRandomN } from '@shared/utils/random';
 
 import { buildSongConceptParts } from './shared';
 
@@ -128,7 +129,7 @@ export function buildMaxModeContextualPrompt(
     
     // Moods
     if (genreDef?.moods && genreDef.moods.length > 0) {
-      const selectedMoods = [...genreDef.moods].sort(() => Math.random() - 0.5).slice(0, 3);
+      const selectedMoods = selectRandomN(genreDef.moods, Math.min(3, genreDef.moods.length));
       parts.push(`Mood suggestions: ${selectedMoods.join(', ')}`);
     }
     

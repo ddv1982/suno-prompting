@@ -16,12 +16,8 @@ export {
   RECORDING_TECHNIQUE,
 } from './categories';
 
-// Legacy export (deprecated - kept for backward compatibility, will be removed in v3.0.0)
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export { RECORDING_DESCRIPTORS } from './categories';
-
 // Export context selection
-export { selectRecordingContext } from './context';
+export { selectRecordingContext, selectRecordingContextWithScene } from './context';
 
 // Export descriptor selection
 export { selectRecordingDescriptors } from './descriptors';

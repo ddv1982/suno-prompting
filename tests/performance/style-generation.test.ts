@@ -3,7 +3,7 @@
  * 
  * Critical requirement: assembleStyleTags must complete in <50ms for real-time UI responsiveness.
  * 
- * This test suite validates that the new tag selection system (Phase 1) maintains
+ * This test suite validates that the tag selection system maintains
  * the required performance threshold across various genres and usage patterns.
  * 
  * @see droidz/specs/2026-01-11/tasks.md - Task Group 1.5

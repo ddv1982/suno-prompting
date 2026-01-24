@@ -25,7 +25,100 @@ import type { DeterministicOptions, DeterministicResult, StyleTagsResult } from 
 import type { GenreType } from '@bun/instruments/genres';
 import type { MoodCategory } from '@bun/mood';
 import type { TraceCollector } from '@bun/trace';
-import type { ThematicContext } from '@shared/schemas/thematic-context';
+import type { ThematicContext, Tempo } from '@shared/schemas/thematic-context';
+
+/** Minimum allowed BPM after adjustment */
+const BPM_MIN_BOUND = 40;
+
+/** Maximum allowed BPM after adjustment */
+const BPM_MAX_BOUND = 200;
+
+/**
+ * Calculate BPM range with tempo adjustment from ThematicContext.
+ *
+ * Parses the base BPM range (e.g., "between 80 and 160"), applies the
+ * tempo adjustment (-30 to +30), clamps to reasonable bounds (40-200),
+ * and appends the tempo curve when not 'steady'.
+ *
+ * @param baseBpmRange - Base BPM range string (e.g., "between 80 and 160")
+ * @param tempo - Optional tempo adjustment from ThematicContext
+ * @param trace - Optional trace collector for debugging
+ * @returns Adjusted BPM range string with optional tempo curve
+ *
+ * @example
+ * ```typescript
+ * calculateBpmWithAdjustment('between 80 and 120', { adjustment: 20, curve: 'explosive' })
+ * // Returns: "between 100 and 140 (explosive)"
+ *
+ * calculateBpmWithAdjustment('between 80 and 120', { adjustment: 0, curve: 'steady' })
+ * // Returns: "between 80 and 120"
+ *
+ * calculateBpmWithAdjustment('between 180 and 200', { adjustment: 30, curve: 'gradual-rise' })
+ * // Returns: "between 200 and 200 (gradual-rise)" (clamped to max 200)
+ * ```
+ */
+function calculateBpmWithAdjustment(
+  baseBpmRange: string,
+  tempo: Tempo | undefined,
+  trace?: TraceCollector
+): string {
+  // Return base range unchanged if no tempo adjustment provided
+  if (!tempo) {
+    return baseBpmRange;
+  }
+
+  const { adjustment, curve } = tempo;
+
+  // Parse base range (e.g., "between 80 and 120")
+  const match = /between (\d+) and (\d+)/.exec(baseBpmRange);
+  if (!match) {
+    traceDecision(trace, {
+      domain: 'bpm',
+      key: 'deterministic.bpm.tempoAdjustment',
+      branchTaken: 'parse-failed',
+      why: `Could not parse BPM range: "${baseBpmRange}"; returning unchanged`,
+    });
+    return baseBpmRange;
+  }
+
+  const minStr = match[1];
+  const maxStr = match[2];
+
+  // Ensure we have valid strings before parsing
+  if (minStr === undefined || maxStr === undefined) {
+    traceDecision(trace, {
+      domain: 'bpm',
+      key: 'deterministic.bpm.tempoAdjustment',
+      branchTaken: 'parse-failed',
+      why: `BPM range parse returned undefined values; returning unchanged`,
+    });
+    return baseBpmRange;
+  }
+
+  const baseMin = parseInt(minStr, 10);
+  const baseMax = parseInt(maxStr, 10);
+
+  // Apply adjustment
+  const adjustedMin = baseMin + adjustment;
+  const adjustedMax = baseMax + adjustment;
+
+  // Clamp to reasonable bounds (40-200 BPM)
+  const clampedMin = Math.max(BPM_MIN_BOUND, Math.min(BPM_MAX_BOUND, adjustedMin));
+  const clampedMax = Math.max(BPM_MIN_BOUND, Math.min(BPM_MAX_BOUND, adjustedMax));
+
+  // Build result string with optional tempo curve
+  const curveAnnotation = curve !== 'steady' ? ` (${curve})` : '';
+  const result = `between ${clampedMin} and ${clampedMax}${curveAnnotation}`;
+
+  traceDecision(trace, {
+    domain: 'bpm',
+    key: 'deterministic.bpm.tempoAdjustment',
+    branchTaken: 'adjusted',
+    why: `adjustment=${adjustment}, curve=${curve}: ${baseBpmRange} → ${result}`,
+  });
+
+  return result;
+}
 
 /**
  * Resolve moods based on thematic context, category override, creativity level, or genre defaults.
@@ -197,7 +290,9 @@ export function buildDeterministicStandardPrompt(
   );
 
   // 4. Get BPM range - uses blended range for multi-genre
-  const bpmRange = getBpmRangeForGenreWithTrace(displayGenre, trace);
+  // Apply tempo adjustment from thematicContext if available
+  const baseBpmRange = getBpmRangeForGenreWithTrace(displayGenre, trace);
+  const bpmRange = calculateBpmWithAdjustment(baseBpmRange, thematicContext?.tempo, trace);
 
   // 5. Get genre display name - capitalize each component for display
   const genreDisplayName = components

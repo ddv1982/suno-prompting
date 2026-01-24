@@ -48,7 +48,7 @@ export const QUICK_VIBES_CATEGORIES: Record<QuickVibesCategory, QuickVibesCatego
     exampleOutput: 'chill lo-fi beats with soft piano',
   },
   // New 10 categories (v3.0) - placeholder definitions for type safety
-  // Full template implementations will be added in Phase 4
+  // Full template implementations will be added in future update
   'workout-energy': {
     label: 'Workout / Energy',
     description: 'High-energy beats for workouts',

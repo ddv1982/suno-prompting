@@ -176,3 +176,103 @@ export function articulateInstrument(
   
   return `${articulation} ${instrument}`;
 }
+
+/**
+ * Probability of using theme-biased articulation when a theme matches.
+ * The remaining probability falls through to standard random articulation.
+ */
+const THEME_ARTICULATION_BIAS_CHANCE = 0.6;
+
+/**
+ * Theme-to-articulation bias mapping for enhanced instrument articulation.
+ *
+ * Maps thematic keywords to preferred articulations for specific instrument
+ * categories. When a theme matches, there's a THEME_ARTICULATION_BIAS_CHANCE (60%)
+ * probability the biased articulation will be used instead of random selection.
+ *
+ * @since v2.1.0
+ */
+const THEME_ARTICULATION_BIAS: Record<string, Partial<Record<InstrumentCategory, string[]>>> = {
+  gentle: { guitar: ['Fingerpicked', 'Clean'], piano: ['Gentle', 'Sparse'] },
+  aggressive: { guitar: ['Crunchy', 'Overdriven'], drums: ['Punchy', 'Driving'] },
+  dreamy: { guitar: ['Reverb Soaked', 'Chorus Drenched'], synth: ['Shimmering', 'Evolving'] },
+  intimate: { piano: ['Sparse', 'Gentle'], strings: ['Warm', 'Legato'] },
+  soft: { guitar: ['Clean', 'Fingerpicked'], piano: ['Gentle', 'Sparse'] },
+  hard: { guitar: ['Crunchy', 'Overdriven'], drums: ['Punchy', 'Driving'] },
+  ethereal: { synth: ['Shimmering', 'Evolving'], strings: ['Swelling', 'Lush'] },
+  warm: { piano: ['Gentle'], strings: ['Warm', 'Legato'], bass: ['Round', 'Deep'] },
+  energetic: { drums: ['Driving', 'Punchy'], bass: ['Punchy', 'Groovy'] },
+  melancholic: { piano: ['Sparse', 'Gentle'], strings: ['Mournful', 'Legato'] },
+} as const;
+
+/**
+ * Articulate instrument with theme-based bias.
+ *
+ * When themes are provided, checks for matches in the theme-articulation bias
+ * mapping. If a match is found for the instrument's category, there's a
+ * THEME_ARTICULATION_BIAS_CHANCE (60%) probability to use the biased articulation.
+ * Falls back to standard random articulation when no theme match or on the
+ * remaining probability.
+ *
+ * @param instrument - The instrument name to articulate
+ * @param rng - Random number generator for deterministic selection
+ * @param themes - Optional array of theme strings to check for articulation bias
+ * @param chanceToArticulate - Base chance to apply any articulation (default: APP_CONSTANTS.ARTICULATION_CHANCE)
+ * @returns The instrument string, possibly prefixed with an articulation descriptor
+ *
+ * @example
+ * // With "gentle" theme and guitar, biases toward fingerpicked/clean
+ * articulateInstrumentWithThemes('acoustic guitar', rng, ['gentle', 'nostalgic'])
+ * // Returns: "Fingerpicked acoustic guitar" (60% chance when theme matches)
+ *
+ * @example
+ * // With "aggressive" theme and drums, biases toward punchy/driving
+ * articulateInstrumentWithThemes('drums', rng, ['aggressive', 'intense'])
+ * // Returns: "Punchy drums" (60% chance when theme matches)
+ *
+ * @example
+ * // Falls back to standard articulation when no theme match
+ * articulateInstrumentWithThemes('piano', rng, ['nostalgic'])
+ * // Returns: standard random articulation from articulateInstrument()
+ *
+ * @since v2.1.0
+ */
+export function articulateInstrumentWithThemes(
+  instrument: string,
+  rng: () => number,
+  themes?: string[],
+  chanceToArticulate: number = APP_CONSTANTS.ARTICULATION_CHANCE
+): string {
+  // Check base articulation chance
+  if (rng() > chanceToArticulate) return instrument;
+
+  // Get the instrument category
+  const category = INSTRUMENT_CATEGORIES[instrument.toLowerCase()] ?? INSTRUMENT_CATEGORIES[instrument];
+  if (!category) return instrument;
+
+  // Check for theme-based bias
+  if (themes && themes.length > 0) {
+    for (const theme of themes) {
+      const themeLower = theme.toLowerCase();
+      const bias = THEME_ARTICULATION_BIAS[themeLower]?.[category];
+      if (bias && bias.length > 0) {
+        // Use biased articulation based on configured probability
+        if (rng() < THEME_ARTICULATION_BIAS_CHANCE) {
+          const index = Math.floor(rng() * bias.length);
+          const selected = bias[index];
+          if (selected) {
+            return `${selected} ${instrument}`;
+          }
+        }
+        // On the 40% chance, fall through to standard articulation
+        break;
+      }
+    }
+  }
+
+  // Fall back to standard random articulation
+  const articulation = getArticulationForInstrument(instrument, rng);
+  if (!articulation) return instrument;
+
+  return `${articulation} ${instrument}`;
+}

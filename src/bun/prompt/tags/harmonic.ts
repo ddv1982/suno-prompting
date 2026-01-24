@@ -3,6 +3,8 @@
  * @module prompt/tags/harmonic
  */
 
+import { selectRandomN } from '@shared/utils/random';
+
 /**
  * Harmonic and frequency descriptors for tonal character.
  * Based on Suno V5 harmonic enhancement capabilities.
@@ -67,6 +69,5 @@ export function selectHarmonicTags(count: number, rng: () => number = Math.rando
     allTags.push(...category);
   }
   
-  const shuffled = [...allTags].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
 }

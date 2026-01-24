@@ -95,3 +95,15 @@ export type { EnsemblePreset } from '@bun/instruments/ensembles';
 
 // Genre-era mapping for era-appropriate instrument selection
 export { getEraForGenre } from '@bun/instruments/genre-era-mapping';
+
+// Cultural/regional instruments exports
+export {
+  CULTURAL_INSTRUMENTS,
+  CULTURAL_SCALES,
+  CULTURAL_REGIONS,
+  getCulturalInstruments,
+  getCulturalScale,
+  selectCulturalInstruments,
+  isCulturalRegion,
+} from '@bun/instruments/cultural-instruments';
+export type { CulturalRegion } from '@bun/instruments/cultural-instruments';

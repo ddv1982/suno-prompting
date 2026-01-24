@@ -1,4 +1,5 @@
 import { getInstrumentsByCategory, type InstrumentCategory } from '@bun/instruments/registry';
+import { randomIntInclusive, rollChance, selectRandomN, type Rng } from '@shared/utils/random';
 
 export interface PoolConfig {
   readonly min: number;
@@ -159,16 +160,7 @@ export const MODE_PALETTES: Record<string, ModePalette> = {
   },
 };
 
-function pickRandom<T>(arr: readonly T[], count: number): T[] {
-  const shuffled = [...arr].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
-
-function randomBetween(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function applyExclusionRules(selected: string[]): string[] {
+function applyExclusionRules(selected: string[], rng: Rng): string[] {
   const result = [...selected];
 
   for (const [a, b] of EXCLUSION_RULES) {
@@ -176,7 +168,7 @@ function applyExclusionRules(selected: string[]): string[] {
     const hasB = result.includes(b);
 
     if (hasA && hasB) {
-      const removeIndex = Math.random() < 0.5 ? result.indexOf(a) : result.indexOf(b);
+      const removeIndex = rng() < 0.5 ? result.indexOf(a) : result.indexOf(b);
       result.splice(removeIndex, 1);
     }
   }
@@ -184,7 +176,14 @@ function applyExclusionRules(selected: string[]): string[] {
   return result;
 }
 
-export function selectInstrumentsForMode(mode: string): string[] {
+/**
+ * Select instruments for a musical mode using the mode's palette configuration.
+ *
+ * @param mode - The musical mode name (e.g., 'lydian', 'dorian')
+ * @param rng - Random number generator (defaults to Math.random)
+ * @returns Array of selected instrument names
+ */
+export function selectInstrumentsForMode(mode: string, rng: Rng = Math.random): string[] {
   const palette = MODE_PALETTES[mode];
   if (!palette) {
     return [];
@@ -196,17 +195,17 @@ export function selectInstrumentsForMode(mode: string): string[] {
     InstrumentCategory,
     PoolConfig,
   ][]) {
-    if (config.chance !== undefined && Math.random() > config.chance) {
+    if (config.chance !== undefined && !rollChance(config.chance, rng)) {
       continue;
     }
 
     const instruments = getInstrumentsByCategory(category);
-    const count = randomBetween(config.min, config.max);
-    const picks = pickRandom(instruments, count);
+    const count = randomIntInclusive(config.min, config.max, rng);
+    const picks = selectRandomN(instruments, Math.min(count, instruments.length), rng);
     selected.push(...picks);
   }
 
-  const filtered = applyExclusionRules(selected);
+  const filtered = applyExclusionRules(selected, rng);
   return filtered.slice(0, palette.maxTags);
 }
 

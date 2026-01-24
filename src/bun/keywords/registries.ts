@@ -1,18 +1,206 @@
 /**
- * Keyword extraction for topic-aware title generation
+ * Unified Keyword Registries
  *
- * Extracts meaningful keywords from descriptions and maps them to
- * word categories for better title relevance.
+ * Centralizes all keyword data used for extraction across the application.
+ * Re-exports from existing modules where possible to maintain single source of truth.
  *
- * @module prompt/title/keyword-extractor
+ * @module keywords/registries
  */
 
+import { MOOD_POOL } from '@bun/instruments/datasets/mood-pool';
+import { MOOD_TO_GENRE } from '@bun/instruments/detection';
+
+import type { KeywordRegistry, KeywordMapping, Intent } from '@bun/keywords/types';
+import type { Era, Tempo } from '@shared/schemas/thematic-context';
+
 // =============================================================================
-// Keyword Mapping
+// Mood Keywords (re-exported from existing modules)
 // =============================================================================
 
-/** Maps description keywords to TIME_WORDS */
-const TIME_KEYWORDS: Record<string, string[]> = {
+/** Combined mood vocabulary from MOOD_POOL (200+) and MOOD_TO_GENRE keys (50+) */
+export const MOOD_KEYWORDS: readonly string[] = [
+  ...new Set([...MOOD_POOL, ...Object.keys(MOOD_TO_GENRE)]),
+];
+
+// =============================================================================
+// Harmonic Complexity Keywords
+// =============================================================================
+
+/**
+ * Keywords indicating harmonic complexity in music descriptions.
+ * Used to boost harmonic tag selection probability for sophisticated compositions.
+ */
+export const HARMONIC_COMPLEXITY_KEYWORDS: readonly string[] = [
+  'jazz',
+  'progressive',
+  'modal',
+  'chromatic',
+  'sophisticated',
+  'complex',
+  'advanced',
+  'extended chords',
+  'polytonal',
+];
+
+// =============================================================================
+// Era Keywords
+// =============================================================================
+
+/**
+ * Mapping of era-indicating keywords to production eras.
+ */
+export const ERA_KEYWORDS: KeywordRegistry<Era> = {
+  // Vintage/retro terms
+  'vintage': '70s',
+  'retro': '80s',
+  'old-school': '70s',
+  'oldschool': '70s',
+  'classic': '70s',
+  'tape': '70s',
+  'vinyl': '70s',
+  'analog': '70s',
+  'analogue': '70s',
+  // Synth-era terms
+  'synth': '80s',
+  'synthwave': '80s',
+  'neon': '80s',
+  'synthpop': '80s',
+  'new wave': '80s',
+  'newwave': '80s',
+  // 90s terms
+  'digital': '90s',
+  'grunge': '90s',
+  'rave': '90s',
+  'jungle': '90s',
+  'trip-hop': '90s',
+  'triphop': '90s',
+  'britpop': '90s',
+  // Modern terms
+  'modern': 'modern',
+  'contemporary': 'modern',
+  'current': 'modern',
+  // Explicit decade mentions
+  '1950s': '50s-60s',
+  '50s': '50s-60s',
+  '1960s': '50s-60s',
+  '60s': '50s-60s',
+  '1970s': '70s',
+  '70s': '70s',
+  '1980s': '80s',
+  '80s': '80s',
+  '1990s': '90s',
+  '90s': '90s',
+  '2000s': '2000s',
+  '2010s': 'modern',
+  '2020s': 'modern',
+};
+
+// =============================================================================
+// Tempo Keywords
+// =============================================================================
+
+/** Keywords indicating slower tempo/energy */
+export const TEMPO_SLOWER_KEYWORDS: readonly string[] = [
+  'slow', 'relaxed', 'calm', 'meditation', 'meditative', 'peaceful',
+  'gentle', 'soft', 'chill', 'ambient', 'dreamy', 'lullaby', 'soothing',
+  'lazy', 'tranquil', 'mellow', 'easy', 'laid-back', 'laidback',
+];
+
+/** Keywords indicating faster tempo/energy */
+export const TEMPO_FASTER_KEYWORDS: readonly string[] = [
+  'fast', 'energetic', 'intense', 'chase', 'driving', 'powerful',
+  'explosive', 'upbeat', 'high-energy', 'uptempo', 'aggressive',
+  'frantic', 'racing', 'rush', 'hyper', 'dynamic', 'pumping', 'pounding',
+];
+
+/** Tempo result for slower keywords */
+export const TEMPO_SLOW: Tempo = { adjustment: -15, curve: 'steady' };
+
+/** Tempo result for faster keywords */
+export const TEMPO_FAST: Tempo = { adjustment: 15, curve: 'explosive' };
+
+// =============================================================================
+// Intent Keywords
+// =============================================================================
+
+/**
+ * Mapping of intent-indicating keywords to listening intents.
+ */
+export const INTENT_KEYWORDS: KeywordRegistry<Intent> = {
+  // Background/ambient intent
+  'background': 'background',
+  'ambient': 'background',
+  'study': 'background',
+  'studying': 'background',
+  'work': 'background',
+  'working': 'background',
+  'focus': 'background',
+  'concentration': 'background',
+  'meditation': 'background',
+  'meditative': 'background',
+  'sleep': 'background',
+  'sleeping': 'background',
+  'relax': 'background',
+  'relaxing': 'background',
+  'lounge': 'background',
+  'spa': 'background',
+  'yoga': 'background',
+  'chill': 'background',
+  // Dancefloor intent
+  'dance': 'dancefloor',
+  'dancing': 'dancefloor',
+  'party': 'dancefloor',
+  'club': 'dancefloor',
+  'rave': 'dancefloor',
+  'festival': 'dancefloor',
+  'dancefloor': 'dancefloor',
+  'clubbing': 'dancefloor',
+  'disco': 'dancefloor',
+  'edm': 'dancefloor',
+  // Cinematic intent
+  'film': 'cinematic',
+  'movie': 'cinematic',
+  'trailer': 'cinematic',
+  'epic': 'cinematic',
+  'cinematic': 'cinematic',
+  'soundtrack': 'cinematic',
+  'score': 'cinematic',
+  'orchestral': 'cinematic',
+  'dramatic': 'cinematic',
+  'theatrical': 'cinematic',
+  'blockbuster': 'cinematic',
+  'hollywood': 'cinematic',
+  // Emotional intent
+  'emotional': 'emotional',
+  'sad': 'emotional',
+  'heartfelt': 'emotional',
+  'melancholic': 'emotional',
+  'nostalgic': 'emotional',
+  'bittersweet': 'emotional',
+  'touching': 'emotional',
+  'moving': 'emotional',
+  'sentimental': 'emotional',
+  'poignant': 'emotional',
+  'tender': 'emotional',
+  'intimate': 'emotional',
+  // Focal/active listening intent
+  'concert': 'focal',
+  'live': 'focal',
+  'performance': 'focal',
+  'showcase': 'focal',
+  'audiophile': 'focal',
+  'hi-fi': 'focal',
+  'hifi': 'focal',
+  'headphones': 'focal',
+};
+
+// =============================================================================
+// Theme Keywords (for title generation - maps input to output words)
+// =============================================================================
+
+/** Maps time-related keywords to title words */
+export const TIME_KEYWORDS: KeywordMapping = {
+  // Core time of day
   night: ['Midnight', 'Night', 'Evening', 'Dusk'],
   morning: ['Morning', 'Dawn', 'Daybreak'],
   day: ['Morning', 'Daybreak', 'Sun'],
@@ -21,6 +209,9 @@ const TIME_KEYWORDS: Record<string, string[]> = {
   dawn: ['Dawn', 'Daybreak', 'Morning'],
   midnight: ['Midnight', 'Night'],
   evening: ['Evening', 'Dusk', 'Twilight'],
+  noon: ['Noon', 'Daylight', 'Sun'],
+  afternoon: ['Afternoon', 'Daylight'],
+  // Celestial
   star: ['Starlight', 'Night', 'Stars'],
   moon: ['Moon', 'Night', 'Midnight'],
   // Compound time words
@@ -36,25 +227,25 @@ const TIME_KEYWORDS: Record<string, string[]> = {
   autumn: ['Autumn', 'Dusk', 'Twilight'],
   fall: ['Autumn', 'Dusk', 'Twilight'],
   winter: ['Winter', 'Night', 'Snow'],
-  // Additional time
+  // Temporal concepts
   yesterday: ['Yesterday', 'Memory', 'Past'],
   tomorrow: ['Tomorrow', 'Hope', 'Future'],
   today: ['Moment', 'Present', 'Now'],
   forever: ['Forever', 'Eternity', 'Always'],
   never: ['Never', 'Lost', 'Silence'],
   always: ['Always', 'Forever', 'Eternity'],
+  // Duration/moments
   hour: ['Hour', 'Moment', 'Time'],
   moment: ['Moment', 'Instant', 'Second'],
   instant: ['Instant', 'Moment', 'Second'],
   century: ['Century', 'Era', 'Ages'],
   era: ['Era', 'Epoch', 'Ages'],
   age: ['Ages', 'Era', 'Eternity'],
-  noon: ['Noon', 'Daylight', 'Sun'],
-  afternoon: ['Afternoon', 'Daylight'],
 };
 
-/** Maps description keywords to NATURE_WORDS */
-const NATURE_KEYWORDS: Record<string, string[]> = {
+/** Maps nature-related keywords to title words */
+export const NATURE_KEYWORDS: KeywordMapping = {
+  // Core nature elements
   ocean: ['Ocean', 'Waves', 'Water'],
   sea: ['Ocean', 'Waves', 'Water'],
   water: ['Ocean', 'River', 'Rain', 'Waves'],
@@ -99,7 +290,7 @@ const NATURE_KEYWORDS: Record<string, string[]> = {
   horizon: ['Horizon', 'Sky', 'Sun'],
   prairie: ['Prairie', 'Sky', 'Wind'],
   jungle: ['Jungle', 'Forest', 'Rain'],
-  // Water
+  // Water bodies
   lake: ['Lake', 'Water', 'Moon'],
   pond: ['Pond', 'Lake', 'Water'],
   stream: ['Stream', 'River', 'Water'],
@@ -130,8 +321,9 @@ const NATURE_KEYWORDS: Record<string, string[]> = {
   seed: ['Seed', 'Root', 'Earth'],
 };
 
-/** Maps description keywords to EMOTION_WORDS */
-const EMOTION_KEYWORDS: Record<string, string[]> = {
+/** Maps emotion-related keywords to title words */
+export const EMOTION_KEYWORDS: KeywordMapping = {
+  // Core emotions
   love: ['Love', 'Heart', 'Dream'],
   heart: ['Heart', 'Love', 'Soul'],
   dream: ['Dream', 'Spirit', 'Hope'],
@@ -157,38 +349,41 @@ const EMOTION_KEYWORDS: Record<string, string[]> = {
   loneliness: ['Silence', 'Lost', 'Shadow'],
   happiness: ['Light', 'Hope', 'Found'],
   sadness: ['Shadow', 'Lost', 'Cry'],
-  // Additional emotions
+  // Intense emotions
   anger: ['Rage', 'Fury', 'Fire'],
   rage: ['Rage', 'Fury', 'Chaos'],
   fury: ['Fury', 'Rage', 'Storm'],
   fear: ['Fear', 'Dread', 'Shadow'],
   courage: ['Courage', 'Hope', 'Light'],
   brave: ['Courage', 'Hope', 'Light'],
-  peace: ['Peace', 'Serenity', 'Calm'],
   peaceful: ['Peace', 'Serenity', 'Calm'],
   excited: ['Elation', 'Euphoria', 'Joy'],
   passion: ['Passion', 'Desire', 'Fire'],
   passionate: ['Passion', 'Desire', 'Yearning'],
   desire: ['Desire', 'Yearning', 'Passion'],
   longing: ['Longing', 'Yearning', 'Desire'],
+  // Grief and tears
   grief: ['Grief', 'Sorrow', 'Tears'],
   sorrow: ['Sorrow', 'Grief', 'Despair'],
   tears: ['Tears', 'Cry', 'Sorrow'],
   cry: ['Cry', 'Tears', 'Grief'],
+  // Joy and wonder
   laugh: ['Laughter', 'Joy', 'Bliss'],
   laughter: ['Laughter', 'Joy', 'Elation'],
   wonder: ['Wonder', 'Awe', 'Dream'],
   awe: ['Awe', 'Wonder', 'Mystery'],
+  // Trust and faith
   trust: ['Trust', 'Faith', 'Bond'],
   faith: ['Faith', 'Trust', 'Hope'],
   doubt: ['Doubt', 'Fear', 'Shadow'],
+  // Regret and pride
   regret: ['Regret', 'Remorse', 'Memory'],
   shame: ['Shame', 'Regret', 'Shadow'],
   pride: ['Pride', 'Courage', 'Light'],
 };
 
-/** Maps description keywords to ACTION_WORDS */
-const ACTION_KEYWORDS: Record<string, string[]> = {
+/** Maps action-related keywords to title words */
+export const ACTION_KEYWORDS: KeywordMapping = {
   rise: ['Rising', 'Flying'],
   rising: ['Rising', 'Flying'],
   fall: ['Falling', 'Fading'],
@@ -211,16 +406,20 @@ const ACTION_KEYWORDS: Record<string, string[]> = {
   breaking: ['Breaking', 'Falling'],
 };
 
-/** Maps description keywords to ABSTRACT_WORDS */
-const ABSTRACT_KEYWORDS: Record<string, string[]> = {
+/** Maps abstract keywords to title words */
+export const ABSTRACT_KEYWORDS: KeywordMapping = {
+  // Eternity concepts
   forever: ['Eternity', 'Infinity'],
   eternal: ['Eternity', 'Infinity'],
   infinity: ['Infinity', 'Eternity'],
   eternity: ['Eternity', 'Infinity'],
+  // Freedom
   free: ['Freedom', 'Flying'],
   freedom: ['Freedom', 'Liberty'],
+  // Fate/destiny
   destiny: ['Destiny', 'Fate'],
   fate: ['Destiny', 'Fate'],
+  // Balance
   chaos: ['Chaos', 'Storm'],
   peace: ['Serenity', 'Harmony'],
   calm: ['Serenity', 'Peace'],
@@ -257,84 +456,16 @@ const ABSTRACT_KEYWORDS: Record<string, string[]> = {
   spirit: ['Spirit', 'Soul', 'Essence', 'Dream'],
   divine: ['Transcendence', 'Nirvana', 'Serenity'],
   transcend: ['Transcendence', 'Ascension'],
-  // Additional concepts
+  // Conflict
   battle: ['Chaos', 'Storm', 'Thunder'],
   war: ['Chaos', 'Storm', 'Fury'],
   fight: ['Chaos', 'Fury', 'Rage'],
+  // Reality/illusion
   reality: ['Reality', 'Truth', 'Existence'],
   illusion: ['Illusion', 'Dream', 'Mystery'],
+  // Time concepts
   time: ['Eternity', 'Infinity', 'Timeless'],
   timeless: ['Timeless', 'Eternity', 'Immortality'],
   immortal: ['Immortality', 'Eternity', 'Timeless'],
   fleeting: ['Fleeting', 'Ephemeral', 'Mortality'],
 };
-
-// =============================================================================
-// Extraction Logic
-// =============================================================================
-
-/**
- * Helper function to extract keywords from a single category.
- * Uses word boundary regex for precise matching to avoid false positives.
- *
- * @param descLower - Lowercased description text
- * @param categoryKeywords - Keyword mappings for this category
- * @param categoryName - Name of the category (e.g., 'time', 'nature')
- * @param result - Result object to accumulate keywords into
- */
-function extractCategoryKeywords(
-  descLower: string,
-  categoryKeywords: Record<string, string[]>,
-  categoryName: string,
-  result: Record<string, string[]>
-): void {
-  for (const [keyword, words] of Object.entries(categoryKeywords)) {
-    // Use word boundary regex for precise matching
-    // This prevents false positives like "nightingale" matching "night"
-    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-    if (regex.test(descLower)) {
-      result[categoryName] = [...(result[categoryName] ?? []), ...words];
-    }
-  }
-}
-
-/**
- * Extract keywords from description and map to word categories.
- * Returns a map of category -> preferred words based on description content.
- *
- * Uses word boundary matching for precise keyword detection, avoiding false positives
- * like "nightingale" matching "night".
- *
- * @param description - User's song description
- * @returns Map of category names to arrays of preferred words
- *
- * @example
- * extractKeywords('A song about midnight rain and lost love')
- * // {
- * //   time: ['Midnight', 'Night'],
- * //   nature: ['Rain', 'Storm'],
- * //   emotion: ['Lost', 'Shadow', 'Love', 'Heart']
- * // }
- */
-export function extractKeywords(description?: string): Record<string, string[]> {
-  if (!description) return {};
-
-  const descLower = description.toLowerCase();
-  const keywords: Record<string, string[]> = {};
-
-  // Extract keywords for each category using helper function
-  extractCategoryKeywords(descLower, TIME_KEYWORDS, 'time', keywords);
-  extractCategoryKeywords(descLower, NATURE_KEYWORDS, 'nature', keywords);
-  extractCategoryKeywords(descLower, EMOTION_KEYWORDS, 'emotion', keywords);
-  extractCategoryKeywords(descLower, ACTION_KEYWORDS, 'action', keywords);
-  extractCategoryKeywords(descLower, ABSTRACT_KEYWORDS, 'abstract', keywords);
-
-  // Deduplicate arrays
-  for (const category in keywords) {
-    keywords[category] = [...new Set(keywords[category])];
-  }
-
-  return keywords;
-}
-
-

@@ -7,11 +7,14 @@
  * @module prompt/title/patterns
  */
 
-import { selectRandom as sharedSelectRandom } from '@shared/utils/random';
+import { selectRandom } from '@shared/utils/random';
 
 import { EMOTION_WORDS, ACTION_WORDS, MOOD_WORD_WEIGHTS } from './datasets/emotions';
 import { NUMBER_WORDS, PLACE_WORDS, SINGLE_WORDS, QUESTION_WORDS } from './datasets/extended';
 import { TIME_WORDS, NATURE_WORDS, ABSTRACT_WORDS } from './datasets/imagery';
+
+// Re-export selectRandom from shared utils for module consumers
+export { selectRandom } from '@shared/utils/random';
 
 // =============================================================================
 // Constants
@@ -23,18 +26,6 @@ const PREFERRED_MOOD_PROBABILITY = 0.7;
 // =============================================================================
 // Helper Functions
 // =============================================================================
-
-/**
- * Select a random item from an array using provided RNG.
- * Re-exports from shared utility for backward compatibility.
- *
- * @param items - Array to select from
- * @param rng - Random number generator
- * @returns Selected item
- */
-export function selectRandom<T>(items: readonly T[], rng: () => number): T {
-  return sharedSelectRandom(items, rng);
-}
 
 /**
  * Filter words based on mood preferences.
@@ -63,8 +54,8 @@ function filterByMood(words: readonly string[], mood: string, rng: () => number)
   return neutral.length > 0 ? neutral : words;
 }
 
-/** Word category types for title generation */
-export type WordCategory =
+/** Word category types for title generation (internal use only) */
+type WordCategory =
   | 'time'
   | 'nature'
   | 'emotion'
@@ -77,14 +68,9 @@ export type WordCategory =
 
 /**
  * Get a word from a category, filtered by mood and optional topic keywords.
- *
- * @param category - Word category
- * @param mood - Current mood
- * @param rng - Random number generator
- * @param topicKeywords - Optional topic-specific keywords to prioritize
- * @returns Selected word
+ * Internal helper for interpolatePattern.
  */
-export function getWord(
+function getWord(
   category: WordCategory,
   mood: string,
   rng: () => number,

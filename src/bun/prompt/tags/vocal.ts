@@ -3,6 +3,10 @@
  * @module prompt/tags/vocal
  */
 
+import { selectRandomN, shuffle } from '@shared/utils/random';
+
+import type { VocalCharacter } from '@shared/schemas/thematic-context';
+
 /**
  * Vocal performance descriptors for vocal-capable genres.
  * Based on Suno V5 community research and official documentation.
@@ -168,7 +172,173 @@ export function selectVocalTags(genre: string, count: number, rng: () => number 
     allTags.push(...category);
   }
   
-  // Shuffle using RNG and return max count
-  const shuffled = [...allTags].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
+}
+
+// ============================================
+// Vocal Character Mapping
+// ============================================
+
+/**
+ * Map vocal style to a specific tag.
+ *
+ * @param style - Vocal style from VocalCharacter (e.g., "breathy", "powerful")
+ * @returns Mapped vocal tag or null if no mapping exists
+ */
+function mapVocalStyleToTag(style: string): string | null {
+  const MAP: Record<string, string> = {
+    'breathy': 'breathy delivery',
+    'powerful': 'powerful vocals',
+    'raspy': 'raspy edge',
+    'smooth': 'smooth vocals',
+    'ethereal': 'airy vocals',
+    'intimate': 'intimate whisper',
+    'warm': 'smooth vocals',
+    'airy': 'airy vocals',
+    'gritty': 'raspy edge',
+  };
+  return MAP[style.toLowerCase()] ?? null;
+}
+
+/**
+ * Map vocal layering approach to a specific tag.
+ *
+ * @param layering - Layering style from VocalCharacter (e.g., "harmonies", "choir")
+ * @returns Mapped vocal tag or null if no mapping exists
+ */
+function mapVocalLayeringToTag(layering: string): string | null {
+  const MAP: Record<string, string> = {
+    'harmonies': 'harmony layers',
+    'double-tracked': 'vocal doubles',
+    'choir': 'choir stacking',
+    'layered': 'harmony layers',
+    'solo': 'intimate whisper',
+    'stacked': 'vocal doubles',
+    'octave': 'octave vocal layers',
+    'unison': 'unison vocal tracking',
+  };
+  return MAP[layering.toLowerCase()] ?? null;
+}
+
+/**
+ * Map vocal technique to a specific tag.
+ *
+ * @param technique - Vocal technique from VocalCharacter (e.g., "falsetto", "growl")
+ * @returns Mapped vocal tag or null if no mapping exists
+ */
+function mapVocalTechniqueToTag(technique: string): string | null {
+  const MAP: Record<string, string> = {
+    'falsetto': 'falsetto sections',
+    'growl': 'raspy edge',
+    'scat': 'jazz scat vocalization',
+    'belt': 'belt technique',
+    'whisper': 'whispered tones',
+    'vibrato': 'vibrato',
+    'runs': 'soul vocal runs',
+    'shout': 'gospel shouts',
+  };
+  return MAP[technique.toLowerCase()] ?? null;
+}
+
+/**
+ * Add character-derived vocal tags to the collection.
+ */
+function addCharacterDerivedTags(
+  vocalCharacter: VocalCharacter,
+  addUnique: (tag: string) => void
+): void {
+  if (vocalCharacter.style) {
+    const styleTag = mapVocalStyleToTag(vocalCharacter.style);
+    if (styleTag) addUnique(styleTag);
+  }
+  if (vocalCharacter.layering) {
+    const layerTag = mapVocalLayeringToTag(vocalCharacter.layering);
+    if (layerTag) addUnique(layerTag);
+  }
+  if (vocalCharacter.technique) {
+    const techTag = mapVocalTechniqueToTag(vocalCharacter.technique);
+    if (techTag) addUnique(techTag);
+  }
+}
+
+/**
+ * Fill remaining tag slots with random selections from the vocal pool.
+ */
+function fillWithRandomTags(
+  count: number,
+  currentCount: number,
+  addUnique: (tag: string) => void,
+  rng: () => number
+): void {
+  const remaining = count - currentCount;
+  if (remaining <= 0) return;
+
+  // Flatten all vocal performance tags
+  const allTags: string[] = [];
+  for (const category of Object.values(VOCAL_PERFORMANCE_TAGS)) {
+    allTags.push(...category);
+  }
+
+  // Shuffle and add unique tags
+  for (const tag of shuffle(allTags, rng)) {
+    addUnique(tag);
+  }
+}
+
+/**
+ * Select vocal tags influenced by LLM-extracted vocalCharacter.
+ *
+ * When vocalCharacter is provided, character-derived tags are added first (priority),
+ * followed by random genre-based tags to fill remaining slots.
+ *
+ * @param genre - Music genre to check vocal probability
+ * @param count - Maximum number of tags to return
+ * @param rng - Random number generator function (0.0-1.0) for deterministic selection
+ * @param vocalCharacter - Optional vocal character from LLM extraction
+ * @returns Array of vocal performance tags
+ *
+ * @example
+ * // With vocalCharacter - character-derived tags appear first
+ * selectVocalTagsWithCharacter('pop', 3, rng, { style: 'breathy', layering: 'harmonies' })
+ * // ['breathy delivery', 'harmony layers', 'belt technique']
+ *
+ * @example
+ * // Without vocalCharacter - falls back to random selection
+ * selectVocalTagsWithCharacter('pop', 2, rng)
+ * // ['powerful vocals', 'falsetto sections']
+ */
+export function selectVocalTagsWithCharacter(
+  genre: string,
+  count: number,
+  rng: () => number,
+  vocalCharacter?: VocalCharacter
+): string[] {
+  const normalizedGenre = genre.toLowerCase().trim();
+  const probability = GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY.default ?? 0.50;
+
+  // Check vocal probability with RNG roll
+  if (rng() > probability) {
+    return [];
+  }
+
+  const tags: string[] = [];
+  const seenTags = new Set<string>();
+
+  const addUnique = (tag: string): void => {
+    const lower = tag.toLowerCase();
+    if (!seenTags.has(lower)) {
+      seenTags.add(lower);
+      tags.push(lower);
+    }
+  };
+
+  // Add character-derived tags first (priority)
+  if (vocalCharacter) {
+    addCharacterDerivedTags(vocalCharacter, addUnique);
+  }
+
+  // Fill remaining slots with random selection from genre-based pool
+  fillWithRandomTags(count, tags.length, addUnique, rng);
+
+  return tags.slice(0, count);
 }

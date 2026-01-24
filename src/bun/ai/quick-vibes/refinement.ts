@@ -21,6 +21,7 @@ import {
   postProcessQuickVibes,
 } from '@bun/prompt/quick-vibes-builder';
 import { InvariantError } from '@shared/errors';
+import { createSeededRng, selectRandom } from '@shared/utils/random';
 
 import { isDirectMode, generateDirectModeResult } from '../direct-mode';
 import { callLLM } from '../llm-utils';
@@ -48,16 +49,8 @@ export function hashFeedback(feedback: string): number {
   return Math.abs(hash) || 1; // Ensure non-zero
 }
 
-/**
- * Create a seeded pseudo-random number generator.
- */
-export function createSeededRng(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
-}
+// Re-export createSeededRng from shared utils for module consumers
+export { createSeededRng } from '@shared/utils/random';
 
 /**
  * Build Quick Vibes prompt from template with custom RNG.
@@ -68,17 +61,9 @@ export function buildDeterministicQuickVibesFromTemplate(
   maxMode: boolean,
   rng: () => number
 ): { text: string; title: string } {
-  const selectRandom = <T>(items: readonly T[]): T => {
-    if (items.length === 0) {
-      throw new InvariantError('selectRandom called with empty array');
-    }
-    const idx = Math.floor(rng() * items.length);
-    return items[idx] as T;
-  };
-
-  const genre = selectRandom(template.genres);
-  const instruments = selectRandom(template.instruments);
-  const mood = selectRandom(template.moods);
+  const genre = selectRandom(template.genres, rng);
+  const instruments = selectRandom(template.instruments, rng);
+  const mood = selectRandom(template.moods, rng);
   const title = generateQuickVibesTitle(template, rng);
 
   // Build instrument list

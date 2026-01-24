@@ -113,33 +113,4 @@ export const RECORDING_CHARACTER = {
   ],
 } as const;
 
-/**
- * @deprecated Will be removed in v3.0.0 - Use selectRecordingDescriptors() instead
- * 
- * Legacy: All recording descriptors kept for backward compatibility.
- * New code should use selectRecordingDescriptors() which provides:
- * - Conflict prevention (no "analog" + "digital")
- * - Genre-aware selection (electronic → digital, jazz → analog)
- * - Structured categories for musical coherence
- */
-export const RECORDING_DESCRIPTORS = [
-  'live symphonic venue capture with atmospheric miking',
-  'tape recorder, close-up, raw performance texture',
-  'studio session, warm analog console',
-  'intimate bedroom recording, DIY aesthetic',
-  'outdoor field recording ambience',
-  'vintage vinyl warmth, needle crackle',
-  'radio broadcast compression character',
-  'concert hall natural acoustics',
-  'basement jam session energy',
-  'late night studio session vibe',
-  'bootleg live recording character',
-  'demo tape roughness',
-  'rehearsal room authenticity',
-  'home studio intimacy',
-  'professional mastering polish',
-  'analog four-track warmth',
-  'cassette tape saturation',
-  'direct-to-disc recording',
-  'single microphone capture',
-] as const;
+

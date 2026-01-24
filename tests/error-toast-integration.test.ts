@@ -2,7 +2,7 @@
  * Error Toast Integration Tests
  * Tests the integration between error handlers and toast notifications
  * 
- * Phase 4: Integration Testing for Error Toast Notifications
+ * Integration Testing for Error Toast Notifications
  * Tests error toast display, deduplication, queue management, and error categorization
  */
 import { describe, test, expect, beforeEach, mock } from "bun:test";

@@ -185,7 +185,7 @@ describe('deterministic-builder', () => {
     it('limits tags to reasonable count', () => {
       const rng = createSeededRng(12345);
       const result = assembleStyleTags({ components: ['jazz'], rng });
-      expect(result.tags.length).toBeLessThanOrEqual(10);
+      expect(result.tags.length).toBeLessThanOrEqual(15);
       expect(result.tags.length).toBeGreaterThanOrEqual(6);
     });
 

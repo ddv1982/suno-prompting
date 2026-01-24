@@ -1,7 +1,6 @@
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
 import { parseGenreComponents } from '@bun/prompt/genre-parser';
-
-import type { Rng } from '@bun/instruments/services/random';
+import { randomIntInclusive, type Rng } from '@shared/utils/random';
 
 /**
  * Regex pattern for max mode BPM format: bpm: "value"
@@ -96,7 +95,7 @@ export function getRandomBpmFromRange(
   const range = getBlendedBpmRange(genre);
   if (!range) return null;
 
-  return Math.floor(rng() * (range.max - range.min + 1)) + range.min;
+  return randomIntInclusive(range.min, range.max, rng);
 }
 
 /**
@@ -124,7 +123,7 @@ export function injectBpmRange(prompt: string, genre: string): string {
 // Backward-compatible functions (existing API)
 // ========================================
 
-export function getRandomBpmForGenre(genre: string): number | null {
+export function getRandomBpmForGenre(genre: string, rng: Rng = Math.random): number | null {
   // Handle multi-genre: "jazz fusion" → "jazz", "jazz, rock" → "jazz"
   const firstGenre = genre.split(',')[0]?.trim().toLowerCase() || '';
   const baseGenre = firstGenre.split(' ')[0] || firstGenre;
@@ -133,7 +132,7 @@ export function getRandomBpmForGenre(genre: string): number | null {
   if (!genreDef?.bpm) return null;
 
   const { min, max } = genreDef.bpm;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return randomIntInclusive(min, max, rng);
 }
 
 export function injectBpm(prompt: string, genre: string): string {

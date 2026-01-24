@@ -7,6 +7,7 @@
  */
 
 import type { GenreType } from '@bun/instruments/genres';
+import type { Contrast, Dynamics, SectionType as SchemaSectionType } from '@shared/schemas/thematic-context';
 
 /**
  * Section types available for prompt generation.
@@ -29,6 +30,16 @@ export interface SectionTemplate {
 }
 
 /**
+ * Override settings for a single section from contrast detection.
+ */
+export interface SectionOverride {
+  /** Mood override from contrast section */
+  readonly mood: string;
+  /** Dynamics level from contrast section */
+  readonly dynamics: Dynamics;
+}
+
+/**
  * Context for building sections, containing genre-specific data.
  */
 export interface SectionContext {
@@ -38,6 +49,17 @@ export interface SectionContext {
   readonly rng: () => number;
   /** Pre-selected instruments for the track (to ensure variety) */
   readonly trackInstruments?: readonly string[];
+  /** Optional section overrides from contrast detection */
+  readonly sectionOverride?: SectionOverride;
+}
+
+/**
+ * Context for building sections with contrast support.
+ * Extends SectionContext with optional contrast data.
+ */
+export interface SectionContextWithContrast extends Omit<SectionContext, 'sectionOverride'> {
+  /** Optional contrast data from ThematicContext */
+  readonly contrast?: Contrast;
 }
 
 /**
@@ -65,3 +87,6 @@ export interface AllSectionsResult {
   /** All instruments used across sections */
   readonly allInstruments: readonly string[];
 }
+
+// Re-export SchemaSectionType for use in mappings
+export type { SchemaSectionType, Contrast, Dynamics };

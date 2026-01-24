@@ -44,6 +44,8 @@ export const APP_CONSTANTS = {
     QUICK_VIBES_GENERATION_LIMIT: 60,
     MAX_VERSION_HISTORY: 50,
     ARTICULATION_CHANCE: 0.4,
+    /** Maximum number of style tags to include in prompt output */
+    STYLE_TAG_LIMIT: 15,
     MAX_MODE_HEADER: `[Is_MAX_MODE: MAX](MAX)
 [QUALITY: MAX](MAX)
 [REALISM: MAX](MAX)
@@ -60,8 +62,8 @@ export const APP_CONSTANTS = {
         TIMEOUT_MS: 90000,
         /** RPC request timeout - shorter than AI timeout for responsive errors (30 seconds) */
         RPC_TIMEOUT_MS: 30000,
-        /** Timeout for thematic context extraction before falling back to deterministic (3 seconds) */
-        THEMATIC_EXTRACTION_TIMEOUT_MS: 3000,
+        /** Timeout for enriched thematic context extraction (4 seconds) */
+        THEMATIC_EXTRACTION_TIMEOUT_MS: 4000,
         DEFAULT_PROVIDER: 'groq' as const,
         DEFAULT_MODEL: 'openai/gpt-oss-120b',
         DEFAULT_USE_SUNO_TAGS: true,

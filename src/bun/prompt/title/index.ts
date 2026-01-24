@@ -9,5 +9,5 @@
 // Public API - Generation functions
 export { generateDeterministicTitle, generateTitleOptions } from './generator';
 
-// Public API - Keyword extraction
-export { extractKeywords } from './keyword-extractor';
+// Re-export keyword extraction from unified module for backwards compatibility
+export { extractKeywordsForTitle as extractKeywords } from '@bun/keywords';

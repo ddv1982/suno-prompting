@@ -1,17 +1,17 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
-  createRng,
+  createSeededRng,
   pickRandom,
   shuffle,
   rollChance,
   randomIntInclusive,
-} from '@bun/instruments/services/random';
+} from '@shared/utils/random';
 
 describe('RNG (seeded) utilities', () => {
-  test('createRng(seed) is deterministic for a fixed seed', () => {
-    const rngA = createRng(123);
-    const rngB = createRng(123);
+  test('createSeededRng(seed) is deterministic for a fixed seed', () => {
+    const rngA = createSeededRng(123);
+    const rngB = createSeededRng(123);
 
     const a = Array.from({ length: 10 }, () => rngA());
     const b = Array.from({ length: 10 }, () => rngB());
@@ -22,8 +22,8 @@ describe('RNG (seeded) utilities', () => {
 
   test('pickRandom is deterministic under a seeded rng', () => {
     const items = ['a', 'b', 'c', 'd', 'e'] as const;
-    const rngA = createRng(42);
-    const rngB = createRng(42);
+    const rngA = createSeededRng(42);
+    const rngB = createSeededRng(42);
 
     const picksA = Array.from({ length: 20 }, () => pickRandom(items, rngA));
     const picksB = Array.from({ length: 20 }, () => pickRandom(items, rngB));
@@ -33,15 +33,15 @@ describe('RNG (seeded) utilities', () => {
 
   test('shuffle is deterministic under a seeded rng', () => {
     const items = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    const rngA = createRng(7);
-    const rngB = createRng(7);
+    const rngA = createSeededRng(7);
+    const rngB = createSeededRng(7);
 
     expect(shuffle(items, rngA)).toEqual(shuffle(items, rngB));
   });
 
   test('rollChance is deterministic under a seeded rng', () => {
-    const rngA = createRng(999);
-    const rngB = createRng(999);
+    const rngA = createSeededRng(999);
+    const rngB = createSeededRng(999);
 
     const a = Array.from({ length: 30 }, () => rollChance(0.5, rngA));
     const b = Array.from({ length: 30 }, () => rollChance(0.5, rngB));
@@ -50,8 +50,8 @@ describe('RNG (seeded) utilities', () => {
   });
 
   test('randomIntInclusive is deterministic under a seeded rng', () => {
-    const rngA = createRng(31415);
-    const rngB = createRng(31415);
+    const rngA = createSeededRng(31415);
+    const rngB = createSeededRng(31415);
 
     const a = Array.from({ length: 25 }, () => randomIntInclusive(1, 6, rngA));
     const b = Array.from({ length: 25 }, () => randomIntInclusive(1, 6, rngB));

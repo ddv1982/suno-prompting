@@ -3,6 +3,8 @@
  * @module prompt/tags/texture
  */
 
+import { selectRandomN } from '@shared/utils/random';
+
 /**
  * Recording texture descriptors for overall sonic character.
  * Expanded from existing recording context concepts.
@@ -75,6 +77,5 @@ export function selectTextureTags(count: number, rng: () => number = Math.random
     allTags.push(...category);
   }
   
-  const shuffled = [...allTags].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
 }

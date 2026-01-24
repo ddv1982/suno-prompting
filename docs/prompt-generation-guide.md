@@ -6,21 +6,22 @@ This guide explains how the app generates Suno-ready prompts, what output format
 
 1. [Output Formats Overview](#output-formats-overview)
 2. [Generation Architecture](#generation-architecture)
-3. [Standard Mode Output](#standard-mode-output)
-4. [MAX Mode Output](#max-mode-output)
-5. [Quick Vibes Output](#quick-vibes-output)
-6. [Lyrics Output](#lyrics-output)
-7. [Direct Mode Output](#direct-mode-output)
-8. [How Prompt Generation Works](#how-prompt-generation-works)
-9. [How Your Choices Affect Output](#how-your-choices-affect-output)
-10. [Behind the Scenes: Decision Making](#behind-the-scenes-decision-making)
-11. [Style Tags (MAX Mode Details)](#style-tags-max-mode)
-12. [Randomness with Control](#randomness-with-control)
-13. [Performance](#performance-why-its-instant)
-14. [Data Sources](#data-sources)
-15. [User Control vs Automation](#user-control-vs-automation)
-16. [Examples](#examples-input--output)
-17. [Quality Assurance](#quality-assurance)
+3. [Enhanced Thematic Context](#enhanced-thematic-context)
+4. [Standard Mode Output](#standard-mode-output)
+5. [MAX Mode Output](#max-mode-output)
+6. [Quick Vibes Output](#quick-vibes-output)
+7. [Lyrics Output](#lyrics-output)
+8. [Direct Mode Output](#direct-mode-output)
+9. [How Prompt Generation Works](#how-prompt-generation-works)
+10. [How Your Choices Affect Output](#how-your-choices-affect-output)
+11. [Behind the Scenes: Decision Making](#behind-the-scenes-decision-making)
+12. [Style Tags (MAX Mode Details)](#style-tags-max-mode)
+13. [Randomness with Control](#randomness-with-control)
+14. [Performance](#performance-why-its-instant)
+15. [Data Sources](#data-sources)
+16. [User Control vs Automation](#user-control-vs-automation)
+17. [Examples](#examples-input--output)
+18. [Quality Assurance](#quality-assurance)
 
 ---
 
@@ -74,7 +75,8 @@ The app uses a **hybrid architecture** combining deterministic prompt building w
 | Component | Method | Speed | Purpose |
 |-----------|--------|-------|---------|
 | **Prompt Building** | Deterministic | <1ms | Genre, instruments, mood, structure |
-| **Thematic Context** | LLM (optional) | ~500ms | Extract themes/moods from description |
+| **Thematic Context** | LLM (optional) | ~500ms | Extract themes/moods/era/intent from description |
+| **Keyword Fallback** | Deterministic | <1ms | Era/tempo/intent extraction when LLM unavailable |
 | **Title Generation** | LLM or Deterministic | ~300ms or <1ms | Context-aware titles |
 | **Lyrics Generation** | LLM only | ~1-2s | Full lyrics with structure |
 | **Genre Detection** | Deterministic first, LLM fallback | <1ms or ~200ms | Keywords → LLM topic analysis |
@@ -83,15 +85,178 @@ The app uses a **hybrid architecture** combining deterministic prompt building w
 
 1. **Prompt generation is ALWAYS deterministic** - Uses curated databases for instant, predictable results
 2. **LLM enriches when available** - Extracts thematic context to inform deterministic choices
-3. **Graceful fallback** - When LLM unavailable, falls back to pure deterministic (no degradation)
+3. **Thematic context enriches prompt** - When extracted, era/tempo/intent/cultural data feeds back to style tags, BPM adjustment, mood selection, and section building
+4. **Graceful fallback** - When LLM unavailable or times out (4s), keyword-based extraction provides era/tempo/intent
 
 ### Path Comparison
 
 | Path | Deterministic | LLM (when available) |
 |------|---------------|----------------------|
-| **Lyrics OFF** | Prompt, genre detection | Thematic context, title |
-| **Lyrics ON** | Prompt, genre keywords | Thematic context, genre from topic, title, lyrics |
-| **Direct Mode** | Style formatting | Thematic context |
+| **Lyrics OFF** | Base prompt, genre detection | Thematic context → enriches prompt (styles, BPM, moods), title |
+| **Lyrics ON** | Base prompt, genre keywords | Thematic context → enriches prompt, genre from topic, title, lyrics |
+| **Direct Mode** | Style formatting | Thematic context → enriches moods |
+
+---
+
+## Enhanced Thematic Context
+
+When LLM is available, thematic extraction includes additional enrichment fields. When unavailable, keyword-based fallback provides era, tempo, and intent detection.
+
+### Era Detection
+
+Infers production era from context clues in the description:
+
+| Era | Keywords | Production Tags |
+|-----|----------|-----------------|
+| 50s-60s | vintage, mono, oldies, classic | mono recording, tube warmth, vintage reverb |
+| 70s | analog, vinyl, tape, vintage | analog warmth, tape saturation, wide stereo |
+| 80s | synth, neon, digital, synthwave | gated reverb, digital clarity, synth pads |
+| 90s | grunge, rave, trip-hop, jungle | compressed drums, lo-fi aesthetic, raw energy |
+| 2000s | polished, digital | polished production, digital precision |
+| modern | contemporary, current | hybrid analog-digital, pristine clarity |
+
+### Tempo Inference
+
+Adjusts BPM based on scene energy keywords:
+
+| Scene Type | Keywords | Adjustment | Curve |
+|------------|----------|------------|-------|
+| Slow/relaxed | slow, calm, meditation, peaceful, chill | -15 BPM | steady |
+| Fast/energetic | fast, energetic, intense, driving, explosive | +15 BPM | explosive |
+
+### Intent Classification
+
+Optimizes output for specific listening purposes:
+
+| Intent | Keywords | Production Tags |
+|--------|----------|-----------------|
+| background | study, focus, ambient, meditation, work | subtle, ambient, non-intrusive |
+| focal | concert, audiophile, hi-fi, headphones | detailed, engaging, dynamic |
+| cinematic | film, epic, trailer, soundtrack, dramatic | dramatic, evolving, layered |
+| dancefloor | party, club, dance, rave, festival | punchy, rhythmic, driving |
+| emotional | sad, heartfelt, melancholic, nostalgic | expressive, dynamic, intimate |
+
+### Cultural Context
+
+Adds region-specific instruments and scales when cultural keywords are detected:
+
+| Region | Keywords | Instruments | Scale |
+|--------|----------|-------------|-------|
+| Brazil | brazilian, bossa nova, samba | surdo, tamborim, cuíca, cavaquinho | mixolydian |
+| Japan | japanese, j-pop, anime | koto, shakuhachi, shamisen, taiko | pentatonic |
+| Celtic | celtic, irish, scottish | tin whistle, bodhrán, fiddle, uilleann pipes | dorian |
+| India | indian, bollywood, hindustani | sitar, tabla, tanpura, harmonium | raga scales |
+| Middle East | arabic, persian, turkish | oud, darbuka, ney, qanun | phrygian dominant |
+| Africa | african, afrobeat | djembe, balafon, kora, talking drum | pentatonic |
+
+### How Thematic Context Enriches Prompts
+
+When thematic context is extracted (LLM or keyword fallback), it enriches the deterministic prompt builder:
+
+| Enrichment | Component | Effect |
+|------------|-----------|--------|
+| **Era** | Style Tags | Adds era-specific production tags (e.g., "analog warmth", "gated reverb") |
+| **Tempo** | BPM | Adjusts base BPM by -30 to +30, adds tempo curve (e.g., "explosive") |
+| **Intent** | Style Tags | Adds listening-purpose tags (e.g., "ambient, non-intrusive") |
+| **Cultural** | Style Tags + Instruments | Adds regional instruments and scale annotations |
+| **Moods** | Mood Selection | LLM moods can replace genre-default moods entirely |
+| **Themes** | Style Tags | First 2 themes added as style descriptors |
+| **Contrast** | Section Building | Per-section mood and dynamics overrides |
+| **Narrative Arc** | Section Building + Dynamic Tags | Maps emotional journey; boosts dynamic tag probability for epic arcs |
+| **VocalCharacter** | Vocal Tags | Biases vocal tag selection based on tone, intensity, and texture |
+| **EnergyLevel** | Tag Weights | Adjusts category weights (dynamic/temporal boosted for intense energy) |
+| **SpatialHint** | Production Tags | Selects reverb type based on space size (intimate → room, epic → hall) |
+| **Musical Reference** | Style Tags | Adds style/era tags from detected musical references |
+
+This creates a feedback loop: Description → Thematic Extraction → Enriched Prompt Building.
+
+### Advanced Thematic Fields (v2.1.0+)
+
+The following fields provide deeper prompt customization when LLM extraction is available:
+
+#### VocalCharacter
+
+Controls vocal tag selection bias based on three dimensions:
+
+| Dimension | Options | Effect |
+|-----------|---------|--------|
+| **Tone** | warm, bright, dark, neutral | Biases toward matching vocal textures |
+| **Intensity** | soft, moderate, powerful | Influences vocal delivery descriptors |
+| **Texture** | smooth, raspy, breathy, clear | Selects complementary vocal style tags |
+
+#### EnergyLevel
+
+Adjusts tag category weights based on overall energy:
+
+| Level | Dynamic Weight | Temporal Weight | Best For |
+|-------|---------------|-----------------|----------|
+| **ambient** | 0.7x | 0.8x | Calm, atmospheric tracks |
+| **low** | 0.85x | 0.9x | Laid-back, mellow music |
+| **moderate** | 1.0x | 1.0x | Balanced energy (default) |
+| **high** | 1.2x | 1.15x | Energetic, upbeat tracks |
+| **intense** | 1.4x | 1.3x | High-energy, driving music |
+
+#### SpatialHint
+
+Guides reverb and spatial production choices:
+
+| Space | Reverb Pool | Example Contexts |
+|-------|-------------|------------------|
+| **intimate** | room reverb, close mic, dry | Solo performance, acoustic |
+| **club** | plate reverb, tight room | Dance, electronic, live |
+| **hall** | concert hall, large space | Orchestral, epic, cinematic |
+| **cathedral** | cathedral reverb, massive | Choral, ambient, spiritual |
+| **outdoor** | natural reverb, open air | Folk, world, acoustic |
+
+### Keyword Fallback
+
+When LLM is unavailable or times out (4s), the app uses deterministic keyword extraction via `@bun/keywords`:
+
+- **Cached matching**: Lazy-compiled regex patterns with LRU cache (200 entries)
+- **Single extraction pass**: All categories extracted in one call
+- **Graceful degradation**: Returns only matched fields, no degradation in prompt quality
+
+```
+INPUT:
+Description: "vintage 70s soul with slow groove for studying"
+
+KEYWORD EXTRACTION:
+1. Era keywords: "vintage" → '70s', "70s" → '70s' (first match)
+2. Tempo keywords: "slow" → { adjustment: -15, curve: 'steady' }
+3. Intent keywords: "studying" → 'background'
+
+OUTPUT:
+era: '70s'
+tempo: { adjustment: -15, curve: 'steady' }
+intent: 'background'
+```
+
+### Enhanced Deterministic Fallback
+
+Beyond basic keyword extraction, the deterministic path now includes description-aware enhancements:
+
+1. **Priority Mood Extraction** - Moods mentioned in description (e.g., "melancholic", "dark", "upbeat") are extracted and prioritized over genre-default moods. This ensures the user's emotional intent is preserved.
+
+2. **Direct Theme Injection** - Themes from description (e.g., "love", "rain", "midnight") are added directly to style tags when no LLM context is available. Uses the same keyword mappings as title generation.
+
+3. **Harmonic Complexity Detection** - Keywords like "jazz", "progressive", "modal", "chromatic" boost harmonic tag selection probability (1.4x for 1 match, 1.8x for 2+ matches).
+
+**Example: Without LLM**
+```
+INPUT:
+Description: "a melancholic jazz ballad about lost love on a rainy night"
+
+ENHANCED EXTRACTION:
+1. Priority moods: ['melancholic'] (from MOOD_KEYWORDS)
+2. Themes: ['lost', 'love', 'rain', 'night'] → style tags
+3. Harmonic boost: 1.4x (contains "jazz")
+
+OUTPUT STYLE TAGS:
+"melancholic, lost, love, rain, night, smooth, warm, ..." 
+(vs generic "smooth, warm" without enhancement)
+```
+
+This ensures style tags maintain coherence with the user's description even without LLM.
 
 ---
 
@@ -399,7 +564,7 @@ The app builds prompts using pre-built databases instead of generating them with
 
 When LLM is available, the app enhances the deterministic output:
 
-- **Thematic Context** - Extracts themes, moods, and scenes from your description
+- **Thematic Context** - Extracts themes, moods, era, tempo, intent, and cultural context; enriches style tags, BPM, moods, and sections
 - **Title Generation** - Creates titles that match the extracted themes
 - **Genre Detection** - Analyzes lyrics topics when no genre keywords found in description
 - **Lyrics** - Generates full structured lyrics (Lyrics ON mode only)
@@ -408,8 +573,8 @@ When LLM is available, the app enhances the deterministic output:
 
 | LLM Status | Prompt | Title | Thematic Context |
 |------------|--------|-------|------------------|
-| **Available** | Deterministic + enriched | LLM-generated | Extracted |
-| **Unavailable** | Pure deterministic | Deterministic | Skipped |
+| **Available** | Deterministic + enriched | LLM-generated | LLM extracted |
+| **Unavailable** | Deterministic + keyword-enriched | Deterministic | Keyword fallback |
 
 **Result:** Same quality prompts either way, with richer context when LLM available.
 
@@ -833,18 +998,28 @@ All choices come from carefully curated, tested databases:
 | **Compound Moods** | 25 moods | Genre affinities for contextual selection |
 | **Mood Intensity** | 60+ base moods | 3-level scaling (mild/moderate/intense) |
 | **Era Instruments** | 4 eras × 12 | Period-specific sounds (70s/80s/90s/modern) |
+| **Era Production Tags** | 6 eras × 5 | Period-specific production descriptors |
+| **Intent Tags** | 5 intents × 3 | Listening purpose optimization tags |
+| **Cultural Instruments** | 6 regions × 4 | Region-specific authentic instruments |
+| **Cultural Scales** | 6 regions | Traditional scales/modes per region |
+| **Keyword Registries** | 200+ keywords | Era, tempo, intent keyword mappings |
+| **Harmonic Keywords** | 9 keywords | jazz, progressive, modal, chromatic, etc. |
 | **Ensemble Presets** | 10 presets | Genre compatibility mappings |
 | **Genre Aliases** | 90+ mappings | Hip-hop, R&B, metal, electronic, jazz variants |
-| **Tag Weights** | 60 genres | 5 weight categories per genre |
+| **Tag Weights** | 60 genres | 5 weight categories per genre with energy adjustment |
 | **Conflict Rules** | 5 rules | Instrument-production coherence |
 | **Title Words** | 269 words | 5 categories, 220+ keyword mappings |
 | **Title Patterns** | 200 patterns | 23 genre-specific sets + defaults |
 | **Recording Contexts** | 141 contexts | 18 genres with authentic environments |
 | **Style Descriptors** | 200+ tags | 7 categories with genre probabilities |
+| **Style Tag Limit** | 15 tags | Maximum tags per prompt (configurable) |
+| **VocalCharacter Schema** | 3 dimensions | Tone, intensity, texture for vocal bias |
+| **EnergyLevel Schema** | 5 levels | ambient, low, moderate, high, intense |
+| **SpatialHint Schema** | 5 spaces | intimate, club, hall, cathedral, outdoor |
 
 **All data is:**
 - Reviewed by developers
-- Tested in 3,689 automated tests (24,863 assertions)
+- Tested in 4,407 automated tests (~26,200 assertions)
 - Validated for musical coherence
 - Regularly updated and expanded
 
@@ -971,8 +1146,8 @@ Tags: "raw performance energy, live venue capture, warm analog console"
 
 ### Automated Testing
 
-- **3,689 tests** verify all combinations work correctly
-- **24,863 assertions** validate expected behavior
+- **4,407 tests** verify all combinations work correctly
+- **~26,200 assertions** validate expected behavior
 - **100% pass rate** maintained across all refactoring
 
 ### Test Categories
@@ -1010,11 +1185,13 @@ The deterministic generation system provides:
 - **Quality** - Curated data, tested combinations
 - **Variety** - Controlled randomness from quality pools
 - **Reliability** - Works offline, no API failures
-- **Tested** - 3,689 tests validate correctness
+- **Tested** - 4,407 tests validate correctness
 - **Topic-Aware** - 220+ keywords map descriptions to relevant titles
 - **Rich Vocabulary** - 269 words × 200 patterns = 50,000+ unique titles
 - **Smart Aliases** - 90+ genre mappings for flexible input
 - **Genre Weights** - 60 genres with tailored tag probabilities
+- **Enhanced Enrichment** - Era, tempo, intent, and cultural context extraction
+- **Keyword Fallback** - Deterministic extraction when LLM unavailable
 
 **Your role:** Guide the direction with creativity level, mood category, Quick Vibes, and optional description
 

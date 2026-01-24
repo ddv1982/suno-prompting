@@ -8,6 +8,8 @@
  * @module instruments/eras
  */
 
+import { selectRandomN } from '@shared/utils/random';
+
 /**
  * Musical era identifier for period-specific instruments.
  */
@@ -96,24 +98,8 @@ export function selectEraInstruments(
   rng: () => number = Math.random,
 ): string[] {
   const pool = ERA_INSTRUMENTS[era];
-  const available = [...pool];
-  const selected: string[] = [];
-
-  // Limit count to available instruments
-  const maxCount = Math.min(count, available.length);
-
-  // Fisher-Yates shuffle and pick
-  for (let i = 0; i < maxCount; i++) {
-    const idx = Math.floor(rng() * available.length);
-    const instrument = available[idx];
-    if (instrument) {
-      selected.push(instrument);
-      // Remove selected instrument to avoid duplicates
-      available.splice(idx, 1);
-    }
-  }
-
-  return selected;
+  if (pool.length === 0) return [];
+  return selectRandomN([...pool], Math.min(count, pool.length), rng);
 }
 
 /**

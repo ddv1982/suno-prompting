@@ -3,6 +3,8 @@
  * @module prompt/tags/temporal
  */
 
+import { selectRandomN } from '@shared/utils/random';
+
 /**
  * Temporal and timing descriptors for rhythmic feel.
  * Influences perceived timing and groove.
@@ -58,6 +60,5 @@ export function selectTemporalTags(count: number, rng: () => number = Math.rando
     allTags.push(...category);
   }
   
-  const shuffled = [...allTags].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
 }

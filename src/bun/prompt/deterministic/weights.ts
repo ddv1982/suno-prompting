@@ -30,6 +30,7 @@ import { DEFAULT_TAG_WEIGHTS } from './types';
 
 import type { TagCategoryWeights } from './types';
 import type { GenreType } from '@bun/instruments/genres';
+import type { EnergyLevel } from '@shared/schemas/thematic-context';
 
 /**
  * Genre-specific tag weights for all 60 supported genres.
@@ -171,4 +172,67 @@ export const GENRE_TAG_WEIGHTS = {
  */
 export function getTagWeightsForGenre(genre: GenreType): TagCategoryWeights {
   return GENRE_TAG_WEIGHTS[genre] ?? DEFAULT_TAG_WEIGHTS;
+}
+
+// ============================================
+// Energy Level Weight Adjustment
+// ============================================
+
+/**
+ * Energy level weight multipliers for tag category adjustment.
+ *
+ * Multipliers are applied to base genre weights to bias tag selection
+ * based on the overall energy level of the song:
+ * - Ambient/Relaxed: Reduce dynamic and temporal emphasis
+ * - Energetic/Intense: Boost dynamic, temporal, and vocal emphasis
+ */
+const ENERGY_WEIGHT_MULTIPLIERS: Record<EnergyLevel, Partial<TagCategoryWeights>> = {
+  'ambient': { dynamic: 0.3, temporal: 0.5 },
+  'relaxed': { dynamic: 0.6, temporal: 0.7 },
+  'moderate': {},  // no change
+  'energetic': { dynamic: 1.4, temporal: 1.2 },
+  'intense': { dynamic: 1.8, temporal: 1.5, vocal: 1.2 },
+};
+
+/**
+ * Adjust tag category weights based on energy level.
+ *
+ * Applies energy-based multipliers to base weights for more appropriate
+ * tag selection. Lower energy levels reduce dynamic/temporal weights,
+ * while higher energy levels boost them.
+ *
+ * @param baseWeights - Base tag category weights (usually from genre)
+ * @param energyLevel - Optional energy level from thematic context
+ * @returns Adjusted weights or unchanged if energyLevel is undefined
+ *
+ * @example
+ * // Intense energy boosts dynamic and temporal weights
+ * adjustWeightsForEnergyLevel({ dynamic: 0.5, temporal: 0.4, ... }, 'intense')
+ * // Returns: { dynamic: 0.9, temporal: 0.6, vocal: 0.84, ... }
+ *
+ * @example
+ * // Ambient energy reduces dynamic and temporal weights
+ * adjustWeightsForEnergyLevel({ dynamic: 0.5, temporal: 0.4, ... }, 'ambient')
+ * // Returns: { dynamic: 0.15, temporal: 0.2, ... }
+ *
+ * @example
+ * // Undefined energy level returns weights unchanged
+ * adjustWeightsForEnergyLevel(baseWeights, undefined)
+ * // Returns: baseWeights
+ */
+export function adjustWeightsForEnergyLevel(
+  baseWeights: TagCategoryWeights,
+  energyLevel?: EnergyLevel
+): TagCategoryWeights {
+  if (!energyLevel) return baseWeights;
+
+  const multipliers = ENERGY_WEIGHT_MULTIPLIERS[energyLevel];
+
+  return {
+    vocal: baseWeights.vocal * (multipliers.vocal ?? 1),
+    spatial: baseWeights.spatial * (multipliers.spatial ?? 1),
+    harmonic: baseWeights.harmonic * (multipliers.harmonic ?? 1),
+    dynamic: baseWeights.dynamic * (multipliers.dynamic ?? 1),
+    temporal: baseWeights.temporal * (multipliers.temporal ?? 1),
+  };
 }

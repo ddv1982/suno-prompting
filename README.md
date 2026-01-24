@@ -95,9 +95,11 @@ The app automatically detects Ollama and switches to local mode.
 - **Structured prompts** from plain English with `Genre:`, `BPM:`, `Mood:`, `Instruments:` fields
 - **Three generation modes**: Full Prompt, Quick Vibes, Creative Boost
 - **Max Mode**: Community-discovered format for higher quality output
+- **Enhanced LLM Enrichment**: Era detection, tempo inference, intent classification, cultural context, vocal character, energy level, spatial hints, with keyword-based fallback when LLM unavailable
 - **Dynamic instrument selection** from curated pools with exclusion rules
 - **Genre detection**: Keyword matching → spelling correction → LLM analysis
 - **Mood selector**: Choose from 20 mood categories (~200 unique moods) to guide emotional tone across all modes (Full Prompt, Quick Vibes, Creative Boost)
+- **Cultural instruments**: Region-specific instruments (Brazil, Japan, Celtic, India, Middle East, Africa)
 - **Quick remix buttons** for mood/genre/instruments/style/recording
 - **Lyrics Mode**: Optional AI-generated structured lyrics
 - **1000-character limit** validation + contradictory tag warnings
@@ -479,10 +481,13 @@ Optional mood category selector available in Full Mode, Quick Vibes, and Creativ
 
 | Module | Purpose |
 |--------|---------|
-| `src/bun/ai/` | AI engine, providers (Ollama, Groq, OpenAI, Anthropic), generation, refinement, remix |
+| `src/bun/ai/` | AI engine, providers (Ollama, Groq, OpenAI, Anthropic), generation, thematic context |
 | `src/bun/prompt/` | Prompt builders, postprocessing, deterministic operations |
-| `src/bun/instruments/` | Instrument registry, genre pools, selection logic |
+| `src/bun/instruments/` | Instrument registry, genre pools, cultural instruments |
+| `src/bun/keywords/` | Unified keyword matching with caching for fallback extraction |
 | `src/bun/handlers/` | RPC request handlers |
+| `src/bun/mood/` | Mood categories, intensity mapping, genre-mood associations |
+| `src/bun/trace/` | Debug trace collection and decision logging |
 | `src/main-ui/` | React frontend |
 | `src/shared/` | Types, schemas, constants |
 
@@ -490,13 +495,25 @@ Optional mood category selector available in Full Mode, Quick Vibes, and Creativ
 <summary><strong>Generation & Remix Dataflow</strong></summary>
 
 **Prompt generation is ALWAYS deterministic** using curated data pools.
-LLM enriches output with thematic context and titles when available, with graceful fallback to pure deterministic.
+LLM enriches output with thematic context and titles when available, with graceful fallback to keyword-based extraction.
 
 **Architecture:**
 - **Prompt**: Always deterministic - uses genre/instrument/mood pools
-- **Thematic Context**: LLM extraction when available (enriches prompt)
+- **Thematic Context**: LLM extraction when available, keyword fallback when unavailable
 - **Title**: LLM when available, deterministic fallback
 - **Lyrics**: LLM only (when Lyrics Mode enabled)
+
+**Thematic Context Enrichment (LLM or Keyword Fallback):**
+- Era detection (50s-60s, 70s, 80s, 90s, 2000s, modern) → production tags
+- Tempo inference (-30 to +30 BPM adjustment) based on scene energy
+- Intent classification (background, focal, cinematic, dancefloor, emotional)
+- Cultural/regional context (Brazil, Japan, Celtic, India, Middle East, Africa)
+- Vocal character (tone, intensity, texture) → vocal tag selection
+- Energy level (ambient to intense) → tag weight adjustments
+- Spatial hints (intimate to outdoor) → reverb selection
+- Keyword-based fallback with cached regex matching when LLM unavailable (4s timeout)
+- Description-aware mood extraction (priority moods from user's description)
+- Direct theme injection from description keywords when LLM unavailable
 
 **LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
 
@@ -508,12 +525,16 @@ flowchart TB
 
     subgraph "Always Deterministic"
         PROMPT[Prompt<br/>Builder]
-        DATA[(Genre, Instrument,<br/>Mood Pools)]
+        DATA[(Genre, Instrument,<br/>Mood, Keyword Pools)]
     end
 
     subgraph "LLM Enrichment (Optional)"
-        CONTEXT[Thematic<br/>Context]
+        CONTEXT[Thematic Context<br/>era/tempo/intent/cultural]
         TITLE[Title Gen]
+    end
+
+    subgraph "Keyword Fallback"
+        KWFALLBACK[Keyword Extraction<br/>era/tempo/intent]
     end
 
     subgraph Decision
@@ -529,7 +550,6 @@ flowchart TB
         PROV{LLM<br/>Available?}
         OLLAMA[Ollama Local]
         CLOUD[Cloud API]
-        FALLBACK[Deterministic<br/>Fallback]
     end
 
     subgraph Output
@@ -538,22 +558,23 @@ flowchart TB
 
     UI --> PROMPT
     PROMPT -.-> DATA
-    PROMPT --> CONTEXT
+    PROMPT --> PROV
+    PROV -->|Yes| CONTEXT
+    PROV -->|No/Timeout| KWFALLBACK
+    CONTEXT --> PROMPT
     CONTEXT --> TITLE
+    KWFALLBACK --> PROMPT
+    KWFALLBACK --> TITLE
     TITLE --> LYR
     LYR -->|OFF| RESULT
     LYR -->|ON| LYRICS
     LYR -->|ON| GENRE
-    CONTEXT --> PROV
-    TITLE --> PROV
-    LYRICS --> PROV
-    GENRE --> PROV
     PROV -->|Local| OLLAMA
     PROV -->|Cloud| CLOUD
-    PROV -->|No| FALLBACK
+    LYRICS --> RESULT
+    GENRE --> RESULT
     OLLAMA --> RESULT
     CLOUD --> RESULT
-    FALLBACK --> RESULT
 
     classDef det fill:#28a745,stroke:#1e7e34,color:#fff
     classDef ai fill:#fd7e14,stroke:#dc6a12,color:#fff
@@ -569,7 +590,7 @@ flowchart TB
     class OLLAMA,CLOUD provider
     class PROV,LYR decision
     class RESULT output
-    class FALLBACK fallback
+    class KWFALLBACK fallback
 ```
 
 | Operation | LLM Calls | Latency (Cloud) | Latency (Local) | Notes |

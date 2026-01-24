@@ -1,6 +1,6 @@
-import { createRng } from '@bun/instruments/services/random';
 import { createLogger } from '@bun/logger';
 import { maybeCreateTraceCollector, type TraceCollector } from '@bun/trace';
+import { createSeededRng } from '@shared/utils/random';
 
 import type { PromptMode, TraceRunAction } from '@shared/types';
 
@@ -42,7 +42,7 @@ export function createTraceRuntime(
   if (!enabled) return {};
 
   const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? 1;
-  const rng = createRng(seed);
+  const rng = createSeededRng(seed);
 
   const trace = maybeCreateTraceCollector(true, {
     runId: versionId,

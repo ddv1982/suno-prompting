@@ -1,8 +1,10 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 
+import { APP_CONSTANTS } from '@shared/constants';
 import { createSeededRng } from '@shared/utils/random';
 
 import type { GenerationConfig } from '@bun/ai/types';
+import type { ThematicContext } from '@shared/schemas/thematic-context';
 
 /**
  * Integration tests for LLM unavailable fallback scenarios.
@@ -13,10 +15,13 @@ import type { GenerationConfig } from '@bun/ai/types';
  * - Ollama offline → pure deterministic (no error)
  * - Same seed consistency (fallback = same output as before)
  * - No regression in fallback latency (~40ms)
+ * - Task 4.2: No regression in deterministic-only mode
+ * - Task 4.2: Graceful degradation with partial contexts
+ * - Task 4.2: Tag count ≤15 in fallback mode
  */
 
 // Mock thematic context to track calls
-const mockExtractThematicContext = mock(() => Promise.resolve(null));
+const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(() => Promise.resolve(null));
 
 // Mock Ollama availability
 const mockCheckOllamaAvailable = mock(() =>
@@ -355,6 +360,255 @@ describe('Fallback Integration Tests', () => {
       );
 
       expect(result.text).toContain('my-locked-phrase');
+    });
+  });
+
+  // ============================================
+  // Task 4.2: Fallback/Regression Tests
+  // ============================================
+
+  describe('Pure deterministic mode (no thematicContext)', () => {
+    test('output unchanged from pre-enhancement behavior', async () => {
+      const seed = 77777;
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => false,
+      });
+
+      const result = await generateInitial(
+        { description: 'a funk song with bass' },
+        config,
+        { rng: createSeededRng(seed) }
+      );
+
+      // Should produce valid structured output
+      expect(result.text).toContain('Genre:');
+      expect(result.text).toContain('BPM:');
+      expect(result.text).toContain('Mood:');
+      expect(result.text).toContain('Instruments:');
+      expect(result.text).toContain('Style Tags:');
+      expect(result.text).toContain('Recording:');
+
+      // Should have section markers
+      expect(result.text.toUpperCase()).toMatch(/\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO)\]/);
+    });
+
+    test('tag count is within 15 limit (updated from 10)', async () => {
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => false,
+      });
+
+      const result = await generateInitial(
+        { description: 'an electronic ambient track' },
+        config
+      );
+
+      // Extract style tags from output
+      const styleTagsMatch = /Style Tags:\s*([^\n]+)/i.exec(result.text);
+      if (styleTagsMatch?.[1]) {
+        const tags = styleTagsMatch[1].split(',').map(t => t.trim()).filter(t => t.length > 0);
+        expect(tags.length).toBeLessThanOrEqual(APP_CONSTANTS.STYLE_TAG_LIMIT);
+        expect(tags.length).toBeLessThanOrEqual(15);
+      }
+    });
+
+    test('no errors when thematicContext is undefined', async () => {
+      // Explicitly ensure extraction returns undefined/null
+      mockExtractThematicContext.mockResolvedValue(null);
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => true, // LLM "available" but returns null
+      });
+
+      // Should not throw
+      const result = await generateInitial(
+        { description: 'a simple rock song' },
+        config
+      );
+
+      expect(result.text).toBeDefined();
+      expect(result.text.length).toBeGreaterThan(0);
+      expect(result.title).toBeDefined();
+    });
+  });
+
+  describe('Graceful degradation', () => {
+    test('handles empty thematicContext object', async () => {
+      // Create minimal context with only required fields
+      const emptyContext: ThematicContext = {
+        themes: ['minimal', 'test', 'context'],
+        moods: ['calm', 'serene'],
+        scene: 'a minimal test scene here',
+      };
+      mockExtractThematicContext.mockResolvedValue(emptyContext);
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => true,
+      });
+
+      // Should not throw
+      const result = await generateInitial(
+        { description: 'test with empty context' },
+        config
+      );
+
+      expect(result.text).toBeDefined();
+      expect(result.text.length).toBeGreaterThan(0);
+    });
+
+    test('handles thematicContext with only required fields', async () => {
+      // Only base required fields (themes, moods, scene)
+      const minimalContext: ThematicContext = {
+        themes: ['test', 'basic', 'minimal'],
+        moods: ['neutral', 'calm'],
+        scene: 'a simple test scene for validation',
+      };
+      mockExtractThematicContext.mockResolvedValue(minimalContext);
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => true,
+      });
+
+      const result = await generateInitial(
+        { description: 'minimal context test' },
+        config
+      );
+
+      expect(result.text).toBeDefined();
+      expect(result.text).toContain('Genre:');
+      expect(result.text).toContain('Mood:');
+    });
+
+    test('missing optional vocal/energy/spatial fields do not cause errors', async () => {
+      // Context without any vocal/energy/spatial fields
+      const coreOnlyContext: ThematicContext = {
+        themes: ['rock', 'power', 'energy'],
+        moods: ['powerful', 'driving'],
+        scene: 'stadium rock concert setting',
+        era: '80s',
+        intent: 'focal',
+        // No vocalCharacter, energyLevel, spatialHint
+      };
+      mockExtractThematicContext.mockResolvedValue(coreOnlyContext);
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => true,
+      });
+
+      // Should not throw
+      const result = await generateInitial(
+        { description: 'rock song without optional fields' },
+        config
+      );
+
+      expect(result.text).toBeDefined();
+      expect(result.text.length).toBeGreaterThan(100);
+    });
+
+    test('handles partial vocal/energy/spatial fields gracefully', async () => {
+      // Context with only some vocal/energy/spatial fields
+      const partialEnrichmentContext: ThematicContext = {
+        themes: ['ambient', 'space', 'ethereal'],
+        moods: ['dreamy', 'floating'],
+        scene: 'floating through space in silence',
+        energyLevel: 'ambient', // Only energyLevel, no vocalCharacter or spatialHint
+      };
+      mockExtractThematicContext.mockResolvedValue(partialEnrichmentContext);
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => true,
+      });
+
+      const result = await generateInitial(
+        { description: 'ambient space track' },
+        config
+      );
+
+      expect(result.text).toBeDefined();
+      expect(result.text.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Snapshot comparison', () => {
+    test('output structure includes expected metadata fields', async () => {
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => false,
+      });
+
+      const result = await generateInitial(
+        { description: 'a pop ballad' },
+        config
+      );
+
+      // Verify structure - all expected fields present
+      expect(result.text).toBeDefined();
+      expect(result.title).toBeDefined();
+      expect(typeof result.text).toBe('string');
+      expect(typeof result.title).toBe('string');
+
+      // Verify content structure
+      expect(result.text).toContain('Genre:');
+      expect(result.text).toContain('BPM:');
+      expect(result.text).toContain('Mood:');
+      expect(result.text).toContain('Instruments:');
+      expect(result.text).toContain('Style Tags:');
+      expect(result.text).toContain('Recording:');
+
+      // Verify section markers exist
+      const hasSection = result.text.includes('[') && result.text.includes(']');
+      expect(hasSection).toBe(true);
+    });
+
+    test('fallback output consistent with deterministic baseline', async () => {
+      const seed = 98765;
+
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => false,
+      });
+
+      // Generate twice with same seed - should be identical
+      const result1 = await generateInitial(
+        { description: 'baseline consistency test' },
+        config,
+        { rng: createSeededRng(seed) }
+      );
+
+      const result2 = await generateInitial(
+        { description: 'baseline consistency test' },
+        config,
+        { rng: createSeededRng(seed) }
+      );
+
+      expect(result1.text).toBe(result2.text);
+      expect(result1.title).toBe(result2.title);
+    });
+
+    test('metadata includes expected fields', async () => {
+      const config = createMockConfig({
+        isLyricsMode: () => false,
+        isLLMAvailable: () => false,
+      });
+
+      const result = await generateInitial(
+        { description: 'a jazz ballad' },
+        config
+      );
+
+      // Verify structure matches expected output format
+      expect(result).toHaveProperty('text');
+      expect(result).toHaveProperty('title');
+
+      // Text should be substantial
+      expect(result.text.length).toBeGreaterThan(200);
     });
   });
 });

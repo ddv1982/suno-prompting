@@ -35,6 +35,7 @@ import {
 } from '@bun/prompt/tags';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { DEFAULT_GENRE } from '@shared/constants';
+import { selectRandomN } from '@shared/utils/random';
 
 import type { RemixResult } from './types';
 import type { GenreType } from '@bun/instruments';
@@ -76,8 +77,7 @@ function selectMultipleGenres(
   rng: () => number = defaultRng
 ): string {
   const available = allOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
-  const shuffled = [...available].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count).join(', ');
+  return selectRandomN(available, Math.min(count, available.length), rng).join(', ');
 }
 
 /** Extract current genres from prompt's genre field */
@@ -345,8 +345,7 @@ export function remixGenre(
  */
 export function remixMood(rng: () => number = defaultRng): RemixResult & { moodLine: string } {
   const count = rng() < 0.5 ? 2 : 3;
-  const shuffled = [...MOOD_POOL].sort(() => rng() - 0.5);
-  const selectedMoods = shuffled.slice(0, count);
+  const selectedMoods = selectRandomN(MOOD_POOL, count, rng);
   const moodLine = selectedMoods.join(', ');
   return { text: '', moodLine };
 }

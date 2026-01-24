@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createRng } from '@bun/instruments/services/random';
 import {
   ARTICULATIONS,
   INSTRUMENT_CATEGORIES,
@@ -36,6 +35,7 @@ import {
   DEFAULT_BACKING_VOCALS,
   getBackingVocalsForGenre,
 } from '@bun/prompt/vocal-descriptors';
+import { createSeededRng } from '@shared/utils/random';
 
 const {
   POP_PROGRESSIONS,
@@ -93,7 +93,7 @@ describe('Articulations', () => {
 
   describe('getArticulationForInstrument', () => {
     it('returns articulation for known instrument', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const articulation = getArticulationForInstrument('guitar', rng);
       expect(articulation).not.toBeNull();
       expect(ARTICULATIONS.guitar).toContain(articulation!);
@@ -105,8 +105,8 @@ describe('Articulations', () => {
     });
 
     it('is deterministic with seeded RNG', () => {
-      const rng1 = createRng(123);
-      const rng2 = createRng(123);
+      const rng1 = createSeededRng(123);
+      const rng2 = createSeededRng(123);
       const art1 = getArticulationForInstrument('drums', rng1);
       const art2 = getArticulationForInstrument('drums', rng2);
       expect(art1).toBe(art2);
@@ -124,7 +124,7 @@ describe('Articulations', () => {
       // Run multiple times to find one that articulates
       let found = false;
       for (let i = 0; i < 20; i++) {
-        const seedRng = createRng(i);
+        const seedRng = createSeededRng(i);
         const result = articulateInstrument('guitar', seedRng, 1.0); // 100% chance
         if (result !== 'guitar') {
           found = true;
@@ -205,7 +205,7 @@ describe('Vocal Descriptors', () => {
 
   describe('getVocalSuggestionsForGenre', () => {
     it('returns valid suggestions for known genre', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const result = getVocalSuggestionsForGenre('jazz', rng);
       expect(result.range).toBeDefined();
       expect(result.delivery).toBeDefined();
@@ -220,8 +220,8 @@ describe('Vocal Descriptors', () => {
     });
 
     it('is deterministic with seeded RNG', () => {
-      const rng1 = createRng(99);
-      const rng2 = createRng(99);
+      const rng1 = createSeededRng(99);
+      const rng2 = createSeededRng(99);
       const result1 = getVocalSuggestionsForGenre('pop', rng1);
       const result2 = getVocalSuggestionsForGenre('pop', rng2);
       expect(result1).toEqual(result2);
@@ -230,7 +230,7 @@ describe('Vocal Descriptors', () => {
 
   describe('buildVocalDescriptor', () => {
     it('returns formatted descriptor string', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const result = buildVocalDescriptor('jazz', rng);
       expect(result).toContain(',');
       expect(result).toContain('Delivery');
@@ -358,7 +358,7 @@ describe('Production Elements', () => {
 
   describe('getProductionSuggestionsForGenre', () => {
     it('returns valid suggestions for known genre', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const result = getProductionSuggestionsForGenre('jazz', rng);
       expect(result.reverb).toBeDefined();
       expect(result.texture).toBeDefined();
@@ -372,8 +372,8 @@ describe('Production Elements', () => {
     });
 
     it('is deterministic with seeded RNG', () => {
-      const rng1 = createRng(77);
-      const rng2 = createRng(77);
+      const rng1 = createSeededRng(77);
+      const rng2 = createSeededRng(77);
       const result1 = getProductionSuggestionsForGenre('ambient', rng1);
       const result2 = getProductionSuggestionsForGenre('ambient', rng2);
       expect(result1).toEqual(result2);
@@ -382,7 +382,7 @@ describe('Production Elements', () => {
 
   describe('buildProductionDescriptor (deprecated - use buildProductionDescriptorMulti)', () => {
     it('returns formatted descriptor string', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const multi = buildProductionDescriptorMulti(rng);
       const result = `${multi.texture}, ${multi.reverb}`;
       expect(result).toContain(',');
@@ -483,7 +483,7 @@ describe('Chord Progressions', () => {
 
   describe('getRandomProgressionForGenre', () => {
     it('returns a progression for known genre', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const prog = getRandomProgressionForGenre('rock', rng);
       expect(prog.name).toBeDefined();
       expect(prog.pattern).toBeDefined();
@@ -497,8 +497,8 @@ describe('Chord Progressions', () => {
     });
 
     it('is deterministic with seeded RNG', () => {
-      const rng1 = createRng(55);
-      const rng2 = createRng(55);
+      const rng1 = createSeededRng(55);
+      const rng2 = createSeededRng(55);
       const prog1 = getRandomProgressionForGenre('jazz', rng1);
       const prog2 = getRandomProgressionForGenre('jazz', rng2);
       expect(prog1.name).toBe(prog2.name);
@@ -507,7 +507,7 @@ describe('Chord Progressions', () => {
 
   describe('buildProgressionDescriptor', () => {
     it('returns formatted descriptor', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const result = buildProgressionDescriptor('jazz', rng);
       expect(result).toContain('(');
       expect(result).toContain(':');
@@ -521,14 +521,14 @@ describe('Chord Progressions', () => {
 
   describe('buildProgressionShort', () => {
     it('returns name and pattern without description', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const result = buildProgressionShort('jazz', rng);
       expect(result).toContain('(');
       expect(result).not.toContain(':'); // No colon - no description
     });
 
     it('is shorter than buildProgressionDescriptor', () => {
-      const rng = createRng(42);
+      const rng = createSeededRng(42);
       const short = buildProgressionShort('jazz', rng);
       const full = buildProgressionDescriptor('jazz', rng);
       expect(short.length).toBeLessThan(full.length);

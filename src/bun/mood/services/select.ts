@@ -26,12 +26,7 @@ import type { MoodCategory } from '@bun/mood/types';
 function fisherYatesShuffle<T>(array: T[], rng: () => number): T[] {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    const temp = array[i];
-    // Safe swap - we know indices are valid within the loop bounds
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    array[i] = array[j]!;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    array[j] = temp!;
+    [array[i], array[j]] = [array[j] as T, array[i] as T];
   }
   return array;
 }

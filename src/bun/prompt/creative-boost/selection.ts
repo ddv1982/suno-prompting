@@ -8,7 +8,7 @@
 
 import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS, type GenreType, selectInstrumentsForGenre as selectInstruments } from '@bun/instruments';
 import { filterSunoStylesByMoodCategory, selectMoodsForCategory, type MoodCategory } from '@bun/mood';
-import { selectRandom } from '@shared/utils/random';
+import { selectRandom, selectRandomN } from '@shared/utils/random';
 
 import {
   ADVENTUROUS_TRIPLE_PROBABILITY,
@@ -26,11 +26,10 @@ import type { CreativityLevel } from '@shared/types';
 
 /**
  * Select multiple unique random items from an array.
- * Uses Fisher-Yates-like shuffle with provided RNG for determinism.
+ * Uses proper Fisher-Yates shuffle with provided RNG for determinism.
  */
 function selectMultipleUnique<T>(items: readonly T[], count: number, rng: () => number): T[] {
-  const shuffled = [...items].sort(() => rng() - 0.5);
-  return shuffled.slice(0, count);
+  return selectRandomN(items, Math.min(count, items.length), rng);
 }
 
 // =============================================================================
