@@ -562,7 +562,7 @@ Story Mode transforms structured musical data into evocative narrative prose. Un
 
 - **LLM Required**: Story Mode needs an LLM (Ollama local or cloud provider)
 - **Fallback**: If LLM unavailable or times out (8s), falls back to deterministic structured output
-- **Toggle**: Available in Full Prompt Mode and Creative Boost panels
+- **Toggle**: Available in Full Prompt Mode, Quick Vibes, and Creative Boost panels
 
 ### How It Works
 
