@@ -12,16 +12,17 @@ This guide explains how the app generates Suno-ready prompts, what output format
 6. [Quick Vibes Output](#quick-vibes-output)
 7. [Lyrics Output](#lyrics-output)
 8. [Direct Mode Output](#direct-mode-output)
-9. [How Prompt Generation Works](#how-prompt-generation-works)
-10. [How Your Choices Affect Output](#how-your-choices-affect-output)
-11. [Behind the Scenes: Decision Making](#behind-the-scenes-decision-making)
-12. [Style Tags (MAX Mode Details)](#style-tags-max-mode)
-13. [Randomness with Control](#randomness-with-control)
-14. [Performance](#performance-why-its-instant)
-15. [Data Sources](#data-sources)
-16. [User Control vs Automation](#user-control-vs-automation)
-17. [Examples](#examples-input--output)
-18. [Quality Assurance](#quality-assurance)
+9. [Story Mode Output](#story-mode-output)
+10. [How Prompt Generation Works](#how-prompt-generation-works)
+11. [How Your Choices Affect Output](#how-your-choices-affect-output)
+12. [Behind the Scenes: Decision Making](#behind-the-scenes-decision-making)
+13. [Style Tags (MAX Mode Details)](#style-tags-max-mode)
+14. [Randomness with Control](#randomness-with-control)
+15. [Performance](#performance-why-its-instant)
+16. [Data Sources](#data-sources)
+17. [User Control vs Automation](#user-control-vs-automation)
+18. [Examples](#examples-input--output)
+19. [Quality Assurance](#quality-assurance)
 
 ---
 
@@ -35,6 +36,7 @@ The app generates different prompt formats depending on your settings:
 | **MAX** | Organic/acoustic genres | ~1000 chars | Production tags, recording context, realism focus |
 | **Quick Vibes** | Background/ambient | ~60 chars | Simple, category-based templates |
 | **Direct** | Suno V5 experts | ~500 chars | Raw Suno V5 styles, minimal processing |
+| **Story** | Atmospheric/ambient | ~500 chars | Narrative prose, no sections (requires LLM) |
 
 ### Quick Comparison
 
@@ -62,6 +64,12 @@ DIRECT MODE:
 Smooth Jazz, Neo-Soul, Intimate
 Rhodes, Upright Bass, Brushed Drums
 warm, sophisticated, late-night
+
+STORY MODE:
+The song opens in the intimate glow of a dimly-lit jazz club, where a Rhodes 
+piano plays warm, melancholic chords in D minor. A tenor sax drifts in with 
+a smooth, late-night melody while an upright bass walks through sophisticated 
+changes.
 ```
 
 ---
@@ -546,6 +554,81 @@ The app includes 900+ official Suno V5 styles searchable in Advanced Mode. Examp
 
 ---
 
+## Story Mode Output
+
+Story Mode transforms structured musical data into evocative narrative prose. Unlike other modes that output structured fields, Story Mode creates flowing text that embeds all musical elements naturally.
+
+### Requirements
+
+- **LLM Required**: Story Mode needs an LLM (Ollama local or cloud provider)
+- **Fallback**: If LLM unavailable or times out (8s), falls back to deterministic structured output
+- **Toggle**: Available in Full Prompt Mode and Creative Boost panels
+
+### How It Works
+
+1. **Deterministic builder** creates structured data (genre, BPM, instruments, mood, thematic context)
+2. **LLM transforms** the structure into narrative prose (100-500 characters)
+3. **Musical accuracy preserved** - genre keywords, tempo, instruments embedded naturally
+4. **No section markers** - pure prose, no `[VERSE]`, `[CHORUS]` tags
+
+### Example Transformation
+
+**Input (Structured Data):**
+```json
+{
+  "genre": "jazz",
+  "bpmRange": "between 80 and 110",
+  "key": "D minor",
+  "moods": ["melancholic", "smooth"],
+  "instruments": ["Rhodes piano", "tenor sax", "upright bass", "brushed drums"],
+  "styleTags": ["sophisticated", "late-night", "smoky"],
+  "recordingContext": "intimate jazz club"
+}
+```
+
+**Output (Story Mode):**
+```
+The song opens in the intimate glow of a dimly-lit jazz club, where a Rhodes piano 
+plays warm, melancholic chords in D minor. A tenor sax drifts in with a smooth, 
+late-night melody between 80 and 110 BPM while an upright bass walks through 
+sophisticated changes. The brushed drums whisper beneath, creating an atmosphere 
+of wistful longing.
+```
+
+### Combining with MAX Mode
+
+When both Story Mode and MAX Mode are enabled, MAX headers are prepended to the narrative:
+
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+
+Neon-drenched synthwave pulses through the night at 120 BPM, driven by analog 
+synthesizers and a relentless drum machine. The 80s-inspired darkwave aesthetic 
+builds with intense, cinematic tension as pulsing bass lines cut through layers 
+of retro-futuristic atmosphere.
+```
+
+### Best Use Cases
+
+| Genre Type | Story Mode Recommendation |
+|------------|---------------------------|
+| **Ambient, Jazz, Cinematic** | ✅ Excellent - atmosphere matters more than structure |
+| **Emotional, Downtempo** | ✅ Great - evocative prose enhances mood |
+| **Electronic, Dance** | ⚠️ Optional - structured format may work better |
+| **Punk, Metal** | ❌ Not recommended - use structured format |
+
+### Fallback Behavior
+
+If Story Mode generation fails (LLM unavailable, timeout, or error):
+
+1. Output includes `storyModeFallback: true` flag
+2. Falls back to deterministic structured output
+3. User experience unchanged - prompt still generated successfully
+4. Debug trace shows fallback reason
+
 ---
 
 ## How Prompt Generation Works
@@ -1019,7 +1102,7 @@ All choices come from carefully curated, tested databases:
 
 **All data is:**
 - Reviewed by developers
-- Tested in 4,407 automated tests (~26,200 assertions)
+- Tested in 4,448 automated tests
 - Validated for musical coherence
 - Regularly updated and expanded
 
@@ -1146,8 +1229,7 @@ Tags: "raw performance energy, live venue capture, warm analog console"
 
 ### Automated Testing
 
-- **4,407 tests** verify all combinations work correctly
-- **~26,200 assertions** validate expected behavior
+- **4,448 tests** verify all combinations work correctly
 - **100% pass rate** maintained across all refactoring
 
 ### Test Categories
@@ -1185,7 +1267,7 @@ The deterministic generation system provides:
 - **Quality** - Curated data, tested combinations
 - **Variety** - Controlled randomness from quality pools
 - **Reliability** - Works offline, no API failures
-- **Tested** - 4,407 tests validate correctness
+- **Tested** - 4,448 tests validate correctness
 - **Topic-Aware** - 220+ keywords map descriptions to relevant titles
 - **Rich Vocabulary** - 269 words × 200 patterns = 50,000+ unique titles
 - **Smart Aliases** - 90+ genre mappings for flexible input

@@ -10,10 +10,13 @@
 import { type LanguageModel } from 'ai';
 
 import { AIConfig } from '@bun/ai/config';
-import { getOllamaModel } from '@bun/ai/ollama-provider';
 
 /**
  * Create configuration proxy methods bound to an AIConfig instance.
+ *
+ * Note: When useLocalLLM is true, getModel() still returns the cloud model.
+ * Local LLM routing is handled by passing ollamaEndpoint to callLLM(),
+ * which uses the direct HTTP client (ollama-client.ts) instead of AI SDK.
  */
 export function createConfigProxies(config: AIConfig): {
   setProvider: OmitThisParameter<typeof config.setProvider>;
@@ -23,6 +26,7 @@ export function createConfigProxies(config: AIConfig): {
   setDebugMode: OmitThisParameter<typeof config.setDebugMode>;
   setMaxMode: OmitThisParameter<typeof config.setMaxMode>;
   setLyricsMode: OmitThisParameter<typeof config.setLyricsMode>;
+  setStoryMode: OmitThisParameter<typeof config.setStoryMode>;
   setUseLocalLLM: OmitThisParameter<typeof config.setUseLocalLLM>;
   initialize: OmitThisParameter<typeof config.initialize>;
   isDebugMode: OmitThisParameter<typeof config.isDebugMode>;
@@ -32,10 +36,9 @@ export function createConfigProxies(config: AIConfig): {
   setOllamaMaxTokens: OmitThisParameter<typeof config.setOllamaMaxTokens>;
   setOllamaContextLength: OmitThisParameter<typeof config.setOllamaContextLength>;
   getOllamaConfig: OmitThisParameter<typeof config.getOllamaConfig>;
-  getOllamaModel: () => LanguageModel;
   getModel: () => LanguageModel;
 } {
-  const proxies = {
+  return {
     // Provider configuration
     setProvider: config.setProvider.bind(config),
     setApiKey: config.setApiKey.bind(config),
@@ -44,6 +47,7 @@ export function createConfigProxies(config: AIConfig): {
     setDebugMode: config.setDebugMode.bind(config),
     setMaxMode: config.setMaxMode.bind(config),
     setLyricsMode: config.setLyricsMode.bind(config),
+    setStoryMode: config.setStoryMode.bind(config),
     setUseLocalLLM: config.setUseLocalLLM.bind(config),
     initialize: config.initialize.bind(config),
     isDebugMode: config.isDebugMode.bind(config),
@@ -57,25 +61,11 @@ export function createConfigProxies(config: AIConfig): {
     getOllamaConfig: config.getOllamaConfig.bind(config),
 
     /**
-     * Get the Ollama language model with current configuration.
+     * Get the cloud language model.
+     * Note: When useLocalLLM is true, callers should pass ollamaEndpoint
+     * to callLLM() which routes to the direct HTTP client instead.
      */
-    getOllamaModel: (): LanguageModel => getOllamaModel(config.getOllamaConfig()),
-  };
-
-  /**
-   * Get the appropriate language model based on useLocalLLM setting.
-   * Returns Ollama model if useLocalLLM is true, otherwise cloud provider model.
-   */
-  const getModel = (): LanguageModel => {
-    if (config.isUseLocalLLM()) {
-      return proxies.getOllamaModel();
-    }
-    return config.getModel();
-  };
-
-  return {
-    ...proxies,
-    getModel,
+    getModel: config.getModel.bind(config),
   };
 }
 

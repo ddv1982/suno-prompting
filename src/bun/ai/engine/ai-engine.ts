@@ -42,8 +42,8 @@ export class AIEngine {
   private config = new AIConfig();
   private proxies = createConfigProxies(this.config);
   private factories = createConfigFactories(this.config, this.proxies);
-  private quickVibes = createQuickVibesMethods(this.config, this.proxies, this.factories);
-  private creativeBoost = createCreativeBoostMethods(this.config, this.proxies, this.factories);
+  private quickVibes = createQuickVibesMethods(this.factories);
+  private creativeBoost = createCreativeBoostMethods(this.factories);
 
   // ==========================================================================
   // Configuration Proxies (delegated)
@@ -56,6 +56,7 @@ export class AIEngine {
   setDebugMode = this.proxies.setDebugMode;
   setMaxMode = this.proxies.setMaxMode;
   setLyricsMode = this.proxies.setLyricsMode;
+  setStoryMode = this.proxies.setStoryMode;
   setUseLocalLLM = this.proxies.setUseLocalLLM;
   initialize = this.proxies.initialize;
   isDebugMode = this.proxies.isDebugMode;
@@ -66,7 +67,6 @@ export class AIEngine {
   setOllamaMaxTokens = this.proxies.setOllamaMaxTokens;
   setOllamaContextLength = this.proxies.setOllamaContextLength;
   getOllamaConfig = this.proxies.getOllamaConfig;
-  getOllamaModel = this.proxies.getOllamaModel;
 
   // ==========================================================================
   // Core Generation & Refinement

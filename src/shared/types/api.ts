@@ -22,6 +22,8 @@ export interface GenerateInitialResponse {
   versionId: string; 
   validation: ValidationResult; 
   debugTrace?: TraceRun;
+  /** Flag indicating Story Mode fell back to deterministic output */
+  storyModeFallback?: boolean;
 }
 
 export interface RefinePromptParams { 
@@ -100,6 +102,7 @@ export interface SaveAllSettingsParams {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   useLocalLLM?: boolean; // Optional for backwards compatibility
 }
 
@@ -111,6 +114,7 @@ export interface GetAllSettingsResponse {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   useLocalLLM: boolean;
 }
 
@@ -125,6 +129,7 @@ export interface SetModelParams { model: string }
 export interface SetSunoTagsParams { useSunoTags: boolean }
 export interface SetMaxModeParams { maxMode: boolean }
 export interface SetLyricsModeParams { lyricsMode: boolean }
+export interface SetStoryModeParams { storyMode: boolean }
 export interface SetUseLocalLLMParams { useLocalLLM: boolean }
 
 // Quick Vibes endpoints
@@ -152,6 +157,8 @@ export interface GenerateQuickVibesResponse {
   title?: string;
   versionId: string;
   debugTrace?: TraceRun;
+  /** Flag indicating Story Mode fell back to deterministic output */
+  storyModeFallback?: boolean;
 }
 
 export interface RefineQuickVibesParams {
@@ -200,6 +207,8 @@ export interface GenerateCreativeBoostResponse {
   lyrics?: string;             // Generated lyrics (when withLyrics: true)
   versionId: string;
   debugTrace?: TraceRun;
+  /** Flag indicating Story Mode fell back to deterministic output */
+  storyModeFallback?: boolean;
 }
 
 export interface RefineCreativeBoostParams {

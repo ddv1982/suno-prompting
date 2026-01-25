@@ -16,7 +16,7 @@ async function runAndValidate(
   action: 'generateInitial' | 'refinePrompt',
   meta: ActionMeta,
   operation: (runtime: TraceRuntime) => Promise<GenerationResult>
-): Promise<{ prompt: string; title?: string; lyrics?: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: GenerationResult['debugTrace'] }> {
+): Promise<{ prompt: string; title?: string; lyrics?: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: GenerationResult['debugTrace']; storyModeFallback?: boolean }> {
   return withErrorHandling(action, async () => {
     const versionId = Bun.randomUUIDv7();
 
@@ -29,7 +29,7 @@ async function runAndValidate(
 
     const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : undefined;
     const validation = validatePrompt(result.text);
-    log.info(`${action}:result`, { versionId, isValid: validation.isValid, promptLength: result.text.length });
+    log.info(`${action}:result`, { versionId, isValid: validation.isValid, promptLength: result.text.length, storyModeFallback: result.storyModeFallback });
     return {
       prompt: result.text,
       title: result.title,
@@ -37,6 +37,7 @@ async function runAndValidate(
       versionId,
       validation,
       debugTrace,
+      storyModeFallback: result.storyModeFallback,
     };
   }, meta);
 }

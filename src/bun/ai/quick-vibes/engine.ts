@@ -14,19 +14,86 @@ import {
 import {
   applyQuickVibesMaxMode,
 } from '@bun/prompt/quick-vibes-builder';
+import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
 
 import { isDirectMode, generateDirectModeResult } from '../direct-mode';
+import {
+  extractStructuredDataForStory,
+  generateStoryNarrativeWithTimeout,
+  prependMaxHeaders,
+} from '../story-generator';
 
 import type { GenerationResult, EngineConfig } from '../types';
 import type { GenerateQuickVibesOptions } from './types';
-import type { TraceCollector } from '@bun/trace';
+import type { TraceRuntime } from '@bun/ai/generation/types';
 
 const log = createLogger('QuickVibesEngine');
 
-interface TraceRuntime {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
+/** Extended config for Quick Vibes with Story Mode support */
+export interface QuickVibesEngineConfig extends EngineConfig {
+  isMaxMode: () => boolean;
+  isStoryMode?: () => boolean;
+  isLLMAvailable?: () => boolean;
+  getOllamaEndpointIfLocal?: () => string | undefined;
+}
+
+/**
+ * Apply Story Mode transformation to deterministic result.
+ * Returns the transformed result if Story Mode succeeds, null if fallback is needed.
+ */
+async function applyStoryModeTransformation(
+  deterministicResult: string,
+  title: string,
+  customDescription: string,
+  config: QuickVibesEngineConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult | null> {
+  const storyMode = config.isStoryMode?.() ?? false;
+  const llmAvailable = config.isLLMAvailable?.() ?? false;
+
+  if (!storyMode || !llmAvailable) {
+    return null;
+  }
+
+  log.info('applyStoryModeTransformation:start', { hasLLM: true });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'quickVibes.storyMode.attempt',
+    branchTaken: 'narrative',
+    why: 'Story Mode enabled, attempting narrative generation',
+  });
+
+  const storyInput = extractStructuredDataForStory(deterministicResult, null, { description: customDescription });
+
+  const storyResult = await generateStoryNarrativeWithTimeout({
+    input: storyInput,
+    getModel: config.getModel,
+    ollamaEndpoint: config.getOllamaEndpointIfLocal?.(),
+    trace: runtime?.trace,
+  });
+
+  if (storyResult.success) {
+    const finalText = config.isMaxMode()
+      ? prependMaxHeaders(storyResult.narrative)
+      : storyResult.narrative;
+
+    return { text: finalText, title, debugTrace: undefined };
+  }
+
+  // Story Mode fallback
+  const errorMessage = storyResult.error ?? 'Unknown error';
+  log.warn('applyStoryModeTransformation:fallback', { error: errorMessage });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'quickVibes.storyMode.fallback',
+    branchTaken: 'deterministic',
+    why: `Story generation failed: ${errorMessage}`,
+  });
+
+  return { text: deterministicResult, title, debugTrace: undefined, storyModeFallback: true };
 }
 
 /**
@@ -52,7 +119,7 @@ interface TraceRuntime {
  */
 export async function generateQuickVibes(
   options: GenerateQuickVibesOptions,
-  config: EngineConfig & { isMaxMode: () => boolean },
+  config: QuickVibesEngineConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { category, customDescription, withWordlessVocals, sunoStyles } = options;
@@ -86,13 +153,17 @@ export async function generateQuickVibes(
       { withWordlessVocals, maxMode: config.isMaxMode(), rng, trace: runtime?.trace }
     );
 
-    const result = applyQuickVibesMaxMode(text, config.isMaxMode());
+    const deterministicResult = applyQuickVibesMaxMode(text, config.isMaxMode());
 
-    return {
-      text: result,
-      title,
-      debugTrace: undefined,
-    };
+    // Try Story Mode transformation (returns null if not applicable)
+    const storyResult = await applyStoryModeTransformation(
+      deterministicResult, title, customDescription, config, runtime
+    );
+    if (storyResult) {
+      return storyResult;
+    }
+
+    return { text: deterministicResult, title, debugTrace: undefined };
   }
 
   // Custom description without category: use custom description as style

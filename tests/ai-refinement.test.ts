@@ -58,10 +58,10 @@ const { refinePrompt } = await import('@bun/ai/refinement');
 function createMockConfig(overrides: Partial<RefinementConfig> = {}): RefinementConfig {
   return {
     getModel: () => ({} as any),
-    getOllamaModel: () => ({} as any),
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
+    isStoryMode: () => false,
     isUseLocalLLM: () => false,
     isLLMAvailable: () => false,
     getUseSunoTags: () => true,

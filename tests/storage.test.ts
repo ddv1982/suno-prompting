@@ -187,4 +187,67 @@ describe("StorageManager", () => {
       expect(config.debugMode).toBe(true);
     });
   });
+
+  // ============================================================================
+  // Task 5.2: Story Mode Storage Persistence Tests
+  // ============================================================================
+
+  describe("storyMode persistence", () => {
+    test("getConfig returns storyMode: false by default when not set", async () => {
+      const config = await storage.getConfig();
+
+      // If storyMode doesn't exist in storage, it should default to false (or undefined, but logic should treat as false)
+      expect(config.storyMode ?? false).toBe(false);
+    });
+
+    test("saveConfig persists storyMode: true", async () => {
+      await storage.saveConfig({ storyMode: true });
+
+      const config = await storage.getConfig();
+      expect(config.storyMode).toBe(true);
+    });
+
+    test("saveConfig persists storyMode: false", async () => {
+      // First set to true
+      await storage.saveConfig({ storyMode: true });
+
+      // Then set back to false
+      await storage.saveConfig({ storyMode: false });
+
+      const config = await storage.getConfig();
+      expect(config.storyMode).toBe(false);
+    });
+
+    test("storyMode persists independently of other settings", async () => {
+      // Set storyMode
+      await storage.saveConfig({ storyMode: true });
+
+      // Set other settings
+      await storage.saveConfig({ maxMode: true });
+      await storage.saveConfig({ lyricsMode: true });
+      await storage.saveConfig({ debugMode: true });
+
+      // Verify storyMode unchanged
+      const config = await storage.getConfig();
+      expect(config.storyMode).toBe(true);
+      expect(config.maxMode).toBe(true);
+      expect(config.lyricsMode).toBe(true);
+      expect(config.debugMode).toBe(true);
+    });
+
+    test("storyMode survives multiple config updates", async () => {
+      // Set initial config including storyMode
+      await storage.saveConfig({ storyMode: true, model: "initial-model" });
+
+      // Update model multiple times
+      await storage.saveConfig({ model: "model-v1" });
+      await storage.saveConfig({ model: "model-v2" });
+      await storage.saveConfig({ model: "model-v3" });
+
+      // storyMode should still be true
+      const config = await storage.getConfig();
+      expect(config.storyMode).toBe(true);
+      expect(config.model).toBe("model-v3");
+    });
+  });
 });

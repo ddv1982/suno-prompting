@@ -7,18 +7,13 @@
  * @module ai/thematic-context
  */
 
-import { generateText } from 'ai';
-
-import { generateWithOllama } from '@bun/ai/ollama-client';
+import { callLLM } from '@bun/ai/llm-utils';
 import { createLogger } from '@bun/logger';
 import { traceDecision, traceError } from '@bun/trace';
 import { ThematicContextSchema } from '@shared/schemas/thematic-context';
-import { truncateTextWithMarker } from '@shared/trace';
 
 import type { TraceCollector } from '@bun/trace';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
-import type { AIProvider } from '@shared/types';
-import type { TraceProviderInfo } from '@shared/types/trace';
 import type { LanguageModel } from 'ai';
 
 const log = createLogger('ThematicContext');
@@ -37,69 +32,6 @@ const thematicCache = new Map<string, ThematicContext>();
  */
 export function clearThematicCache(): void {
   thematicCache.clear();
-}
-
-/**
- * Infer provider info from LanguageModel for tracing.
- */
-function inferProviderInfo(model: LanguageModel): { providerId?: AIProvider; modelId?: string } {
-  if (model && typeof model === 'object') {
-    const m = model as Record<string, unknown>;
-    const providerId = typeof m.provider === 'string' ? m.provider as AIProvider : undefined;
-    const modelId = typeof m.modelId === 'string' ? m.modelId : undefined;
-    return { providerId, modelId };
-  }
-  return {};
-}
-
-/**
- * Build provider info for trace event.
- */
-function buildProviderInfo(
-  ollamaEndpoint: string | undefined,
-  getModel: () => LanguageModel
-): TraceProviderInfo {
-  if (ollamaEndpoint) {
-    return { id: 'ollama', model: 'unknown', locality: 'local' };
-  }
-  const inferred = inferProviderInfo(getModel());
-  return { id: inferred.providerId ?? 'openai', model: inferred.modelId ?? 'unknown', locality: 'cloud' };
-}
-
-/**
- * Add LLM call trace event for thematic extraction.
- */
-function traceThematicLLMCall(
-  trace: TraceCollector | undefined,
-  userPrompt: string,
-  rawResponse: string,
-  provider: TraceProviderInfo
-): void {
-  if (!trace) return;
-
-  const systemPreview = truncateTextWithMarker(THEMATIC_EXTRACTION_SYSTEM_PROMPT, 500).text;
-  const userPreview = truncateTextWithMarker(userPrompt, 500).text;
-  const responsePreview = truncateTextWithMarker(rawResponse, 900).text;
-
-  trace.addLLMCallEvent({
-    label: 'thematic.extraction',
-    provider,
-    request: {
-      inputSummary: {
-        messageCount: 2,
-        totalChars: THEMATIC_EXTRACTION_SYSTEM_PROMPT.length + userPrompt.length,
-        preview: `SYSTEM: ${systemPreview.slice(0, 100)}...\nUSER: ${userPreview}`,
-      },
-      messages: [
-        { role: 'system', content: systemPreview },
-        { role: 'user', content: userPreview },
-      ],
-    },
-    response: {
-      previewText: responsePreview,
-      rawText: truncateTextWithMarker(rawResponse, 7000).text,
-    },
-  });
 }
 
 /**
@@ -355,52 +287,6 @@ function parseThematicResponse(rawResponse: string): ThematicContext | null {
 }
 
 /**
- * Extracts thematic context from a description using Ollama.
- * Note: Ollama client has its own timeout handling.
- */
-async function extractWithOllama(
-  ollamaEndpoint: string,
-  userPrompt: string
-): Promise<string> {
-  log.info('extractThematicContext:ollama', { endpoint: ollamaEndpoint });
-  return generateWithOllama(
-    ollamaEndpoint,
-    THEMATIC_EXTRACTION_SYSTEM_PROMPT,
-    userPrompt
-  );
-}
-
-/**
- * Extracts thematic context from a description using cloud provider.
- * Timeout is handled by the caller via Promise.race pattern.
- */
-async function extractWithCloud(
-  getModel: () => LanguageModel,
-  userPrompt: string,
-  signal?: AbortSignal
-): Promise<string> {
-  log.info('extractThematicContext:cloud');
-
-  const { text } = await generateText({
-    model: getModel(),
-    system: THEMATIC_EXTRACTION_SYSTEM_PROMPT,
-    prompt: userPrompt,
-    maxRetries: 1, // One retry for transient failures
-    abortSignal: signal,
-    onFinish: ({ usage, finishReason }) => {
-      log.info('extractThematicContext:onFinish', {
-        finishReason,
-        promptTokens: usage.inputTokens,
-        completionTokens: usage.outputTokens,
-        totalTokens: (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0),
-      });
-    },
-  });
-
-  return text;
-}
-
-/**
  * Extracts thematic context (themes, moods, scene) from a description using LLM.
  *
  * Returns null if:
@@ -425,7 +311,7 @@ async function extractWithCloud(
 export async function extractThematicContext(
   options: ExtractThematicContextOptions
 ): Promise<ThematicContext | null> {
-  const { description, getModel, ollamaEndpoint, trace, signal } = options;
+  const { description, getModel, ollamaEndpoint, trace } = options;
 
   // Early return for empty or short descriptions
   const trimmed = description?.trim();
@@ -454,19 +340,19 @@ export async function extractThematicContext(
   }
 
   const userPrompt = buildUserPrompt(trimmed);
-  const provider = buildProviderInfo(ollamaEndpoint, getModel);
 
   try {
-    let rawResponse: string;
-
-    if (ollamaEndpoint) {
-      rawResponse = await extractWithOllama(ollamaEndpoint, userPrompt);
-    } else {
-      rawResponse = await extractWithCloud(getModel, userPrompt, signal);
-    }
-
-    // Trace the LLM call
-    traceThematicLLMCall(trace, userPrompt, rawResponse, provider);
+    // Use callLLM which handles cloud/Ollama routing, tracing, and error handling
+    const rawResponse = await callLLM({
+      getModel,
+      systemPrompt: THEMATIC_EXTRACTION_SYSTEM_PROMPT,
+      userPrompt,
+      errorContext: 'thematic extraction',
+      ollamaEndpoint,
+      maxRetries: 1, // One retry for transient failures
+      trace,
+      traceLabel: 'thematic.extraction',
+    });
 
     // Parse and validate JSON response
     const validated = parseThematicResponse(rawResponse);

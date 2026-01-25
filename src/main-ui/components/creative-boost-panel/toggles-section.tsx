@@ -1,27 +1,34 @@
-import { FileText, Mic, Zap } from "lucide-react";
+import { BookOpen, FileText, Mic, Zap } from "lucide-react";
 
+import { LLMUnavailableNotice } from "@/components/shared";
 import { ToggleRow } from "@/components/ui/toggle-row";
-import { getMaxModeHelperText } from "@shared/constants";
+import { getMaxModeHelperText, getStoryModeHelperText } from "@shared/constants";
 
 import type { ReactElement } from "react";
 
 interface TogglesSectionProps {
   withWordlessVocals: boolean;
   maxMode: boolean;
+  storyMode: boolean;
   lyricsMode: boolean;
+  isLLMAvailable: boolean;
   isDirectMode: boolean;
   onWordlessVocalsChange: (checked: boolean) => void;
   onMaxModeChange: (checked: boolean) => void;
+  onStoryModeChange: (checked: boolean) => void;
   onLyricsModeChange: (checked: boolean) => void;
 }
 
 export function TogglesSection({
   withWordlessVocals,
   maxMode,
+  storyMode,
   lyricsMode,
+  isLLMAvailable,
   isDirectMode,
   onWordlessVocalsChange,
   onMaxModeChange,
+  onStoryModeChange,
   onLyricsModeChange,
 }: TogglesSectionProps): ReactElement {
   return (
@@ -45,6 +52,20 @@ export function TogglesSection({
         autoDisable
       />
       <p className="ui-helper pl-6">{getMaxModeHelperText(maxMode)}</p>
+      <div className="flex items-center gap-2">
+        <ToggleRow
+          id="cb-story-mode"
+          icon={<BookOpen className="w-3.5 h-3.5" />}
+          label="Story Mode"
+          checked={storyMode}
+          onChange={onStoryModeChange}
+          disabled={!isLLMAvailable}
+          autoDisable
+          showNaBadge={!isLLMAvailable}
+        />
+        {!isLLMAvailable && <LLMUnavailableNotice />}
+      </div>
+      <p className="ui-helper pl-6">{getStoryModeHelperText(storyMode, maxMode)}</p>
       <ToggleRow
         id="cb-lyrics"
         icon={<FileText className="w-3.5 h-3.5" />}

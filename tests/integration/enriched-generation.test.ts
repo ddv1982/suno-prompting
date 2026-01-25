@@ -171,10 +171,10 @@ const { generateInitial } = await import('@bun/ai/generation');
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
     getModel: () => ({} as unknown),
-    getOllamaModel: () => ({} as unknown),
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
+    isStoryMode: () => false, // Story Mode disabled by default
     isUseLocalLLM: () => false,
     isLLMAvailable: () => true,
     getUseSunoTags: () => true,

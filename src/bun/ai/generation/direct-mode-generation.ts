@@ -3,6 +3,7 @@
  *
  * Handles Direct Mode path (Suno V5 styles selected) for full prompt generation.
  * Styles are preserved as-is, prompt is enriched with instruments, moods, production.
+ * Supports Story Mode for narrative prose output.
  *
  * @module ai/generation/direct-mode-generation
  */
@@ -10,18 +11,13 @@
 import { generateLyrics } from '@bun/ai/content-generator';
 import { buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
 import { generateDirectModeTitle } from '@bun/ai/llm-utils';
+import { tryStoryMode, type StoryGenerationInput } from '@bun/ai/story-generator';
 import { cleanLyrics } from '@bun/ai/utils';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { ValidationError } from '@shared/errors';
 
-import type { GenerateInitialOptions } from './types';
+import type { GenerateInitialOptions, TraceRuntime } from './types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
-import type { TraceCollector } from '@bun/trace';
-
-interface TraceRuntime {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
-}
 
 /**
  * Generate prompt in Direct Mode (Suno V5 styles selected).
@@ -76,6 +72,32 @@ export async function generateDirectMode(
     lyrics = undefined;
   }
 
+  // Story Mode: Transform to narrative prose if enabled and LLM available
+  const storyInput: StoryGenerationInput = {
+    genre,
+    bpmRange: enriched.enrichment.bpmRange,
+    moods: enriched.enrichment.moods,
+    instruments: enriched.enrichment.instruments,
+    styleTags: enriched.enrichment.styleTags,
+    recordingContext: enriched.enrichment.production,
+    sunoStyles,
+    isDirectMode: true,
+  };
+  const storyModeResult = await tryStoryMode({
+    input: storyInput,
+    title,
+    lyrics,
+    fallbackText: text,
+    config,
+    trace: runtime?.trace,
+    tracePrefix: 'directMode.storyMode',
+    logLabel: 'generateDirectMode',
+  });
+
+  if (storyModeResult) {
+    return storyModeResult;
+  }
+
   return { text, title, lyrics, debugTrace: undefined };
 }
 
@@ -89,7 +111,7 @@ async function generateDirectModeTitleAndLyrics(
   config: GenerationConfig,
   runtime?: TraceRuntime
 ): Promise<{ title: string; lyrics: string }> {
-  const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
+  const ollamaEndpoint = config.getOllamaEndpointIfLocal();
 
   // Parallel execution for performance; both must succeed for valid result
   const topic = lyricsTopic?.trim() || description || '';

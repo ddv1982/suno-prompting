@@ -37,6 +37,7 @@ function createMockAIEngine() {
     setMaxMode: mock(() => {}),
     setUseLocalLLM: mock(() => {}),
     setLyricsMode: mock(() => {}),
+    setStoryMode: mock(() => {}),
     getModel: mock(() => ({} as any)),
     isDebugMode: mock(() => false),
   };
@@ -53,6 +54,7 @@ function createMockStorage() {
     debugMode: false,
     maxMode: false,
     lyricsMode: false,
+    storyMode: false,
     useLocalLLM: false,
     promptMode: "full",
     creativeBoostMode: "simple",
@@ -291,6 +293,7 @@ describe("RPC Handlers", () => {
         debugMode: true,
         maxMode: true,
         lyricsMode: true,
+        storyMode: false,
         useLocalLLM: false,
       });
 
@@ -301,6 +304,7 @@ describe("RPC Handlers", () => {
       expect(aiEngine.setDebugMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setMaxMode).toHaveBeenCalledWith(true);
       expect(aiEngine.setLyricsMode).toHaveBeenCalledWith(true);
+      expect(aiEngine.setStoryMode).toHaveBeenCalledWith(false);
       expect(aiEngine.setUseLocalLLM).toHaveBeenCalledWith(false);
     });
   });
@@ -655,6 +659,126 @@ bpm: "110"`;
       expect(result.title).toBe("Refined Title");
       expect(result.versionId).toBeDefined();
       expect(aiEngine.refineCreativeBoost).toHaveBeenCalled();
+    });
+  });
+
+  // ============================================================================
+  // Task 5.2: Story Mode Settings Persistence Tests
+  // ============================================================================
+
+  describe("story mode handlers", () => {
+    test("getStoryMode returns default false when no persisted value", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.getStoryMode({});
+
+      expect(result.storyMode).toBe(false);
+    });
+
+    test("setStoryMode persists value to storage", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.setStoryMode({ storyMode: true });
+
+      expect(result.success).toBe(true);
+      expect(storage.saveConfig).toHaveBeenCalledWith({ storyMode: true });
+    });
+
+    test("setStoryMode updates AI engine state", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await handlers.setStoryMode({ storyMode: true });
+
+      expect(aiEngine.setStoryMode).toHaveBeenCalledWith(true);
+    });
+
+    test("getStoryMode returns persisted value after set", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Set story mode to true
+      await handlers.setStoryMode({ storyMode: true });
+
+      // Get story mode - should be true
+      const result = await handlers.getStoryMode({});
+
+      expect(result.storyMode).toBe(true);
+    });
+
+    test("setStoryMode to false persists correctly", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // First set to true
+      await handlers.setStoryMode({ storyMode: true });
+
+      // Then set back to false
+      const result = await handlers.setStoryMode({ storyMode: false });
+
+      expect(result.success).toBe(true);
+      expect(storage.saveConfig).toHaveBeenLastCalledWith({ storyMode: false });
+      expect(aiEngine.setStoryMode).toHaveBeenLastCalledWith(false);
+    });
+
+    test("storyMode persists independently of other modes", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Set story mode to true
+      await handlers.setStoryMode({ storyMode: true });
+
+      // Set max mode (should not affect story mode)
+      await handlers.setMaxMode({ maxMode: true });
+
+      // Set lyrics mode (should not affect story mode)
+      await handlers.setLyricsMode({ lyricsMode: true });
+
+      // Get story mode - should still be true
+      const result = await handlers.getStoryMode({});
+      expect(result.storyMode).toBe(true);
+    });
+
+    test("getAllSettings includes storyMode", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      // Set story mode
+      await handlers.setStoryMode({ storyMode: true });
+
+      // Get all settings
+      const result = await handlers.getAllSettings({});
+
+      expect(result.storyMode).toBe(true);
+    });
+
+    test("saveAllSettings updates storyMode", async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await handlers.saveAllSettings({
+        provider: "groq",
+        apiKeys: { groq: "test-key", openai: null, anthropic: null },
+        model: "test-model",
+        useSunoTags: true,
+        debugMode: false,
+        maxMode: false,
+        lyricsMode: false,
+        storyMode: true,
+        useLocalLLM: false,
+      });
+
+      expect(aiEngine.setStoryMode).toHaveBeenCalledWith(true);
     });
   });
 });

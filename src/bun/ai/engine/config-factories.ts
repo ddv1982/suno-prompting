@@ -23,8 +23,7 @@ function createPostProcess(
   getModel: () => LanguageModel
 ): (text: string) => Promise<string> {
   return async (text: string): Promise<string> => {
-    const ollamaEndpoint = config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined;
-    return postProcess(text, getModel, ollamaEndpoint);
+    return postProcess(text, getModel, config.getOllamaEndpointIfLocal());
   };
 }
 
@@ -47,10 +46,10 @@ export function createConfigFactories(
   function getGenerationConfig(): GenerationConfig {
     return {
       getModel: proxies.getModel,
-      getOllamaModel: proxies.getOllamaModel,
       isDebugMode: config.isDebugMode.bind(config),
       isMaxMode: config.isMaxMode.bind(config),
       isLyricsMode: config.isLyricsMode.bind(config),
+      isStoryMode: config.isStoryMode.bind(config),
       isUseLocalLLM: config.isUseLocalLLM.bind(config),
       isLLMAvailable: config.isLLMAvailable.bind(config),
       getUseSunoTags: config.getUseSunoTags.bind(config),

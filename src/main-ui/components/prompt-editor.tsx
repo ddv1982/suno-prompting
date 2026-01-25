@@ -23,7 +23,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
   const { currentPrompt, currentTitle, currentLyrics } = output;
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
   const { isGenerating, generatingAction, validation, debugTrace, chatMessages, isOptimistic, showSkeleton } = generation;
-  const { maxMode, lyricsMode, editorMode, promptMode, creativeBoostMode } = modes;
+  const { maxMode, lyricsMode, storyMode, editorMode, promptMode, creativeBoostMode } = modes;
   const { maxChars, currentModel } = config;
   const { isLLMAvailable } = useSettingsContext();
   const [copied, setCopied] = useState(false);
@@ -83,27 +83,30 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
 
           {promptMode === 'quickVibes' ? (
             <QuickVibesPanel input={quickVibes.input} originalInput={quickVibes.originalInput} withWordlessVocals={quickVibes.withWordlessVocals} maxMode={maxMode}
+              storyMode={storyMode} isLLMAvailable={isLLMAvailable}
               isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} onInputChange={handlers.onQuickVibesInputChange}
               onWordlessVocalsChange={handlers.onWordlessVocalsChange} onMaxModeChange={handlers.onMaxModeChange}
+              onStoryModeChange={handlers.onStoryModeChange}
               onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.withWordlessVocals, quickVibes.input.sunoStyles, quickVibes.input.moodCategory); }}
               onRefine={handlers.onRefineQuickVibes} />
           ) : promptMode === 'creativeBoost' ? (
-            <CreativeBoostPanel input={creativeBoost.input} maxMode={maxMode} lyricsMode={lyricsMode}
-              isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} creativeBoostMode={creativeBoostMode}
+            <CreativeBoostPanel input={creativeBoost.input} maxMode={maxMode} storyMode={storyMode} lyricsMode={lyricsMode}
+              isLLMAvailable={isLLMAvailable} isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} creativeBoostMode={creativeBoostMode}
               onCreativeBoostModeChange={handlers.onCreativeBoostModeChange} onInputChange={handlers.onCreativeBoostInputChange}
-              onMaxModeChange={handlers.onMaxModeChange} onLyricsModeChange={handlers.onLyricsModeChange}
+              onMaxModeChange={handlers.onMaxModeChange} onStoryModeChange={handlers.onStoryModeChange} onLyricsModeChange={handlers.onLyricsModeChange}
               onGenerate={handlers.onGenerateCreativeBoost} onRefine={handlers.onRefineCreativeBoost} />
           ) : (
             <FullPromptInputPanel currentPrompt={currentPrompt} pendingInput={pendingInput} lockedPhrase={lockedPhrase}
               lyricsTopic={lyricsTopic} moodCategory={input.moodCategory} editorMode={editorMode} advancedSelection={advancedSelection}
-              computedMusicPhrase={computedMusicPhrase} maxMode={maxMode} lyricsMode={lyricsMode} isGenerating={isGenerating}
-              maxChars={maxChars} lockedPhraseValidation={lockedPhraseValidation} inputOverLimit={inputOverLimit}
+              computedMusicPhrase={computedMusicPhrase} maxMode={maxMode} lyricsMode={lyricsMode} storyMode={storyMode}
+              isGenerating={isGenerating} maxChars={maxChars} lockedPhraseValidation={lockedPhraseValidation} inputOverLimit={inputOverLimit}
               lyricsTopicOverLimit={lyricsTopicOverLimit} hasAdvancedSelection={isAdvancedModeActive}
               onPendingInputChange={handlers.onPendingInputChange} onLockedPhraseChange={handlers.onLockedPhraseChange}
               onLyricsTopicChange={handlers.onLyricsTopicChange} onMoodCategoryChange={handlers.onMoodCategoryChange}
               onEditorModeChange={handlers.onEditorModeChange}
               onAdvancedSelectionUpdate={handlers.onAdvancedSelectionUpdate} onAdvancedSelectionClear={handlers.onAdvancedSelectionClear}
               onMaxModeChange={handlers.onMaxModeChange} onLyricsModeChange={handlers.onLyricsModeChange}
+              onStoryModeChange={handlers.onStoryModeChange}
               onGenerate={handlers.onGenerate} onConversionComplete={handlers.onConversionComplete} />
           )}
 

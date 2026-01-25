@@ -28,18 +28,14 @@ import { callLLM } from '../llm-utils';
 
 import type { GenerationResult, EngineConfig } from '../types';
 import type { RefineQuickVibesOptions } from './types';
-import type { TraceCollector } from '@bun/trace';
+import type { TraceRuntime } from '@bun/ai/generation/types';
 
 const log = createLogger('QuickVibesRefinement');
-
-interface TraceRuntime {
-  readonly trace?: TraceCollector;
-}
 
 /**
  * Simple hash function for feedback string to seed RNG.
  */
-export function hashFeedback(feedback: string): number {
+function hashFeedback(feedback: string): number {
   let hash = 0;
   for (let i = 0; i < feedback.length; i++) {
     const char = feedback.charCodeAt(i);
@@ -49,13 +45,10 @@ export function hashFeedback(feedback: string): number {
   return Math.abs(hash) || 1; // Ensure non-zero
 }
 
-// Re-export createSeededRng from shared utils for module consumers
-export { createSeededRng } from '@shared/utils/random';
-
 /**
  * Build Quick Vibes prompt from template with custom RNG.
  */
-export function buildDeterministicQuickVibesFromTemplate(
+function buildDeterministicQuickVibesFromTemplate(
   template: QuickVibesTemplate,
   withWordlessVocals: boolean,
   maxMode: boolean,
@@ -94,7 +87,7 @@ export function buildDeterministicQuickVibesFromTemplate(
  * Apply deterministic refinement to Quick Vibes when category is set.
  * Uses feedback keywords to guide variations from the template.
  */
-export function refineDeterministicQuickVibes(
+function refineDeterministicQuickVibes(
   options: RefineQuickVibesOptions,
   config: EngineConfig & { isMaxMode: () => boolean }
 ): GenerationResult {

@@ -15,10 +15,6 @@ import type { TraceCollector } from '@bun/trace';
 
 export type DirectModeConfig = EngineConfig;
 
-export interface DirectModeBuildOptions {
-  maxMode?: boolean;
-}
-
 export interface DirectModeTraceRuntime {
   readonly trace?: TraceCollector;
   readonly rng?: Rng;
@@ -72,28 +68,6 @@ export function buildDirectModePromptWithRuntime(
   return {
     text: lines.join('\n'),
     enriched,
-  };
-}
-
-/**
- * Build a Direct Mode result where styles are preserved as-is but
- * the prompt is enriched with instruments, moods, and production.
- * Title is generated via LLM based on the description and styles.
- */
-export function buildDirectModeResult(
-  sunoStyles: string[],
-  title: string,
-  options: DirectModeBuildOptions = {}
-): GenerationResult {
-  const { maxMode = false } = options;
-
-  // Use centralized prompt building
-  const { text } = buildDirectModePrompt(sunoStyles, maxMode);
-
-  return {
-    text,
-    title,
-    debugTrace: undefined,
   };
 }
 

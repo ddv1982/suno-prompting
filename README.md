@@ -95,6 +95,7 @@ The app automatically detects Ollama and switches to local mode.
 - **Structured prompts** from plain English with `Genre:`, `BPM:`, `Mood:`, `Instruments:` fields
 - **Three generation modes**: Full Prompt, Quick Vibes, Creative Boost
 - **Max Mode**: Community-discovered format for higher quality output
+- **Story Mode**: Transform structured prompts into evocative narrative prose (requires LLM)
 - **Enhanced LLM Enrichment**: Era detection, tempo inference, intent classification, cultural context, vocal character, energy level, spatial hints, with keyword-based fallback when LLM unavailable
 - **Dynamic instrument selection** from curated pools with exclusion rules
 - **Genre detection**: Keyword matching → spelling correction → LLM analysis
@@ -230,6 +231,49 @@ recording: "one person, one guitar, vintage microphone"
 **Auto-conversion:** Pasting a standard format prompt with Max Mode enabled automatically converts it.
 
 **Not recommended for:** EDM, house, techno, synthwave (use normal mode).
+
+</details>
+
+### Story Mode
+
+Transforms structured musical data into evocative narrative prose. Requires LLM (Ollama or cloud provider).
+
+| Feature | Behavior |
+|---------|----------|
+| Output | Evocative prose (100-500 chars) |
+| Requires | LLM (Ollama or cloud provider) |
+| Works with | MAX Mode (adds quality headers) |
+| Fallback | Deterministic structured output |
+
+**Example output:**
+```
+The song opens in the intimate glow of a dimly-lit jazz club, where a Rhodes piano 
+plays warm, melancholic chords in D minor. A tenor sax drifts in with a smooth, 
+late-night melody between 80 and 110 BPM while an upright bass walks through 
+sophisticated changes. The brushed drums whisper beneath, creating an atmosphere 
+of wistful longing.
+```
+
+<details>
+<summary><strong>Story Mode Details</strong></summary>
+
+**How it works:**
+1. Deterministic builder creates structured prompt (genre, BPM, instruments, mood)
+2. LLM transforms structure into narrative prose
+3. Musical accuracy maintained (genre keywords, tempo, instruments embedded naturally)
+4. Falls back to structured output if LLM unavailable or times out (8s)
+
+**Best for:** Ambient, jazz, cinematic, emotional genres where atmosphere matters more than structure.
+
+**Combining with MAX Mode:** When both enabled, MAX Mode headers are prepended to the narrative:
+```
+[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+
+Neon-drenched synthwave pulses through the night at 120 BPM...
+```
 
 </details>
 
@@ -618,4 +662,4 @@ flowchart TB
 - **UI:** React 19 + shadcn/ui + Tailwind CSS v4
 - **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Ollama (local inference)
 - **Validation:** Zod
-- **Testing:** Bun test (70% coverage threshold)
+- **Testing:** Bun test (4,448 tests, 70% coverage threshold)

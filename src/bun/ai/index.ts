@@ -2,7 +2,6 @@ export { AIEngine } from '@bun/ai/engine';
 export type { GenerateInitialOptions, RefinePromptOptions } from '@bun/ai/engine';
 export type {
   GenerationResult,
-  ParsedCombinedResponse,
   EngineConfig,
   GenerationConfig,
   RefinementConfig,

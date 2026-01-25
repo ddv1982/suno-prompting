@@ -60,11 +60,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
             useSunoTags={state.useSunoTags}
             maxMode={state.maxMode}
             lyricsMode={state.lyricsMode}
+            storyMode={state.storyMode}
             debugMode={state.debugMode}
             loading={state.loading}
             onUseSunoTagsChange={actions.setUseSunoTags}
             onMaxModeChange={actions.setMaxMode}
             onLyricsModeChange={actions.setLyricsMode}
+            onStoryModeChange={actions.setStoryMode}
             onDebugModeChange={actions.setDebugMode}
           />
 

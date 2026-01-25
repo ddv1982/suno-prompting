@@ -12,6 +12,7 @@ export interface SettingsContextType {
   currentModel: string;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   useLocalLLM: boolean;
   settingsOpen: boolean;
   /** Whether the LLM is available for generation (local LLM enabled OR has API key) */
@@ -19,6 +20,7 @@ export interface SettingsContextType {
   setSettingsOpen: (open: boolean) => void;
   setMaxMode: (mode: boolean) => void;
   setLyricsMode: (mode: boolean) => void;
+  setStoryMode: (mode: boolean) => void;
   reloadSettings: () => Promise<void>;
   /** Open settings modal */
   openSettings: () => void;
@@ -36,10 +38,12 @@ interface SettingsLoaderReturn {
   currentModel: string;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   useLocalLLM: boolean;
   apiKeys: APIKeys;
   setMaxMode: (mode: boolean) => Promise<void>;
   setLyricsMode: (mode: boolean) => Promise<void>;
+  setStoryMode: (mode: boolean) => Promise<void>;
   reloadSettings: () => Promise<void>;
 }
 
@@ -48,6 +52,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
   const [currentModel, setCurrentModel] = useState("");
   const [maxMode, setMaxMode] = useState(false);
   const [lyricsMode, setLyricsMode] = useState(false);
+  const [storyMode, setStoryMode] = useState(false);
   const [useLocalLLM, setUseLocalLLM] = useState(false);
   const [apiKeys, setApiKeys] = useState<APIKeys>(DEFAULT_API_KEYS);
 
@@ -58,6 +63,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
         setCurrentModel(result.value.model);
         setMaxMode(result.value.maxMode);
         setLyricsMode(result.value.lyricsMode);
+        setStoryMode(result.value.storyMode);
         setUseLocalLLM(result.value.useLocalLLM);
         setApiKeys(result.value.apiKeys);
       }
@@ -70,7 +76,11 @@ function useSettingsLoader(): SettingsLoaderReturn {
     const previousMode = maxMode;
     setMaxMode(mode);
     try {
-      await rpcClient.setMaxMode({ maxMode: mode });
+      const result = await rpcClient.setMaxMode({ maxMode: mode });
+      if (!result.ok) {
+        log.error("setMaxMode:failed", result.error);
+        setMaxMode(previousMode);
+      }
     } catch (error: unknown) {
       log.error("setMaxMode:failed", error);
       setMaxMode(previousMode);
@@ -81,21 +91,42 @@ function useSettingsLoader(): SettingsLoaderReturn {
     const previousMode = lyricsMode;
     setLyricsMode(mode);
     try {
-      await rpcClient.setLyricsMode({ lyricsMode: mode });
+      const result = await rpcClient.setLyricsMode({ lyricsMode: mode });
+      if (!result.ok) {
+        log.error("setLyricsMode:failed", result.error);
+        setLyricsMode(previousMode);
+      }
     } catch (error: unknown) {
       log.error("setLyricsMode:failed", error);
       setLyricsMode(previousMode);
     }
   }, [lyricsMode]);
 
+  const handleSetStoryMode = useCallback(async (mode: boolean) => {
+    const previousMode = storyMode;
+    setStoryMode(mode);
+    try {
+      const result = await rpcClient.setStoryMode({ storyMode: mode });
+      if (!result.ok) {
+        log.error("setStoryMode:failed", result.error);
+        setStoryMode(previousMode);
+      }
+    } catch (error: unknown) {
+      log.error("setStoryMode:catch", error);
+      setStoryMode(previousMode);
+    }
+  }, [storyMode]);
+
   return {
     currentModel,
     maxMode,
     lyricsMode,
+    storyMode,
     useLocalLLM,
     apiKeys,
     setMaxMode: handleSetMaxMode,
     setLyricsMode: handleSetLyricsMode,
+    setStoryMode: handleSetStoryMode,
     reloadSettings: loadAllSettings,
   };
 }
@@ -139,12 +170,14 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     currentModel: settings.currentModel,
     maxMode: settings.maxMode,
     lyricsMode: settings.lyricsMode,
+    storyMode: settings.storyMode,
     useLocalLLM: settings.useLocalLLM,
     settingsOpen,
     isLLMAvailable,
     setSettingsOpen,
     setMaxMode: settings.setMaxMode,
     setLyricsMode: settings.setLyricsMode,
+    setStoryMode: settings.setStoryMode,
     reloadSettings: settings.reloadSettings,
     openSettings,
   }), [settings, settingsOpen, isLLMAvailable, openSettings]);

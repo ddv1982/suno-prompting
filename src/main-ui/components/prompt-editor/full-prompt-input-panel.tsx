@@ -19,9 +19,9 @@ export type { FullPromptInputPanelProps };
 
 export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactElement {
   const { currentPrompt, pendingInput, lockedPhrase, lyricsTopic, editorMode, advancedSelection, computedMusicPhrase,
-    moodCategory, maxMode, lyricsMode, isGenerating, maxChars, lockedPhraseValidation, inputOverLimit, lyricsTopicOverLimit,
+    moodCategory, maxMode, lyricsMode, storyMode, isGenerating, maxChars, lockedPhraseValidation, inputOverLimit, lyricsTopicOverLimit,
     hasAdvancedSelection, onPendingInputChange, onLockedPhraseChange, onLyricsTopicChange, onMoodCategoryChange, onEditorModeChange,
-    onAdvancedSelectionUpdate, onAdvancedSelectionClear, onMaxModeChange, onLyricsModeChange, onGenerate, onConversionComplete } = props;
+    onAdvancedSelectionUpdate, onAdvancedSelectionClear, onMaxModeChange, onLyricsModeChange, onStoryModeChange, onGenerate, onConversionComplete } = props;
 
   const { refined, triggerRefinedFeedback } = useRefinedFeedback();
 
@@ -55,9 +55,11 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
         editorMode={editorMode}
         maxMode={maxMode}
         lyricsMode={lyricsMode}
+        storyMode={storyMode}
         onEditorModeChange={onEditorModeChange}
         onMaxModeChange={onMaxModeChange}
         onLyricsModeChange={onLyricsModeChange}
+        onStoryModeChange={onStoryModeChange}
       />
 
       {editorMode === 'advanced' && (

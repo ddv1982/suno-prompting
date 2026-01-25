@@ -1,9 +1,5 @@
 // Barrel file - re-exports all types for backwards compatibility
 
-// Branded types
-export type { Brand, SessionId, VersionId } from '@shared/types/brand';
-export { createSessionId, createVersionId, isSessionId, isVersionId, toSessionId, toVersionId } from '@shared/types/brand';
-
 // Result types
 export type { Result } from '@shared/types/result';
 export { Ok, Err, ok, err, isOk, isErr, unwrap, unwrapOr, map, mapErr, tryCatch, tryCatchAsync } from '@shared/types/result';

@@ -19,6 +19,7 @@ export class AIConfig {
   private debugMode: boolean = APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE;
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
   private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
+  private storyMode: boolean = APP_CONSTANTS.AI.DEFAULT_STORY_MODE;
   private useLocalLLM = false; // Default to false, will be set to true if no API keys
   private registry: ProviderRegistry | null = null;
   private ollamaConfig: OllamaConfig = { ...DEFAULT_OLLAMA_CONFIG };
@@ -65,6 +66,10 @@ export class AIConfig {
     this.lyricsMode = value;
   }
 
+  setStoryMode(value: boolean): void {
+    this.storyMode = value;
+  }
+
   setUseLocalLLM(value: boolean): void {
     this.useLocalLLM = value;
   }
@@ -97,6 +102,7 @@ export class AIConfig {
     if (config.debugMode !== undefined) this.debugMode = config.debugMode;
     if (config.maxMode !== undefined) this.maxMode = config.maxMode;
     if (config.lyricsMode !== undefined) this.lyricsMode = config.lyricsMode;
+    if (config.storyMode !== undefined) this.storyMode = config.storyMode;
     
     // Smart default: use local LLM if no API keys are configured
     if (config.useLocalLLM !== undefined) {
@@ -136,6 +142,10 @@ export class AIConfig {
 
   isLyricsMode(): boolean {
     return this.lyricsMode;
+  }
+
+  isStoryMode(): boolean {
+    return this.storyMode;
   }
 
   isUseLocalLLM(): boolean {

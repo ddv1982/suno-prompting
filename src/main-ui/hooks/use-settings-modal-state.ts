@@ -17,6 +17,7 @@ export interface SettingsModalState {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   useLocalLLM: boolean;
   showKey: boolean;
   saving: boolean;
@@ -34,6 +35,7 @@ export interface SettingsModalActions {
   setDebugMode: (value: boolean) => void;
   setMaxMode: (value: boolean) => void;
   setLyricsMode: (value: boolean) => void;
+  setStoryMode: (value: boolean) => void;
   setUseLocalLLM: (value: boolean) => void;
   setShowKey: (value: boolean) => void;
   toggleShowKey: () => void;
@@ -55,6 +57,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
   const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
   const [lyricsMode, setLyricsMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
+  const [storyMode, setStoryMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_STORY_MODE);
   const [useLocalLLM, setUseLocalLLM] = useState<boolean>(true);
   const [showKey, setShowKey] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -83,6 +86,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         setDebugMode(settings.debugMode);
         setMaxMode(settings.maxMode);
         setLyricsMode(settings.lyricsMode);
+        setStoryMode(settings.storyMode);
         setUseLocalLLM(settings.useLocalLLM ?? true);
       } catch (err: unknown) {
         log.error("fetchSettings:failed", err);
@@ -114,7 +118,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     setError(null);
     try {
       await rpcClient.saveAllSettings({
-        provider, model, useSunoTags, debugMode, maxMode, lyricsMode, useLocalLLM,
+        provider, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM,
         apiKeys: {
           groq: apiKeys.groq?.trim() || null,
           openai: apiKeys.openai?.trim() || null,
@@ -128,16 +132,16 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     } finally {
       setSaving(false);
     }
-  }, [provider, model, useSunoTags, debugMode, maxMode, lyricsMode, useLocalLLM, apiKeys]);
+  }, [provider, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM, apiKeys]);
 
   const state: SettingsModalState = {
     provider, apiKeys, model, useSunoTags, debugMode,
-    maxMode, lyricsMode, useLocalLLM, showKey, saving, loading, error,
+    maxMode, lyricsMode, storyMode, useLocalLLM, showKey, saving, loading, error,
   };
 
   const actions: SettingsModalActions = {
     setProvider, handleProviderChange, handleApiKeyChange, setModel,
-    setUseSunoTags, setDebugMode, setMaxMode, setLyricsMode,
+    setUseSunoTags, setDebugMode, setMaxMode, setLyricsMode, setStoryMode,
     setUseLocalLLM, setShowKey, toggleShowKey, handleSave,
   };
 

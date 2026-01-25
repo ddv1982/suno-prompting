@@ -17,14 +17,16 @@ export interface MoodCategoryState {
   onMoodCategoryChange: (category: MoodCategory | null) => void;
 }
 
-/** Mode state and handlers */
-export interface ModeState {
+/** Mode state and handlers for FullPromptInputPanel */
+export interface ModeStateWithHandlers {
   editorMode: EditorMode;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   onEditorModeChange: (mode: EditorMode) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
+  onStoryModeChange: (mode: boolean) => void;
 }
 
 /** Advanced selection state and handlers */
@@ -60,7 +62,7 @@ export interface GenerationState {
 /** Combined props for FullPromptInputPanel component */
 export type FullPromptInputPanelProps = InputState &
   MoodCategoryState &
-  ModeState &
+  ModeStateWithHandlers &
   AdvancedState &
   ValidationState &
   GenerationState;

@@ -17,6 +17,7 @@ type SettingsHandlers = Pick<
   | 'getAllSettings' | 'saveAllSettings'
   | 'getMaxMode' | 'setMaxMode'
   | 'getLyricsMode' | 'setLyricsMode'
+  | 'getStoryMode' | 'setStoryMode'
   | 'getPromptMode' | 'setPromptMode'
   | 'getCreativeBoostMode' | 'setCreativeBoostMode'
   | 'getUseLocalLLM' | 'setUseLocalLLM'
@@ -54,8 +55,8 @@ function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
   };
 }
 
-/** Boolean mode handlers (suno tags, debug, max, lyrics, useLocalLLM) */
-function createModeHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getSunoTags' | 'setSunoTags' | 'getDebugMode' | 'setDebugMode' | 'getMaxMode' | 'setMaxMode' | 'getLyricsMode' | 'setLyricsMode' | 'getUseLocalLLM' | 'setUseLocalLLM'> {
+/** Boolean mode handlers (suno tags, debug, max, lyrics, story, useLocalLLM) */
+function createModeHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getSunoTags' | 'setSunoTags' | 'getDebugMode' | 'setDebugMode' | 'getMaxMode' | 'setMaxMode' | 'getLyricsMode' | 'setLyricsMode' | 'getStoryMode' | 'setStoryMode' | 'getUseLocalLLM' | 'setUseLocalLLM'> {
   return {
     getSunoTags: async () => ({ useSunoTags: (await storage.getConfig()).useSunoTags }),
     setSunoTags: async ({ useSunoTags }: { useSunoTags: boolean }) => {
@@ -79,6 +80,12 @@ function createModeHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
     setLyricsMode: async ({ lyricsMode }: { lyricsMode: boolean }) => {
       await storage.saveConfig({ lyricsMode });
       aiEngine.setLyricsMode(lyricsMode);
+      return { success: true };
+    },
+    getStoryMode: async () => ({ storyMode: (await storage.getConfig()).storyMode }),
+    setStoryMode: async ({ storyMode }: { storyMode: boolean }) => {
+      await storage.saveConfig({ storyMode });
+      aiEngine.setStoryMode(storyMode);
       return { success: true };
     },
     getUseLocalLLM: async () => {
@@ -127,11 +134,12 @@ function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
         debugMode: config.debugMode,
         maxMode: config.maxMode,
         lyricsMode: config.lyricsMode,
+        storyMode: config.storyMode,
         useLocalLLM: config.useLocalLLM
       };
     },
     saveAllSettings: async (params) => {
-      const { provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode, useLocalLLM } = 
+      const { provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM } = 
         validate(SaveAllSettingsSchema, params);
       
       return withErrorHandling('saveAllSettings', async () => {
@@ -143,6 +151,7 @@ function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
           debugMode, 
           maxMode, 
           lyricsMode, 
+          storyMode,
           useLocalLLM 
         });
         
@@ -155,6 +164,7 @@ function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
         aiEngine.setDebugMode(debugMode);
         aiEngine.setMaxMode(maxMode);
         aiEngine.setLyricsMode(lyricsMode);
+        aiEngine.setStoryMode(storyMode);
         aiEngine.setUseLocalLLM(useLocalLLM);
         
         return { success: true };

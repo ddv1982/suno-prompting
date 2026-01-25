@@ -88,6 +88,8 @@ const rpc = BrowserView.defineRPC<SunoRPCSchema>({
             setMaxMode: handlers.setMaxMode,
             getLyricsMode: handlers.getLyricsMode,
             setLyricsMode: handlers.setLyricsMode,
+            getStoryMode: handlers.getStoryMode,
+            setStoryMode: handlers.setStoryMode,
             getUseLocalLLM: handlers.getUseLocalLLM,
             setUseLocalLLM: handlers.setUseLocalLLM,
             getAllSettings: handlers.getAllSettings,

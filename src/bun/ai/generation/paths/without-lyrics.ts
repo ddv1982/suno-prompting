@@ -3,14 +3,17 @@
  *
  * Hybrid LLM + deterministic generation when lyrics mode is OFF.
  * Uses LLM for thematic context extraction when available, falls back to pure deterministic.
+ * Supports Story Mode for narrative prose output.
  *
  * Performance budget: ~550ms total (500ms LLM + 40ms deterministic + 5ms merge)
  * Fallback latency: ~40ms (no regression from pure deterministic)
+ * Story Mode: +8s max for narrative generation
  *
  * @module ai/generation/paths/without-lyrics
  */
 
 import { generateTitle } from '@bun/ai/content-generator';
+import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
 import { cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import {
@@ -115,6 +118,25 @@ export async function generateWithoutLyrics(
     title = titleResult.title;
   } else {
     title = generateDeterministicTitle(genre, mood, rng, description);
+  }
+
+  // 6. Story Mode: Transform to narrative prose if enabled and LLM available
+  const storyInput = extractStructuredDataForStory(promptText, thematicContext, {
+    description,
+    sunoStyles: options.sunoStyles,
+  });
+  const storyModeResult = await tryStoryMode({
+    input: storyInput,
+    title: cleanTitle(title),
+    fallbackText: promptText,
+    config,
+    trace,
+    tracePrefix: 'generation.storyMode',
+    logLabel: 'generateWithoutLyrics',
+  });
+
+  if (storyModeResult) {
+    return storyModeResult;
   }
 
   return {

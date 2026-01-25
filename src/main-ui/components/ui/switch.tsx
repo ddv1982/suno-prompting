@@ -36,6 +36,10 @@ export function Switch({ id, checked, onCheckedChange, disabled, autoDisable = f
   const isDisabled = useAutoDisable(disabled, autoDisable);
   
   const styles = sizeStyles[size];
+
+  const handleClick = (): void => {
+    onCheckedChange(!checked);
+  };
   
   return (
     <button
@@ -44,7 +48,7 @@ export function Switch({ id, checked, onCheckedChange, disabled, autoDisable = f
       role="switch"
       aria-checked={checked}
       disabled={isDisabled}
-      onClick={() => { onCheckedChange(!checked); }}
+      onClick={handleClick}
       className={cn(
         "relative inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-150",
         "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",

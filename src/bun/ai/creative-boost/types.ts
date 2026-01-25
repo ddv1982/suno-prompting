@@ -11,9 +11,17 @@ import type { EngineConfig } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 
 /**
- * Configuration for the Creative Boost Engine
+ * Configuration for the Creative Boost Engine.
+ * Extends EngineConfig with Story Mode support.
  */
-export type CreativeBoostEngineConfig = EngineConfig;
+export interface CreativeBoostEngineConfig extends EngineConfig {
+  /** Returns whether story mode is enabled (optional) */
+  isStoryMode?: () => boolean;
+  /** Returns whether any LLM is available (local or cloud) (optional) */
+  isLLMAvailable?: () => boolean;
+  /** Returns Ollama endpoint for direct API calls when using local LLM (optional) */
+  getOllamaEndpointIfLocal?: () => string | undefined;
+}
 
 /**
  * Options for generating a creative boost prompt

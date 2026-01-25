@@ -7,9 +7,8 @@ import type { EditorMode } from '@shared/types';
  *
  * Tests cover:
  * - Simple/Advanced toggle buttons disabled via autoDisable + context
- * - Lyrics toggle disabled via autoDisable + context
- * - Max toggle disabled via autoDisable + context
- * - All controls enabled when context is false
+ * - Settings toggles (Lyrics, Max, Story) are NEVER auto-disabled - they're persistent settings
+ * - Only explicit disabled prop disables settings toggles (e.g., Story when LLM unavailable)
  *
  * Following project convention: test pure logic and prop behavior without full React render.
  */
@@ -23,19 +22,29 @@ interface ModeToggleDisabledState {
   advancedButtonDisabled: boolean;
   lyricsSwitchDisabled: boolean;
   maxSwitchDisabled: boolean;
+  storySwitchDisabled: boolean;
 }
 
 /**
  * Compute the disabled state for all ModeToggle controls.
- * All controls use autoDisable and get disabled state from context.
- * This simulates the context-based disabled state.
+ * 
+ * Buttons use autoDisable and get disabled from context.
+ * Settings toggles (Lyrics, Max, Story) do NOT auto-disable - they're always interactive
+ * except when explicitly disabled (e.g., Story when LLM unavailable).
  */
-function computeDisabledState(contextDisabled: boolean): ModeToggleDisabledState {
+function computeDisabledState(
+  contextDisabled: boolean,
+  storyExplicitlyDisabled = false
+): ModeToggleDisabledState {
   return {
+    // Buttons auto-disable during generation
     simpleButtonDisabled: contextDisabled,
     advancedButtonDisabled: contextDisabled,
-    lyricsSwitchDisabled: contextDisabled,
-    maxSwitchDisabled: contextDisabled,
+    // Settings toggles are always enabled (never auto-disable)
+    lyricsSwitchDisabled: false,
+    maxSwitchDisabled: false,
+    // Story only disabled when explicitly set (LLM unavailable)
+    storySwitchDisabled: storyExplicitlyDisabled,
   };
 }
 
@@ -54,93 +63,56 @@ function computeButtonVariant(
 // ============================================
 
 describe('ModeToggle', () => {
-  describe('disabled state when context isDisabled=true', () => {
+  describe('buttons disabled when context isDisabled=true', () => {
     test('Simple button is disabled when context is disabled', () => {
-      // Act
       const result = computeDisabledState(true);
-
-      // Assert
       expect(result.simpleButtonDisabled).toBe(true);
     });
 
     test('Advanced button is disabled when context is disabled', () => {
-      // Act
       const result = computeDisabledState(true);
-
-      // Assert
       expect(result.advancedButtonDisabled).toBe(true);
     });
+  });
 
-    test('Lyrics switch is disabled when context is disabled', () => {
-      // Act
+  describe('settings toggles never auto-disable (always interactive)', () => {
+    test('Lyrics switch is enabled even when context is disabled', () => {
       const result = computeDisabledState(true);
-
-      // Assert
-      expect(result.lyricsSwitchDisabled).toBe(true);
+      expect(result.lyricsSwitchDisabled).toBe(false);
     });
 
-    test('Max switch is disabled when context is disabled', () => {
-      // Act
+    test('Max switch is enabled even when context is disabled', () => {
       const result = computeDisabledState(true);
-
-      // Assert
-      expect(result.maxSwitchDisabled).toBe(true);
+      expect(result.maxSwitchDisabled).toBe(false);
     });
 
-    test('all controls are disabled simultaneously when context is disabled', () => {
-      // Act
-      const result = computeDisabledState(true);
+    test('Story switch is enabled when context is disabled but LLM is available', () => {
+      const result = computeDisabledState(true, false);
+      expect(result.storySwitchDisabled).toBe(false);
+    });
 
-      // Assert
-      expect(result.simpleButtonDisabled).toBe(true);
-      expect(result.advancedButtonDisabled).toBe(true);
-      expect(result.lyricsSwitchDisabled).toBe(true);
-      expect(result.maxSwitchDisabled).toBe(true);
+    test('Story switch is disabled only when explicitly disabled (LLM unavailable)', () => {
+      const result = computeDisabledState(true, true);
+      expect(result.storySwitchDisabled).toBe(true);
     });
   });
 
   describe('enabled state when context isDisabled=false', () => {
     test('Simple button is enabled when context is not disabled', () => {
-      // Act
       const result = computeDisabledState(false);
-
-      // Assert
       expect(result.simpleButtonDisabled).toBe(false);
     });
 
     test('Advanced button is enabled when context is not disabled', () => {
-      // Act
       const result = computeDisabledState(false);
-
-      // Assert
       expect(result.advancedButtonDisabled).toBe(false);
     });
 
-    test('Lyrics switch is enabled when context is not disabled', () => {
-      // Act
+    test('all settings toggles are enabled when context is not disabled', () => {
       const result = computeDisabledState(false);
-
-      // Assert
-      expect(result.lyricsSwitchDisabled).toBe(false);
-    });
-
-    test('Max switch is enabled when context is not disabled', () => {
-      // Act
-      const result = computeDisabledState(false);
-
-      // Assert
-      expect(result.maxSwitchDisabled).toBe(false);
-    });
-
-    test('all controls are enabled simultaneously when context is not disabled', () => {
-      // Act
-      const result = computeDisabledState(false);
-
-      // Assert
-      expect(result.simpleButtonDisabled).toBe(false);
-      expect(result.advancedButtonDisabled).toBe(false);
       expect(result.lyricsSwitchDisabled).toBe(false);
       expect(result.maxSwitchDisabled).toBe(false);
+      expect(result.storySwitchDisabled).toBe(false);
     });
   });
 
@@ -196,7 +168,19 @@ describe('ModeToggle', () => {
 });
 
 describe('ModeToggle source verification', () => {
-  test('mode-toggle.tsx uses autoDisable on buttons', async () => {
+  test('mode-toggle.tsx uses ToggleRow component for all toggles', async () => {
+    const source = await Bun.file(
+      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
+    ).text();
+
+    // Verify uses ToggleRow (standard component) instead of custom implementation
+    expect(source).toContain('import { ToggleRow }');
+    expect(source).toContain('id="mode-lyrics"');
+    expect(source).toContain('id="mode-max"');
+    expect(source).toContain('id="mode-story"');
+  });
+
+  test('mode-toggle.tsx uses autoDisable on buttons only', async () => {
     const source = await Bun.file(
       'src/main-ui/components/prompt-editor/mode-toggle.tsx'
     ).text();
@@ -205,20 +189,10 @@ describe('ModeToggle source verification', () => {
     expect(source).toContain("autoDisable");
     expect(source).toContain("variant={editorMode === 'simple'");
     expect(source).toContain("variant={editorMode === 'advanced'");
-  });
-
-  test('mode-toggle.tsx uses autoDisable on switches', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
-    ).text();
-
-    // Verify Switch components use autoDisable
-    expect(source).toContain("checked={lyricsMode}");
-    expect(source).toContain("checked={maxMode}");
-    // Count occurrences of autoDisable - should be 4 (2 buttons + 2 switches)
+    // Count occurrences of autoDisable - should be 2 (only the 2 buttons)
     const matches = source.match(/autoDisable/g);
     expect(matches).not.toBeNull();
-    expect(matches!.length).toBe(4);
+    expect(matches!.length).toBe(2);
   });
 
   test('mode-toggle.tsx does not have isGenerating prop', async () => {

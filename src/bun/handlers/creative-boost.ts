@@ -1,13 +1,31 @@
-import { type AIEngine } from '@bun/ai';
+import { type AIEngine, type GenerationResult } from '@bun/ai';
 import { GenerateCreativeBoostSchema, RefineCreativeBoostSchema } from '@shared/schemas';
 import { enforceTraceSizeCap } from '@shared/trace';
 
-import { createTraceRuntime, withErrorHandling, log } from './utils';
+import { createTraceRuntime, withErrorHandling, log, type TraceRuntime } from './utils';
 import { validate } from './validated';
 
 import type { RPCHandlers } from '@shared/types';
 
 type CreativeBoostHandlers = Pick<RPCHandlers, 'generateCreativeBoost' | 'refineCreativeBoost'>;
+
+/** Build the response object from a Creative Boost generation result */
+function buildCreativeBoostResponse(
+  result: GenerationResult,
+  runtime: TraceRuntime,
+  versionId: string,
+  defaultTitle: string
+): { prompt: string; title: string; lyrics?: string; versionId: string; debugTrace?: GenerationResult['debugTrace']; storyModeFallback?: boolean } {
+  const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : result.debugTrace;
+  return {
+    prompt: result.text,
+    title: result.title ?? defaultTitle,
+    lyrics: result.lyrics,
+    versionId,
+    debugTrace,
+    storyModeFallback: result.storyModeFallback,
+  };
+}
 
 export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHandlers {
   return {
@@ -29,33 +47,16 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
 
         runtime.trace?.addRunEvent('run.start', 'generate.creativeBoost');
         const result = await aiEngine.generateCreativeBoost(
-          creativityLevel,
-          seedGenres,
-          sunoStyles,
-          description,
-          lyricsTopic,
-          withWordlessVocals,
-          maxMode,
-          withLyrics,
-          runtime
+          creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
+          withWordlessVocals, maxMode, withLyrics, runtime
         );
         runtime.trace?.addRunEvent('run.end', 'success');
 
-        const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : result.debugTrace;
-
         log.info('generateCreativeBoost:result', {
-          versionId,
-          promptLength: result.text.length,
-          hasLyrics: !!result.lyrics,
-          hasTitle: !!result.title
+          versionId, promptLength: result.text.length, hasLyrics: !!result.lyrics,
+          hasTitle: !!result.title, storyModeFallback: result.storyModeFallback
         });
-        return {
-          prompt: result.text,
-          title: result.title ?? 'Creative Boost',
-          lyrics: result.lyrics,
-          versionId,
-          debugTrace
-        };
+        return buildCreativeBoostResponse(result, runtime, versionId, 'Creative Boost');
       }, { creativityLevel, seedGenresCount: seedGenres.length });
     },
     refineCreativeBoost: async (params) => {
@@ -80,36 +81,16 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
 
         runtime.trace?.addRunEvent('run.start', 'refine.creativeBoost');
         const result = await aiEngine.refineCreativeBoost(
-          currentPrompt,
-          currentTitle,
-          currentLyrics,
-          feedback,
-          lyricsTopic,
-          description,
-          seedGenres,
-          sunoStyles,
-          withWordlessVocals,
-          maxMode,
-          withLyrics,
-          targetGenreCount,
-          runtime
+          currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
+          seedGenres, sunoStyles, withWordlessVocals, maxMode, withLyrics, targetGenreCount, runtime
         );
         runtime.trace?.addRunEvent('run.end', 'success');
 
-        const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : result.debugTrace;
-
         log.info('refineCreativeBoost:result', {
-          versionId,
-          promptLength: result.text.length,
-          hasLyrics: !!result.lyrics
+          versionId, promptLength: result.text.length, hasLyrics: !!result.lyrics,
+          storyModeFallback: result.storyModeFallback
         });
-        return {
-          prompt: result.text,
-          title: result.title ?? currentTitle,
-          lyrics: result.lyrics,
-          versionId,
-          debugTrace
-        };
+        return buildCreativeBoostResponse(result, runtime, versionId, currentTitle);
       }, { feedback });
     }
   };

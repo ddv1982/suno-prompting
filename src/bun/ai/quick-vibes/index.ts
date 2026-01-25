@@ -8,16 +8,8 @@
  */
 
 // Main engine functions
-export { generateQuickVibes } from './engine';
+export { generateQuickVibes, type QuickVibesEngineConfig } from './engine';
 export { refineQuickVibes } from './refinement';
 
 // Types
 export type { GenerateQuickVibesOptions, RefineQuickVibesOptions } from './types';
-
-// Refinement helpers (for testing)
-export {
-  hashFeedback,
-  createSeededRng,
-  buildDeterministicQuickVibesFromTemplate,
-  refineDeterministicQuickVibes,
-} from './refinement';

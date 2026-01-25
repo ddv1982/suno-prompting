@@ -2,34 +2,17 @@
  * Mood Selection Services
  *
  * Functions for selecting moods and genres based on mood categories.
- * Uses Fisher-Yates shuffle for fair random selection.
+ * Uses shared shuffle utility for fair random selection.
  *
  * @module mood/services/select
  */
 
-
-
 import { MOOD_CATEGORIES } from '@bun/mood/categories';
 import { getGenresForCategory } from '@bun/mood/mappings/category-to-genres';
+import { shuffle } from '@shared/utils/random';
 
 import type { GenreType } from '@bun/instruments';
 import type { MoodCategory } from '@bun/mood/types';
-
-/**
- * Fisher-Yates shuffle algorithm.
- * Shuffles array in place and returns it.
- *
- * @param array - Array to shuffle
- * @param rng - Random number generator function
- * @returns The shuffled array
- */
-function fisherYatesShuffle<T>(array: T[], rng: () => number): T[] {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [array[i], array[j]] = [array[j] as T, array[i] as T];
-  }
-  return array;
-}
 
 /**
  * Select moods from a category using Fisher-Yates shuffle.
@@ -57,14 +40,8 @@ export function selectMoodsForCategory(
   const definition = MOOD_CATEGORIES[category];
   if (!definition) return [];
 
-  // Create a copy to avoid mutating the original
-  const moods = [...definition.moods];
-
-  // Shuffle with provided RNG
-  fisherYatesShuffle(moods, rng);
-
-  // Return requested count (or all if fewer available)
-  return moods.slice(0, Math.min(count, moods.length));
+  const shuffled = shuffle(definition.moods, rng);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
 /**
@@ -106,12 +83,9 @@ export function selectGenresForMoodCategory(
   count: number,
   rng: () => number = Math.random,
 ): GenreType[] {
-  const genres = [...getGenresForCategory(category)];
+  const genres = getGenresForCategory(category);
   if (genres.length === 0) return [];
 
-  // Shuffle with provided RNG
-  fisherYatesShuffle(genres, rng);
-
-  // Return requested count (or all if fewer available)
-  return genres.slice(0, Math.min(count, genres.length));
+  const shuffled = shuffle(genres, rng);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
 }

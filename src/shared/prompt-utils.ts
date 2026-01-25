@@ -75,21 +75,6 @@ export function isStructuredPrompt(text: string): boolean {
   return hasNonMaxFields || hasSectionTags || hasMaxStyleFields;
 }
 
-/**
- * Clean and normalize a title string.
- * Removes leading/trailing quotes and whitespace.
- */
-export function cleanTitle(title: string | undefined, fallback = 'Untitled'): string {
-  return title?.trim().replace(/^["']|["']$/g, '') || fallback;
-}
-
-/**
- * Clean lyrics string, returning undefined for empty/whitespace.
- */
-export function cleanLyrics(lyrics: string | undefined): string | undefined {
-  return lyrics?.trim() || undefined;
-}
-
 export interface ParsedCombinedResponse {
   prompt: string;
   title?: string;

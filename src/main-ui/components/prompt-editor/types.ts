@@ -54,6 +54,8 @@ export interface ModeState {
   maxMode: boolean;
   /** Lyrics generation enabled */
   lyricsMode: boolean;
+  /** Story Mode enabled (narrative prose format) */
+  storyMode: boolean;
   /** Editor mode (simple/advanced) */
   editorMode: EditorMode;
   /** Prompt mode (full/quickVibes/creativeBoost) */
@@ -103,6 +105,7 @@ export interface EditorHandlers {
   onPromptModeChange: (mode: PromptMode) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
+  onStoryModeChange: (mode: boolean) => void;
   onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
   onQuickVibesInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void;

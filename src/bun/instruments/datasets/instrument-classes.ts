@@ -175,7 +175,7 @@ export function computeMultiGenreInstruments(threshold = 3): string[] {
   return [...combined.values()].sort();
 }
 
-export const MULTIGENRE_THRESHOLD = 3 as const;
+const MULTIGENRE_THRESHOLD = 3 as const;
 export const MULTIGENRE_INSTRUMENTS = computeMultiGenreInstruments(MULTIGENRE_THRESHOLD);
 
 const MULTIGENRE_SET = new Set<string>(MULTIGENRE_INSTRUMENTS.map(i => i.toLowerCase()));

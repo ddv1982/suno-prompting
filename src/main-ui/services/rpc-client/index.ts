@@ -44,6 +44,7 @@ import type {
   SetLyricsModeParams,
   SetMaxModeParams,
   SetModelParams,
+  SetStoryModeParams,
   SetPromptModeParams,
   SetSunoTagsParams,
   SetUseLocalLLMParams,
@@ -92,6 +93,8 @@ export const rpcClient = {
   setMaxMode: (params: SetMaxModeParams): Promise<Result<{ success: boolean }, RpcError>> => request('setMaxMode', params),
   getLyricsMode: (params: EmptyParams): Promise<Result<{ lyricsMode: boolean }, RpcError>> => request('getLyricsMode', params),
   setLyricsMode: (params: SetLyricsModeParams): Promise<Result<{ success: boolean }, RpcError>> => request('setLyricsMode', params),
+  getStoryMode: (params: EmptyParams): Promise<Result<{ storyMode: boolean }, RpcError>> => request('getStoryMode', params),
+  setStoryMode: (params: SetStoryModeParams): Promise<Result<{ success: boolean }, RpcError>> => request('setStoryMode', params),
   getUseLocalLLM: (params: EmptyParams): Promise<Result<{ useLocalLLM: boolean }, RpcError>> => request('getUseLocalLLM', params),
   setUseLocalLLM: (params: SetUseLocalLLMParams): Promise<Result<{ success: boolean }, RpcError>> => request('setUseLocalLLM', params),
 

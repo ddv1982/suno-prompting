@@ -61,6 +61,8 @@ export interface GenerationResultBase {
   lyrics?: string;
   versionId: string;
   debugTrace?: TraceRun;
+  /** Flag indicating Story Mode fell back to deterministic output */
+  storyModeFallback?: boolean;
 }
 
 export interface ModeInputUpdate {
@@ -197,6 +199,7 @@ export function addUserMessage(
 /**
  * Complete session update flow after successful generation.
  * Combines: debugTrace update, session create/update, chat update, validation reset, save.
+ * Shows warning toast if Story Mode fell back to deterministic output.
  */
 export async function completeSessionUpdate(
   deps: SessionDeps,
@@ -207,7 +210,7 @@ export async function completeSessionUpdate(
   successMessage: string,
   feedback?: string
 ): Promise<PromptSession> {
-  const { currentSession, generateId, saveSession, setDebugTrace, setChatMessages, setValidation } = deps;
+  const { currentSession, generateId, saveSession, setDebugTrace, setChatMessages, setValidation, showToast } = deps;
   
   setDebugTrace(result.debugTrace);
   
@@ -224,6 +227,11 @@ export async function completeSessionUpdate(
   updateChatMessagesAfterGeneration(setChatMessages, session, isNew, successMessage);
   setValidation({ ...EMPTY_VALIDATION });
   await saveSession(session);
+  
+  // Show warning toast when Story Mode falls back to deterministic output
+  if (result.storyModeFallback) {
+    showToast('Story Mode unavailable - using standard format', 'warning');
+  }
   
   return session;
 }

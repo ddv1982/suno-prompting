@@ -28,15 +28,11 @@ import { refineLyricsWithFeedback } from './lyrics-refinement';
 import { applyLockedPhraseIfNeeded } from './validation';
 
 import type { RefinePromptOptions } from './types';
+import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationResult, RefinementConfig } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Refinement');
-
-interface TraceRuntime {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
-}
 
 type LyricsAction = 'none' | 'refineExisting' | 'bootstrap';
 

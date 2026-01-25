@@ -27,8 +27,10 @@ function getCanSubmit(input: QuickVibesInput, originalInput: QuickVibesInput | n
 
 interface QuickVibesPanelProps {
   input: QuickVibesInput; originalInput?: QuickVibesInput | null; withWordlessVocals: boolean; maxMode: boolean;
+  storyMode: boolean; isLLMAvailable: boolean;
   isGenerating: boolean; hasCurrentPrompt: boolean; onInputChange: (input: QuickVibesInput) => void;
   onWordlessVocalsChange: (value: boolean) => void; onMaxModeChange: (value: boolean) => void;
+  onStoryModeChange: (value: boolean) => void;
   onGenerate: () => void; onRefine: (feedback: string) => Promise<boolean>;
 }
 
@@ -108,9 +110,12 @@ interface QuickVibesPanelContentProps {
   handlers: QuickVibesPanelHandlers;
   withWordlessVocals: boolean;
   maxMode: boolean;
+  storyMode: boolean;
+  isLLMAvailable: boolean;
   isGenerating: boolean;
   onWordlessVocalsChange: (value: boolean) => void;
   onMaxModeChange: (value: boolean) => void;
+  onStoryModeChange: (value: boolean) => void;
 }
 
 function QuickVibesPanelContent({
@@ -119,9 +124,12 @@ function QuickVibesPanelContent({
   handlers,
   withWordlessVocals,
   maxMode,
+  storyMode,
+  isLLMAvailable,
   isGenerating,
   onWordlessVocalsChange,
   onMaxModeChange,
+  onStoryModeChange,
 }: QuickVibesPanelContentProps): ReactElement {
   const { isRefineMode, isDirectMode, canSubmit } = state;
 
@@ -179,9 +187,12 @@ function QuickVibesPanelContent({
       <TogglesSection
         withWordlessVocals={withWordlessVocals}
         maxMode={maxMode}
+        storyMode={storyMode}
+        isLLMAvailable={isLLMAvailable}
         isDirectMode={isDirectMode}
         onWordlessVocalsChange={onWordlessVocalsChange}
         onMaxModeChange={onMaxModeChange}
+        onStoryModeChange={onStoryModeChange}
       />
 
       <SubmitButton
@@ -200,11 +211,14 @@ export function QuickVibesPanel({
   originalInput,
   withWordlessVocals,
   maxMode,
+  storyMode,
+  isLLMAvailable,
   isGenerating,
   hasCurrentPrompt,
   onInputChange,
   onWordlessVocalsChange,
   onMaxModeChange,
+  onStoryModeChange,
   onGenerate,
   onRefine,
 }: QuickVibesPanelProps): ReactElement {
@@ -229,9 +243,12 @@ export function QuickVibesPanel({
       handlers={handlers}
       withWordlessVocals={withWordlessVocals}
       maxMode={maxMode}
+      storyMode={storyMode}
+      isLLMAvailable={isLLMAvailable}
       isGenerating={isGenerating}
       onWordlessVocalsChange={onWordlessVocalsChange}
       onMaxModeChange={onMaxModeChange}
+      onStoryModeChange={onStoryModeChange}
     />
   );
 }

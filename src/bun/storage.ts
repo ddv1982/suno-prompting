@@ -19,6 +19,7 @@ type StoredConfig = Partial<{
     debugMode: boolean;
     maxMode: boolean;
     lyricsMode: boolean;
+    storyMode: boolean;
     useLocalLLM: boolean;
     promptMode: PromptMode;
     creativeBoostMode: CreativeBoostMode;
@@ -34,6 +35,7 @@ const DEFAULT_CONFIG: AppConfig = {
     debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
     maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
     lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
+    storyMode: APP_CONSTANTS.AI.DEFAULT_STORY_MODE,
     useLocalLLM: true, // Default to true (local LLM first)
     promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
     creativeBoostMode: 'simple',
@@ -139,6 +141,7 @@ export class StorageManager {
             debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
             maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
             lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
+            storyMode: config.storyMode ?? DEFAULT_CONFIG.storyMode,
             useLocalLLM,
             promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
             creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,

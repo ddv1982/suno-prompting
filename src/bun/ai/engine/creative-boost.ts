@@ -6,31 +6,31 @@
  * @module ai/engine/creative-boost
  */
 
-import { AIConfig } from '@bun/ai/config';
 import {
   generateCreativeBoost as generateCreativeBoostImpl,
   refineCreativeBoost as refineCreativeBoostImpl,
 } from '@bun/ai/creative-boost';
 
-
-import type { ConfigProxies } from './config-proxies';
+import type { ConfigFactories } from './config-factories';
 import type { CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
-import type { GenerationResult } from '@bun/ai/types';
+import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 
-/** Creates the config object for creative boost operations */
-function buildCreativeBoostConfig(config: AIConfig, proxies: ConfigProxies): CreativeBoostEngineConfig {
+/** Creates the config object for creative boost operations from GenerationConfig */
+function buildCreativeBoostConfig(generationConfig: GenerationConfig): CreativeBoostEngineConfig {
   return {
-    getModel: proxies.getModel,
-    isDebugMode: config.isDebugMode.bind(config),
-    isLLMAvailable: config.isLLMAvailable.bind(config),
-    getUseSunoTags: config.getUseSunoTags.bind(config),
-    getOllamaEndpoint: () => config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined,
+    getModel: generationConfig.getModel,
+    isDebugMode: generationConfig.isDebugMode,
+    isLLMAvailable: generationConfig.isLLMAvailable,
+    isStoryMode: generationConfig.isStoryMode,
+    getUseSunoTags: generationConfig.getUseSunoTags,
+    getOllamaEndpoint: generationConfig.getOllamaEndpointIfLocal,
+    getOllamaEndpointIfLocal: generationConfig.getOllamaEndpointIfLocal,
   };
 }
 
 /** Create Creative Boost methods bound to configuration. */
-export function createCreativeBoostMethods(config: AIConfig, proxies: ConfigProxies, _factories: unknown): {
+export function createCreativeBoostMethods(factories: ConfigFactories): {
   generateCreativeBoost: (
     creativityLevel: number, seedGenres: string[], sunoStyles: string[], description: string,
     lyricsTopic: string, withWordlessVocals: boolean, maxMode: boolean, withLyrics: boolean,
@@ -43,7 +43,7 @@ export function createCreativeBoostMethods(config: AIConfig, proxies: ConfigProx
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
 } {
-  const boostConfig = buildCreativeBoostConfig(config, proxies);
+  const boostConfig = buildCreativeBoostConfig(factories.getGenerationConfig());
 
   return {
     async generateCreativeBoost(

@@ -1,8 +1,7 @@
-import { Music2, Settings2, Zap } from "lucide-react";
-
+import { BookOpen, Music2, Settings2, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { ToggleRow } from "@/components/ui/toggle-row";
 
 import type { EditorMode } from "@shared/types";
 import type { ReactElement } from "react";
@@ -11,19 +10,29 @@ interface ModeToggleProps {
   editorMode: EditorMode;
   maxMode: boolean;
   lyricsMode: boolean;
+  storyMode: boolean;
   onEditorModeChange: (mode: EditorMode) => void;
   onMaxModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
+  onStoryModeChange: (mode: boolean) => void;
 }
 
 export function ModeToggle({
   editorMode,
   maxMode,
   lyricsMode,
+  storyMode,
   onEditorModeChange,
   onMaxModeChange,
   onLyricsModeChange,
+  onStoryModeChange,
 }: ModeToggleProps): ReactElement {
+  const iconClass = "w-3.5 h-3.5 text-muted-foreground";
+
+  const handleStoryModeChange = (checked: boolean): void => {
+    onStoryModeChange(checked);
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -52,26 +61,29 @@ export function ModeToggle({
           </span>
         )}
       </div>
-      <label className="flex items-center gap-2 cursor-pointer shrink-0">
-        <Music2 className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-footnote text-muted-foreground">Lyrics</span>
-        <Switch 
-          checked={lyricsMode} 
-          onCheckedChange={onLyricsModeChange}
-          autoDisable
-          size="sm"
+      <div className="flex items-center gap-4 shrink-0">
+        <ToggleRow
+          id="mode-lyrics"
+          icon={<Music2 className={iconClass} />}
+          label="Lyrics"
+          checked={lyricsMode}
+          onChange={onLyricsModeChange}
         />
-      </label>
-      <label className="flex items-center gap-2 cursor-pointer shrink-0">
-        <Zap className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-footnote text-muted-foreground">Max</span>
-        <Switch 
-          checked={maxMode} 
-          onCheckedChange={onMaxModeChange}
-          autoDisable
-          size="sm"
+        <ToggleRow
+          id="mode-max"
+          icon={<Zap className={iconClass} />}
+          label="Max"
+          checked={maxMode}
+          onChange={onMaxModeChange}
         />
-      </label>
+        <ToggleRow
+          id="mode-story"
+          icon={<BookOpen className={iconClass} />}
+          label="Story"
+          checked={storyMode}
+          onChange={handleStoryModeChange}
+        />
+      </div>
     </div>
   );
 }

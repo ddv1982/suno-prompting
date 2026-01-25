@@ -6,10 +6,11 @@
  * @module components/shared/panel-submit-button
  */
 
-import { Loader2, RefreshCw } from "lucide-react";
+import { Check, Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useSettingsContext } from "@/context/settings-context";
+import { cn } from "@/lib/utils";
 
 import { LLMUnavailableNotice } from "./llm-unavailable-notice";
 
@@ -25,6 +26,7 @@ export function PanelSubmitButton({
   isRefineMode,
   isDirectMode = false,
   canSubmit,
+  refined = false,
   onSubmit,
   defaultIcon,
   defaultLabel = "GENERATE",
@@ -41,6 +43,15 @@ export function PanelSubmitButton({
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
           {isRefineMode ? "REFINING..." : "GENERATING..."}
+        </>
+      );
+    }
+
+    if (refined) {
+      return (
+        <>
+          <Check className="w-4 h-4" />
+          REFINED!
         </>
       );
     }
@@ -76,7 +87,10 @@ export function PanelSubmitButton({
       <Button
         onClick={onSubmit}
         disabled={!canSubmit || isGenerating || !isLLMAvailable}
-        className="w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2"
+        className={cn(
+          "w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2",
+          refined && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
+        )}
       >
         {getContent()}
       </Button>

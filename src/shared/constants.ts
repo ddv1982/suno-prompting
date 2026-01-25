@@ -15,6 +15,18 @@ export function getMaxModeHelperText(maxMode: boolean): string {
     return maxMode ? MAX_MODE_HELPER_TEXT.enabled : MAX_MODE_HELPER_TEXT.disabled;
 }
 
+export const STORY_MODE_HELPER_TEXT = {
+    enabled: 'Generates evocative narrative prose for Suno',
+    enabledWithMax: 'MAX headers + narrative prose description',
+    disabled: 'Standard structured format',
+} as const;
+
+export function getStoryModeHelperText(storyMode: boolean, maxMode: boolean): string {
+    if (!storyMode) return STORY_MODE_HELPER_TEXT.disabled;
+    if (maxMode) return STORY_MODE_HELPER_TEXT.enabledWithMax;
+    return STORY_MODE_HELPER_TEXT.enabled;
+}
+
 export const CREATIVITY_LEVEL_DISPLAY_NAMES = {
     low: 'Low',
     safe: 'Safe',
@@ -70,6 +82,7 @@ export const APP_CONSTANTS = {
         DEFAULT_DEBUG_MODE: false,
         DEFAULT_MAX_MODE: false,
         DEFAULT_LYRICS_MODE: false,
+        DEFAULT_STORY_MODE: false,
         DEFAULT_PROMPT_MODE: 'full' as const,
         PROVIDER_IDS: ['groq', 'openai', 'anthropic'] as const,
         PROVIDERS: [

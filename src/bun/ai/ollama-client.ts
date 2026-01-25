@@ -136,11 +136,3 @@ export async function generateWithOllama(
     throw new AIGenerationError(`Ollama generation failed: ${errorMessage}`, error instanceof Error ? error : undefined);
   }
 }
-
-/**
- * Invalidate the cached Ollama client.
- * No-op since we don't cache the node:http client.
- */
-export function invalidateOllamaClient(): void {
-  log.info('invalidateOllamaClient:cleared');
-}

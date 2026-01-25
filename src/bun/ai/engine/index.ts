@@ -10,6 +10,6 @@
 export { AIEngine } from './ai-engine';
 
 // Re-export types for backward compatibility
-export type { GenerationResult, ParsedCombinedResponse } from '@bun/ai/types';
+export type { GenerationResult } from '@bun/ai/types';
 export type { GenerateInitialOptions } from '@bun/ai/generation';
 export type { RefinePromptOptions } from '@bun/ai/refinement';

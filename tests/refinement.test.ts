@@ -1,17 +1,13 @@
 import { describe, test, expect, mock } from 'bun:test';
 
+import { cleanTitle, cleanLyrics } from '@bun/ai/utils';
 import {
   buildCombinedSystemPrompt,
   buildCombinedWithLyricsSystemPrompt,
   type RefinementContext,
 } from '@bun/prompt/builders';
 import { ValidationError } from '@shared/errors';
-import {
-  cleanJsonResponse,
-  cleanTitle,
-  cleanLyrics,
-  parseJsonResponse,
-} from '@shared/prompt-utils';
+import { cleanJsonResponse, parseJsonResponse } from '@shared/prompt-utils';
 
 describe('Prompt Builder Refinement', () => {
   describe('buildCombinedSystemPrompt with refinement', () => {

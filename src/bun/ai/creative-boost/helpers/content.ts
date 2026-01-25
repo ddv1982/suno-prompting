@@ -14,15 +14,10 @@ import { generateDeterministicTitle } from '@bun/prompt/title';
 
 import { injectWordlessVocals } from './vocals';
 
-import type { TraceCollector } from '@bun/trace';
+import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { LanguageModel } from 'ai';
 
 const log = createLogger('CreativeBoostHelpers');
-
-interface TraceRuntime {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
-}
 
 /**
  * Default fallback topic when no lyrics topic or description is provided.

@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-import { APP_CONSTANTS } from '@shared/constants';
-
 /**
  * Schema for setting Ollama configuration.
  * All fields are optional - only provided fields will be updated.
@@ -32,14 +30,3 @@ export const SetOllamaSettingsSchema = z.object({
 });
 
 export type SetOllamaSettingsInput = z.infer<typeof SetOllamaSettingsSchema>;
-
-/**
- * Default Ollama configuration values for reference.
- * Use APP_CONSTANTS.OLLAMA for actual defaults.
- */
-export const OLLAMA_DEFAULTS = {
-  endpoint: APP_CONSTANTS.OLLAMA.DEFAULT_ENDPOINT,
-  temperature: APP_CONSTANTS.OLLAMA.DEFAULT_TEMPERATURE,
-  maxTokens: APP_CONSTANTS.OLLAMA.DEFAULT_MAX_TOKENS,
-  contextLength: APP_CONSTANTS.OLLAMA.DEFAULT_CONTEXT_LENGTH,
-} as const;

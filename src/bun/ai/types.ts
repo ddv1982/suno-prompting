@@ -34,20 +34,8 @@ export interface GenerationResult {
   lyrics?: string;
   /** Debug trace timeline (when debug mode is enabled) */
   debugTrace?: TraceRun;
-}
-
-/**
- * Parsed response from combined generation (prompt + title + optional lyrics).
- *
- * Used when parsing JSON responses from LLM that include multiple outputs.
- */
-export interface ParsedCombinedResponse {
-  /** The generated prompt */
-  prompt: string;
-  /** The generated title */
-  title: string;
-  /** Optional generated lyrics */
-  lyrics?: string;
+  /** Flag indicating Story Mode fell back to deterministic output */
+  storyModeFallback?: boolean;
 }
 
 /**
@@ -94,16 +82,16 @@ export interface EngineConfig {
  * enabling testability through dependency injection.
  */
 export interface GenerationConfig {
-  /** Returns the language model to use for LLM calls */
+  /** Returns the language model to use for LLM calls (cloud provider) */
   getModel: () => LanguageModel;
-  /** Returns the Ollama language model for offline generation */
-  getOllamaModel: () => LanguageModel;
   /** Returns whether debug mode is enabled */
   isDebugMode: () => boolean;
   /** Returns whether max mode is enabled */
   isMaxMode: () => boolean;
   /** Returns whether lyrics mode is enabled */
   isLyricsMode: () => boolean;
+  /** Returns whether story mode is enabled (narrative prose format) */
+  isStoryMode: () => boolean;
   /** Returns whether local LLM (Ollama) is enabled */
   isUseLocalLLM: () => boolean;
   /** Returns whether any LLM is available (local or cloud) */

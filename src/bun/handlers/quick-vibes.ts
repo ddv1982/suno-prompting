@@ -16,7 +16,7 @@ async function runQuickVibesAction(
   traceAction: TraceRunAction,
   meta: ActionMeta,
   operation: (runtime: TraceRuntime) => Promise<GenerationResult>
-): Promise<{ prompt: string; title?: string; versionId: string; debugTrace?: GenerationResult['debugTrace'] }> {
+): Promise<{ prompt: string; title?: string; versionId: string; debugTrace?: GenerationResult['debugTrace']; storyModeFallback?: boolean }> {
   return withErrorHandling(actionName, async () => {
     const versionId = Bun.randomUUIDv7();
     const runtime = createTraceRuntime(aiEngine, versionId, traceAction, 'quickVibes');
@@ -30,13 +30,15 @@ async function runQuickVibesAction(
     log.info(`${actionName}:result`, {
       versionId,
       promptLength: result.text.length,
-      hasTitle: !!result.title
+      hasTitle: !!result.title,
+      storyModeFallback: result.storyModeFallback
     });
     return {
       prompt: result.text,
       title: result.title,
       versionId,
-      debugTrace
+      debugTrace,
+      storyModeFallback: result.storyModeFallback
     };
   }, meta);
 }

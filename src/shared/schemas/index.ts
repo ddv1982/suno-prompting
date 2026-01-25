@@ -43,18 +43,8 @@ export {
 
 // Settings schemas
 export {
-  SetApiKeySchema,
-  SetModelSchema,
-  SetSunoTagsSchema,
-  SetDebugModeSchema,
-  SetMaxModeSchema,
-  SetLyricsModeSchema,
   SetUseLocalLLMSchema,
-  SetPromptModeSchema,
-  SetCreativeBoostModeSchema,
   SaveAllSettingsSchema,
-  type SetApiKeyInput,
-  type SetModelInput,
   type SetUseLocalLLMInput,
   type SaveAllSettingsInput,
 } from './settings';
@@ -79,12 +69,11 @@ export {
 // Ollama schemas
 export {
   SetOllamaSettingsSchema,
-  OLLAMA_DEFAULTS,
   type SetOllamaSettingsInput,
 } from './ollama';
 
 // Trace schemas
-export { TraceRunSchema, zTraceRun, type TraceRunInput } from './trace';
+export { TraceRunSchema } from './trace';
 
 // Thematic context schemas
 export { ThematicContextSchema, type ThematicContext } from './thematic-context';

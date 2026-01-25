@@ -170,8 +170,3 @@ export const TraceRunSchema = z
     events: z.array(TraceEventSchema),
   })
   .strict();
-
-/** Alias to match spec/task wording. */
-export const zTraceRun = TraceRunSchema;
-
-export type TraceRunInput = z.infer<typeof TraceRunSchema>;

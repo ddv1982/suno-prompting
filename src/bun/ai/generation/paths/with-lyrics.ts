@@ -4,11 +4,13 @@
  * LLM-assisted generation when lyrics mode is ON.
  * Uses LLM for thematic context extraction, genre detection, title, and lyrics generation.
  * Prompt building remains deterministic but enriched with thematic context.
+ * Supports Story Mode to generate narrative prose instead of structured prompts.
  *
  * @module ai/generation/paths/with-lyrics
  */
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
+import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 
@@ -22,6 +24,24 @@ import {
 
 import type { GenerateInitialOptions, TraceRuntime } from '../types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
+import type { TraceCollector } from '@bun/trace';
+
+/** Run genre detection from topic if needed */
+async function runGenreDetection(
+  willDetectFromTopic: boolean,
+  lyricsTopic: string | undefined,
+  getModelFn: () => import('ai').LanguageModel,
+  ollamaEndpoint: string | undefined,
+  trace: TraceCollector | undefined
+): Promise<Awaited<ReturnType<typeof detectGenreFromTopic>> | null> {
+  if (!willDetectFromTopic || !lyricsTopic) {
+    return null;
+  }
+  return detectGenreFromTopic(lyricsTopic.trim(), getModelFn, undefined, ollamaEndpoint, {
+    trace,
+    traceLabel: 'genre.detectFromTopic',
+  });
+}
 
 /**
  * LLM-assisted generation path (lyrics mode ON).
@@ -48,12 +68,7 @@ export async function generateWithLyrics(
   // 2. Run thematic extraction and genre detection in parallel
   const [thematicContext, genreResult] = await Promise.all([
     extractThematicContextIfAvailable(description, config, trace),
-    willDetectFromTopic && lyricsTopic
-      ? detectGenreFromTopic(lyricsTopic.trim(), getModelFn, undefined, ollamaEndpoint, {
-          trace,
-          traceLabel: 'genre.detectFromTopic',
-        })
-      : Promise.resolve(null),
+    runGenreDetection(willDetectFromTopic, lyricsTopic, getModelFn, ollamaEndpoint, trace),
   ]);
 
   // Use genre in priority order: override > description keywords > LLM topic detection
@@ -83,10 +98,31 @@ export async function generateWithLyrics(
     generateLyrics(topic, genre, mood, config.isMaxMode(), getModelFn, config.getUseSunoTags(), undefined, ollamaEndpoint, { trace, traceLabel: 'lyrics.generate' }),
   ]);
 
+  const title = cleanTitle(titleResult.title);
+  const lyrics = cleanLyrics(lyricsResult.lyrics);
+
+  // 5. Try Story Mode if enabled (generates narrative prose instead of structured prompt)
+  const storyInput = extractStructuredDataForStory(promptText, thematicContext, { description });
+  const storyModeResult = await tryStoryMode({
+    input: storyInput,
+    title,
+    lyrics: lyrics ?? '',
+    fallbackText: promptText,
+    config,
+    trace,
+    tracePrefix: 'generation.storyMode.withLyrics',
+    logLabel: 'generateWithLyrics',
+  });
+
+  if (storyModeResult) {
+    return storyModeResult;
+  }
+
+  // 6. Return deterministic prompt with lyrics (Story Mode disabled or unavailable)
   return {
     text: promptText,
-    title: cleanTitle(titleResult.title),
-    lyrics: cleanLyrics(lyricsResult.lyrics),
+    title,
+    lyrics,
     debugTrace: undefined,
   };
 }

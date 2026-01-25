@@ -6,13 +6,12 @@
  * @module ai/engine/quick-vibes
  */
 
-import { AIConfig } from '@bun/ai/config';
 import {
   generateQuickVibes as generateQuickVibesImpl,
   refineQuickVibes as refineQuickVibesImpl,
 } from '@bun/ai/quick-vibes-engine';
 
-import type { ConfigProxies } from './config-proxies';
+import type { ConfigFactories } from './config-factories';
 import type { GenerationResult } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 import type { QuickVibesCategory } from '@shared/types';
@@ -21,9 +20,7 @@ import type { QuickVibesCategory } from '@shared/types';
  * Create Quick Vibes methods bound to configuration.
  */
 export function createQuickVibesMethods(
-  config: AIConfig,
-  proxies: ConfigProxies,
-  _factories: unknown
+  factories: ConfigFactories
 ): {
   generateQuickVibes: (
     category: QuickVibesCategory | null,
@@ -42,6 +39,8 @@ export function createQuickVibesMethods(
     sunoStyles?: string[];
   }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }) => Promise<GenerationResult>;
 } {
+  const generationConfig = factories.getGenerationConfig();
+
   async function generateQuickVibes(
     category: QuickVibesCategory | null,
     customDescription: string,
@@ -52,9 +51,12 @@ export function createQuickVibesMethods(
     return generateQuickVibesImpl(
       { category, customDescription, withWordlessVocals, sunoStyles },
       {
-        getModel: proxies.getModel,
-        isMaxMode: config.isMaxMode.bind(config),
-        isDebugMode: config.isDebugMode.bind(config),
+        getModel: generationConfig.getModel,
+        isMaxMode: generationConfig.isMaxMode,
+        isDebugMode: generationConfig.isDebugMode,
+        isStoryMode: generationConfig.isStoryMode,
+        isLLMAvailable: generationConfig.isLLMAvailable,
+        getOllamaEndpointIfLocal: generationConfig.getOllamaEndpointIfLocal,
       },
       runtime
     );
@@ -72,10 +74,10 @@ export function createQuickVibesMethods(
     return refineQuickVibesImpl(
       { ...options, sunoStyles: options.sunoStyles ?? [] },
       {
-        getModel: proxies.getModel,
-        isMaxMode: config.isMaxMode.bind(config),
-        isDebugMode: config.isDebugMode.bind(config),
-        getOllamaEndpoint: () => config.isUseLocalLLM() ? config.getOllamaEndpoint() : undefined,
+        getModel: generationConfig.getModel,
+        isMaxMode: generationConfig.isMaxMode,
+        isDebugMode: generationConfig.isDebugMode,
+        getOllamaEndpoint: generationConfig.getOllamaEndpointIfLocal,
       },
       runtime
     );

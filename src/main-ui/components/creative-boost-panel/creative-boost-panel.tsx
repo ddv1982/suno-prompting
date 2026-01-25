@@ -18,21 +18,24 @@ import type { CreativeBoostInput, CreativeBoostMode } from "@shared/types";
 interface CreativeBoostPanelProps {
   input: CreativeBoostInput;
   maxMode: boolean;
+  storyMode: boolean;
   lyricsMode: boolean;
+  isLLMAvailable: boolean;
   isGenerating: boolean;
   hasCurrentPrompt: boolean;
   creativeBoostMode: CreativeBoostMode;
   onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
   onInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onMaxModeChange: (mode: boolean) => void;
+  onStoryModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
   onGenerate: () => void;
   onRefine: (feedback: string) => Promise<boolean>;
 }
 
 export function CreativeBoostPanel({
-  input, maxMode, lyricsMode, isGenerating, hasCurrentPrompt, creativeBoostMode,
-  onCreativeBoostModeChange, onInputChange, onMaxModeChange, onLyricsModeChange, onGenerate, onRefine,
+  input, maxMode, storyMode, lyricsMode, isLLMAvailable, isGenerating, hasCurrentPrompt, creativeBoostMode,
+  onCreativeBoostModeChange, onInputChange, onMaxModeChange, onStoryModeChange, onLyricsModeChange, onGenerate, onRefine,
 }: CreativeBoostPanelProps): ReactElement {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
@@ -108,10 +111,13 @@ export function CreativeBoostPanel({
         <TogglesSection
           withWordlessVocals={input.withWordlessVocals}
           maxMode={maxMode}
+          storyMode={storyMode}
           lyricsMode={lyricsMode}
+          isLLMAvailable={isLLMAvailable}
           isDirectMode={isDirectMode}
           onWordlessVocalsChange={handleWordlessVocalsChange}
           onMaxModeChange={onMaxModeChange}
+          onStoryModeChange={onStoryModeChange}
           onLyricsModeChange={handleLyricsToggleChange}
         />
 

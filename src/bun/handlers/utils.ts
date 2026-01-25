@@ -1,20 +1,16 @@
 import { createLogger } from '@bun/logger';
-import { maybeCreateTraceCollector, type TraceCollector } from '@bun/trace';
+import { maybeCreateTraceCollector } from '@bun/trace';
 import { createSeededRng } from '@shared/utils/random';
 
+import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { PromptMode, TraceRunAction } from '@shared/types';
 
 const log = createLogger('RPC');
 
 export type ActionMeta = Record<string, unknown>;
 
-/**
- * Runtime context for trace collection during handler execution.
- */
-export interface TraceRuntime {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
-}
+// Re-export TraceRuntime for backwards compatibility
+export type { TraceRuntime };
 
 /**
  * Interface for objects that can report debug mode status.

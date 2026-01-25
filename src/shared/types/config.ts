@@ -36,6 +36,8 @@ export interface AppConfig {
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
+  /** Whether to generate prompts in narrative prose format (requires LLM) */
+  storyMode: boolean;
   /** Whether to use Ollama local LLM instead of cloud providers */
   useLocalLLM: boolean;
   promptMode: PromptMode;

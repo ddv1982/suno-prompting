@@ -17,18 +17,79 @@ import {
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
 import { createLogger } from '@bun/logger';
 import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost';
+import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
 
+import {
+  extractStructuredDataForStory,
+  generateStoryNarrativeWithTimeout,
+  prependMaxHeaders,
+} from '../story-generator';
 
 import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
+import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationResult } from '@bun/ai/types';
-import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('CreativeBoostGenerate');
 
-interface TraceRuntime {
-  readonly trace?: TraceCollector;
-  readonly rng?: () => number;
+/**
+ * Apply Story Mode transformation to style prompt.
+ * Returns transformed result if Story Mode succeeds, null if fallback is needed.
+ */
+async function applyCreativeBoostStoryMode(
+  styleResult: string,
+  title: string,
+  lyrics: string | undefined,
+  description: string,
+  maxMode: boolean,
+  config: CreativeBoostEngineConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult | null> {
+  const storyMode = config.isStoryMode?.() ?? false;
+  const llmAvailable = config.isLLMAvailable?.() ?? false;
+
+  if (!storyMode || !llmAvailable) {
+    return null;
+  }
+
+  log.info('applyCreativeBoostStoryMode:start', { hasLLM: true });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'creativeBoost.storyMode.attempt',
+    branchTaken: 'narrative',
+    why: 'Story Mode enabled, attempting narrative generation',
+  });
+
+  const storyInput = extractStructuredDataForStory(styleResult, null, { description });
+
+  const storyResult = await generateStoryNarrativeWithTimeout({
+    input: storyInput,
+    getModel: config.getModel,
+    ollamaEndpoint: config.getOllamaEndpointIfLocal?.(),
+    trace: runtime?.trace,
+  });
+
+  if (storyResult.success) {
+    const finalText = maxMode
+      ? prependMaxHeaders(storyResult.narrative)
+      : storyResult.narrative;
+
+    return { text: finalText, title, lyrics, debugTrace: undefined };
+  }
+
+  // Story Mode fallback
+  const errorMessage = storyResult.error ?? 'Unknown error';
+  log.warn('applyCreativeBoostStoryMode:fallback', { error: errorMessage });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'creativeBoost.storyMode.fallback',
+    branchTaken: 'deterministic',
+    why: `Story generation failed: ${errorMessage}`,
+  });
+
+  return { text: styleResult, title, lyrics, debugTrace: undefined, storyModeFallback: true };
 }
 
 /**
@@ -132,6 +193,14 @@ export async function generateCreativeBoost(
   const { lyrics } = await generateCreativeBoostLyrics(
     withLyrics, lyricsTopic, description, selectedGenre, selectedMood, maxMode, config.getModel, config.getUseSunoTags?.() ?? false, ollamaEndpoint, runtime
   );
+
+  // 6. Try Story Mode transformation (returns null if not applicable)
+  const storyResult = await applyCreativeBoostStoryMode(
+    styleResult, title, lyrics, description, maxMode, config, runtime
+  );
+  if (storyResult) {
+    return storyResult;
+  }
 
   return { text: styleResult, title, lyrics, debugTrace: undefined };
 }
