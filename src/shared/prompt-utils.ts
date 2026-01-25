@@ -75,25 +75,4 @@ export function isStructuredPrompt(text: string): boolean {
   return hasNonMaxFields || hasSectionTags || hasMaxStyleFields;
 }
 
-export interface ParsedCombinedResponse {
-  prompt: string;
-  title?: string;
-  lyrics?: string;
-}
 
-/**
- * Parse a combined JSON response from LLM (prompt + optional title/lyrics).
- * Returns null if parsing fails or prompt is missing.
- */
-export function parseJsonResponse(rawResponse: string): ParsedCombinedResponse | null {
-  try {
-    const cleaned = cleanJsonResponse(rawResponse);
-    const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
-    if (!parsed.prompt) {
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}

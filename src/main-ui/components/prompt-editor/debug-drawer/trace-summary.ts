@@ -14,7 +14,7 @@ import type {
   TraceRunEvent,
 } from '@shared/types';
 
-function formatAction(action: TraceRun['action']): string {
+export function formatAction(action: TraceRun['action']): string {
   switch (action) {
     case 'generate.full':
       return 'Generate (Full)';
@@ -35,8 +35,8 @@ function formatAction(action: TraceRun['action']): string {
   }
 }
 
-function formatLatency(ms: number | undefined): string {
-  if (ms === undefined) return '';
+export function formatLatency(ms: number | undefined): string {
+  if (ms === undefined) return '-';
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(2)}s`;
 }

@@ -7,6 +7,13 @@
  * @module ai/quick-vibes/refinement
  */
 
+import { isDirectMode, generateDirectModeResult } from '@bun/ai/direct-mode';
+import { callLLM } from '@bun/ai/llm-utils';
+import {
+  extractStructuredDataForStory,
+  generateStoryNarrativeWithTimeout,
+  prependMaxHeaders,
+} from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
 import {
   getQuickVibesTemplate,
@@ -20,17 +27,74 @@ import {
   buildQuickVibesRefineUserPrompt,
   postProcessQuickVibes,
 } from '@bun/prompt/quick-vibes-builder';
+import { traceDecision } from '@bun/trace';
 import { InvariantError } from '@shared/errors';
 import { createSeededRng, selectRandom } from '@shared/utils/random';
 
-import { isDirectMode, generateDirectModeResult } from '../direct-mode';
-import { callLLM } from '../llm-utils';
 
-import type { GenerationResult, EngineConfig } from '../types';
+import type { QuickVibesEngineConfig } from './engine';
 import type { RefineQuickVibesOptions } from './types';
 import type { TraceRuntime } from '@bun/ai/generation/types';
+import type { GenerationResult } from '@bun/ai/types';
 
 const log = createLogger('QuickVibesRefinement');
+
+/**
+ * Apply Story Mode transformation to refinement result.
+ * Returns the transformed result if Story Mode succeeds, null if fallback is needed.
+ */
+async function applyStoryModeToRefinement(
+  result: GenerationResult,
+  customDescription: string,
+  config: QuickVibesEngineConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult | null> {
+  const storyMode = config.isStoryMode?.() ?? false;
+  const llmAvailable = config.isLLMAvailable?.() ?? false;
+
+  if (!storyMode || !llmAvailable) {
+    return null;
+  }
+
+  log.info('applyStoryModeToRefinement:start', { hasLLM: true });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'quickVibes.refine.storyMode.attempt',
+    branchTaken: 'narrative',
+    why: 'Story Mode enabled, attempting narrative generation for refinement',
+  });
+
+  const storyInput = extractStructuredDataForStory(result.text, null, { description: customDescription });
+
+  const storyResult = await generateStoryNarrativeWithTimeout({
+    input: storyInput,
+    getModel: config.getModel,
+    ollamaEndpoint: config.getOllamaEndpointIfLocal?.(),
+    trace: runtime?.trace,
+  });
+
+  if (storyResult.success) {
+    const finalText = config.isMaxMode()
+      ? prependMaxHeaders(storyResult.narrative)
+      : storyResult.narrative;
+
+    return { text: finalText, title: result.title, debugTrace: undefined };
+  }
+
+  // Story Mode fallback
+  const errorMessage = storyResult.error ?? 'Unknown error';
+  log.warn('applyStoryModeToRefinement:fallback', { error: errorMessage });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'quickVibes.refine.storyMode.fallback',
+    branchTaken: 'deterministic',
+    why: `Story generation failed: ${errorMessage}`,
+  });
+
+  return { text: result.text, title: result.title, debugTrace: undefined, storyModeFallback: true };
+}
 
 /**
  * Simple hash function for feedback string to seed RNG.
@@ -87,11 +151,12 @@ function buildDeterministicQuickVibesFromTemplate(
  * Apply deterministic refinement to Quick Vibes when category is set.
  * Uses feedback keywords to guide variations from the template.
  */
-function refineDeterministicQuickVibes(
+async function refineDeterministicQuickVibes(
   options: RefineQuickVibesOptions,
-  config: EngineConfig & { isMaxMode: () => boolean }
-): GenerationResult {
-  const { feedback, withWordlessVocals, category } = options;
+  config: QuickVibesEngineConfig,
+  runtime?: TraceRuntime
+): Promise<GenerationResult> {
+  const { feedback, withWordlessVocals, category, description } = options;
 
   // Category must be set when this function is called
   if (!category) {
@@ -113,13 +178,19 @@ function refineDeterministicQuickVibes(
     rng
   );
 
-  const result = applyQuickVibesMaxMode(text, config.isMaxMode());
+  const deterministicResult = applyQuickVibesMaxMode(text, config.isMaxMode());
 
-  return {
-    text: result,
+  const result: GenerationResult = {
+    text: deterministicResult,
     title,
     debugTrace: undefined,
   };
+
+  // Try Story Mode transformation
+  const storyResult = await applyStoryModeToRefinement(result, description ?? '', config, runtime);
+  if (storyResult) return storyResult;
+
+  return result;
 }
 
 /**
@@ -136,7 +207,7 @@ function refineDeterministicQuickVibes(
  */
 export async function refineQuickVibes(
   options: RefineQuickVibesOptions,
-  config: EngineConfig & { isMaxMode: () => boolean },
+  config: QuickVibesEngineConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
   const { currentPrompt, description, feedback, withWordlessVocals, category, sunoStyles } = options;
@@ -155,7 +226,7 @@ export async function refineQuickVibes(
   // Category-based refinement: use deterministic path (no LLM)
   if (category) {
     log.info('refineQuickVibes:deterministic', { category, feedback: feedback.slice(0, 50) });
-    return refineDeterministicQuickVibes(options, config);
+    return refineDeterministicQuickVibes(options, config, runtime);
   }
 
   // No category: use LLM refinement
@@ -177,11 +248,17 @@ export async function refineQuickVibes(
     traceLabel: 'quickVibes.refine',
   });
 
-  let result = postProcessQuickVibes(rawResponse);
-  result = applyQuickVibesMaxMode(result, config.isMaxMode());
+  let resultText = postProcessQuickVibes(rawResponse);
+  resultText = applyQuickVibesMaxMode(resultText, config.isMaxMode());
 
-  return {
-    text: result,
+  const result: GenerationResult = {
+    text: resultText,
     debugTrace: undefined,
   };
+
+  // Try Story Mode transformation for LLM refinement path too
+  const storyResult = await applyStoryModeToRefinement(result, description ?? '', config, runtime);
+  if (storyResult) return storyResult;
+
+  return result;
 }

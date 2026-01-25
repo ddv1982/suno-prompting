@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { rpcClient, type RpcError } from '@/services/rpc-client';
+import { formatRpcError } from '@/lib/rpc-utils';
+import { rpcClient } from '@/services/rpc-client';
 import { type MoodCategory } from '@bun/mood';
 import { type QuickVibesInput, type QuickVibesCategory } from '@shared/types';
 
@@ -11,12 +12,7 @@ import {
   type GenerationActionDeps,
 } from './use-generation-action';
 
-
 const log = createLogger('QuickVibes');
-
-function formatRpcError(error: RpcError): string {
-  return error.message;
-}
 
 type QuickVibesActionsConfig = GenerationActionDeps & {
   setPendingInput: (input: string) => void;

@@ -1,4 +1,8 @@
-import { describe, expect, test, mock, beforeEach } from 'bun:test';
+import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
+
+afterAll(() => {
+  mock.restore();
+});
 
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 

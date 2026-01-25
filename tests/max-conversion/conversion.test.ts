@@ -1,4 +1,8 @@
-import { describe, test, it, expect, mock, beforeEach } from 'bun:test';
+import { describe, test, it, expect, mock, beforeEach, afterAll } from 'bun:test';
+
+afterAll(() => {
+  mock.restore();
+});
 
 import { convertToMaxFormat } from '@bun/prompt/conversion';
 

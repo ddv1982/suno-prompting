@@ -14,7 +14,7 @@ import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors'
 
 import { generateWithLyrics } from './with-lyrics';
 
-import type { GenerateInitialOptions, TraceRuntime } from '../types';
+import type { GenerateInitialOptions, TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 
 const log = createLogger('Generation');

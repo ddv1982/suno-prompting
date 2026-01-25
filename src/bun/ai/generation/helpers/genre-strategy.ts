@@ -6,11 +6,11 @@
  * @module ai/generation/helpers/genre-strategy
  */
 
+import { MAX_LOG_DESCRIPTION_LENGTH } from '@bun/ai/generation/constants';
 import { createLogger } from '@bun/logger';
 import { detectGenreKeywordsOnly } from '@bun/prompt/deterministic';
 import { traceDecision } from '@bun/trace';
 
-import { MAX_LOG_DESCRIPTION_LENGTH } from '../constants';
 
 import type { TraceCollector } from '@bun/trace';
 import type { ThematicContext } from '@shared/schemas/thematic-context';

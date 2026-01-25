@@ -10,19 +10,19 @@
  */
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
-import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
-import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
-import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
-
 import {
   extractThematicContextIfAvailable,
   resolveGenreStrategy,
   logGenreResolution,
   logThematicContext,
   buildPromptForMode,
-} from '../helpers';
+} from '@bun/ai/generation/helpers';
+import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
+import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
+import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 
-import type { GenerateInitialOptions, TraceRuntime } from '../types';
+
+import type { GenerateInitialOptions, TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 

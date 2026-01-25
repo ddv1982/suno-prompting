@@ -10,28 +10,21 @@ import { useState, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { cn } from '@/lib/utils';
+
+import { formatLatency } from './trace-summary';
 
 import type { TraceLLMCallEvent } from '@shared/types';
 import type { ReactElement } from 'react';
 
-/** Duration in ms to show "Copied!" feedback before reverting */
-const COPY_FEEDBACK_DURATION_MS = 1500;
-
 interface LLMCallCardProps { event: TraceLLMCallEvent }
 
-function formatLatency(ms: number | undefined): string {
-  if (ms === undefined) return '-';
-  return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(2)}s`;
-}
-
 function CopyRawButton({ label, data }: { label: string; data: string }): ReactElement {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard({ feedbackDuration: 1500 });
   const handleCopy = useCallback(() => {
-    void navigator.clipboard.writeText(data);
-    setCopied(true);
-    setTimeout(() => { setCopied(false); }, COPY_FEEDBACK_DURATION_MS);
-  }, [data]);
+    void copy(data);
+  }, [data, copy]);
   return (
     <Button variant="ghost" size="xs" onClick={handleCopy} className="gap-1">
       <Copy className="size-3" />{copied ? 'Copied!' : label}

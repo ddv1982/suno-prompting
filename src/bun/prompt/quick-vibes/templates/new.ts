@@ -6,7 +6,7 @@
  * @module prompt/quick-vibes/templates/new
  */
 
-import type { QuickVibesTemplate } from '../types';
+import type { QuickVibesTemplate } from '@bun/prompt/quick-vibes/types';
 
 // =============================================================================
 // New v3.0 Category Templates

@@ -13,6 +13,7 @@
  */
 
 import { generateTitle } from '@bun/ai/content-generator';
+import { extractThematicContextIfAvailable } from '@bun/ai/generation/helpers';
 import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
 import { cleanTitle } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
@@ -26,9 +27,8 @@ import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { traceDecision } from '@bun/trace';
 
-import { extractThematicContextIfAvailable } from '../helpers';
 
-import type { GenerateInitialOptions, TraceRuntime } from '../types';
+import type { GenerateInitialOptions, TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 
 const log = createLogger('Generation');

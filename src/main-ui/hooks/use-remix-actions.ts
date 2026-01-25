@@ -1,19 +1,10 @@
 import { useCallback, useMemo } from 'react';
 
 import { executePromptRemix, executeSingleFieldRemix, type RemixExecutorDeps } from '@/lib/remix-executor';
-import { rpcClient, type RpcError } from '@/services/rpc-client';
+import { rpcClient, unwrapOrThrowResult, type RpcError } from '@/services/rpc-client';
 import { type ValidationResult } from '@shared/validation';
 
 import { type GeneratingAction } from './use-generation-state';
-
-function formatRpcError(error: RpcError): string {
-  return error.message;
-}
-
-function unwrapOrThrow<T>(result: { ok: true; value: T } | { ok: false; error: RpcError }): T {
-  if (result.ok) return result.value;
-  throw new Error(formatRpcError(result.error));
-}
 
 export interface RemixActions {
   handleRemixInstruments: () => Promise<void>;
@@ -36,7 +27,7 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       action as Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
       async () => {
         const raw = await (rpcClient[method] as (p: { currentPrompt: string }) => Promise<{ ok: true; value: { prompt: string; versionId: string; validation: ValidationResult } } | { ok: false; error: RpcError }>)({ currentPrompt: currentSession.currentPrompt });
-        return unwrapOrThrow(raw);
+        return unwrapOrThrowResult(raw);
       },
       label,
       msg
@@ -54,7 +45,7 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       'remixGenre',
       async () => {
         const result = await rpcClient.remixGenre({ currentPrompt: currentSession.currentPrompt });
-        return unwrapOrThrow(result);
+        return unwrapOrThrowResult(result);
       },
       'genre remix',
       'Genre remixed.'
@@ -72,7 +63,7 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       'remixInstruments',
       async () => {
         const result = await rpcClient.remixInstruments({ currentPrompt: currentSession.currentPrompt, originalInput: currentSession.originalInput });
-        return unwrapOrThrow(result);
+        return unwrapOrThrowResult(result);
       },
       'instruments remix',
       'Instruments remixed.'
@@ -90,7 +81,7 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
           originalInput: currentSession.originalInput,
           currentLyrics: currentSession.currentLyrics,
         });
-        return unwrapOrThrow(result);
+        return unwrapOrThrowResult(result);
       },
       (r) => ({ currentTitle: r.title }),
       'title remix',
@@ -105,7 +96,7 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       'remixLyrics',
       async () => {
         const result = await rpcClient.remixLyrics({ currentPrompt: currentSession.currentPrompt, originalInput: currentSession.originalInput, lyricsTopic: currentSession.lyricsTopic });
-        return unwrapOrThrow(result);
+        return unwrapOrThrowResult(result);
       },
       (r) => ({ currentLyrics: r.lyrics }),
       'lyrics remix',

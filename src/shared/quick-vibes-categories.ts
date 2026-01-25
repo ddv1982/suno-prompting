@@ -1,5 +1,3 @@
-import { APP_CONSTANTS } from '@shared/constants';
-
 import type { QuickVibesCategory } from '@shared/types';
 
 export interface QuickVibesCategoryDefinition {
@@ -110,9 +108,6 @@ export const QUICK_VIBES_CATEGORIES: Record<QuickVibesCategory, QuickVibesCatego
     exampleOutput: 'energetic dance beats for a party night',
   },
 };
-
-export const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
-export const QUICK_VIBES_GENERATION_LIMIT = APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT;
 
 // Helper to get category list for UI
 export const QUICK_VIBES_CATEGORY_LIST = Object.entries(QUICK_VIBES_CATEGORIES).map(

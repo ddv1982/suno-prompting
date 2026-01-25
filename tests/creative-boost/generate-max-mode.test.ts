@@ -1,4 +1,8 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
+
+afterAll(() => {
+  mock.restore();
+});
 
 import { AIEngine } from "@bun/ai/engine";
 import { MAX_MODE_SIGNATURE } from "@shared/max-format";

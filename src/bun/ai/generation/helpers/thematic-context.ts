@@ -8,12 +8,12 @@
  * @module ai/generation/helpers/thematic-context
  */
 
+import { THEMATIC_EXTRACTION_TIMEOUT_MS } from '@bun/ai/generation/constants';
 import { extractThematicContext } from '@bun/ai/thematic-context';
 import { extractAllKeywords, hasKeywords } from '@bun/keywords';
 import { createLogger } from '@bun/logger';
 import { traceDecision } from '@bun/trace';
 
-import { THEMATIC_EXTRACTION_TIMEOUT_MS } from '../constants';
 
 import type { GenerationConfig } from '@bun/ai/types';
 import type { KeywordExtractionResult } from '@bun/keywords';

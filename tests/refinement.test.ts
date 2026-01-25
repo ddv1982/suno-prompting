@@ -1,4 +1,8 @@
-import { describe, test, expect, mock } from 'bun:test';
+import { describe, test, expect, mock, afterAll } from 'bun:test';
+
+afterAll(() => {
+  mock.restore();
+});
 
 import { cleanTitle, cleanLyrics } from '@bun/ai/utils';
 import {
@@ -7,7 +11,27 @@ import {
   type RefinementContext,
 } from '@bun/prompt/builders';
 import { ValidationError } from '@shared/errors';
-import { cleanJsonResponse, parseJsonResponse } from '@shared/prompt-utils';
+import { cleanJsonResponse } from '@shared/prompt-utils';
+
+// Test-only helper: Parse a combined JSON response from LLM
+interface ParsedCombinedResponse {
+  prompt: string;
+  title?: string;
+  lyrics?: string;
+}
+
+function parseJsonResponse(rawResponse: string): ParsedCombinedResponse | null {
+  try {
+    const cleaned = cleanJsonResponse(rawResponse);
+    const parsed = JSON.parse(cleaned) as ParsedCombinedResponse;
+    if (!parsed.prompt) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
 
 describe('Prompt Builder Refinement', () => {
   describe('buildCombinedSystemPrompt with refinement', () => {

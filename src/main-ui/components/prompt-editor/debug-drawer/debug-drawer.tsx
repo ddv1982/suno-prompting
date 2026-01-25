@@ -11,43 +11,19 @@
  */
 
 import { AlertCircle, ClipboardCopy, FileText } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 
 import { TimelineEvent } from './timeline-event';
-import { generateTraceSummaryText } from './trace-summary';
+import { formatAction, generateTraceSummaryText } from './trace-summary';
 
 import type { DebugDrawerBodyProps } from './types';
-import type { TraceRun } from '@shared/types';
 import type { ReactElement } from 'react';
-
-/** Duration in ms to show "Copied!" feedback before reverting */
-const COPY_FEEDBACK_DURATION_MS = 1500;
-
-function formatAction(action: TraceRun['action']): string {
-  switch (action) {
-    case 'generate.full':
-      return 'Generate (Full)';
-    case 'generate.quickVibes':
-      return 'Quick Vibes';
-    case 'generate.creativeBoost':
-      return 'Creative Boost';
-    case 'refine':
-      return 'Refine';
-    case 'remix':
-      return 'Remix';
-    case 'convert.max':
-      return 'Convert to Max';
-    case 'convert.nonMax':
-      return 'Convert from Max';
-    default:
-      return action;
-  }
-}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -56,8 +32,8 @@ function formatBytes(bytes: number): string {
 }
 
 export function DebugDrawerBody({ debugTrace }: DebugDrawerBodyProps): ReactElement {
-  const [copiedJson, setCopiedJson] = useState(false);
-  const [copiedText, setCopiedText] = useState(false);
+  const { copied: copiedJson, copy: copyJson } = useCopyToClipboard({ feedbackDuration: 1500 });
+  const { copied: copiedText, copy: copyText } = useCopyToClipboard({ feedbackDuration: 1500 });
 
   const sortedEvents = useMemo(
     () => [...debugTrace.events].sort((a, b) => a.tMs - b.tMs),
@@ -66,17 +42,13 @@ export function DebugDrawerBody({ debugTrace }: DebugDrawerBodyProps): ReactElem
 
   const handleCopyJson = useCallback(() => {
     const json = JSON.stringify(debugTrace, null, 2);
-    void navigator.clipboard.writeText(json);
-    setCopiedJson(true);
-    setTimeout(() => { setCopiedJson(false); }, COPY_FEEDBACK_DURATION_MS);
-  }, [debugTrace]);
+    void copyJson(json);
+  }, [debugTrace, copyJson]);
 
   const handleCopyText = useCallback(() => {
     const text = generateTraceSummaryText(debugTrace);
-    void navigator.clipboard.writeText(text);
-    setCopiedText(true);
-    setTimeout(() => { setCopiedText(false); }, COPY_FEEDBACK_DURATION_MS);
-  }, [debugTrace]);
+    void copyText(text);
+  }, [debugTrace, copyText]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 mt-4">

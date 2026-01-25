@@ -13,6 +13,7 @@ import { QuickVibesPanel } from "@/components/quick-vibes-panel";
 import { Separator } from "@/components/ui/separator";
 import { GenerationDisabledProvider } from "@/context/generation-disabled-context";
 import { useSettingsContext } from "@/context/settings-context";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { APP_CONSTANTS } from "@shared/constants";
 import { hasAdvancedSelection } from "@shared/music-phrase";
 import { validateLockedPhrase } from "@shared/validation";
@@ -26,7 +27,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
   const { maxMode, lyricsMode, storyMode, editorMode, promptMode, creativeBoostMode } = modes;
   const { maxChars, currentModel } = config;
   const { isLLMAvailable } = useSettingsContext();
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [debugOpen, setDebugOpen] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
 
@@ -43,8 +44,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
   const handleCopy = (): void => {
     if (promptOverLimit) return;
     handlers.onCopy();
-    setCopied(true);
-    setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    void copy(''); // Trigger the copied state
   };
 
   return (

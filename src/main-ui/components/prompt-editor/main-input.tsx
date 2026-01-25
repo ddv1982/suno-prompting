@@ -7,15 +7,12 @@ import { useToast } from "@/components/ui/toast";
 import { useGenerationDisabled } from "@/context/generation-disabled-context";
 import { createLogger } from "@/lib/logger";
 import { isMaxFormat, isStructuredPrompt } from "@/lib/max-format";
-import { rpcClient, type RpcError } from "@/services/rpc-client";
+import { formatRpcError } from "@/lib/rpc-utils";
+import { rpcClient } from "@/services/rpc-client";
 
 import type { TraceRun } from "@shared/types";
 
 const log = createLogger('MainInput');
-
-function formatRpcError(error: RpcError): string {
-  return error.message;
-}
 
 interface MainInputProps {
   value: string;

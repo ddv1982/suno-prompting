@@ -7,6 +7,12 @@
  * @module ai/quick-vibes/engine
  */
 
+import { isDirectMode, generateDirectModeResult } from '@bun/ai/direct-mode';
+import {
+  extractStructuredDataForStory,
+  generateStoryNarrativeWithTimeout,
+  prependMaxHeaders,
+} from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
 import {
   buildDeterministicQuickVibes,
@@ -17,16 +23,10 @@ import {
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
 
-import { isDirectMode, generateDirectModeResult } from '../direct-mode';
-import {
-  extractStructuredDataForStory,
-  generateStoryNarrativeWithTimeout,
-  prependMaxHeaders,
-} from '../story-generator';
 
-import type { GenerationResult, EngineConfig } from '../types';
 import type { GenerateQuickVibesOptions } from './types';
 import type { TraceRuntime } from '@bun/ai/generation/types';
+import type { GenerationResult, EngineConfig } from '@bun/ai/types';
 
 const log = createLogger('QuickVibesEngine');
 

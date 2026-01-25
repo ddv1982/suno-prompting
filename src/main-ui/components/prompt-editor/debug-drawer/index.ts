@@ -13,6 +13,6 @@ export { ErrorCard } from './error-card';
 export { LLMCallCard } from './llm-call-card';
 export { RunEventCard } from './run-event-card';
 export { TimelineEvent } from './timeline-event';
-export { generateTraceSummaryText } from './trace-summary';
+export { generateTraceSummaryText, formatAction, formatLatency } from './trace-summary';
 
 export type { DebugDrawerBodyProps } from './types';

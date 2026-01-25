@@ -15,16 +15,16 @@ import {
   generateCreativeBoostLyrics,
 } from '@bun/ai/creative-boost/helpers';
 import { isDirectMode, generateDirectModeWithLyrics } from '@bun/ai/direct-mode';
+import {
+  extractStructuredDataForStory,
+  generateStoryNarrativeWithTimeout,
+  prependMaxHeaders,
+} from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
 import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost';
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
 
-import {
-  extractStructuredDataForStory,
-  generateStoryNarrativeWithTimeout,
-  prependMaxHeaders,
-} from '../story-generator';
 
 import type { GenerateCreativeBoostOptions, CreativeBoostEngineConfig } from '@bun/ai/creative-boost/types';
 import type { TraceRuntime } from '@bun/ai/generation/types';

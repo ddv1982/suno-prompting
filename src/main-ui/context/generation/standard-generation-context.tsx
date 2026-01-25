@@ -6,8 +6,9 @@ import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
 import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
+import { formatRpcError } from '@/lib/rpc-utils';
 import { handleGenerationError, addUserMessage, buildFullPromptOriginalInput, completeSessionUpdate } from '@/lib/session-helpers';
-import { rpcClient, type RpcError } from '@/services/rpc-client';
+import { rpcClient } from '@/services/rpc-client';
 import { type RefinementType, type StyleChanges, type TraceRun } from '@shared/types';
 
 import { useGenerationStateContext } from './generation-state-context';
@@ -18,10 +19,6 @@ import type { ChatMessage } from '@/lib/chat-utils';
 
 const log = createLogger('StandardGeneration');
 const StandardGenerationContext = createContext<StandardGenerationContextValue | null>(null);
-
-function formatRpcError(error: RpcError): string {
-  return error.message;
-}
 
 function shouldSkipGeneration(isGenerating: boolean, promptMode: string, hasPrompt: boolean): boolean {
   return isGenerating || (promptMode === 'quickVibes' && hasPrompt);

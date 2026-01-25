@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { rpcClient, type RpcError } from '@/services/rpc-client';
+import { formatRpcError } from '@/lib/rpc-utils';
+import { rpcClient } from '@/services/rpc-client';
 import { type CreativeBoostInput } from '@shared/types';
 
 import {
@@ -10,12 +11,7 @@ import {
   type GenerationActionDeps,
 } from './use-generation-action';
 
-
 const log = createLogger('CreativeBoost');
-
-function formatRpcError(error: RpcError): string {
-  return error.message;
-}
 
 const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostInput => ({
   creativityLevel: input.creativityLevel,

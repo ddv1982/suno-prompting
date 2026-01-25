@@ -26,20 +26,31 @@ const log = createLogger('LyricsRefinement');
  * @param genre - Genre for lyrics context
  * @param mood - Mood for lyrics context
  * @param useSunoTags - Whether to use Suno-compatible tags
+ * @param maxMode - Whether MAX mode is enabled (requires header)
  * @returns System prompt for lyrics refinement
  */
 export function buildLyricsRefinementPrompt(
   genre: string,
   mood: string,
-  useSunoTags: boolean
+  useSunoTags: boolean,
+  maxMode: boolean
 ): string {
   const tagInstructions = useSunoTags
     ? 'Use Suno-compatible section tags: [Verse], [Chorus], [Bridge], [Outro], etc.'
     : 'Use standard section markers like [Verse 1], [Chorus], [Bridge].';
 
+  const maxModeInstructions = maxMode
+    ? `CRITICAL: The VERY FIRST LINE of your output MUST be exactly:
+${APP_CONSTANTS.MAX_MODE_HEADER}
+
+Then continue with the refined lyrics on subsequent lines.
+
+`
+    : '';
+
   return `You are a professional songwriter refining existing lyrics for a ${genre} song with a ${mood} mood.
 
-TASK: Apply the user's feedback to improve the lyrics while maintaining the song structure.
+${maxModeInstructions}TASK: Apply the user's feedback to improve the lyrics while maintaining the song structure.
 
 RULES:
 - Keep the same overall structure (verses, chorus, bridge)
@@ -65,6 +76,7 @@ IMPORTANT: Return only the refined lyrics text, nothing else.`;
  * @param currentPrompt - Current prompt for genre/mood extraction
  * @param lyricsTopic - Optional topic for context
  * @param config - Configuration with dependencies
+ * @param maxMode - Whether MAX mode is enabled (requires header in lyrics)
  * @param ollamaEndpoint - Optional Ollama endpoint for offline mode
  * @returns Refined lyrics
  *
@@ -77,6 +89,7 @@ export async function refineLyricsWithFeedback(
   currentPrompt: string,
   lyricsTopic: string | undefined,
   config: RefinementConfig,
+  maxMode: boolean,
   ollamaEndpoint?: string,
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ lyrics: string }> {
@@ -95,6 +108,7 @@ export async function refineLyricsWithFeedback(
     feedbackLength: feedback.length,
     currentLyricsLength: currentLyrics.length,
     isOffline,
+    maxMode,
   });
 
   // Validate Ollama is available (only for offline mode)
@@ -102,7 +116,7 @@ export async function refineLyricsWithFeedback(
     await validateOllamaForRefinement(ollamaEndpoint);
   }
 
-  const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags());
+  const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags(), maxMode);
   const userPrompt = `Current lyrics:\n${currentLyrics}\n\nFeedback to apply:\n${feedback}${lyricsTopic ? `\n\nTopic/theme: ${lyricsTopic}` : ''}`;
 
   const refinedLyrics = await callLLM({

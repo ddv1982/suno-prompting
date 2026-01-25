@@ -1,5 +1,4 @@
 import { RefreshCw, Copy, Check, Bug } from "lucide-react";
-import { useState } from "react";
 
 import { OutputSection } from "@/components/prompt-editor/output-section";
 import { PromptOutput } from "@/components/prompt-output";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionLabel } from "@/components/ui/section-label";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
 import { APP_CONSTANTS } from "@shared/constants";
 import { stripMaxModeHeader } from "@shared/prompt-utils";
@@ -17,11 +17,10 @@ import type { ReactElement } from "react";
 function CopyButton({ label, copiedLabel, onClick }: {
   label: string; copiedLabel: string; onClick: () => void;
 }): ReactElement {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const handleClick = (): void => {
     onClick();
-    setCopied(true);
-    setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    void copy(''); // Trigger the copied state
   };
   return (
     <Button variant="outline" size="sm" onClick={handleClick}

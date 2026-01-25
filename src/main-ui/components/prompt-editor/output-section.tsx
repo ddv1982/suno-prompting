@@ -1,12 +1,11 @@
 import { Check, Copy, Shuffle } from "lucide-react";
-import { useState } from "react";
 
 import { PromptOutput } from "@/components/prompt-output";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionLabel } from "@/components/ui/section-label";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
-import { APP_CONSTANTS } from "@shared/constants";
 
 import type { ReactElement } from "react";
 
@@ -27,12 +26,11 @@ export function OutputSection({
   isRemixing = false,
   scrollable = false,
 }: OutputSectionProps): ReactElement {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const handleCopy = (): void => {
     onCopy();
-    setCopied(true);
-    setTimeout(() => { setCopied(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    void copy(''); // Trigger the copied state
   };
 
   return (

@@ -1,4 +1,8 @@
-import { describe, expect, test, mock, beforeEach } from "bun:test";
+import { describe, expect, test, mock, beforeEach, afterAll } from "bun:test";
+
+afterAll(() => {
+  mock.restore();
+});
 
 import { createHandlers } from "@bun/handlers";
 import { APP_CONSTANTS } from "@shared/constants";

@@ -1,7 +1,13 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
+
+afterAll(() => {
+  mock.restore();
+});
 
 import { AIEngine } from "@bun/ai/engine";
-import { QUICK_VIBES_MAX_CHARS } from "@shared/quick-vibes-categories";
+import { APP_CONSTANTS } from "@shared/constants";
+
+const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 
 // Mock the AI SDK generateText
 const mockGenerateText = mock(async () => ({

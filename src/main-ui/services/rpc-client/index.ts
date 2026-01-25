@@ -58,7 +58,7 @@ import type { Result } from '@shared/types/result';
 
 export { type RpcError, type RpcErrorCode, mapToRpcError, redactAndTruncateText } from './errors';
 export { request } from './client';
-export { RpcClientError, unwrapOrThrowResult } from '../rpc-shim-error';
+export { RpcClientError, unwrapOrThrowResult } from '@/services/rpc-shim-error';
 
 /** Type alias for RPC methods that take no parameters. */
 export type EmptyParams = Record<string, never>;

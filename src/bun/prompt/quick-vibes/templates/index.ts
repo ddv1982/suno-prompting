@@ -29,7 +29,7 @@ import {
   PARTY_NIGHT_TEMPLATE,
 } from './new';
 
-import type { QuickVibesTemplate } from '../types';
+import type { QuickVibesTemplate } from '@bun/prompt/quick-vibes/types';
 import type { QuickVibesCategory } from '@shared/types';
 
 // =============================================================================

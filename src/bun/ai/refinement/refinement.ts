@@ -20,6 +20,7 @@
 
 import { isDirectMode, buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
 import { remixLyrics } from '@bun/ai/remix';
+import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
@@ -33,6 +34,38 @@ import type { GenerationResult, RefinementConfig } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Refinement');
+
+/**
+ * Apply Story Mode transformation to refinement result if enabled.
+ * Returns transformed result with narrative prose, or null to use original result.
+ */
+async function applyStoryModeIfEnabled(
+  result: GenerationResult,
+  config: RefinementConfig,
+  runtime?: TraceRuntime,
+  description?: string
+): Promise<GenerationResult | null> {
+  // Story Mode methods may not exist on older config mocks - safely check
+  const storyMode = config.isStoryMode?.() ?? false;
+  const llmAvailable = config.isLLMAvailable?.() ?? false;
+
+  if (!storyMode || !llmAvailable) {
+    return null;
+  }
+
+  const storyInput = extractStructuredDataForStory(result.text, null, { description });
+
+  return tryStoryMode({
+    input: storyInput,
+    title: result.title ?? 'Untitled',
+    lyrics: result.lyrics,
+    fallbackText: result.text,
+    config,
+    trace: runtime?.trace,
+    tracePrefix: 'refinement.storyMode',
+    logLabel: 'refinePrompt',
+  });
+}
 
 type LyricsAction = 'none' | 'refineExisting' | 'bootstrap';
 
@@ -145,12 +178,18 @@ async function refineStyleOnly(
   });
 
   // Preserve existing title and lyrics unchanged
-  return {
+  const result: GenerationResult = {
     text: styleResult.text,
     title: currentTitle,
     lyrics: currentLyrics,
     debugTrace: undefined,
   };
+
+  // Apply Story Mode transformation if enabled
+  const storyResult = await applyStoryModeIfEnabled(result, config, runtime);
+  if (storyResult) return storyResult;
+
+  return result;
 }
 
 /**
@@ -239,6 +278,7 @@ async function refineLyricsOnly(
     currentPrompt,
     lyricsTopic,
     config,
+    config.isMaxMode(),
     ollamaEndpoint,
     {
       trace: runtime?.trace,
@@ -300,6 +340,7 @@ async function refineWithDeterministicStyle(
       currentPrompt,
       lyricsTopic,
       config,
+      config.isMaxMode(),
       ollamaEndpoint,
       {
         trace: runtime?.trace,
@@ -339,6 +380,10 @@ async function refineWithDeterministicStyle(
       debugTrace: undefined,
     };
   }
+
+  // Apply Story Mode transformation if enabled (only when no lyrics mode)
+  const storyResult = await applyStoryModeIfEnabled(styleResult, config, runtime);
+  if (storyResult) return storyResult;
 
   return styleResult;
 }
