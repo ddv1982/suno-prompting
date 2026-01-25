@@ -8,7 +8,7 @@ import { APP_CONSTANTS } from '@shared/constants';
 import { getErrorMessage, StorageError } from '@shared/errors';
 import { TraceRunSchema } from '@shared/schemas';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
-import { type PromptSession, type PromptVersion, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode, type CreativeBoostMode } from '@shared/types';
+import { type PromptSession, type PromptVersion, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode, type CreativeBoostMode, type OllamaConfig } from '@shared/types';
 
 // Type for the stored config (with encrypted API keys)
 type StoredConfig = Partial<{
@@ -23,6 +23,8 @@ type StoredConfig = Partial<{
     useLocalLLM: boolean;
     promptMode: PromptMode;
     creativeBoostMode: CreativeBoostMode;
+    ollamaConfig: OllamaConfig;
+    ollamaModel: string;
 }>;
 
 const log = createLogger('Storage');
@@ -145,6 +147,8 @@ export class StorageManager {
             useLocalLLM,
             promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
             creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
+            ollamaConfig: config.ollamaConfig,
+            ollamaModel: config.ollamaModel,
         };
     }
 

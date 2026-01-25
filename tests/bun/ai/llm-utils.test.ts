@@ -247,6 +247,179 @@ describe('generateDirectModeTitle', () => {
   });
 });
 
+describe('ollamaOptions threading', () => {
+  beforeEach(() => {
+    mockGenerateText.mockClear();
+    mockGenerateWithOllama.mockClear();
+    mockGenerateWithOllama.mockResolvedValue('ollama response');
+  });
+
+  describe('without trace (fast path)', () => {
+    test('passes ollamaOptions to generateWithOllama', async () => {
+      const { callLLM } = await import('@bun/ai/llm-utils');
+      
+      const ollamaOptions = {
+        temperature: 0.8,
+        maxTokens: 2500,
+        contextLength: 6144,
+      };
+
+      await callLLM({
+        getModel: () => ({}) as any,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        errorContext: 'test context',
+        ollamaEndpoint: 'http://localhost:11434',
+        ollamaOptions,
+      });
+
+      expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
+      
+      // Verify the last argument is the ollamaOptions
+      const calls = mockGenerateWithOllama.mock.calls as unknown[][];
+      const lastCall = calls[0];
+      expect(lastCall).toBeDefined();
+      // generateWithOllama(endpoint, systemPrompt, userPrompt, timeout, model, options)
+      // lastCall[5] should be the options
+      expect(lastCall?.[5]).toEqual(ollamaOptions);
+    });
+
+    test('works without ollamaOptions (backward compatible)', async () => {
+      const { callLLM } = await import('@bun/ai/llm-utils');
+
+      await callLLM({
+        getModel: () => ({}) as any,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        errorContext: 'test context',
+        ollamaEndpoint: 'http://localhost:11434',
+        // No ollamaOptions provided
+      });
+
+      expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
+      
+      const calls = mockGenerateWithOllama.mock.calls as unknown[][];
+      const lastCall = calls[0];
+      // Should be called with undefined for options
+      expect(lastCall?.[5]).toBeUndefined();
+    });
+
+    test('passes partial ollamaOptions correctly', async () => {
+      const { callLLM } = await import('@bun/ai/llm-utils');
+      
+      const ollamaOptions = {
+        temperature: 0.5,
+        // maxTokens and contextLength intentionally omitted
+      };
+
+      await callLLM({
+        getModel: () => ({}) as any,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        errorContext: 'test context',
+        ollamaEndpoint: 'http://localhost:11434',
+        ollamaOptions,
+      });
+
+      expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
+      
+      const calls = mockGenerateWithOllama.mock.calls as unknown[][];
+      const lastCall = calls[0];
+      expect(lastCall?.[5]).toEqual({ temperature: 0.5 });
+    });
+  });
+
+  describe('with trace (traced path)', () => {
+    test('passes ollamaOptions through traced path', async () => {
+      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { createTraceCollector } = await import('@bun/trace');
+      
+      const trace = createTraceCollector({
+        runId: 'test-run-options',
+        action: 'generate.full',
+        promptMode: 'full',
+        rng: { seed: 1, algorithm: 'mulberry32' },
+      });
+
+      const ollamaOptions = {
+        temperature: 0.3,
+        maxTokens: 1500,
+        contextLength: 4096,
+      };
+
+      await callLLM({
+        getModel: () => ({}) as any,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        errorContext: 'test context',
+        ollamaEndpoint: 'http://localhost:11434',
+        ollamaOptions,
+        trace,
+      });
+
+      expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
+      
+      const calls = mockGenerateWithOllama.mock.calls as unknown[][];
+      const lastCall = calls[0];
+      expect(lastCall?.[5]).toEqual(ollamaOptions);
+    });
+
+    test('traced path works without ollamaOptions (backward compatible)', async () => {
+      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { createTraceCollector } = await import('@bun/trace');
+      
+      const trace = createTraceCollector({
+        runId: 'test-run-no-options',
+        action: 'generate.full',
+        promptMode: 'full',
+        rng: { seed: 1, algorithm: 'mulberry32' },
+      });
+
+      await callLLM({
+        getModel: () => ({}) as any,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        errorContext: 'test context',
+        ollamaEndpoint: 'http://localhost:11434',
+        trace,
+        // No ollamaOptions
+      });
+
+      expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
+      
+      const calls = mockGenerateWithOllama.mock.calls as unknown[][];
+      const lastCall = calls[0];
+      expect(lastCall?.[5]).toBeUndefined();
+    });
+  });
+
+  describe('cloud provider path', () => {
+    test('does not pass ollamaOptions to cloud providers', async () => {
+      mockGenerateText.mockResolvedValue({
+        text: 'cloud response',
+        response: { modelId: 'gpt-4' },
+        finishReason: 'stop',
+        usage: { inputTokens: 10, outputTokens: 20 },
+      });
+
+      const { callLLM } = await import('@bun/ai/llm-utils');
+
+      // Call with ollamaOptions but without ollamaEndpoint (cloud path)
+      await callLLM({
+        getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        errorContext: 'test context',
+        ollamaOptions: { temperature: 0.5 }, // This should be ignored for cloud
+        // No ollamaEndpoint = cloud provider path
+      });
+
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
+      expect(mockGenerateWithOllama).not.toHaveBeenCalled();
+    });
+  });
+});
+
 describe('onFinish callback behavior', () => {
   beforeEach(() => {
     mockGenerateText.mockClear();

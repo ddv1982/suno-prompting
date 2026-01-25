@@ -200,26 +200,30 @@ function selectRandomForLevel(
 // =============================================================================
 
 /**
- * Generate a creative title based on creativity level.
+ * Generate a deterministic creative title based on creativity level.
  *
  * Title complexity scales with creativity:
  * - low/safe: Simple "Adjective Noun" format
  * - normal: Occasionally adds suffix (30% chance)
  * - adventurous/high: Always includes suffix for dramatic effect
  *
+ * Note: This is the deterministic version using word pools.
+ * For LLM-based title generation, see generateCreativeBoostTitle in
+ * @bun/ai/creative-boost/helpers/content.ts
+ *
  * @param level - Creativity level determining title complexity
  * @param rng - Random number generator for deterministic selection
  * @returns Generated title string
  *
  * @example
- * generateCreativeBoostTitle('low', () => 0.5);
+ * generateDeterministicCreativeBoostTitle('low', () => 0.5);
  * // "Golden Dreams"
  *
  * @example
- * generateCreativeBoostTitle('high', () => 0.5);
+ * generateDeterministicCreativeBoostTitle('high', () => 0.5);
  * // "Cosmic Echoes Ascending"
  */
-export function generateCreativeBoostTitle(
+export function generateDeterministicCreativeBoostTitle(
   level: CreativityLevel,
   rng: () => number
 ): string {

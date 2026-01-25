@@ -7,6 +7,7 @@ import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError, getErrorMessage } from '@shared/errors';
 import { redactSecretsDeep, redactSecretsInText, truncateTextWithMarker } from '@shared/trace';
 
+import type { OllamaGenerationOptions } from '@bun/ai/ollama-client';
 import type { TraceCollector } from '@bun/trace';
 import type { AIProvider } from '@shared/types/config';
 import type { TraceProviderInfo } from '@shared/types/trace';
@@ -35,6 +36,8 @@ export interface CallLLMOptions {
 
   /** Optional provider options passed to AI SDK (and recorded in trace, redacted+truncated). */
   providerOptions?: Record<string, unknown>;
+  /** Optional Ollama generation options (temperature, maxTokens, contextLength) passed to the Ollama API. */
+  ollamaOptions?: OllamaGenerationOptions;
 }
 
 interface AttemptTraceError {
@@ -124,14 +127,14 @@ function wrapAIError(error: unknown, errorContext: string): AIGenerationError {
 
 /** Execute LLM call without tracing (fast path) */
 async function callLLMWithoutTrace(options: CallLLMOptions): Promise<string> {
-  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, providerOptions } = options;
+  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, providerOptions, ollamaOptions } = options;
 
   try {
     let rawResponse: string;
     if (ollamaEndpoint) {
       const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
       log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout });
-      rawResponse = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout);
+      rawResponse = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout, undefined, ollamaOptions);
     } else {
       const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
       const retries = maxRetries ?? APP_CONSTANTS.AI.MAX_RETRIES;
@@ -182,13 +185,14 @@ interface TracedAttemptOptions {
 /** Execute single Ollama attempt for traced call */
 async function executeOllamaAttempt(
   ollamaEndpoint: string,
-  opts: TracedAttemptOptions
+  opts: TracedAttemptOptions,
+  ollamaOptions?: OllamaGenerationOptions
 ): Promise<{ text: string; telemetry: TraceTelemetry; latencyMs: number }> {
   const { systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts } = opts;
   const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
   log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout, attempt, totalAllowedAttempts: totalAttempts });
   const startMs = Date.now();
-  const text = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout);
+  const text = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout, undefined, ollamaOptions);
   const latencyMs = Date.now() - startMs;
   return { text, telemetry: { latencyMs }, latencyMs };
 }
@@ -254,7 +258,7 @@ function buildInitialProviderInfo(ollamaEndpoint: string | undefined, ollamaMode
 
 /** Execute LLM call with tracing */
 async function callLLMWithTrace(options: CallLLMOptions, trace: TraceCollector): Promise<string> {
-  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, traceLabel, ollamaModel, providerOptions } = options;
+  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, traceLabel, ollamaModel, providerOptions, ollamaOptions } = options;
 
   try {
     const label = traceLabel ?? errorContext;
@@ -275,7 +279,7 @@ async function callLLMWithTrace(options: CallLLMOptions, trace: TraceCollector):
       };
       try {
         if (ollamaEndpoint) {
-          const result = await executeOllamaAttempt(ollamaEndpoint, attemptOpts);
+          const result = await executeOllamaAttempt(ollamaEndpoint, attemptOpts, ollamaOptions);
           responseText = result.text;
           telemetry = result.telemetry;
           attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(startedMs + result.latencyMs), latencyMs: result.latencyMs });

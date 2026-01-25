@@ -20,6 +20,29 @@ const log = createLogger('OllamaClient');
 /** Default Ollama model to use for local generation */
 const DEFAULT_OLLAMA_MODEL = 'gemma3:4b';
 
+/**
+ * Options for Ollama text generation.
+ * These values are passed to the Ollama API in the `options` object.
+ */
+export interface OllamaGenerationOptions {
+  /**
+   * Temperature for generation (0-1 range).
+   * Higher values produce more random/creative outputs.
+   * Maps to Ollama API: `options.temperature`
+   */
+  readonly temperature?: number;
+  /**
+   * Maximum number of tokens to generate.
+   * Maps to Ollama API: `options.num_predict`
+   */
+  readonly maxTokens?: number;
+  /**
+   * Context window length in tokens.
+   * Maps to Ollama API: `options.num_ctx`
+   */
+  readonly contextLength?: number;
+}
+
 /** Ollama chat response type */
 interface OllamaChatResponse {
   model: string;
@@ -88,6 +111,7 @@ async function ollamaRequest(
  * @param userPrompt - User prompt for the model
  * @param timeoutMs - Timeout in milliseconds (default: 90s)
  * @param model - Ollama model to use (default: gemma3:4b)
+ * @param options - Optional generation options (temperature, maxTokens, contextLength)
  * @returns Generated text response
  */
 export async function generateWithOllama(
@@ -95,14 +119,34 @@ export async function generateWithOllama(
   systemPrompt: string,
   userPrompt: string,
   timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
-  model: string = DEFAULT_OLLAMA_MODEL
+  model: string = DEFAULT_OLLAMA_MODEL,
+  options?: OllamaGenerationOptions
 ): Promise<string> {
   log.info('generateWithOllama:start', {
     endpoint,
     model,
     systemPromptLength: systemPrompt.length,
     userPromptLength: userPrompt.length,
+    ...(options && {
+      options: {
+        temperature: options.temperature,
+        maxTokens: options.maxTokens,
+        contextLength: options.contextLength,
+      },
+    }),
   });
+
+  // Build Ollama options object with correct field mappings
+  const ollamaOptions: Record<string, number> = {};
+  if (options?.temperature !== undefined) {
+    ollamaOptions.temperature = options.temperature;
+  }
+  if (options?.maxTokens !== undefined) {
+    ollamaOptions.num_predict = options.maxTokens;
+  }
+  if (options?.contextLength !== undefined) {
+    ollamaOptions.num_ctx = options.contextLength;
+  }
 
   const body = JSON.stringify({
     model,
@@ -111,6 +155,8 @@ export async function generateWithOllama(
       { role: 'user', content: userPrompt },
     ],
     stream: false,
+    // Only include options if at least one option is provided
+    ...(Object.keys(ollamaOptions).length > 0 && { options: ollamaOptions }),
   });
 
   try {

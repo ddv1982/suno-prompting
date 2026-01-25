@@ -23,7 +23,7 @@ export { CREATIVE_TITLE_WORDS, CREATIVITY_POOLS, HIGH_BASE_GENRES, HIGH_FUSION_G
 
 // Selection functions
 export {
-  generateCreativeBoostTitle,
+  generateDeterministicCreativeBoostTitle,
   getInstrumentsForGenre,
   getSunoStylesForMoodCategory,
   selectGenreForLevel,

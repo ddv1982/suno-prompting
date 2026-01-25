@@ -7,7 +7,7 @@
  */
 
 import {
-  generateCreativeBoostTitle,
+  generateDeterministicCreativeBoostTitle,
   getInstrumentsForGenre,
   selectGenreForLevel,
   selectMoodForLevel,
@@ -64,7 +64,7 @@ export function buildDeterministicCreativeBoost(
   // Select genre based on creativity level and seeds
   const genre = selectGenreForLevel(level, seedGenres, rng);
   const mood = selectMoodForLevel(level, rng, moodCategory);
-  const title = generateCreativeBoostTitle(level, rng);
+  const title = generateDeterministicCreativeBoostTitle(level, rng);
   const instruments = getInstrumentsForGenre(genre, rng);
 
   // Add wordless vocals if requested

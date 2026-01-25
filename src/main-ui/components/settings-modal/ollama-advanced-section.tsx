@@ -31,13 +31,13 @@ export function OllamaAdvancedSection({
         </div>
         <Slider
           min={0}
-          max={2}
+          max={1}
           step={0.1}
           value={[temperature]}
           onValueChange={(value) => { onTemperatureChange(value[0] ?? 0.7); }}
         />
         <p className="text-xs text-muted-foreground">
-          Higher values make output more random (0.0-2.0)
+          Higher values make output more random (0.0-1.0)
         </p>
       </div>
 
