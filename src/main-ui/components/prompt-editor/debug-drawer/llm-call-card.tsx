@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { cn } from '@/lib/utils';
+import { APP_CONSTANTS } from '@shared/constants';
 
 import { formatLatency } from './trace-summary';
 
@@ -21,7 +22,7 @@ import type { ReactElement } from 'react';
 interface LLMCallCardProps { event: TraceLLMCallEvent }
 
 function CopyRawButton({ label, data }: { label: string; data: string }): ReactElement {
-  const { copied, copy } = useCopyToClipboard({ feedbackDuration: 1500 });
+  const { copied, copy } = useCopyToClipboard({ feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS });
   const handleCopy = useCallback(() => {
     void copy(data);
   }, [data, copy]);

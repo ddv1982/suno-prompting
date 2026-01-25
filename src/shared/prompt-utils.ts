@@ -45,34 +45,55 @@ export function stripMaxModeHeader(prompt: string): string {
 }
 
 /**
- * Detects if text is a structured prompt (vs a simple description).
- * Used to determine if auto-conversion should be applied.
+ * Detects if text is a structured prompt (vs a simple description/narrative).
+ * Used to determine if auto-conversion should be applied and if field remix buttons should show.
  * 
  * Detects:
- * - Max format prompts (with header)
  * - Non-max structured prompts (Genre:, BPM:, section tags)
- * - Max format body without header (genre: "...", bpm: "...")
+ * - Max format body with structured fields (genre: "...", bpm: "...")
+ * 
+ * Important: For MAX-formatted text, we analyze the BODY content after stripping the header.
+ * This allows Story Mode + MAX Mode output (header + narrative prose) to be correctly
+ * identified as non-structured.
  * 
  * @param text - The input text to analyze
- * @returns true if text appears to be a structured prompt, false if it's a simple description
+ * @returns true if text appears to be a structured prompt, false if it's narrative prose
  */
 export function isStructuredPrompt(text: string): boolean {
-  // 1. Check for max format header
-  if (isMaxFormat(text)) return true;
+  // Strip MAX header if present to analyze the body content
+  const bodyText = stripMaxModeHeader(text);
   
-  // 2. Check for non-max format field markers (Capitalized: value)
-  //    e.g., "Genre: rock", "BPM: 120", "Mood: energetic"
-  const hasNonMaxFields = /^(Genre|BPM|Mood|Instruments):\s*\S/mi.test(text);
+  // If we stripped a header and only have whitespace/empty, it's not structured
+  if (isMaxFormat(text) && bodyText.trim().length === 0) {
+    return false;
+  }
   
-  // 3. Check for section tags
-  //    e.g., [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
-  const hasSectionTags = /\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO|HOOK|PRE-CHORUS)\]/i.test(text);
+  // Check for non-max format field markers (Capitalized: value)
+  // e.g., "Genre: rock", "BPM: 120", "Mood: energetic"
+  const hasNonMaxFields = /^(Genre|BPM|Mood|Instruments):\s*\S/mi.test(bodyText);
   
-  // 4. Check for max format style fields WITHOUT header (lowercase: "quoted")
-  //    e.g., genre: "jazz", bpm: "110", instruments: "..."
-  const hasMaxStyleFields = /^(genre|bpm|instruments|style tags|recording):\s*"/mi.test(text);
+  // Check for section tags
+  // e.g., [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+  const hasSectionTags = /\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO|HOOK|PRE-CHORUS)\]/i.test(bodyText);
+  
+  // Check for max format style fields (lowercase: "quoted")
+  // e.g., genre: "jazz", bpm: "110", instruments: "..."
+  const hasMaxStyleFields = /^(genre|bpm|instruments|style tags|recording):\s*"/mi.test(bodyText);
   
   return hasNonMaxFields || hasSectionTags || hasMaxStyleFields;
 }
 
-
+/**
+ * Detects if prompt is in story mode format (narrative prose without structured fields).
+ * Story mode output is flowing prose, NOT structured like "Genre: jazz\nMood: warm..."
+ * 
+ * Used to determine if field-specific remix buttons should be shown.
+ * Returns true for empty/whitespace prompts since there are no fields to remix.
+ * 
+ * @param text - The prompt text to analyze
+ * @returns true if text is narrative prose or empty (no structured fields), false if structured
+ */
+export function isStoryModeFormat(text: string): boolean {
+  if (!text || text.trim().length === 0) return true;
+  return !isStructuredPrompt(text);
+}

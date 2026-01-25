@@ -32,7 +32,7 @@ export function buildPromptForMode(
 
   let promptText = deterministicResult.text;
   if (lockedPhrase) {
-    promptText = injectLockedPhrase(promptText, lockedPhrase, config.isMaxMode());
+    promptText = injectLockedPhrase(promptText, lockedPhrase);
   }
   return promptText;
 }

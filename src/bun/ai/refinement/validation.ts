@@ -38,16 +38,14 @@ export async function validateOllamaForRefinement(endpoint: string): Promise<voi
  *
  * @param prompt - Prompt text to modify
  * @param lockedPhrase - Optional locked phrase to inject
- * @param isMaxMode - Whether max mode is enabled
  * @returns Prompt with locked phrase injected if provided
  */
 export async function applyLockedPhraseIfNeeded(
   prompt: string,
-  lockedPhrase: string | undefined,
-  isMaxMode: boolean
+  lockedPhrase: string | undefined
 ): Promise<string> {
   if (!lockedPhrase) return prompt;
 
   const { injectLockedPhrase } = await import('@bun/prompt/postprocess');
-  return injectLockedPhrase(prompt, lockedPhrase, isMaxMode);
+  return injectLockedPhrase(prompt, lockedPhrase);
 }

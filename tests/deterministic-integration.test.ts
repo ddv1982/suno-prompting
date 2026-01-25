@@ -284,14 +284,14 @@ style tags: "smooth, warm"
 recording: "studio session"`;
 
     it('produces valid output without LLM', () => {
-      const result = remixInstruments(samplePrompt, 'jazz vibes');
+      const result = remixInstruments(samplePrompt);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
     });
 
     it('replaces instruments line', () => {
-      const result = remixInstruments(samplePrompt, 'jazz vibes');
+      const result = remixInstruments(samplePrompt);
 
       // Should still have instruments field but with different content
       expect(result.text).toMatch(/instruments:\s*"[^"]+"/i);
@@ -299,15 +299,15 @@ recording: "studio session"`;
       expect(result.text).not.toContain('piano, bass, drums');
     });
 
-    it('detects genre from original input', () => {
-      const result = remixInstruments(samplePrompt, 'smooth jazz night session');
+    it('detects genre from prompt genre field', () => {
+      const result = remixInstruments(samplePrompt);
 
-      // Should use jazz-appropriate instruments
+      // Should use jazz-appropriate instruments (from prompt's genre field)
       expect(result.text).toBeDefined();
     });
 
-    it('falls back to random genre when no match', () => {
-      const result = remixInstruments(samplePrompt, 'xyzabc gibberish');
+    it('produces valid output with any prompt', () => {
+      const result = remixInstruments(samplePrompt);
 
       // Should still produce valid output
       expect(result.text).toBeDefined();
@@ -315,13 +315,13 @@ recording: "studio session"`;
     });
 
     it('includes chord progression harmony', () => {
-      const result = remixInstruments(samplePrompt, 'jazz');
+      const result = remixInstruments(samplePrompt);
 
       expect(result.text).toContain('harmony');
     });
 
     it('includes vocal style', () => {
-      const result = remixInstruments(samplePrompt, 'jazz');
+      const result = remixInstruments(samplePrompt);
 
       expect(result.text).toContain('vocals');
       expect(result.text).toContain('delivery');

@@ -43,7 +43,7 @@ export function QuickVibesOutput({ prompt, title, lyrics, isRemixing, hasDebugIn
 
   return (
     <div className="space-y-[var(--space-5)]">
-      {title && <OutputSection label="Title" content={title} onCopy={() => navigator.clipboard.writeText(title)} />}
+      {title && <OutputSection label="Title" content={title} />}
       
       <div className="space-y-2">
         <div className="flex justify-between items-center">
@@ -73,7 +73,6 @@ export function QuickVibesOutput({ prompt, title, lyrics, isRemixing, hasDebugIn
         <OutputSection
           label="Lyrics"
           content={lyrics}
-          onCopy={() => navigator.clipboard.writeText(lyrics)}
           onRemix={onRemixLyrics}
           scrollable
         />

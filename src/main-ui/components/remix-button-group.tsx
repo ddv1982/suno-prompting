@@ -3,9 +3,10 @@ import { Shuffle, RefreshCw, Check, Copy, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type GeneratingAction } from "@/context/app-context";
 import { cn } from "@/lib/utils";
+import { isStoryModeFormat } from "@shared/prompt-utils";
 
 interface RemixButtonGroupProps {
-  generatingAction: GeneratingAction; maxMode: boolean;
+  generatingAction: GeneratingAction; maxMode: boolean; storyMode: boolean; currentPrompt: string;
   copied: boolean; promptOverLimit: boolean; hasDebugInfo: boolean;
   onDebugOpen: () => void; onRemixGenre: () => void; onRemixMood: () => void;
   onRemixInstruments: () => void; onRemixStyleTags: () => void; onRemixRecording: () => void;
@@ -22,10 +23,31 @@ function ShuffleBtn({ label, action, current, onClick }: {
   );
 }
 
+interface FieldButtonsProps {
+  generatingAction: GeneratingAction; maxMode: boolean;
+  onRemixGenre: () => void; onRemixMood: () => void; onRemixInstruments: () => void;
+  onRemixStyleTags: () => void; onRemixRecording: () => void;
+}
+
+function FieldButtons({ generatingAction, maxMode, onRemixGenre, onRemixMood, onRemixInstruments, onRemixStyleTags, onRemixRecording }: FieldButtonsProps): React.ReactElement {
+  return (
+    <>
+      <ShuffleBtn label="GENRE" action="remixGenre" current={generatingAction} onClick={onRemixGenre} />
+      {!maxMode && <ShuffleBtn label="MOOD" action="remixMood" current={generatingAction} onClick={onRemixMood} />}
+      <ShuffleBtn label="INSTRUMENTS" action="remixInstruments" current={generatingAction} onClick={onRemixInstruments} />
+      {maxMode && <ShuffleBtn label="STYLE" action="remixStyleTags" current={generatingAction} onClick={onRemixStyleTags} />}
+      {maxMode && <ShuffleBtn label="RECORDING" action="remixRecording" current={generatingAction} onClick={onRemixRecording} />}
+    </>
+  );
+}
+
 export function RemixButtonGroup({
-  generatingAction, maxMode, copied, promptOverLimit, hasDebugInfo,
+  generatingAction, maxMode, storyMode, currentPrompt, copied, promptOverLimit, hasDebugInfo,
   onDebugOpen, onRemixGenre, onRemixMood, onRemixInstruments, onRemixStyleTags, onRemixRecording, onRemix, onCopy,
 }: RemixButtonGroupProps): React.ReactElement {
+  // Hybrid: hide field buttons if storyMode UI toggle is ON, OR if content is narrative prose
+  const hideFieldButtons = storyMode || isStoryModeFormat(currentPrompt);
+
   return (
     <div className="absolute top-4 right-4 flex gap-2">
       {hasDebugInfo && (
@@ -33,11 +55,11 @@ export function RemixButtonGroup({
           <Bug className="w-3.5 h-3.5" />DEBUG
         </Button>
       )}
-      <ShuffleBtn label="GENRE" action="remixGenre" current={generatingAction} onClick={onRemixGenre} />
-      {!maxMode && <ShuffleBtn label="MOOD" action="remixMood" current={generatingAction} onClick={onRemixMood} />}
-      <ShuffleBtn label="INSTRUMENTS" action="remixInstruments" current={generatingAction} onClick={onRemixInstruments} />
-      {maxMode && <ShuffleBtn label="STYLE" action="remixStyleTags" current={generatingAction} onClick={onRemixStyleTags} />}
-      {maxMode && <ShuffleBtn label="RECORDING" action="remixRecording" current={generatingAction} onClick={onRemixRecording} />}
+      {!hideFieldButtons && (
+        <FieldButtons generatingAction={generatingAction} maxMode={maxMode}
+          onRemixGenre={onRemixGenre} onRemixMood={onRemixMood} onRemixInstruments={onRemixInstruments}
+          onRemixStyleTags={onRemixStyleTags} onRemixRecording={onRemixRecording} />
+      )}
       <Button variant="outline" size="sm" onClick={onRemix} autoDisable className="font-bold">
         <RefreshCw className={cn("w-3.5 h-3.5", generatingAction === 'remix' && "animate-spin")} />
         {generatingAction === 'remix' ? "REMIXING" : "REMIX"}

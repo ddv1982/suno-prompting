@@ -61,9 +61,9 @@ export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
   return {
     // All prompt remix actions call deterministic functions with trace support
     remixInstruments: async (params) => {
-      const { currentPrompt, originalInput } = validate(RemixInstrumentsSchema, params);
+      const { currentPrompt } = validate(RemixInstrumentsSchema, params);
       return runRemixAction(aiEngine, 'remixInstruments', 'remix.instruments', (trace, rng) =>
-        remixInstruments(currentPrompt, originalInput, trace, rng)
+        remixInstruments(currentPrompt, trace, rng)
       );
     },
     remixGenre: async (params) => {

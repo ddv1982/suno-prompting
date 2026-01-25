@@ -95,7 +95,7 @@ export async function generateWithoutLyrics(
 
   // 3. Inject locked phrase if provided
   if (lockedPhrase) {
-    promptText = injectLockedPhrase(promptText, lockedPhrase, config.isMaxMode());
+    promptText = injectLockedPhrase(promptText, lockedPhrase);
   }
 
   // 4. Extract genre/mood for title generation

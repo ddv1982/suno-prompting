@@ -25,10 +25,9 @@ import {
  *
  * @param prompt - The prompt to inject into
  * @param lockedPhrase - The phrase to inject (e.g., "acoustic guitar")
- * @param _maxMode - Whether MAX mode is enabled (currently unused)
  * @returns The prompt with the locked phrase injected
  */
-export function injectLockedPhrase(prompt: string, lockedPhrase: string, _maxMode: boolean): string {
+export function injectLockedPhrase(prompt: string, lockedPhrase: string): string {
   if (!lockedPhrase) return prompt;
 
   // Try quoted format first: instruments: "piano, guitar"

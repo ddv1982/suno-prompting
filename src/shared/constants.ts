@@ -65,7 +65,10 @@ export const APP_CONSTANTS = {
     STORAGE_DIR: '.suno-prompting-app',
     UI: {
         TOAST_DURATION_MS: 3000,
+        TOAST_DEDUPLICATION_WINDOW_MS: 5000,
         COPY_FEEDBACK_DURATION_MS: 2000,
+        COPY_FEEDBACK_SHORT_DURATION_MS: 1500,
+        RETRY_DELAY_MS: 400,
     },
     AI: {
         MAX_RETRIES: 10,

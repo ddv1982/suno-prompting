@@ -171,14 +171,14 @@ describe('getInstrumentsForGenre', () => {
 
 describe('generateCreativeBoostTitle', () => {
   it('generates title for low level', () => {
-    const title = generateCreativeBoostTitle('low', 'jazz', () => RNG_MID);
+    const title = generateCreativeBoostTitle('low', () => RNG_MID);
     expect(title).toBeDefined();
     expect(title.length).toBeGreaterThan(0);
   });
 
   it('generates more elaborate titles for high level', () => {
-    const lowTitle = generateCreativeBoostTitle('low', 'jazz', () => RNG_MID);
-    const highTitle = generateCreativeBoostTitle('high', 'jazz', () => RNG_MID);
+    const lowTitle = generateCreativeBoostTitle('low', () => RNG_MID);
+    const highTitle = generateCreativeBoostTitle('high', () => RNG_MID);
 
     // High level titles should have 3 words (adjective + noun + suffix)
     expect(highTitle.split(' ').length).toBe(3);
@@ -186,8 +186,8 @@ describe('generateCreativeBoostTitle', () => {
   });
 
   it('is deterministic with same RNG', () => {
-    const title1 = generateCreativeBoostTitle('normal', 'rock', () => RNG_DETERMINISTIC);
-    const title2 = generateCreativeBoostTitle('normal', 'rock', () => RNG_DETERMINISTIC);
+    const title1 = generateCreativeBoostTitle('normal', () => RNG_DETERMINISTIC);
+    const title2 = generateCreativeBoostTitle('normal', () => RNG_DETERMINISTIC);
     expect(title1).toBe(title2);
   });
 });

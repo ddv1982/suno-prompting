@@ -230,7 +230,7 @@ describe('remix operations trace support', () => {
   describe('remixInstruments', () => {
     testTrace('logs decision event when trace provided', () => {
       const trace = createTestTrace();
-      remixInstruments(basePrompt, 'rock song', trace);
+      remixInstruments(basePrompt, trace);
 
       const decisions = getDecisionEvents(trace);
       expect(decisions).toHaveLength(1);
@@ -240,7 +240,7 @@ describe('remix operations trace support', () => {
 
     testTrace('decision includes genre and instruments in metadata', () => {
       const trace = createTestTrace();
-      remixInstruments(basePrompt, 'rock song', trace);
+      remixInstruments(basePrompt, trace);
 
       const decisions = getDecisionEvents(trace);
       expect(decisions[0]?.branchTaken).toContain('rock');
@@ -249,14 +249,14 @@ describe('remix operations trace support', () => {
 
     testTrace('decision explains single vs multi-genre pool', () => {
       const trace = createTestTrace();
-      remixInstruments(basePrompt, 'rock song', trace);
+      remixInstruments(basePrompt, trace);
 
       const decisions = getDecisionEvents(trace);
       expect(decisions[0]?.why).toContain('single genre pool');
     });
 
     test('works without trace (backward compatible)', () => {
-      const result = remixInstruments(basePrompt, 'rock song');
+      const result = remixInstruments(basePrompt);
       expect(result.text).toContain('instruments:');
     });
   });
@@ -308,8 +308,8 @@ describe('remix operations rng support', () => {
       const rng1 = createSeededRng(42);
       const rng2 = createSeededRng(42);
 
-      const result1 = remixInstruments(basePrompt, 'rock', undefined, rng1);
-      const result2 = remixInstruments(basePrompt, 'rock', undefined, rng2);
+      const result1 = remixInstruments(basePrompt, undefined, rng1);
+      const result2 = remixInstruments(basePrompt, undefined, rng2);
 
       expect(result1.text).toBe(result2.text);
     });

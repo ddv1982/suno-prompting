@@ -224,14 +224,12 @@ export function injectStyleTags(
  * Supports multi-genre prompts - uses blended instrument selection when multiple genres.
  *
  * @param currentPrompt - The current prompt to modify
- * @param _originalInput - Kept for API compatibility, no longer used for genre detection
  * @param trace - Optional trace collector for debug logging
  * @param rng - Optional random function for reproducibility
  * @returns Updated prompt with new instruments
  */
 export function remixInstruments(
   currentPrompt: string,
-  _originalInput: string,
   trace?: TraceCollector,
   rng: () => number = defaultRng
 ): RemixResult {

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { APP_CONSTANTS } from '@shared/constants';
 
 import { TimelineEvent } from './timeline-event';
 import { formatAction, generateTraceSummaryText } from './trace-summary';
@@ -32,8 +33,8 @@ function formatBytes(bytes: number): string {
 }
 
 export function DebugDrawerBody({ debugTrace }: DebugDrawerBodyProps): ReactElement {
-  const { copied: copiedJson, copy: copyJson } = useCopyToClipboard({ feedbackDuration: 1500 });
-  const { copied: copiedText, copy: copyText } = useCopyToClipboard({ feedbackDuration: 1500 });
+  const { copied: copiedJson, copy: copyJson } = useCopyToClipboard({ feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS });
+  const { copied: copiedText, copy: copyText } = useCopyToClipboard({ feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS });
 
   const sortedEvents = useMemo(
     () => [...debugTrace.events].sort((a, b) => a.tMs - b.tMs),

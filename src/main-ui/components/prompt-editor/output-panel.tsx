@@ -18,6 +18,7 @@ interface OutputPanelProps {
   currentLyrics?: string;
   generatingAction: GeneratingAction;
   maxMode: boolean;
+  storyMode: boolean;
   copied: boolean;
   promptOverLimit: boolean;
   charCount: number;
@@ -45,6 +46,7 @@ export function OutputPanel({
   currentLyrics,
   generatingAction,
   maxMode,
+  storyMode,
   copied,
   promptOverLimit,
   charCount,
@@ -84,7 +86,6 @@ export function OutputPanel({
         <OutputSection
           label="Title"
           content={currentTitle}
-          onCopy={() => navigator.clipboard.writeText(currentTitle)}
           onRemix={onRemixTitle}
           isRemixing={generatingAction === 'remixTitle'}
         />
@@ -107,6 +108,8 @@ export function OutputPanel({
           <RemixButtonGroup
             generatingAction={generatingAction}
             maxMode={maxMode}
+            storyMode={storyMode}
+            currentPrompt={currentPrompt}
             copied={copied}
             promptOverLimit={promptOverLimit}
             hasDebugInfo={!!debugTrace}
@@ -126,7 +129,6 @@ export function OutputPanel({
         <OutputSection
           label="Lyrics"
           content={currentLyrics}
-          onCopy={() => navigator.clipboard.writeText(currentLyrics)}
           onRemix={onRemixLyrics}
           isRemixing={generatingAction === 'remixLyrics'}
           scrollable

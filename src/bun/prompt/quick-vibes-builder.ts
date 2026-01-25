@@ -8,7 +8,7 @@ export { stripMaxModeHeader } from '@shared/prompt-utils';
 /**
  * Builds the system prompt for Quick Vibes generation
  */
-function buildQuickVibesSystemPrompt(_maxMode: boolean, withWordlessVocals: boolean): string {
+function buildQuickVibesSystemPrompt(withWordlessVocals: boolean): string {
   const vocalInstruction = withWordlessVocals 
     ? WORDLESS_VOCALS_GUIDANCE
     : 'This is instrumental music - do NOT mention vocals or singing.';
@@ -107,8 +107,8 @@ export function applyQuickVibesMaxMode(prompt: string, maxMode: boolean): string
 /**
  * Builds the system prompt for Quick Vibes refinement
  */
-export function buildQuickVibesRefineSystemPrompt(maxMode: boolean, withWordlessVocals: boolean): string {
-  const basePrompt = buildQuickVibesSystemPrompt(maxMode, withWordlessVocals);
+export function buildQuickVibesRefineSystemPrompt(withWordlessVocals: boolean): string {
+  const basePrompt = buildQuickVibesSystemPrompt(withWordlessVocals);
   
   return `${basePrompt}
 

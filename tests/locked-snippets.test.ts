@@ -9,61 +9,61 @@ import { validateLockedPhrase } from "@shared/validation";
 
 describe("locked phrase", () => {
   describe("injectLockedPhrase", () => {
-    test("injects into max mode instruments field", () => {
+    test("injects into quoted instruments field", () => {
       const prompt = 'instruments: "piano, guitar"';
-      const result = injectLockedPhrase(prompt, "my locked phrase", true);
+      const result = injectLockedPhrase(prompt, "my locked phrase");
       expect(result).toBe('instruments: "piano, guitar, my locked phrase"');
     });
 
-    test("injects into normal mode Instruments line", () => {
+    test("injects into unquoted Instruments line", () => {
       const prompt = "Instruments: piano, guitar";
-      const result = injectLockedPhrase(prompt, "my locked phrase", false);
+      const result = injectLockedPhrase(prompt, "my locked phrase");
       expect(result).toBe("Instruments: piano, guitar, my locked phrase");
     });
 
     test("returns original prompt when no locked phrase", () => {
       const prompt = 'instruments: "piano"';
-      expect(injectLockedPhrase(prompt, "", true)).toBe(prompt);
+      expect(injectLockedPhrase(prompt, "")).toBe(prompt);
     });
 
-    test("appends to end if no instruments field found in max mode", () => {
+    test("appends to end if no instruments field found", () => {
       const prompt = 'genre: "jazz"';
-      const result = injectLockedPhrase(prompt, "my phrase", true);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe('genre: "jazz"\nmy phrase');
     });
 
-    test("appends to end if no instruments field found in normal mode", () => {
+    test("appends to end if no instruments field found (unquoted)", () => {
       const prompt = "Genre: jazz";
-      const result = injectLockedPhrase(prompt, "my phrase", false);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe("Genre: jazz\nmy phrase");
     });
 
     test("preserves special characters in locked phrase", () => {
       const phrase = "Guitar (electric) & bass - building intensity!";
       const prompt = 'instruments: "piano"';
-      const result = injectLockedPhrase(prompt, phrase, true);
+      const result = injectLockedPhrase(prompt, phrase);
       expect(result).toContain(phrase);
     });
 
-    test("handles multiline max mode prompt", () => {
+    test("handles multiline quoted prompt", () => {
       const prompt = `genre: "jazz"
 bpm: "120"
 instruments: "piano, drums"
 style tags: "warm, intimate"`;
-      const result = injectLockedPhrase(prompt, "my phrase", true);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toContain('instruments: "piano, drums, my phrase"');
       expect(result).toContain('genre: "jazz"');
       expect(result).toContain('style tags: "warm, intimate"');
     });
 
-    test("handles multiline normal mode prompt", () => {
+    test("handles multiline unquoted prompt", () => {
       const prompt = `[Emotional, Jazz, Key: C Major]
 
 Genre: jazz
 BPM: 120
 Instruments: piano, drums
 Mood: warm, intimate`;
-      const result = injectLockedPhrase(prompt, "my phrase", false);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toContain("Instruments: piano, drums, my phrase");
       expect(result).toContain("Genre: jazz");
       expect(result).toContain("Mood: warm, intimate");
@@ -71,43 +71,42 @@ Mood: warm, intimate`;
 
     test("is case-insensitive for field matching", () => {
       const prompt = 'INSTRUMENTS: "piano"';
-      const result = injectLockedPhrase(prompt, "phrase", true);
+      const result = injectLockedPhrase(prompt, "phrase");
       expect(result).toBe('INSTRUMENTS: "piano, phrase"');
     });
 
-    test("handles unquoted format (both modes)", () => {
+    test("handles unquoted format", () => {
       const prompt = "instruments: piano, guitar";
-      expect(injectLockedPhrase(prompt, "my phrase", true)).toBe("instruments: piano, guitar, my phrase");
-      expect(injectLockedPhrase(prompt, "my phrase", false)).toBe("instruments: piano, guitar, my phrase");
+      expect(injectLockedPhrase(prompt, "my phrase")).toBe("instruments: piano, guitar, my phrase");
     });
 
     test("handles empty quoted instruments", () => {
       const prompt = 'instruments: ""';
-      const result = injectLockedPhrase(prompt, "my phrase", true);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe('instruments: "my phrase"');
     });
 
     test("handles empty unquoted instruments", () => {
       const prompt = "instruments: ";
-      const result = injectLockedPhrase(prompt, "my phrase", true);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe("instruments: my phrase");
     });
 
     test("handles capitalized unquoted format", () => {
       const prompt = "Instruments: piano, drums";
-      const result = injectLockedPhrase(prompt, "my phrase", false);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe("Instruments: piano, drums, my phrase");
     });
 
     test("handles instruments: with no content on its own line", () => {
       const prompt = "genre: jazz\ninstruments:\nstyle: warm";
-      const result = injectLockedPhrase(prompt, "my phrase", true);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe("genre: jazz\ninstruments: my phrase\nstyle: warm");
     });
 
     test("does not match next line as instruments content", () => {
       const prompt = "instruments:\ngenre: jazz";
-      const result = injectLockedPhrase(prompt, "my phrase", true);
+      const result = injectLockedPhrase(prompt, "my phrase");
       expect(result).toBe("instruments: my phrase\ngenre: jazz");
     });
   });

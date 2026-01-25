@@ -208,21 +208,19 @@ function selectRandomForLevel(
  * - adventurous/high: Always includes suffix for dramatic effect
  *
  * @param level - Creativity level determining title complexity
- * @param _genre - Selected genre (reserved for future genre-specific titles)
  * @param rng - Random number generator for deterministic selection
  * @returns Generated title string
  *
  * @example
- * generateCreativeBoostTitle('low', 'jazz', () => 0.5);
+ * generateCreativeBoostTitle('low', () => 0.5);
  * // "Golden Dreams"
  *
  * @example
- * generateCreativeBoostTitle('high', 'experimental', () => 0.5);
+ * generateCreativeBoostTitle('high', () => 0.5);
  * // "Cosmic Echoes Ascending"
  */
 export function generateCreativeBoostTitle(
   level: CreativityLevel,
-  _genre: string,
   rng: () => number
 ): string {
   const adjective = selectRandom(CREATIVE_TITLE_WORDS.adjectives, rng);

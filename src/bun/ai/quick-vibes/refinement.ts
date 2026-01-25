@@ -232,7 +232,7 @@ export async function refineQuickVibes(
   // No category: use LLM refinement
   log.info('refineQuickVibes:llm', { hasCategory: !!category, hasFeedback: !!feedback });
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
-  const systemPrompt = buildQuickVibesRefineSystemPrompt(config.isMaxMode(), withWordlessVocals);
+  const systemPrompt = buildQuickVibesRefineSystemPrompt(withWordlessVocals);
   const userPrompt = buildQuickVibesRefineUserPrompt(cleanPrompt, feedback, category);
 
   // Get Ollama endpoint for local LLM mode (bypasses Bun fetch bug)

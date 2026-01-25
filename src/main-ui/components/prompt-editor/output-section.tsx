@@ -12,7 +12,6 @@ import type { ReactElement } from "react";
 interface OutputSectionProps {
   label: string;
   content: string;
-  onCopy: () => void;
   onRemix?: () => void;
   isRemixing?: boolean;
   scrollable?: boolean;
@@ -21,7 +20,6 @@ interface OutputSectionProps {
 export function OutputSection({
   label,
   content,
-  onCopy,
   onRemix,
   isRemixing = false,
   scrollable = false,
@@ -29,8 +27,7 @@ export function OutputSection({
   const { copied, copy } = useCopyToClipboard();
 
   const handleCopy = (): void => {
-    onCopy();
-    void copy(''); // Trigger the copied state
+    void copy(content);
   };
 
   return (

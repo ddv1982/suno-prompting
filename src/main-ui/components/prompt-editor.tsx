@@ -53,7 +53,7 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
       <div className="flex-1 flex flex-col p-6 pb-[var(--space-8)] gap-6 max-w-6xl mx-auto w-full overflow-auto">
         <OutputPanel
           promptMode={promptMode} currentPrompt={currentPrompt} currentTitle={currentTitle} currentLyrics={currentLyrics}
-          generatingAction={generatingAction} maxMode={maxMode} copied={copied}
+          generatingAction={generatingAction} maxMode={maxMode} storyMode={storyMode} copied={copied}
           promptOverLimit={promptOverLimit} charCount={charCount} maxChars={maxChars} debugTrace={debugTrace}
           showSkeleton={showSkeleton}
           onRemixQuickVibes={remix.onRemixQuickVibes} onRemixTitle={remix.onRemixTitle} onRemixLyrics={remix.onRemixLyrics}

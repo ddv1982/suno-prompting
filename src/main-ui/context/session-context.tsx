@@ -2,19 +2,14 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo, t
 
 import { createLogger } from '@/lib/logger';
 import { rpcClient } from '@/services/rpc-client';
+import { APP_CONSTANTS } from '@shared/constants';
 import { type PromptSession } from '@shared/types';
 import { nowISO } from '@shared/utils';
 
 const log = createLogger('Session');
 
 function generateId(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return (
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15)
-  );
+  return crypto.randomUUID();
 }
 
 export interface SessionContextType {
@@ -46,7 +41,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
       setSessions(result.ok ? result.value.sessions : []);
     } catch (error: unknown) {
       if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, APP_CONSTANTS.UI.RETRY_DELAY_MS));
         return loadHistory(retries - 1);
       }
       log.error("loadHistory:failed", error);

@@ -130,7 +130,7 @@ async function refinePromptDeterministic(
   });
 
   let finalPrompt = await config.postProcess(updatedPrompt);
-  finalPrompt = await applyLockedPhraseIfNeeded(finalPrompt, lockedPhrase, config.isMaxMode());
+  finalPrompt = await applyLockedPhraseIfNeeded(finalPrompt, lockedPhrase);
 
   log.info('refinePromptDeterministic:complete', {
     promptLength: finalPrompt.length,

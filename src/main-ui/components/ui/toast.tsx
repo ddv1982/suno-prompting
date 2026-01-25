@@ -87,7 +87,7 @@ export function useToast(): ToastContextType {
 
 // Auto-dismiss duration from app constants
 const TOAST_DISMISS_DURATION = APP_CONSTANTS.UI.TOAST_DURATION_MS
-const DEDUPLICATION_WINDOW_MS = 5000
+const DEDUPLICATION_WINDOW_MS = APP_CONSTANTS.UI.TOAST_DEDUPLICATION_WINDOW_MS
 const MAX_TOASTS = 4
 const MAX_MESSAGE_LENGTH = 150
 
