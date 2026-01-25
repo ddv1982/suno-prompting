@@ -8,8 +8,7 @@
  */
 
 import { isDirectMode, buildDirectModePrompt } from '@bun/ai/direct-mode';
-import { generateDirectModeTitle } from '@bun/ai/llm-utils';
-import { callLLM } from '@bun/ai/llm-utils';
+import { generateDirectModeTitle, callLLM } from '@bun/ai/llm-utils';
 import { createLogger } from '@bun/logger';
 import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionShort } from '@bun/prompt/chord-progressions';
@@ -19,7 +18,8 @@ import {
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
-import { stripMaxModeHeader } from '@bun/prompt/quick-vibes-builder';
+import { getErrorMessage } from '@shared/errors';
+import { stripMaxModeHeader } from '@shared/prompt-utils';
 
 import { DEFAULT_LYRICS_TOPIC, enforceGenreCount, generateLyricsForCreativeBoost, postProcessCreativeBoostResponse } from './helpers';
 
@@ -110,7 +110,7 @@ async function tryRefineDirectModeTitle(
   try {
     return await generateDirectModeTitle(context, sunoStyles, config.getModel);
   } catch (error: unknown) {
-    log.warn('refineDirectMode:title:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('refineDirectMode:title:failed', { error: getErrorMessage(error) });
     return currentTitle;
   }
 }
@@ -137,7 +137,7 @@ async function tryRefineDirectModeLyrics(
       config.getOllamaEndpoint?.()
     );
   } catch (error: unknown) {
-    log.warn('refineDirectMode:lyrics:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('refineDirectMode:lyrics:failed', { error: getErrorMessage(error) });
     return undefined;
   }
 }

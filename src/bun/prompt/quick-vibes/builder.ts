@@ -185,10 +185,11 @@ export function buildDeterministicQuickVibes(
 
   // Build the prompt based on mode
   if (maxMode) {
+    // Use lowercase field names consistent with Full Prompt MAX mode
     const lines = [
-      `Genre: "${genre}"`,
-      `Mood: "${mood}"`,
-      `Instruments: "${instrumentList.join(', ')}"`,
+      `genre: "${genre}"`,
+      `mood: "${mood}"`,
+      `instruments: "${instrumentList.join(', ')}"`,
     ];
     return {
       text: lines.join('\n'),

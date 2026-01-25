@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 
 import { type ChatMessage } from '@/lib/chat-utils';
+import { getErrorMessage } from '@shared/errors';
 import { type TraceRun } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
@@ -60,7 +61,7 @@ export function useGenerationState(): GenerationStateResult {
   }, []);
 
   const addErrorMessage = useCallback((error: unknown, context: string): void => {
-    const message = error instanceof Error ? error.message : `Failed to ${context}`;
+    const message = getErrorMessage(error, `Failed to ${context}`);
     setChatMessages(prev => [...prev, { role: "ai", content: `Error: ${message}.` }]);
   }, []);
 

@@ -69,6 +69,18 @@ export const APP_CONSTANTS = {
         COPY_FEEDBACK_DURATION_MS: 2000,
         COPY_FEEDBACK_SHORT_DURATION_MS: 1500,
         RETRY_DELAY_MS: 400,
+        /** Delay before hiding scroll reveal indicator (1 second) */
+        SCROLL_REVEAL_DELAY_MS: 1000,
+    },
+    RPC: {
+        /** Maximum length for error message text */
+        MAX_TEXT_LEN: 500,
+        /** Maximum length for error details text fields */
+        MAX_DETAILS_TEXT_LEN: 500,
+        /** Maximum number of field errors to include */
+        MAX_FIELD_ERRORS: 50,
+        /** Maximum length per field error text */
+        MAX_FIELD_ERROR_TEXT: 200,
     },
     AI: {
         MAX_RETRIES: 10,

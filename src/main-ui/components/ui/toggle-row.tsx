@@ -20,6 +20,8 @@ interface ToggleRowProps {
    */
   autoDisable?: boolean;
   showNaBadge?: boolean;
+  /** Optional element to render before the switch (e.g., LLMUnavailableNotice) */
+  rightElement?: ReactNode;
   onChange: (checked: boolean) => void;
 }
 
@@ -32,6 +34,7 @@ export function ToggleRow({
   disabled,
   autoDisable = false,
   showNaBadge = false,
+  rightElement,
   onChange,
 }: ToggleRowProps): ReactElement {
   const isDisabled = useAutoDisable(disabled, autoDisable);
@@ -54,6 +57,7 @@ export function ToggleRow({
           N/A
         </Badge>
       )}
+      {rightElement}
       <Switch
         id={id}
         checked={checked}

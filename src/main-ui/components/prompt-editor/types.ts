@@ -115,7 +115,6 @@ export interface EditorHandlers {
   onRefineQuickVibes: (feedback: string) => Promise<boolean>;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => Promise<boolean>;
-  onCopy: () => void;
   onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
 }
 

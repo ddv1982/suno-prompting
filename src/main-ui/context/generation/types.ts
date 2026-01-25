@@ -58,7 +58,6 @@ export interface SessionOperationsContextValue {
 /** Standard generation context - provides core generation operations */
 export interface StandardGenerationContextValue {
   handleGenerate: (input: string, refinementType?: RefinementType, styleChanges?: StyleChanges) => Promise<boolean>;
-  handleCopy: () => void;
   handleRemix: () => Promise<void>;
   handleConversionComplete: (
     originalInput: string,

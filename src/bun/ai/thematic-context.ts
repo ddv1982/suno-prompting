@@ -10,6 +10,7 @@
 import { callLLM } from '@bun/ai/llm-utils';
 import { createLogger } from '@bun/logger';
 import { traceDecision, traceError } from '@bun/trace';
+import { getErrorMessage } from '@shared/errors';
 import { ThematicContextSchema } from '@shared/schemas/thematic-context';
 
 import type { TraceCollector } from '@bun/trace';
@@ -280,8 +281,7 @@ function parseThematicResponse(rawResponse: string): ThematicContext | null {
     };
     return normalized;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown parse error';
-    log.warn('parseThematicResponse:failed', { error: message });
+    log.warn('parseThematicResponse:failed', { error: getErrorMessage(error, 'Unknown parse error') });
     return null;
   }
 }
@@ -393,7 +393,7 @@ export async function extractThematicContext(
 
     return validated;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = getErrorMessage(error);
     log.warn('extractThematicContext:failed', { error: message });
 
     traceError(trace, error);

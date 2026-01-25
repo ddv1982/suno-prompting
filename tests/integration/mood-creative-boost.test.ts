@@ -83,8 +83,8 @@ describe('Creative Boost Simple mode with mood category', () => {
     // Act
     const result = buildDeterministicCreativeBoost(50, [], false, true, rng);
 
-    // Assert - the result should contain a mood
-    expect(result.text).toContain('Mood:');
+    // Assert - the result should contain a mood (MAX mode uses lowercase)
+    expect(result.text).toContain('mood:');
     expect(result.text.length).toBeGreaterThan(0);
   });
 

@@ -1,9 +1,9 @@
-import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_GENERATION_LIMIT } from '@bun/prompt/quick-vibes-categories';
 import { WORDLESS_VOCALS_GUIDANCE } from '@bun/prompt/shared-instructions';
 import { MAX_MODE_HEADER } from '@bun/prompt/tags';
+import { APP_CONSTANTS } from '@shared/constants';
+import { QUICK_VIBES_CATEGORIES } from '@shared/quick-vibes-categories';
 
 import type { QuickVibesCategory } from '@shared/types';
-export { stripMaxModeHeader } from '@shared/prompt-utils';
 
 /**
  * Builds the system prompt for Quick Vibes generation
@@ -16,7 +16,7 @@ function buildQuickVibesSystemPrompt(withWordlessVocals: boolean): string {
   return `You are a Quick Vibes prompt writer for Suno V5. Generate short, evocative music prompts that capture a mood or atmosphere.
 
 RULES:
-1. Output MUST be under ${QUICK_VIBES_GENERATION_LIMIT} characters - be CONCISE
+1. Output MUST be under ${APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT} characters - be CONCISE
 2. Focus on VIBE and FEELING, not technical specifications
 3. Use vivid, emotional language (dreamy, cozy, warm, chill, mellow)
 4. Include activity or setting context when relevant (to study to, for a rainy day)
@@ -82,11 +82,11 @@ export function postProcessQuickVibes(text: string): string {
   }
   
   // Enforce max length - truncate gracefully at word boundary if needed
-  if (result.length > QUICK_VIBES_GENERATION_LIMIT) {
+  if (result.length > APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT) {
     // Find last space before limit
-    const truncated = result.slice(0, QUICK_VIBES_GENERATION_LIMIT);
+    const truncated = result.slice(0, APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT);
     const lastSpace = truncated.lastIndexOf(' ');
-    if (lastSpace > QUICK_VIBES_GENERATION_LIMIT * 0.7) {
+    if (lastSpace > APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT * 0.7) {
       result = truncated.slice(0, lastSpace).trim();
     } else {
       result = truncated.trim();

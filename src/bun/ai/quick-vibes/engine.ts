@@ -170,6 +170,19 @@ export async function generateQuickVibes(
   log.info('generateQuickVibes:customDescription', { description: customDescription });
   const result = applyQuickVibesMaxMode(customDescription, config.isMaxMode());
 
+  // Try Story Mode transformation for custom descriptions too
+  // Custom descriptions don't have deterministic titles like category-based generation
+  const storyResult = await applyStoryModeTransformation(
+    result,
+    '',
+    customDescription,
+    config,
+    runtime
+  );
+  if (storyResult) {
+    return storyResult;
+  }
+
   return {
     text: result,
     debugTrace: undefined,

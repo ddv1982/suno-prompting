@@ -1,6 +1,7 @@
 import { callLLM } from '@bun/ai/llm-utils';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
+import { getErrorMessage } from '@shared/errors';
 
 import type { LanguageModel } from 'ai';
 
@@ -30,7 +31,7 @@ export async function condenseWithDedup(
     });
     return condensed.trim();
   } catch (error: unknown) {
-    log.warn('condenseWithDedup:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('condenseWithDedup:failed', { error: getErrorMessage(error) });
     return text;
   }
 }
@@ -58,7 +59,7 @@ export async function condense(
     });
     return condensed.trim();
   } catch (error: unknown) {
-    log.warn('condense:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('condense:failed', { error: getErrorMessage(error) });
     return text;
   }
 }
@@ -83,7 +84,7 @@ export async function rewriteWithoutMeta(
     });
     return rewritten.trim();
   } catch (error: unknown) {
-    log.warn('rewriteWithoutMeta:failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    log.warn('rewriteWithoutMeta:failed', { error: getErrorMessage(error) });
     return text;
   }
 }

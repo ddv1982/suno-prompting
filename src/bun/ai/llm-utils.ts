@@ -4,7 +4,7 @@ import { generateWithOllama } from '@bun/ai/ollama-client';
 import { createLogger } from '@bun/logger';
 import { normalizeTraceError, traceError } from '@bun/trace';
 import { APP_CONSTANTS } from '@shared/constants';
-import { AIGenerationError } from '@shared/errors';
+import { AIGenerationError, getErrorMessage } from '@shared/errors';
 import { redactSecretsDeep, redactSecretsInText, truncateTextWithMarker } from '@shared/trace';
 
 import type { TraceCollector } from '@bun/trace';
@@ -117,7 +117,7 @@ function buildAttemptError(normalized: { type: string; message: string; status?:
 function wrapAIError(error: unknown, errorContext: string): AIGenerationError {
   if (error instanceof AIGenerationError) return error;
   return new AIGenerationError(
-    `Failed to ${errorContext}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    `Failed to ${errorContext}: ${getErrorMessage(error)}`,
     error instanceof Error ? error : undefined
   );
 }
@@ -409,7 +409,7 @@ export async function generateDirectModeTitle(
     return result.title;
   } catch (error: unknown) {
     log.warn('generateDirectModeTitle:failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: getErrorMessage(error),
     });
     return 'Untitled';
   }

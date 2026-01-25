@@ -13,7 +13,7 @@ import { extractThematicContext } from '@bun/ai/thematic-context';
 import { extractAllKeywords, hasKeywords } from '@bun/keywords';
 import { createLogger } from '@bun/logger';
 import { traceDecision } from '@bun/trace';
-
+import { getErrorMessage } from '@shared/errors';
 
 import type { GenerationConfig } from '@bun/ai/types';
 import type { KeywordExtractionResult } from '@bun/keywords';
@@ -199,7 +199,7 @@ function handleLLMError(
   error: unknown,
   trace?: TraceCollector
 ): ThematicContext | null {
-  const message = error instanceof Error ? error.message : 'Unknown error';
+  const message = getErrorMessage(error);
   const isAbort = error instanceof Error && error.name === 'AbortError';
 
   if (isAbort) {

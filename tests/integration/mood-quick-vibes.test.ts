@@ -230,10 +230,10 @@ describe('Quick Vibes with mood category integration', () => {
       rng: createFixedRng(0.5),
     });
 
-    // Assert
-    expect(result.text).toContain('Genre:');
-    expect(result.text).toContain('Mood:');
-    expect(result.text).toContain('Instruments:');
+    // Assert - MAX mode uses lowercase field names
+    expect(result.text).toContain('genre:');
+    expect(result.text).toContain('mood:');
+    expect(result.text).toContain('instruments:');
   });
 
   test('returns standard mode format when maxMode is false with mood category', () => {
@@ -249,8 +249,8 @@ describe('Quick Vibes with mood category integration', () => {
       rng: createFixedRng(0.5),
     });
 
-    // Assert
+    // Assert - Standard mode uses capitalized Instruments
     expect(result.text).toContain('Instruments:');
-    expect(result.text).not.toContain('Genre: "');
+    expect(result.text).not.toContain('genre: "');
   });
 });

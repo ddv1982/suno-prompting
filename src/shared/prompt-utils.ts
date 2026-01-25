@@ -97,3 +97,62 @@ export function isStoryModeFormat(text: string): boolean {
   if (!text || text.trim().length === 0) return true;
   return !isStructuredPrompt(text);
 }
+
+/**
+ * Result of detecting which remixable fields exist in a prompt.
+ */
+export interface DetectedFields {
+  hasGenre: boolean;
+  hasMood: boolean;
+  hasInstruments: boolean;
+  hasStyleTags: boolean;
+  hasRecording: boolean;
+}
+
+/**
+ * Detects which remixable fields actually exist in a prompt.
+ * Used to show only remix buttons for fields that are present in the output.
+ * 
+ * Handles both formats:
+ * - Standard/Quick Vibes: `Genre:`, `Mood:`, `Instruments:` (Capitalized)
+ * - MAX format: `genre:`, `instruments:`, `style tags:`, `recording:` (lowercase, quoted)
+ * 
+ * @param text - The prompt text to analyze
+ * @returns Object indicating which fields are present
+ * 
+ * @example
+ * // Quick Vibes MAX output
+ * detectRemixableFields('Genre: "lo-fi"\nMood: "golden"\nInstruments: "piano"');
+ * // { hasGenre: true, hasMood: true, hasInstruments: true, hasStyleTags: false, hasRecording: false }
+ * 
+ * @example
+ * // Full MAX prompt
+ * detectRemixableFields('genre: "jazz"\ninstruments: "bass"\nstyle tags: "warm"\nrecording: "studio"');
+ * // { hasGenre: true, hasMood: false, hasInstruments: true, hasStyleTags: true, hasRecording: true }
+ */
+export function detectRemixableFields(text: string): DetectedFields {
+  if (!text || text.trim().length === 0) {
+    return {
+      hasGenre: false,
+      hasMood: false,
+      hasInstruments: false,
+      hasStyleTags: false,
+      hasRecording: false,
+    };
+  }
+
+  const bodyText = stripMaxModeHeader(text);
+  
+  return {
+    // Capitalized (standard) or lowercase (MAX/Quick Vibes MAX) - both with optional quotes
+    hasGenre: /^(Genre|genre):\s*["']?\S/mi.test(bodyText),
+    // Mood in standard format (Capitalized) or MAX format (lowercase quoted)
+    hasMood: /^(Mood|mood):\s*["']?\S/mi.test(bodyText),
+    // Instruments in both formats
+    hasInstruments: /^(Instruments|instruments):\s*["']?\S/mi.test(bodyText),
+    // Style tags only in MAX format (lowercase, quoted)
+    hasStyleTags: /^style tags:\s*"/mi.test(bodyText),
+    // Recording only in MAX format (lowercase, quoted)
+    hasRecording: /^recording:\s*"/mi.test(bodyText),
+  };
+}

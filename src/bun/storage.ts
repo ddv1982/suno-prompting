@@ -5,7 +5,7 @@ import { join } from 'path';
 import { decrypt, encrypt } from '@bun/crypto';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
-import { StorageError } from '@shared/errors';
+import { getErrorMessage, StorageError } from '@shared/errors';
 import { TraceRunSchema } from '@shared/schemas';
 import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
 import { type PromptSession, type PromptVersion, type AppConfig, type APIKeys, DEFAULT_API_KEYS, type AIProvider, type PromptMode, type CreativeBoostMode } from '@shared/types';
@@ -56,7 +56,7 @@ export class StorageManager {
         try {
             await mkdir(this.baseDir, { recursive: true });
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
+            const message = getErrorMessage(error);
             log.error('initialize:failed', { error: message });
             throw new StorageError(`Failed to initialize storage directory: ${message}`, 'write');
         }
@@ -72,7 +72,7 @@ export class StorageManager {
             const sessions = sanitizeDebugTracesInHistory(raw);
             return sortByUpdated(sessions);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
+            const message = getErrorMessage(error);
             log.error('getHistory:failed', { error: message });
             // For read errors on history, return empty array to allow app to function
             // but log the error for debugging
@@ -84,7 +84,7 @@ export class StorageManager {
         try {
             await Bun.write(this.historyPath, JSON.stringify(sessions, null, 2));
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
+            const message = getErrorMessage(error);
             log.error('saveHistory:failed', { error: message });
             throw new StorageError(`Failed to save history: ${message}`, 'write');
         }
@@ -115,7 +115,7 @@ export class StorageManager {
                 try {
                     apiKeys[provider] = await decrypt(encryptedKey);
                 } catch (e) {
-                    log.error('getConfig:decryptFailed', { provider, error: e instanceof Error ? e.message : String(e) });
+                    log.error('getConfig:decryptFailed', { provider, error: getErrorMessage(e) });
                     apiKeys[provider] = null;
                 }
             }
@@ -156,7 +156,7 @@ export class StorageManager {
                 try {
                     encryptedKeys[provider] = await encrypt(config.apiKeys[provider]);
                 } catch (e) {
-                    const message = e instanceof Error ? e.message : String(e);
+                    const message = getErrorMessage(e);
                     log.error('saveConfig:encryptFailed', { provider, error: message });
                     throw new StorageError(`Failed to encrypt API key for ${provider}: ${message}`, 'encrypt');
                 }
@@ -177,7 +177,7 @@ export class StorageManager {
             const apiKeys = await this.decryptApiKeys(config.apiKeys);
             return this.buildConfigWithDefaults(config, apiKeys);
         } catch (error) {
-            log.error('getConfig:failed', { error: error instanceof Error ? error.message : String(error) });
+            log.error('getConfig:failed', { error: getErrorMessage(error) });
             return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
         }
     }
@@ -189,7 +189,7 @@ export class StorageManager {
             await this.persistConfig(toSave);
         } catch (error: unknown) {
             if (error instanceof StorageError) throw error;
-            const message = error instanceof Error ? error.message : String(error);
+            const message = getErrorMessage(error);
             log.error('saveConfig:failed', { error: message });
             throw new StorageError(`Failed to save config: ${message}`, 'write');
         }

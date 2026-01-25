@@ -75,18 +75,19 @@ describe('buildDeterministicQuickVibes', () => {
   it('uses MAX mode format when maxMode is true', () => {
     const result = buildDeterministicQuickVibes('cafe-coffeeshop', false, true);
 
-    expect(result.text).toContain('Genre:');
-    expect(result.text).toContain('Mood:');
-    expect(result.text).toContain('Instruments:');
+    // MAX mode uses lowercase field names with quoted values
+    expect(result.text).toContain('genre:');
+    expect(result.text).toContain('mood:');
+    expect(result.text).toContain('instruments:');
   });
 
   it('uses simpler format when maxMode is false', () => {
     const result = buildDeterministicQuickVibes('ambient-focus', false, false);
 
-    // Standard mode has genre and mood in first line
+    // Standard mode has genre and mood in first line, Instruments capitalized
     expect(result.text).toContain('Instruments:');
-    // Should NOT have the quoted format of max mode
-    expect(result.text).not.toContain('Genre: "');
+    // Should NOT have the quoted lowercase format of max mode
+    expect(result.text).not.toContain('genre: "');
   });
 
   it('produces deterministic output with same seed', () => {

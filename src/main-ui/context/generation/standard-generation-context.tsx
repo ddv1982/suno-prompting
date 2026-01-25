@@ -9,13 +9,13 @@ import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
 import { formatRpcError } from '@/lib/rpc-utils';
 import { handleGenerationError, addUserMessage, buildFullPromptOriginalInput, completeSessionUpdate } from '@/lib/session-helpers';
 import { rpcClient } from '@/services/rpc-client';
-import { type RefinementType, type StyleChanges, type TraceRun } from '@shared/types';
 
 import { useGenerationStateContext } from './generation-state-context';
 import { useSessionOperationsContext } from './session-operations-context';
 
 import type { StandardGenerationContextValue } from './types';
 import type { ChatMessage } from '@/lib/chat-utils';
+import type { RefinementType, StyleChanges, TraceRun } from '@shared/types';
 
 const log = createLogger('StandardGeneration');
 const StandardGenerationContext = createContext<StandardGenerationContextValue | null>(null);
@@ -26,25 +26,6 @@ function shouldSkipGeneration(isGenerating: boolean, promptMode: string, hasProm
 
 function shouldAttemptMaxConversion(isInitial: boolean, maxMode: boolean, input: string): boolean {
   return isInitial && maxMode && isStructuredPrompt(input) && !isMaxFormat(input);
-}
-
-async function tryClipboardApi(text: string): Promise<boolean> {
-  if (!navigator?.clipboard?.writeText) return false;
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (error: unknown) {
-    log.warn('clipboard:writeFailed', { error: error instanceof Error ? error.message : String(error) });
-    return false;
-  }
-}
-
-async function copyToClipboard(text: string, showToast: (message: string, type: 'success' | 'error') => void): Promise<void> {
-  if (!text) return;
-  const copied = await tryClipboardApi(text);
-  if (!copied) {
-    showToast('Unable to copy to clipboard.', 'error');
-  }
 }
 
 interface ConversionCallbacks {
@@ -192,10 +173,6 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     finally { setGeneratingAction('none'); }
   }, [isGenerating, promptMode, currentSession, maxMode, getEffectiveLockedPhrase, lyricsTopic, advancedSelection, createConversionSession, setPendingInput, setLyricsTopic, showToast, deps, setChatMessages, setGeneratingAction]);
 
-  const handleCopy = useCallback(() => {
-    void copyToClipboard(currentSession?.currentPrompt || '', showToast);
-  }, [currentSession?.currentPrompt, showToast]);
-
   const handleRemix = useCallback(async () => {
     if (isGenerating || !currentSession?.originalInput) return;
     setGeneratingAction('remix');
@@ -221,5 +198,5 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     await createConversionSession(originalInput, convertedPrompt, versionId, debugTrace);
   }, [createConversionSession]);
 
-  return <StandardGenerationContext.Provider value={{ handleGenerate, handleCopy, handleRemix, handleConversionComplete }}>{children}</StandardGenerationContext.Provider>;
+  return <StandardGenerationContext.Provider value={{ handleGenerate, handleRemix, handleConversionComplete }}>{children}</StandardGenerationContext.Provider>;
 }

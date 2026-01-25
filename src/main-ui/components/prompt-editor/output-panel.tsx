@@ -17,9 +17,7 @@ interface OutputPanelProps {
   currentTitle?: string;
   currentLyrics?: string;
   generatingAction: GeneratingAction;
-  maxMode: boolean;
   storyMode: boolean;
-  copied: boolean;
   promptOverLimit: boolean;
   charCount: number;
   maxChars: number;
@@ -35,47 +33,30 @@ interface OutputPanelProps {
   onRemixStyleTags: () => void;
   onRemixRecording: () => void;
   onRemix: () => void;
-  onCopy: () => void;
   onDebugOpen: () => void;
 }
 
 export function OutputPanel({
-  promptMode,
-  currentPrompt,
-  currentTitle,
-  currentLyrics,
-  generatingAction,
-  maxMode,
-  storyMode,
-  copied,
-  promptOverLimit,
-  charCount,
-  maxChars,
-  debugTrace,
-  showSkeleton = false,
-  onRemixQuickVibes,
-  onRemixTitle,
-  onRemixLyrics,
-  onRemixGenre,
-  onRemixMood,
-  onRemixInstruments,
-  onRemixStyleTags,
-  onRemixRecording,
-  onRemix,
-  onCopy,
-  onDebugOpen,
+  promptMode, currentPrompt, currentTitle, currentLyrics, generatingAction, storyMode,
+  promptOverLimit, charCount, maxChars, debugTrace, showSkeleton = false,
+  onRemixQuickVibes, onRemixTitle, onRemixLyrics, onRemixGenre, onRemixMood,
+  onRemixInstruments, onRemixStyleTags, onRemixRecording, onRemix, onDebugOpen,
 }: OutputPanelProps): ReactElement | null {
-  // Show skeleton during optimistic generation when no current prompt
-  if (showSkeleton && !currentPrompt) {
-    return <OutputSkeleton />;
-  }
-
+  if (showSkeleton && !currentPrompt) return <OutputSkeleton />;
   if (!currentPrompt) return null;
+
+  const hasDebugInfo = !!debugTrace;
 
   if (promptMode === 'quickVibes') {
     return (
       <div className="space-y-[var(--space-5)]">
-        <QuickVibesOutput prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics} isRemixing={generatingAction === 'remix'} hasDebugInfo={!!debugTrace} onRemix={onRemixQuickVibes} onCopy={onCopy} onDebugOpen={onDebugOpen} onRemixLyrics={onRemixLyrics} />
+        <QuickVibesOutput
+          prompt={currentPrompt} title={currentTitle} lyrics={currentLyrics}
+          generatingAction={generatingAction} storyMode={storyMode} hasDebugInfo={hasDebugInfo}
+          onRemix={onRemixQuickVibes} onDebugOpen={onDebugOpen} onRemixGenre={onRemixGenre}
+          onRemixMood={onRemixMood} onRemixInstruments={onRemixInstruments}
+          onRemixStyleTags={onRemixStyleTags} onRemixRecording={onRemixRecording} onRemixLyrics={onRemixLyrics}
+        />
       </div>
     );
   }
@@ -83,56 +64,27 @@ export function OutputPanel({
   return (
     <div className="space-y-[var(--space-5)]">
       {currentTitle && (
-        <OutputSection
-          label="Title"
-          content={currentTitle}
-          onRemix={onRemixTitle}
-          isRemixing={generatingAction === 'remixTitle'}
-        />
+        <OutputSection label="Title" content={currentTitle} onRemix={onRemixTitle} isRemixing={generatingAction === 'remixTitle'} />
       )}
-
       <div>
         <div className="flex justify-between items-center mb-2">
           <SectionLabel>Style Prompt</SectionLabel>
-          <Badge
-            variant={promptOverLimit ? "destructive" : "secondary"}
-            className="text-tiny font-mono tabular-nums h-5"
-          >
+          <Badge variant={promptOverLimit ? "destructive" : "secondary"} className="text-tiny font-mono tabular-nums h-5">
             {charCount} / {maxChars}
           </Badge>
         </div>
         <Card className="relative group border bg-surface overflow-hidden">
-          <CardContent className="p-6">
-            <PromptOutput text={currentPrompt} />
-          </CardContent>
+          <CardContent className="p-6"><PromptOutput text={currentPrompt} /></CardContent>
           <RemixButtonGroup
-            generatingAction={generatingAction}
-            maxMode={maxMode}
-            storyMode={storyMode}
-            currentPrompt={currentPrompt}
-            copied={copied}
-            promptOverLimit={promptOverLimit}
-            hasDebugInfo={!!debugTrace}
-            onDebugOpen={onDebugOpen}
-            onRemixGenre={onRemixGenre}
-            onRemixMood={onRemixMood}
-            onRemixInstruments={onRemixInstruments}
-            onRemixStyleTags={onRemixStyleTags}
-            onRemixRecording={onRemixRecording}
-            onRemix={onRemix}
-            onCopy={onCopy}
+            generatingAction={generatingAction} storyMode={storyMode} currentPrompt={currentPrompt}
+            promptOverLimit={promptOverLimit} hasDebugInfo={hasDebugInfo} onDebugOpen={onDebugOpen}
+            onRemixGenre={onRemixGenre} onRemixMood={onRemixMood} onRemixInstruments={onRemixInstruments}
+            onRemixStyleTags={onRemixStyleTags} onRemixRecording={onRemixRecording} onRemix={onRemix}
           />
         </Card>
       </div>
-
       {currentLyrics && (
-        <OutputSection
-          label="Lyrics"
-          content={currentLyrics}
-          onRemix={onRemixLyrics}
-          isRemixing={generatingAction === 'remixLyrics'}
-          scrollable
-        />
+        <OutputSection label="Lyrics" content={currentLyrics} onRemix={onRemixLyrics} isRemixing={generatingAction === 'remixLyrics'} scrollable />
       )}
     </div>
   );

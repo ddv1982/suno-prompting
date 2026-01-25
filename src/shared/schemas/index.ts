@@ -2,7 +2,7 @@
 export {
   MAX_SEED_GENRES,
   MAX_SUNO_STYLES,
-  QUICK_VIBES_CATEGORIES,
+  QUICK_VIBES_CATEGORY_VALUES,
   QuickVibesCategorySchema,
   QuickVibesCategoryValueSchema,
   SeedGenresSchema,

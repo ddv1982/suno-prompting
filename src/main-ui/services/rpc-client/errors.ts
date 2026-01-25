@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { APP_CONSTANTS } from '@shared/constants';
+
 /** Renderer-stable error codes for RPC responses. */
 export type RpcErrorCode =
   /** Validation failed (Zod parse error or field-level errors). */
@@ -29,10 +31,8 @@ export interface RpcError {
   readonly details?: Record<string, unknown>;
 }
 
-const MAX_TEXT_LEN = 500;
-const MAX_DETAILS_TEXT_LEN = 500;
-const MAX_FIELD_ERRORS = 50;
-const MAX_FIELD_ERROR_TEXT = 200;
+// Use centralized constants from APP_CONSTANTS.RPC
+const { MAX_TEXT_LEN, MAX_DETAILS_TEXT_LEN, MAX_FIELD_ERRORS, MAX_FIELD_ERROR_TEXT } = APP_CONSTANTS.RPC;
 
 export function redactAndTruncateText(input: unknown, maxLen: number = MAX_TEXT_LEN): string {
   const raw =

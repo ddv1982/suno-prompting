@@ -13,6 +13,7 @@
 import * as http from 'node:http';
 
 import { APP_CONSTANTS } from '@shared/constants';
+import { getErrorMessage } from '@shared/errors';
 import { createLogger } from '@shared/logger';
 
 const log = createLogger('OllamaAvailability');
@@ -132,7 +133,7 @@ export async function checkOllamaAvailable(
     return { available: true, hasGemma };
   } catch (error: unknown) {
     log.warn('checkOllamaAvailable:failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: getErrorMessage(error),
     });
     cachedStatus = { available: false, hasGemma: false, checkedAt: now };
     return { available: false, hasGemma: false };

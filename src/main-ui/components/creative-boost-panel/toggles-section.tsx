@@ -52,19 +52,17 @@ export function TogglesSection({
         autoDisable
       />
       <p className="ui-helper pl-6">{getMaxModeHelperText(maxMode)}</p>
-      <div className="flex items-center gap-2">
-        <ToggleRow
-          id="cb-story-mode"
-          icon={<BookOpen className="w-3.5 h-3.5" />}
-          label="Story Mode"
-          checked={storyMode}
-          onChange={onStoryModeChange}
-          disabled={!isLLMAvailable}
-          autoDisable
-          showNaBadge={!isLLMAvailable}
-        />
-        {!isLLMAvailable && <LLMUnavailableNotice />}
-      </div>
+      <ToggleRow
+        id="cb-story-mode"
+        icon={<BookOpen className="w-3.5 h-3.5" />}
+        label="Story Mode"
+        checked={storyMode}
+        onChange={onStoryModeChange}
+        disabled={!isLLMAvailable}
+        autoDisable
+        showNaBadge={!isLLMAvailable}
+        rightElement={!isLLMAvailable ? <LLMUnavailableNotice /> : undefined}
+      />
       <p className="ui-helper pl-6">{getStoryModeHelperText(storyMode, maxMode)}</p>
       <ToggleRow
         id="cb-lyrics"

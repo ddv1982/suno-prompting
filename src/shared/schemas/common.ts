@@ -49,8 +49,11 @@ export const SeedGenresSchema = z
 /**
  * Quick Vibes category values - 16 total preset categories.
  * Used by QuickVibesCategorySchema to ensure type and schema stay in sync.
+ * 
+ * Note: Named differently from QUICK_VIBES_CATEGORIES in quick-vibes-categories.ts
+ * which is a Record<QuickVibesCategory, QuickVibesCategoryDefinition> for UI labels.
  */
-export const QUICK_VIBES_CATEGORIES = [
+export const QUICK_VIBES_CATEGORY_VALUES = [
   // Original 6 categories
   'lofi-study',
   'cafe-coffeeshop',
@@ -75,7 +78,7 @@ export const QUICK_VIBES_CATEGORIES = [
  * Schema for Quick Vibes category values (non-nullable).
  * Used for indexing into category-keyed objects.
  */
-export const QuickVibesCategoryValueSchema = z.enum(QUICK_VIBES_CATEGORIES);
+export const QuickVibesCategoryValueSchema = z.enum(QUICK_VIBES_CATEGORY_VALUES);
 
 /**
  * Schema for Quick Vibes category selection in forms.

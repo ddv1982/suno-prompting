@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 
 import { MAX_MODE_HEADER, MAX_MODE_TAGS_HEADER, isMaxFormat } from '../src/shared/max-format';
-import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt } from '../src/shared/prompt-utils';
+import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt, detectRemixableFields } from '../src/shared/prompt-utils';
 
 // ============================================================================
 // Test Fixtures
@@ -296,6 +296,181 @@ More content`;
     it('does NOT match field name in middle of word', () => {
       // "Subgenre:" should not match as "Genre:" - it's at line start but starts with "Sub"
       expect(isStructuredPrompt('Subgenre: rock')).toBe(false);
+    });
+  });
+});
+
+// ============================================================================
+// detectRemixableFields Tests
+// ============================================================================
+
+describe('detectRemixableFields', () => {
+  describe('empty/whitespace input', () => {
+    it('returns all false for empty string', () => {
+      const result = detectRemixableFields('');
+      expect(result).toEqual({
+        hasGenre: false,
+        hasMood: false,
+        hasInstruments: false,
+        hasStyleTags: false,
+        hasRecording: false,
+      });
+    });
+
+    it('returns all false for whitespace-only string', () => {
+      const result = detectRemixableFields('   \n\t  ');
+      expect(result).toEqual({
+        hasGenre: false,
+        hasMood: false,
+        hasInstruments: false,
+        hasStyleTags: false,
+        hasRecording: false,
+      });
+    });
+  });
+
+  describe('Quick Vibes MAX output (Capitalized fields)', () => {
+    it('detects Genre, Mood, Instruments in Quick Vibes MAX format', () => {
+      const quickVibesMax = `Genre: "lo-fi"
+Mood: "golden"
+Instruments: "warm synth pad, soft drums, bass"`;
+      const result = detectRemixableFields(quickVibesMax);
+      expect(result.hasGenre).toBe(true);
+      expect(result.hasMood).toBe(true);
+      expect(result.hasInstruments).toBe(true);
+      expect(result.hasStyleTags).toBe(false);
+      expect(result.hasRecording).toBe(false);
+    });
+
+    it('detects fields with MAX header prepended', () => {
+      const quickVibesMaxWithHeader = `[Is_MAX_MODE: MAX](MAX)
+[QUALITY: MAX](MAX)
+[REALISM: MAX](MAX)
+[REAL_INSTRUMENTS: MAX](MAX)
+Genre: "lo-fi"
+Mood: "golden"
+Instruments: "warm synth pad, soft drums, bass"`;
+      const result = detectRemixableFields(quickVibesMaxWithHeader);
+      expect(result.hasGenre).toBe(true);
+      expect(result.hasMood).toBe(true);
+      expect(result.hasInstruments).toBe(true);
+      expect(result.hasStyleTags).toBe(false);
+      expect(result.hasRecording).toBe(false);
+    });
+  });
+
+  describe('Full MAX prompt (lowercase fields)', () => {
+    it('detects all fields in full MAX format', () => {
+      const fullMax = `genre: "jazz"
+bpm: "between 80 and 110"
+instruments: "upright bass, drums, Rhodes piano"
+style tags: "smooth, warm, tape saturation"
+recording: "intimate jazz club"`;
+      const result = detectRemixableFields(fullMax);
+      expect(result.hasGenre).toBe(true);
+      expect(result.hasMood).toBe(false); // No Mood in full MAX
+      expect(result.hasInstruments).toBe(true);
+      expect(result.hasStyleTags).toBe(true);
+      expect(result.hasRecording).toBe(true);
+    });
+
+    it('detects fields with MAX header', () => {
+      const fullMaxWithHeader = `${MAX_MODE_HEADER}
+genre: "jazz"
+instruments: "piano"
+style tags: "warm"
+recording: "studio"`;
+      const result = detectRemixableFields(fullMaxWithHeader);
+      expect(result.hasGenre).toBe(true);
+      expect(result.hasInstruments).toBe(true);
+      expect(result.hasStyleTags).toBe(true);
+      expect(result.hasRecording).toBe(true);
+    });
+  });
+
+  describe('Standard mode (Capitalized, non-quoted)', () => {
+    it('detects fields in standard mode format', () => {
+      const standard = `Genre: rock
+BPM: 120
+Mood: energetic
+Instruments: guitar, drums`;
+      const result = detectRemixableFields(standard);
+      expect(result.hasGenre).toBe(true);
+      expect(result.hasMood).toBe(true);
+      expect(result.hasInstruments).toBe(true);
+      expect(result.hasStyleTags).toBe(false);
+      expect(result.hasRecording).toBe(false);
+    });
+  });
+
+  describe('partial prompts', () => {
+    it('detects only Genre when only Genre present', () => {
+      const result = detectRemixableFields('Genre: "ambient"');
+      expect(result.hasGenre).toBe(true);
+      expect(result.hasMood).toBe(false);
+      expect(result.hasInstruments).toBe(false);
+    });
+
+    it('detects style tags alone', () => {
+      const result = detectRemixableFields('style tags: "vintage, warm"');
+      expect(result.hasStyleTags).toBe(true);
+      expect(result.hasRecording).toBe(false);
+    });
+
+    it('detects recording alone', () => {
+      const result = detectRemixableFields('recording: "live session"');
+      expect(result.hasStyleTags).toBe(false);
+      expect(result.hasRecording).toBe(true);
+    });
+  });
+
+  describe('narrative prose (Story Mode)', () => {
+    it('returns all false for narrative prose', () => {
+      const narrative = 'A dreamy lo-fi track with warm synthesizers floating over a gentle drum pattern, perfect for late-night study sessions.';
+      const result = detectRemixableFields(narrative);
+      expect(result.hasGenre).toBe(false);
+      expect(result.hasMood).toBe(false);
+      expect(result.hasInstruments).toBe(false);
+      expect(result.hasStyleTags).toBe(false);
+      expect(result.hasRecording).toBe(false);
+    });
+
+    it('returns all false for Story Mode with MAX header', () => {
+      const storyWithHeader = `${MAX_MODE_HEADER}
+
+A gentle jazz piano melody drifts through a smoky club, with brushed drums keeping time.`;
+      const result = detectRemixableFields(storyWithHeader);
+      expect(result.hasGenre).toBe(false);
+      expect(result.hasMood).toBe(false);
+      expect(result.hasInstruments).toBe(false);
+      expect(result.hasStyleTags).toBe(false);
+      expect(result.hasRecording).toBe(false);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('does not match field names mid-sentence', () => {
+      const result = detectRemixableFields('The Genre: rock is my favorite');
+      expect(result.hasGenre).toBe(false);
+    });
+
+    it('handles mixed case detection', () => {
+      // genre: (lowercase) should be detected
+      expect(detectRemixableFields('genre: "rock"').hasGenre).toBe(true);
+      // Genre: (capitalized) should be detected
+      expect(detectRemixableFields('Genre: rock').hasGenre).toBe(true);
+    });
+
+    it('requires quoted value for style tags', () => {
+      // style tags: without quotes should not match (different format)
+      expect(detectRemixableFields('style tags: warm, vintage').hasStyleTags).toBe(false);
+      // style tags: with quotes should match
+      expect(detectRemixableFields('style tags: "warm, vintage"').hasStyleTags).toBe(true);
+    });
+
+    it('requires quoted value for recording', () => {
+      expect(detectRemixableFields('recording: studio').hasRecording).toBe(false);
+      expect(detectRemixableFields('recording: "studio"').hasRecording).toBe(true);
     });
   });
 });

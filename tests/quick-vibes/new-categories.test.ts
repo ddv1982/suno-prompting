@@ -121,9 +121,10 @@ describe('Quick Vibes Templates v3.0', () => {
 
       it(`should generate MAX mode prompt for ${category}`, () => {
         const result = buildDeterministicQuickVibes(category, false, true, () => 0.5);
-        expect(result.text).toContain('Genre:');
-        expect(result.text).toContain('Mood:');
-        expect(result.text).toContain('Instruments:');
+        // MAX mode uses lowercase field names
+        expect(result.text).toContain('genre:');
+        expect(result.text).toContain('mood:');
+        expect(result.text).toContain('instruments:');
       });
 
       it(`should include wordless vocals when requested for ${category}`, () => {

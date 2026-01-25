@@ -3,12 +3,13 @@ import { describe, it, expect } from "bun:test";
 import {
   postProcessQuickVibes,
   applyQuickVibesMaxMode,
-  stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt,
   _testHelpers
 } from "@bun/prompt/quick-vibes-builder";
-import { QUICK_VIBES_CATEGORIES, QUICK_VIBES_MAX_CHARS, QUICK_VIBES_GENERATION_LIMIT } from "@bun/prompt/quick-vibes-categories";
+import { QUICK_VIBES_CATEGORIES } from "@bun/prompt/quick-vibes-categories";
+import { APP_CONSTANTS } from "@shared/constants";
+import { stripMaxModeHeader } from "@shared/prompt-utils";
 
 const {
   buildQuickVibesSystemPrompt,
@@ -19,7 +20,7 @@ describe("Quick Vibes Builder", () => {
   describe("buildQuickVibesSystemPrompt", () => {
     it("includes char limit instruction", () => {
       const prompt = buildQuickVibesSystemPrompt(false);
-      expect(prompt).toContain(`${QUICK_VIBES_GENERATION_LIMIT} characters`);
+      expect(prompt).toContain(`${APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT} characters`);
     });
 
     it("handles instrumental mode (no vocals)", () => {
@@ -78,7 +79,7 @@ describe("Quick Vibes Builder", () => {
     it("enforces max character limit", () => {
       const longText = "a".repeat(200);
       const result = postProcessQuickVibes(longText);
-      expect(result.length).toBeLessThanOrEqual(QUICK_VIBES_GENERATION_LIMIT);
+      expect(result.length).toBeLessThanOrEqual(APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT);
     });
 
     it("removes section tags", () => {
@@ -143,19 +144,19 @@ describe("Quick Vibes Categories", () => {
 
   it("example outputs are under max chars limit", () => {
     for (const [_id, category] of Object.entries(QUICK_VIBES_CATEGORIES)) {
-      expect(category.exampleOutput.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
+      expect(category.exampleOutput.length).toBeLessThanOrEqual(APP_CONSTANTS.QUICK_VIBES_MAX_CHARS);
     }
   });
 
   it("max chars constant is defined and positive", () => {
-    expect(QUICK_VIBES_MAX_CHARS).toBeGreaterThan(0);
+    expect(APP_CONSTANTS.QUICK_VIBES_MAX_CHARS).toBeGreaterThan(0);
   });
 });
 
 describe("buildQuickVibesRefineSystemPrompt", () => {
   it("includes base Quick Vibes instructions", () => {
     const prompt = buildQuickVibesRefineSystemPrompt(false);
-    expect(prompt).toContain(`${QUICK_VIBES_GENERATION_LIMIT} characters`);
+    expect(prompt).toContain(`${APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT} characters`);
     expect(prompt).toContain("Quick Vibes");
   });
 

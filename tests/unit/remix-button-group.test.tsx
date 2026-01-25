@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from 'bun:test';
 
-import { isStoryModeFormat, isStructuredPrompt } from '@shared/prompt-utils';
+import { isStoryModeFormat, isStructuredPrompt, detectRemixableFields } from '@shared/prompt-utils';
 
 // ============================================
 // Test Fixtures: Sample Prompts
@@ -68,22 +68,24 @@ interface ButtonVisibility {
 }
 
 /**
- * Compute button visibility using hybrid approach.
+ * Compute button visibility using content-aware approach.
  * Mirrors the logic in remix-button-group.tsx:
  * 
  * hideFieldButtons = storyMode || isStoryModeFormat(currentPrompt)
+ * fields = detectRemixableFields(currentPrompt)
  * 
  * - When storyMode UI toggle is ON: always hide field buttons
- * - When storyMode UI toggle is OFF: use content detection
+ * - When storyMode UI toggle is OFF: show buttons based on detected fields
  */
-function computeButtonVisibility(storyMode: boolean, currentPrompt: string, maxMode: boolean): ButtonVisibility {
+function computeButtonVisibility(storyMode: boolean, currentPrompt: string, _maxMode: boolean): ButtonVisibility {
   const hideFieldButtons = storyMode || isStoryModeFormat(currentPrompt);
+  const fields = detectRemixableFields(currentPrompt);
   return {
-    genre: !hideFieldButtons,
-    mood: !hideFieldButtons && !maxMode,
-    instruments: !hideFieldButtons,
-    style: !hideFieldButtons && maxMode,
-    recording: !hideFieldButtons && maxMode,
+    genre: !hideFieldButtons && fields.hasGenre,
+    mood: !hideFieldButtons && fields.hasMood,
+    instruments: !hideFieldButtons && fields.hasInstruments,
+    style: !hideFieldButtons && fields.hasStyleTags,
+    recording: !hideFieldButtons && fields.hasRecording,
     remix: true,
     copy: true,
   };
@@ -215,20 +217,15 @@ describe('RemixButtonGroup with storyMode=true (UI toggle ON)', () => {
 // ============================================
 
 describe('RemixButtonGroup with storyMode=false (UI toggle OFF)', () => {
-  describe('with structured content', () => {
+  describe('with structured STANDARD content (has Genre, Mood, Instruments)', () => {
     test('GENRE button is visible for structured prompt', () => {
       const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false);
       expect(visibility.genre).toBe(true);
     });
 
-    test('MOOD button is visible when maxMode=false', () => {
+    test('MOOD button is visible when Mood field exists', () => {
       const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false);
       expect(visibility.mood).toBe(true);
-    });
-
-    test('MOOD button is hidden when maxMode=true', () => {
-      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, true);
-      expect(visibility.mood).toBe(false);
     });
 
     test('INSTRUMENTS button is visible', () => {
@@ -236,24 +233,49 @@ describe('RemixButtonGroup with storyMode=false (UI toggle OFF)', () => {
       expect(visibility.instruments).toBe(true);
     });
 
-    test('STYLE button is visible when maxMode=true', () => {
-      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, true);
-      expect(visibility.style).toBe(true);
+    test('STYLE button is hidden (no style tags field in standard prompt)', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false);
+      expect(visibility.style).toBe(false);
     });
 
-    test('RECORDING button is visible when maxMode=true', () => {
-      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, true);
-      expect(visibility.recording).toBe(true);
+    test('RECORDING button is hidden (no recording field in standard prompt)', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false);
+      expect(visibility.recording).toBe(false);
     });
 
     test('REMIX button is always visible', () => {
       expect(computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false).remix).toBe(true);
-      expect(computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, true).remix).toBe(true);
     });
 
     test('COPY button is always visible', () => {
       expect(computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false).copy).toBe(true);
-      expect(computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, true).copy).toBe(true);
+    });
+  });
+
+  describe('with structured MAX content (has genre, instruments, style tags, recording)', () => {
+    test('GENRE button is visible', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_MAX, false);
+      expect(visibility.genre).toBe(true);
+    });
+
+    test('MOOD button is hidden (no Mood field in MAX prompt)', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_MAX, false);
+      expect(visibility.mood).toBe(false);
+    });
+
+    test('INSTRUMENTS button is visible', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_MAX, false);
+      expect(visibility.instruments).toBe(true);
+    });
+
+    test('STYLE button is visible (style tags field exists)', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_MAX, false);
+      expect(visibility.style).toBe(true);
+    });
+
+    test('RECORDING button is visible (recording field exists)', () => {
+      const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_MAX, false);
+      expect(visibility.recording).toBe(true);
     });
   });
 
@@ -379,7 +401,7 @@ describe('RemixButtonGroup edge cases', () => {
 // ============================================
 
 describe('Complete visibility matrix', () => {
-  test('storyMode=false, structured prompt, maxMode=false', () => {
+  test('storyMode=false, structured STANDARD prompt (has Genre, Mood, Instruments)', () => {
     const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, false);
     expect(visibility).toEqual({
       genre: true,
@@ -392,8 +414,8 @@ describe('Complete visibility matrix', () => {
     });
   });
 
-  test('storyMode=false, structured prompt, maxMode=true', () => {
-    const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_STANDARD, true);
+  test('storyMode=false, structured MAX prompt (has genre, instruments, style tags, recording)', () => {
+    const visibility = computeButtonVisibility(false, STRUCTURED_PROMPT_MAX, false);
     expect(visibility).toEqual({
       genre: true,
       mood: false,
@@ -405,7 +427,7 @@ describe('Complete visibility matrix', () => {
     });
   });
 
-  test('storyMode=false, narrative prose, maxMode=false', () => {
+  test('storyMode=false, narrative prose', () => {
     const visibility = computeButtonVisibility(false, NARRATIVE_PROSE_PROMPT, false);
     expect(visibility).toEqual({
       genre: false,
@@ -418,20 +440,7 @@ describe('Complete visibility matrix', () => {
     });
   });
 
-  test('storyMode=false, narrative prose, maxMode=true', () => {
-    const visibility = computeButtonVisibility(false, NARRATIVE_PROSE_PROMPT, true);
-    expect(visibility).toEqual({
-      genre: false,
-      mood: false,
-      instruments: false,
-      style: false,
-      recording: false,
-      remix: true,
-      copy: true,
-    });
-  });
-
-  test('storyMode=true, structured prompt, maxMode=false', () => {
+  test('storyMode=true, structured STANDARD prompt (storyMode overrides content detection)', () => {
     const visibility = computeButtonVisibility(true, STRUCTURED_PROMPT_STANDARD, false);
     expect(visibility).toEqual({
       genre: false,
@@ -444,8 +453,8 @@ describe('Complete visibility matrix', () => {
     });
   });
 
-  test('storyMode=true, structured prompt, maxMode=true', () => {
-    const visibility = computeButtonVisibility(true, STRUCTURED_PROMPT_STANDARD, true);
+  test('storyMode=true, structured MAX prompt (storyMode overrides content detection)', () => {
+    const visibility = computeButtonVisibility(true, STRUCTURED_PROMPT_MAX, false);
     expect(visibility).toEqual({
       genre: false,
       mood: false,
@@ -457,21 +466,8 @@ describe('Complete visibility matrix', () => {
     });
   });
 
-  test('storyMode=true, narrative prose, maxMode=false', () => {
+  test('storyMode=true, narrative prose', () => {
     const visibility = computeButtonVisibility(true, NARRATIVE_PROSE_PROMPT, false);
-    expect(visibility).toEqual({
-      genre: false,
-      mood: false,
-      instruments: false,
-      style: false,
-      recording: false,
-      remix: true,
-      copy: true,
-    });
-  });
-
-  test('storyMode=true, narrative prose, maxMode=true', () => {
-    const visibility = computeButtonVisibility(true, NARRATIVE_PROSE_PROMPT, true);
     expect(visibility).toEqual({
       genre: false,
       mood: false,
@@ -499,9 +495,9 @@ describe('RemixButtonGroup source verification', () => {
     expect(source).toContain('currentPrompt: string');
   });
 
-  test('component imports isStoryModeFormat', async () => {
+  test('component imports detectRemixableFields, isStoryModeFormat, and DetectedFields', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain("import { isStoryModeFormat } from");
+    expect(source).toContain("import { detectRemixableFields, isStoryModeFormat, type DetectedFields } from");
   });
 
   test('component uses hybrid visibility logic', async () => {
@@ -519,9 +515,9 @@ describe('RemixButtonGroup source verification', () => {
     expect(source).toContain('<ShuffleBtn label="GENRE"');
   });
 
-  test('FieldButtons component conditionally renders MOOD button', async () => {
+  test('FieldButtons component conditionally renders MOOD button based on fields.hasMood', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('{!maxMode && <ShuffleBtn label="MOOD"');
+    expect(source).toContain('{fields.hasMood && <ShuffleBtn label="MOOD"');
   });
 
   test('FieldButtons component renders INSTRUMENTS button', async () => {
@@ -529,14 +525,14 @@ describe('RemixButtonGroup source verification', () => {
     expect(source).toContain('<ShuffleBtn label="INSTRUMENTS"');
   });
 
-  test('FieldButtons component conditionally renders STYLE button', async () => {
+  test('FieldButtons component conditionally renders STYLE button based on fields.hasStyleTags', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('{maxMode && <ShuffleBtn label="STYLE"');
+    expect(source).toContain('{fields.hasStyleTags && <ShuffleBtn label="STYLE"');
   });
 
-  test('FieldButtons component conditionally renders RECORDING button', async () => {
+  test('FieldButtons component conditionally renders RECORDING button based on fields.hasRecording', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('{maxMode && <ShuffleBtn label="RECORDING"');
+    expect(source).toContain('{fields.hasRecording && <ShuffleBtn label="RECORDING"');
   });
 
   test('FieldButtons are wrapped with hideFieldButtons condition', async () => {
@@ -553,7 +549,7 @@ describe('RemixButtonGroup source verification', () => {
 
   test('COPY button has no hideFieldButtons condition', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('onClick={onCopy}');
-    expect(source).not.toMatch(/\{!hideFieldButtons && [^}]*onClick=\{onCopy\}/);
+    expect(source).toContain('copy(currentPrompt)');
+    expect(source).not.toMatch(/\{!hideFieldButtons && [^}]*copy\(currentPrompt\)/);
   });
 });

@@ -5,6 +5,7 @@ import { createHandlers } from '@bun/handlers';
 import { createLogger } from '@bun/logger';
 import { StorageManager } from '@bun/storage';
 import { APP_CONSTANTS } from '@shared/constants';
+import { getErrorMessage } from '@shared/errors';
 import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
@@ -137,5 +138,5 @@ async function initializeApp(): Promise<void> {
 }
 
 initializeApp().catch((error: unknown) => {
-    log.error('init:failed', { error: error instanceof Error ? error.message : String(error) });
+    log.error('init:failed', { error: getErrorMessage(error) });
 });

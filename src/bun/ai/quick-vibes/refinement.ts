@@ -22,13 +22,13 @@ import {
 } from '@bun/prompt/quick-vibes';
 import {
   applyQuickVibesMaxMode,
-  stripMaxModeHeader,
   buildQuickVibesRefineSystemPrompt,
   buildQuickVibesRefineUserPrompt,
   postProcessQuickVibes,
 } from '@bun/prompt/quick-vibes-builder';
 import { traceDecision } from '@bun/trace';
 import { InvariantError } from '@shared/errors';
+import { stripMaxModeHeader } from '@shared/prompt-utils';
 import { createSeededRng, selectRandom } from '@shared/utils/random';
 
 

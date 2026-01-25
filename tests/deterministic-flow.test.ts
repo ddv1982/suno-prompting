@@ -164,7 +164,8 @@ describe('Deterministic Generation Flow', () => {
         true // maxMode
       );
 
-      expect(result.text).toContain('Genre:');
+      // MAX mode uses lowercase field names with quoted values
+      expect(result.text).toContain('genre:');
       expect(result.text).toContain('"'); // Quoted values in max mode
     });
 
@@ -176,7 +177,7 @@ describe('Deterministic Generation Flow', () => {
       );
 
       expect(result.text).toContain('Instruments:');
-      expect(result.text).not.toContain('Genre: "'); // No quoted genre in standard mode
+      expect(result.text).not.toContain('genre: "'); // No quoted genre in standard mode
     });
   });
 
