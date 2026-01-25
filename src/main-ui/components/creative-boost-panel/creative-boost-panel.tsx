@@ -81,6 +81,7 @@ export function CreativeBoostPanel({
           input={input}
           isSimpleMode={isSimpleMode}
           isDirectMode={isDirectMode}
+          storyMode={storyMode}
           onMoodCategoryChange={handleMoodCategoryChange}
           onGenresChange={handleGenresChange}
           onSunoStylesChange={handleSunoStylesChange}
@@ -90,6 +91,7 @@ export function CreativeBoostPanel({
           value={input.description}
           isRefineMode={isRefineMode}
           isDirectMode={isDirectMode}
+          storyMode={storyMode}
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
         />

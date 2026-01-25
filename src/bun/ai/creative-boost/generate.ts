@@ -138,6 +138,14 @@ export async function generateDirectMode(
     hasLyrics: !!result.lyrics,
   });
 
+  // Apply Story Mode transformation (same as deterministic path)
+  const storyResult = await applyCreativeBoostStoryMode(
+    result.text, result.title ?? 'Untitled', result.lyrics, description, maxMode, config, runtime
+  );
+  if (storyResult) {
+    return storyResult;
+  }
+
   return result;
 }
 

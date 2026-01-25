@@ -4,10 +4,11 @@ import type { ReactElement } from "react";
 
 interface DirectModeIndicatorProps {
   isDirectMode: boolean;
+  storyMode?: boolean;
 }
 
-export function DirectModeIndicator({ isDirectMode }: DirectModeIndicatorProps): ReactElement | null {
-  if (!isDirectMode) return null;
+export function DirectModeIndicator({ isDirectMode, storyMode = false }: DirectModeIndicatorProps): ReactElement | null {
+  if (!isDirectMode || storyMode) return null;
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-accent/30 rounded-lg border border-accent/50">

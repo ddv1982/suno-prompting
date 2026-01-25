@@ -70,6 +70,7 @@ export function FullPromptInputPanel(props: FullPromptInputPanelProps): ReactEle
           computedPhrase={computedMusicPhrase}
           moodCategory={moodCategory}
           onMoodCategoryChange={onMoodCategoryChange}
+          storyMode={storyMode}
         />
       )}
 

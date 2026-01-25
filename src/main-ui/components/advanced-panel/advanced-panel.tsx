@@ -30,6 +30,8 @@ interface AdvancedPanelProps {
   moodCategory?: MoodCategory | null;
   /** Callback when mood category changes */
   onMoodCategoryChange: (category: MoodCategory | null) => void;
+  /** Whether Story Mode is enabled (hides Direct Mode indicator) */
+  storyMode?: boolean;
 }
 
 // All options for Combobox (sorted alphabetically by label)
@@ -60,6 +62,7 @@ export function AdvancedPanel({
   computedPhrase,
   moodCategory,
   onMoodCategoryChange,
+  storyMode = false,
 }: AdvancedPanelProps): ReactElement {
   const hasAnySelection = hasAdvancedSelection(selection);
   const isDirectMode = selection.sunoStyles.length > 0;
@@ -96,8 +99,8 @@ export function AdvancedPanel({
         )}
       </div>
 
-      {/* Direct Mode Indicator */}
-      {isDirectMode && (
+      {/* Direct Mode Indicator - hidden when Story Mode is active */}
+      {isDirectMode && !storyMode && (
         <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
           <p className="text-xs text-primary font-medium">
             Direct Mode: Styles will be used exactly as selected

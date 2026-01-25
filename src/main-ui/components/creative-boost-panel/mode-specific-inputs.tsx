@@ -12,6 +12,7 @@ interface ModeSpecificInputsProps {
   input: CreativeBoostInput;
   isSimpleMode: boolean;
   isDirectMode: boolean;
+  storyMode?: boolean;
   onMoodCategoryChange: (category: MoodCategory | null) => void;
   onGenresChange: (genres: string[]) => void;
   onSunoStylesChange: (styles: string[]) => void;
@@ -21,6 +22,7 @@ export function ModeSpecificInputs({
   input,
   isSimpleMode,
   isDirectMode,
+  storyMode = false,
   onMoodCategoryChange,
   onGenresChange,
   onSunoStylesChange,
@@ -40,7 +42,7 @@ export function ModeSpecificInputs({
 
   return (
     <>
-      <DirectModeIndicator isDirectMode={isDirectMode} />
+      <DirectModeIndicator isDirectMode={isDirectMode} storyMode={storyMode} />
 
       <MoodCategoryCombobox
         value={input.moodCategory}

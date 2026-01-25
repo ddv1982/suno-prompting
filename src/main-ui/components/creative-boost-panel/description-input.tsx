@@ -13,6 +13,7 @@ interface DescriptionInputProps {
   value: string;
   isRefineMode: boolean;
   isDirectMode: boolean;
+  storyMode?: boolean;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
 }
@@ -21,18 +22,19 @@ export function DescriptionInput({
   value,
   isRefineMode,
   isDirectMode,
+  storyMode = false,
   onChange,
   onKeyDown,
 }: DescriptionInputProps): ReactElement {
   const charCount = value.length;
-  const isDisabledByMode = isDirectMode && !isRefineMode;
+  const isDisabledByMode = isDirectMode && !isRefineMode && !storyMode;
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <FormLabel
           icon={<MessageSquare className="w-3 h-3" />}
-          badge={isDirectMode ? "disabled" : "optional"}
+          badge={isDisabledByMode ? "disabled" : "optional"}
         >
           {isRefineMode ? "Refine feedback" : "Description"}
         </FormLabel>
@@ -51,12 +53,12 @@ export function DescriptionInput({
         placeholder={
           isRefineMode
             ? "How should it change? (e.g., 'more upbeat', 'ethnic elements') or leave blank to regenerate"
-            : isDirectMode
+            : isDisabledByMode
               ? "Description not used with Suno V5 Styles"
               : "Describe the mood, style, or direction (e.g., 'dark cinematic orchestral')"
         }
       />
-      {isDirectMode && !isRefineMode && (
+      {isDisabledByMode && (
         <p className="ui-helper">
           Description is not used when Suno V5 Styles are selected.
         </p>
