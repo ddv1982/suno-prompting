@@ -9,8 +9,12 @@ export const AMBIENT_GENRE: GenreDefinition = {
     pads: {
       pick: { min: 1, max: 2 },
       instruments: [
-        'synth pad', 'ambient pad', 'analog synth pads', 'shimmer pad',
-        'crystalline synth pads', 'Moog synth',
+        // Generic pads
+        'synth pad', 'ambient pad', 'shimmer pad', 'evolving pad',
+        // Texture variants
+        'analog synth pads', 'crystalline synth pads', 'warm pad', 'textural pad',
+        // Classic ambient synths - Moog synth kept to maintain multi-genre threshold
+        'Moog synth', 'Juno synth', 'Prophet synth',
       ],
     },
     // Evolving textures and synthesis
@@ -91,6 +95,12 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['oboe', 'duduk'],
     ['clarinet', 'oboe'],
     ['harmonium', 'drone'],
+    // Pad exclusions - prevent similar textures
+    ['Moog synth', 'Juno synth'],
+    ['Moog synth', 'Prophet synth'],
+    ['Juno synth', 'Prophet synth'],
+    ['warm pad', 'analog synth pads'],
+    ['evolving pad', 'textural pad'],
   ],
   bpm: { min: 50, max: 80, typical: 65 },
   moods: ['Dreamy', 'Ethereal', 'Meditative', 'Calm', 'Floaty', 'Spacious', 'Otherworldly', 'Serene', 'Hypnotic'],

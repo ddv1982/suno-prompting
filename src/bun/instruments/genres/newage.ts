@@ -11,7 +11,7 @@ export const NEWAGE_GENRE: GenreDefinition = {
     },
     pad: {
       pick: { min: 1, max: 2 },
-      instruments: ['synth pad', 'ambient pad', 'shimmer pad', 'drone'],
+      instruments: ['synth pad', 'ambient pad', 'shimmer pad', 'drone', 'evolving pad', 'warm pad'],
     },
     color: {
       pick: { min: 1, max: 2 },

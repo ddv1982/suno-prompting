@@ -17,7 +17,6 @@ export interface EditorStateContextType {
   moodCategory: MoodCategory | null;
   computedMusicPhrase: string;
   quickVibesInput: QuickVibesInput;
-  withWordlessVocals: boolean;
   creativeBoostInput: CreativeBoostInput;
 }
 
@@ -38,7 +37,6 @@ export interface EditorActionsContextType {
   setLyricsTopic: (topic: string) => void;
   setMoodCategory: (category: MoodCategory | null) => void;
   setQuickVibesInput: (input: QuickVibesInput) => void;
-  setWithWordlessVocals: (value: boolean) => void;
   setCreativeBoostInput: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   updateCreativeBoostInput: (updates: Partial<CreativeBoostInput>) => void;
   resetCreativeBoostInput: () => void;

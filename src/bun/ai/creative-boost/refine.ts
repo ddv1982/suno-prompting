@@ -9,6 +9,11 @@
 
 import { isDirectMode, buildDirectModePrompt } from '@bun/ai/direct-mode';
 import { generateDirectModeTitle, callLLM } from '@bun/ai/llm-utils';
+import {
+  extractStructuredDataForStory,
+  generateStoryNarrativeWithTimeout,
+  prependMaxHeaders,
+} from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
 import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionShort } from '@bun/prompt/chord-progressions';
@@ -18,6 +23,7 @@ import {
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
+import { traceDecision } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
 import { stripMaxModeHeader } from '@shared/prompt-utils';
 
@@ -142,6 +148,72 @@ async function tryRefineDirectModeLyrics(
   }
 }
 
+// =============================================================================
+// Story Mode Helper
+// =============================================================================
+
+/**
+ * Apply Story Mode transformation to a refined result.
+ * Returns the transformed result if Story Mode succeeds, or the original with fallback flag.
+ */
+async function applyStoryModeToRefinement(
+  result: GenerationResult,
+  description: string,
+  maxMode: boolean,
+  config: CreativeBoostEngineConfig,
+  runtime?: { readonly trace?: import('@bun/trace').TraceCollector }
+): Promise<GenerationResult> {
+  const storyMode = config.isStoryMode?.() ?? false;
+  const llmAvailable = config.isLLMAvailable?.() ?? false;
+
+  if (!storyMode || !llmAvailable) {
+    return result;
+  }
+
+  log.info('refineCreativeBoost:storyMode:start', { hasLLM: true });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'creativeBoost.refine.storyMode.attempt',
+    branchTaken: 'narrative',
+    why: 'Story Mode enabled during refinement, attempting narrative generation',
+  });
+
+  const storyInput = extractStructuredDataForStory(result.text, null, { description });
+  const storyResult = await generateStoryNarrativeWithTimeout({
+    input: storyInput,
+    getModel: config.getModel,
+    ollamaEndpoint: config.getOllamaEndpointIfLocal?.(),
+    trace: runtime?.trace,
+  });
+
+  if (storyResult.success) {
+    const finalText = maxMode
+      ? prependMaxHeaders(storyResult.narrative)
+      : storyResult.narrative;
+
+    log.info('refineCreativeBoost:storyMode:success', { narrativeLength: finalText.length });
+    return { ...result, text: finalText };
+  }
+
+  // Story Mode fallback - return structured output with flag
+  const errorMessage = storyResult.error ?? 'Unknown error';
+  log.warn('refineCreativeBoost:storyMode:fallback', { error: errorMessage });
+
+  traceDecision(runtime?.trace, {
+    domain: 'other',
+    key: 'creativeBoost.refine.storyMode.fallback',
+    branchTaken: 'deterministic',
+    why: `Story generation failed during refinement: ${errorMessage}`,
+  });
+
+  return { ...result, storyModeFallback: true };
+}
+
+// =============================================================================
+// Direct Mode Refinement
+// =============================================================================
+
 /**
  * Direct Mode refinement - uses shared enrichment and optionally generates lyrics.
  * 
@@ -191,11 +263,12 @@ async function refineDirectMode(
  * Refines a creative boost prompt based on user feedback.
  *
  * Handles both Direct Mode (style tags only) and full Creative Boost
- * refinement with LLM assistance.
+ * refinement with LLM assistance. When Story Mode is enabled, the
+ * refined prompt is transformed into narrative prose format.
  */
 export async function refineCreativeBoost(
   options: RefineCreativeBoostOptions,
-  _runtime?: { readonly trace?: import('@bun/trace').TraceCollector; readonly rng?: () => number }
+  runtime?: { readonly trace?: import('@bun/trace').TraceCollector; readonly rng?: () => number }
 ): Promise<GenerationResult> {
   const {
     currentPrompt,
@@ -206,7 +279,6 @@ export async function refineCreativeBoost(
     description,
     seedGenres,
     sunoStyles,
-    withWordlessVocals,
     maxMode,
     withLyrics,
     config,
@@ -233,7 +305,7 @@ export async function refineCreativeBoost(
   // Build performance context once - used for both LLM prompt and post-processing
   const perfCtx = buildPerformanceContext(seedGenres);
 
-  const systemPrompt = buildCreativeBoostRefineSystemPrompt(withWordlessVocals, targetGenreCount);
+  const systemPrompt = buildCreativeBoostRefineSystemPrompt(targetGenreCount);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
     cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, perfCtx.performanceInstruments, perfCtx.guidance
   );
@@ -257,7 +329,7 @@ export async function refineCreativeBoost(
     ? enforceGenreCount(parsed.style, targetGenreCount)
     : parsed.style;
 
-  return postProcessCreativeBoostResponse({ ...parsed, style: enforcedStyle }, {
+  const result = await postProcessCreativeBoostResponse({ ...parsed, style: enforcedStyle }, {
     rawStyle: enforcedStyle,
     maxMode,
     seedGenres,
@@ -274,4 +346,7 @@ export async function refineCreativeBoost(
     chordProgression: perfCtx.chordProgression,
     bpmRange: perfCtx.bpmRange,
   });
+
+  // Apply Story Mode transformation if enabled
+  return applyStoryModeToRefinement(result, description, maxMode, config, runtime);
 }

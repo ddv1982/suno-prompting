@@ -9,7 +9,6 @@ export { QuickVibesCategorySchema } from '@shared/schemas/common';
 export const GenerateQuickVibesSchema = z.object({
   category: QuickVibesCategorySchema,
   customDescription: z.string().max(APP_CONSTANTS.QUICK_VIBES_MAX_CHARS),
-  withWordlessVocals: z.boolean(),
   sunoStyles: SunoStylesSchema,
 }).superRefine((data, ctx) => {
   // Category and Suno Styles are mutually exclusive
@@ -27,7 +26,6 @@ export const RefineQuickVibesSchema = z.object({
   currentTitle: z.string().optional(),
   description: z.string().optional(),
   feedback: z.string(),
-  withWordlessVocals: z.boolean(),
   category: QuickVibesCategorySchema.optional(),
   sunoStyles: SunoStylesSchema.optional().default([]),
 }).superRefine((data, ctx) => {

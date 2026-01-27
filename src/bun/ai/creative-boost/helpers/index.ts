@@ -12,9 +12,6 @@ export { applyMaxModeConversion } from './conversion';
 // Length enforcement
 export { enforceMaxLength } from './length';
 
-// Vocal injection
-export { injectWordlessVocals } from './vocals';
-
 // Genre count enforcement
 export { enforceGenreCount } from './genre-count';
 

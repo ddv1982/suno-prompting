@@ -114,7 +114,6 @@ function hashFeedback(feedback: string): number {
  */
 function buildDeterministicQuickVibesFromTemplate(
   template: QuickVibesTemplate,
-  withWordlessVocals: boolean,
   maxMode: boolean,
   rng: () => number
 ): { text: string; title: string } {
@@ -123,18 +122,12 @@ function buildDeterministicQuickVibesFromTemplate(
   const mood = selectRandom(template.moods, rng);
   const title = generateQuickVibesTitle(template, rng);
 
-  // Build instrument list
-  const instrumentList = [...instruments];
-  if (withWordlessVocals) {
-    instrumentList.push('wordless vocals');
-  }
-
   // Build the prompt based on mode
   if (maxMode) {
     const lines = [
       `Genre: "${genre}"`,
       `Mood: "${mood}"`,
-      `Instruments: "${instrumentList.join(', ')}"`,
+      `Instruments: "${instruments.join(', ')}"`,
     ];
     return { text: lines.join('\n'), title };
   }
@@ -142,7 +135,7 @@ function buildDeterministicQuickVibesFromTemplate(
   // Standard mode - simpler format
   const lines = [
     `${mood} ${genre}`,
-    `Instruments: ${instrumentList.join(', ')}`,
+    `Instruments: ${instruments.join(', ')}`,
   ];
   return { text: lines.join('\n'), title };
 }
@@ -156,7 +149,7 @@ async function refineDeterministicQuickVibes(
   config: QuickVibesEngineConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
-  const { feedback, withWordlessVocals, category, description } = options;
+  const { feedback, category, description } = options;
 
   // Category must be set when this function is called
   if (!category) {
@@ -173,7 +166,6 @@ async function refineDeterministicQuickVibes(
   // Build new prompt from template with seeded randomness
   const { text, title } = buildDeterministicQuickVibesFromTemplate(
     template,
-    withWordlessVocals,
     config.isMaxMode(),
     rng
   );
@@ -210,7 +202,7 @@ export async function refineQuickVibes(
   config: QuickVibesEngineConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
-  const { currentPrompt, description, feedback, withWordlessVocals, category, sunoStyles } = options;
+  const { currentPrompt, description, feedback, category, sunoStyles } = options;
 
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
@@ -232,7 +224,7 @@ export async function refineQuickVibes(
   // No category: use LLM refinement
   log.info('refineQuickVibes:llm', { hasCategory: !!category, hasFeedback: !!feedback });
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
-  const systemPrompt = buildQuickVibesRefineSystemPrompt(withWordlessVocals);
+  const systemPrompt = buildQuickVibesRefineSystemPrompt();
   const userPrompt = buildQuickVibesRefineUserPrompt(cleanPrompt, feedback, category);
 
   // Get Ollama endpoint for local LLM mode (bypasses Bun fetch bug)

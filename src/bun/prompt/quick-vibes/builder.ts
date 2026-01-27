@@ -81,25 +81,19 @@ export function generateQuickVibesTitle(
  * template moods. Falls back to template moods if category selection returns empty.
  *
  * @param category - Quick Vibes category (e.g., 'lofi-study', 'cafe-coffeeshop')
- * @param withWordlessVocals - Whether to include wordless vocals in instruments
  * @param maxMode - Whether to use MAX mode format (quoted fields) or standard
  * @param rngOrOptions - Random number generator OR options object
  * @returns Object with generated prompt text and title
  *
  * @example
  * // Generate a lo-fi study prompt in MAX mode
- * const result = buildDeterministicQuickVibes('lofi-study', false, true);
+ * const result = buildDeterministicQuickVibes('lofi-study', true);
  * // result.text: 'Genre: "lo-fi"\nMood: "relaxed"\nInstruments: "Rhodes piano, vinyl crackle, soft drums"'
  * // result.title: "Warm Beats to Study To"
  *
  * @example
- * // Generate with wordless vocals in standard mode
- * const result = buildDeterministicQuickVibes('ambient-focus', true, false);
- * // result.text: 'meditative ambient\nInstruments: synthesizer pad, reverb textures, soft drones, wordless vocals'
- *
- * @example
  * // Generate with mood category override
- * const result = buildDeterministicQuickVibes('lofi-study', false, true, {
+ * const result = buildDeterministicQuickVibes('lofi-study', true, {
  *   moodCategory: 'calm',
  *   rng: () => 0.5,
  * });
@@ -107,14 +101,13 @@ export function generateQuickVibesTitle(
  */
 export function buildDeterministicQuickVibes(
   category: QuickVibesCategory,
-  withWordlessVocals: boolean,
   maxMode: boolean,
   rngOrOptions: (() => number) | BuildQuickVibesOptions = Math.random,
 ): { text: string; title: string } {
   // Handle both old function signature (rng only) and new options object
   const options: BuildQuickVibesOptions =
     typeof rngOrOptions === 'function'
-      ? { withWordlessVocals, maxMode, rng: rngOrOptions }
+      ? { maxMode, rng: rngOrOptions }
       : rngOrOptions;
 
   const rng = options.rng ?? Math.random;
@@ -177,19 +170,13 @@ export function buildDeterministicQuickVibes(
 
   const title = generateQuickVibesTitle(template, rng, trace);
 
-  // Build instrument list
-  const instrumentList = [...instruments];
-  if (withWordlessVocals) {
-    instrumentList.push('wordless vocals');
-  }
-
   // Build the prompt based on mode
   if (maxMode) {
     // Use lowercase field names consistent with Full Prompt MAX mode
     const lines = [
       `genre: "${genre}"`,
       `mood: "${mood}"`,
-      `instruments: "${instrumentList.join(', ')}"`,
+      `instruments: "${instruments.join(', ')}"`,
     ];
     return {
       text: lines.join('\n'),
@@ -200,7 +187,7 @@ export function buildDeterministicQuickVibes(
   // Standard mode - simpler format
   const lines = [
     `${mood} ${genre}`,
-    `Instruments: ${instrumentList.join(', ')}`,
+    `Instruments: ${instruments.join(', ')}`,
   ];
   return {
     text: lines.join('\n'),

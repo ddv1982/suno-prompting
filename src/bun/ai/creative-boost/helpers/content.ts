@@ -12,8 +12,6 @@ import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt, extractG
 import { detectAllGenres } from '@bun/prompt/deterministic/genre';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 
-import { injectWordlessVocals } from './vocals';
-
 import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { LanguageModel } from 'ai';
 
@@ -105,7 +103,6 @@ export async function resolveGenreForCreativeBoost(
 export function buildCreativeBoostStyle(
   genre: string,
   maxMode: boolean,
-  withWordlessVocals: boolean,
   runtime?: TraceRuntime
 ): string {
   const rng = runtime?.rng ?? Math.random;
@@ -114,13 +111,7 @@ export function buildCreativeBoostStyle(
     ? buildDeterministicMaxPrompt({ description: genre, genreOverride: genre, rng, trace })
     : buildDeterministicStandardPrompt({ description: genre, genreOverride: genre, rng, trace });
 
-  let styleResult = result.text;
-
-  if (withWordlessVocals) {
-    styleResult = injectWordlessVocals(styleResult);
-  }
-
-  return styleResult;
+  return result.text;
 }
 
 /**

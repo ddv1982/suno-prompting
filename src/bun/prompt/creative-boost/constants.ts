@@ -6,6 +6,24 @@
  * @module prompt/creative-boost/constants
  */
 
+import type { MoodIntensity } from '@bun/mood/types';
+import type { CreativityLevel } from '@shared/types';
+
+/**
+ * Map creativity level to mood intensity.
+ *
+ * Low/Safe → mild: Subtle, understated expression
+ * Normal → moderate: Standard, balanced expression
+ * Adventurous/High → intense: Strong, powerful expression
+ */
+export const CREATIVITY_TO_INTENSITY: Record<CreativityLevel, MoodIntensity> = {
+  low: 'mild',
+  safe: 'mild',
+  normal: 'moderate',
+  adventurous: 'intense',
+  high: 'intense',
+};
+
 /**
  * Probability of blending two genres at "normal" creativity level.
  * Set to 40% to favor single genres while still providing variety.

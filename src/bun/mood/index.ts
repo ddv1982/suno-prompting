@@ -75,6 +75,7 @@ export {
   // Intensity services
   selectMoodWithIntensity,
   moodHasIntensityVariants,
+  applyIntensityToMoods,
   // Compound mood services
   selectCompoundMood,
   getCompoundMoodsForGenre,

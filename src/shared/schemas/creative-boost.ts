@@ -32,7 +32,6 @@ export const GenerateCreativeBoostSchema = z.object({
   sunoStyles: SunoStylesSchema,
   description: z.string().max(APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS),
   lyricsTopic: z.string().max(APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS),
-  withWordlessVocals: z.boolean(),
   maxMode: z.boolean(),
   withLyrics: z.boolean(),
 }).superRefine(validateGenreStyleExclusivity);
@@ -46,7 +45,6 @@ export const RefineCreativeBoostSchema = z.object({
   description: z.string().max(APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS),
   seedGenres: SeedGenresSchema,
   sunoStyles: SunoStylesSchema,
-  withWordlessVocals: z.boolean(),
   maxMode: z.boolean(),
   withLyrics: z.boolean(),
   targetGenreCount: z.number().int().min(0).max(4).optional(), // 0 means "no enforcement" (preserve LLM output)

@@ -30,7 +30,7 @@ describe("AIEngine.generateQuickVibes", () => {
   });
 
   it("returns GenerationResult with text", async () => {
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    const result = await engine.generateQuickVibes("lofi-study", "", []);
     
     expect(result).toBeDefined();
     expect(result.text).toBeDefined();
@@ -39,13 +39,13 @@ describe("AIEngine.generateQuickVibes", () => {
   });
 
   it("returns text under max chars limit", async () => {
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    const result = await engine.generateQuickVibes("lofi-study", "", []);
     
     expect(result.text.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
   });
 
   it("handles category-only input deterministically (no LLM)", async () => {
-    const result = await engine.generateQuickVibes("cafe-coffeeshop", "", false, []);
+    const result = await engine.generateQuickVibes("cafe-coffeeshop", "", []);
     
     expect(result.text).toBeDefined();
     // Category-based generation is now deterministic - no LLM call
@@ -53,7 +53,7 @@ describe("AIEngine.generateQuickVibes", () => {
   });
 
   it("handles description-only input (passthrough)", async () => {
-    const result = await engine.generateQuickVibes(null, "late night coding session", false, []);
+    const result = await engine.generateQuickVibes(null, "late night coding session", []);
     
     expect(result.text).toBeDefined();
     expect(result.text).toBe("late night coding session");
@@ -62,18 +62,9 @@ describe("AIEngine.generateQuickVibes", () => {
   });
 
   it("handles combined category and description (category takes priority)", async () => {
-    const result = await engine.generateQuickVibes("ambient-focus", "deep work session", false, []);
+    const result = await engine.generateQuickVibes("ambient-focus", "deep work session", []);
     
     expect(result.text).toBeDefined();
-    // Category-based generation is deterministic
-    expect(mockGenerateText).not.toHaveBeenCalled();
-  });
-
-  it("handles wordless vocals option", async () => {
-    const result = await engine.generateQuickVibes("lofi-chill", "", true, []);
-    
-    expect(result.text).toBeDefined();
-    expect(result.text).toContain("wordless vocals");
     // Category-based generation is deterministic
     expect(mockGenerateText).not.toHaveBeenCalled();
   });
@@ -82,14 +73,14 @@ describe("AIEngine.generateQuickVibes", () => {
 
   it("returns deterministic output for category (no empty response possible)", async () => {
     // Category-based generation is deterministic and always produces output
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    const result = await engine.generateQuickVibes("lofi-study", "", []);
     
     expect(result.text).toBeDefined();
     expect(result.text.length).toBeGreaterThan(0);
   });
 
   it("returns title for category-based generation", async () => {
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    const result = await engine.generateQuickVibes("lofi-study", "", []);
     
     // Deterministic generation includes a title
     expect(result.title).toBeDefined();
@@ -102,7 +93,7 @@ describe("AIEngine.generateQuickVibes", () => {
       text: longText,
     }));
 
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    const result = await engine.generateQuickVibes("lofi-study", "", []);
     
     expect(result.text.length).toBeLessThanOrEqual(QUICK_VIBES_MAX_CHARS);
   });
@@ -118,7 +109,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
 
   it("returns exact styles when sunoStyles provided (direct mode)", async () => {
     const sunoStyles = ["lo-fi jazz", "dark goa trance"];
-    const result = await engine.generateQuickVibes(null, "", false, sunoStyles);
+    const result = await engine.generateQuickVibes(null, "", sunoStyles);
 
     // Styles are preserved in enriched prompt
     expect(result.text).toContain("lo-fi jazz, dark goa trance");
@@ -126,7 +117,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
   });
 
   it("handles single style selection", async () => {
-    const result = await engine.generateQuickVibes(null, "", false, ["jazz"]);
+    const result = await engine.generateQuickVibes(null, "", ["jazz"]);
 
     // Style preserved in enriched prompt
     expect(result.text).toContain("jazz");
@@ -135,7 +126,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
 
   it("handles maximum 4 styles", async () => {
     const sunoStyles = ["rock", "pop", "jazz", "blues"];
-    const result = await engine.generateQuickVibes(null, "", false, sunoStyles);
+    const result = await engine.generateQuickVibes(null, "", sunoStyles);
 
     // All styles preserved in enriched prompt
     expect(result.text).toContain("rock, pop, jazz, blues");
@@ -146,7 +137,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
       text: "Generated Title",
     }));
 
-    const result = await engine.generateQuickVibes(null, "", false, ["synthwave"]);
+    const result = await engine.generateQuickVibes(null, "", ["synthwave"]);
 
     // Direct mode calls generateText for title generation only
     expect(mockGenerateText).toHaveBeenCalled();
@@ -158,7 +149,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
   });
 
   it("uses deterministic generation when sunoStyles is empty but category provided", async () => {
-    const result = await engine.generateQuickVibes("lofi-study", "", false, []);
+    const result = await engine.generateQuickVibes("lofi-study", "", []);
 
     // Category-based generation is deterministic - no LLM call
     expect(mockGenerateText).not.toHaveBeenCalled();
@@ -183,7 +174,6 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       currentTitle: "Current Title",
       description: "some description",
       feedback: "make it darker",
-      withWordlessVocals: false,
       category: null,
       sunoStyles: ["lo-fi jazz", "dark goa trance"],
     });
@@ -199,7 +189,6 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       currentTitle: "Current Title",
       description: "some description",
       feedback: "",
-      withWordlessVocals: false,
       category: null,
       sunoStyles: ["ambient", "drone"],
     });
@@ -223,7 +212,6 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
       currentTitle: "Old Title",
       description: "updated description",
       feedback: "more atmospheric",
-      withWordlessVocals: false,
       category: null,
       sunoStyles: ["ambient", "drone"],
     });
@@ -240,7 +228,6 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
     const result = await engine.refineQuickVibes({
       currentPrompt: "original vibes",
       feedback: "make it better",
-      withWordlessVocals: false,
       category: "lofi-study",
       sunoStyles: [],
     });
@@ -261,7 +248,6 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
     await engine.refineQuickVibes({
       currentPrompt: "original vibes",
       feedback: "make it better",
-      withWordlessVocals: false,
       category: null,
       sunoStyles: [],
     });
@@ -283,12 +269,7 @@ describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
   });
 
   it("generates title from description when provided", async () => {
-    const result = await engine.generateQuickVibes(
-      null,
-      "late night jazz vibes",
-      false,
-      ["lo-fi jazz", "smooth jazz"]
-    );
+    const result = await engine.generateQuickVibes(null, "late night jazz vibes", ["lo-fi jazz", "smooth jazz"]);
 
     expect(result.title).toBeDefined();
     expect(result.title).toBe("Midnight Jazz Session");
@@ -300,12 +281,7 @@ describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
   });
 
   it("generates title from styles when no description", async () => {
-    const result = await engine.generateQuickVibes(
-      null,
-      "",
-      false,
-      ["synthwave", "retrowave"]
-    );
+    const result = await engine.generateQuickVibes(null, "", ["synthwave", "retrowave"]);
 
     expect(result.title).toBeDefined();
     // generateText called for title using styles as source
@@ -317,12 +293,7 @@ describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
       throw new Error("Title generation failed");
     });
 
-    const result = await engine.generateQuickVibes(
-      null,
-      "",
-      false,
-      ["ambient"]
-    );
+    const result = await engine.generateQuickVibes(null, "", ["ambient"]);
 
     // Should have fallback title
     expect(result.title).toBe("Untitled");
@@ -337,7 +308,6 @@ describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
       currentTitle: "Old Title",
       description: "dreamy coffee shop morning",
       feedback: "refine feedback",
-      withWordlessVocals: false,
       category: null,
       sunoStyles: ["lo-fi jazz"],
     });

@@ -33,13 +33,13 @@ function buildCreativeBoostConfig(generationConfig: GenerationConfig): CreativeB
 export function createCreativeBoostMethods(factories: ConfigFactories): {
   generateCreativeBoost: (
     creativityLevel: number, seedGenres: string[], sunoStyles: string[], description: string,
-    lyricsTopic: string, withWordlessVocals: boolean, maxMode: boolean, withLyrics: boolean,
+    lyricsTopic: string, maxMode: boolean, withLyrics: boolean,
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
   refineCreativeBoost: (
     currentPrompt: string, currentTitle: string, currentLyrics: string | undefined, feedback: string,
     lyricsTopic: string, description: string, seedGenres: string[], sunoStyles: string[],
-    withWordlessVocals: boolean, maxMode: boolean, withLyrics: boolean, targetGenreCount?: number,
+    maxMode: boolean, withLyrics: boolean, targetGenreCount?: number,
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
 } {
@@ -48,21 +48,21 @@ export function createCreativeBoostMethods(factories: ConfigFactories): {
   return {
     async generateCreativeBoost(
       creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-      withWordlessVocals, maxMode, withLyrics, runtime
+      maxMode, withLyrics, runtime
     ) {
       return generateCreativeBoostImpl({
         creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-        withWordlessVocals, maxMode, withLyrics, config: boostConfig,
+        maxMode, withLyrics, config: boostConfig,
       }, runtime);
     },
 
     async refineCreativeBoost(
       currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
-      seedGenres, sunoStyles, withWordlessVocals, maxMode, withLyrics, targetGenreCount, runtime
+      seedGenres, sunoStyles, maxMode, withLyrics, targetGenreCount, runtime
     ) {
       return refineCreativeBoostImpl({
         currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
-        seedGenres, sunoStyles, withWordlessVocals, maxMode, withLyrics, targetGenreCount, config: boostConfig,
+        seedGenres, sunoStyles, maxMode, withLyrics, targetGenreCount, config: boostConfig,
       }, runtime);
     },
   };

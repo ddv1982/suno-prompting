@@ -20,7 +20,6 @@ export interface CreativeBoostHandlers {
   handleSunoStylesChange: (styles: string[]) => void;
   handleDescriptionChange: (value: string) => void;
   handleLyricsTopicChange: (value: string) => void;
-  handleWordlessVocalsChange: (checked: boolean) => void;
   handleLyricsToggleChange: (checked: boolean) => void;
   handleKeyDown: (e: React.KeyboardEvent) => void;
   handleSubmit: () => void;
@@ -54,15 +53,9 @@ export function useCreativeBoostHandlers({
     onInputChange(prev => ({ ...prev, lyricsTopic: value }));
   }, [onInputChange]);
 
-  const handleWordlessVocalsChange = useCallback((checked: boolean): void => {
-    onInputChange(prev => ({ ...prev, withWordlessVocals: checked }));
-    if (checked) onLyricsModeChange(false);
-  }, [onInputChange, onLyricsModeChange]);
-
   const handleLyricsToggleChange = useCallback((checked: boolean): void => {
     onLyricsModeChange(checked);
-    if (checked) onInputChange(prev => ({ ...prev, withWordlessVocals: false }));
-  }, [onInputChange, onLyricsModeChange]);
+  }, [onLyricsModeChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === "Enter" && !e.shiftKey && !isGenerating) {
@@ -81,7 +74,6 @@ export function useCreativeBoostHandlers({
     handleSunoStylesChange,
     handleDescriptionChange,
     handleLyricsTopicChange,
-    handleWordlessVocalsChange,
     handleLyricsToggleChange,
     handleKeyDown,
     handleSubmit,

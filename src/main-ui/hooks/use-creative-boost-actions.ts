@@ -19,7 +19,6 @@ const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostI
   sunoStyles: input.sunoStyles,
   description: input.description,
   lyricsTopic: input.lyricsTopic,
-  withWordlessVocals: input.withWordlessVocals,
   moodCategory: input.moodCategory,
 });
 
@@ -70,7 +69,6 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
             sunoStyles: creativeBoostInput.sunoStyles,
             description: creativeBoostInput.description,
             lyricsTopic: creativeBoostInput.lyricsTopic,
-            withWordlessVocals: creativeBoostInput.withWordlessVocals,
             maxMode,
             withLyrics: lyricsMode,
           });
@@ -114,7 +112,6 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
             description: creativeBoostInput.description,
             seedGenres: creativeBoostInput.seedGenres,
             sunoStyles: creativeBoostInput.sunoStyles,
-            withWordlessVocals: creativeBoostInput.withWordlessVocals,
             maxMode,
             withLyrics: lyricsMode,
             targetGenreCount,

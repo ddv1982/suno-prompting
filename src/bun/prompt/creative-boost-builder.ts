@@ -1,10 +1,8 @@
 import { getMultiGenreNuanceGuidance } from '@bun/instruments';
 import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
-import { CONTEXT_INTEGRATION_INSTRUCTIONS, WORDLESS_VOCALS_GUIDANCE, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
+import { CONTEXT_INTEGRATION_INSTRUCTIONS, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getCreativityLevel } from '@shared/creative-boost-utils';
-
-export { getCreativityLevel };
 
 const MAX_STYLE_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
 const DEFAULT_REFINE_FEEDBACK = 'Regenerate with a fresh creative variation while keeping the same style direction';
@@ -15,8 +13,7 @@ const DEFAULT_REFINE_FEEDBACK = 'Regenerate with a fresh creative variation whil
  * Note: Lyrics are generated separately using the existing generateLyrics() function.
  */
 export function buildCreativeBoostSystemPrompt(
-  creativityLevel: number,
-  withWordlessVocals: boolean
+  creativityLevel: number
 ): string {
   const level = getCreativityLevel(creativityLevel);
 
@@ -60,9 +57,7 @@ export function buildCreativeBoostSystemPrompt(
       break;
   }
 
-  const vocalsGuidance = withWordlessVocals
-    ? WORDLESS_VOCALS_GUIDANCE
-    : `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
+  const vocalsGuidance = `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
 
   return `You are Creative Boost, an AI music genre exploration assistant for Suno V5.
 Your role is to generate creative genre combinations and music prompts.
@@ -200,16 +195,12 @@ export function parseCreativeBoostResponse(text: string): {
  *
  * Note: Lyrics are generated separately using the existing generateLyrics() function.
  *
- * @param withWordlessVocals - Whether to include wordless vocals guidance
  * @param targetGenreCount - Optional genre count to enforce (1-4), 0 or undefined means no enforcement
  */
 export function buildCreativeBoostRefineSystemPrompt(
-  withWordlessVocals: boolean,
   targetGenreCount?: number
 ): string {
-  const vocalsGuidance = withWordlessVocals
-    ? WORDLESS_VOCALS_GUIDANCE
-    : `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
+  const vocalsGuidance = `VOCALS: Focus on the musical style. Vocals/lyrics will be handled separately if needed.`;
 
   // Build genre count instruction when enforcement is requested
   const genreCountInstruction = targetGenreCount && targetGenreCount > 0

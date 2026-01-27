@@ -145,7 +145,6 @@ export interface SetCreativeBoostModeResponse { success: boolean }
 export interface GenerateQuickVibesParams {
   category: QuickVibesCategory | null;
   customDescription: string;
-  withWordlessVocals: boolean;
   /** Suno V5 styles (0-4 selections, mutually exclusive with category) */
   sunoStyles: string[];
   /** Optional mood category to influence prompt generation */
@@ -166,7 +165,6 @@ export interface RefineQuickVibesParams {
   currentTitle?: string;
   description?: string;
   feedback: string;
-  withWordlessVocals: boolean;
   category?: QuickVibesCategory | null;
   /** Suno V5 styles (0-4 selections, mutually exclusive with category) */
   sunoStyles?: string[];
@@ -196,7 +194,6 @@ export interface GenerateCreativeBoostParams {
   sunoStyles: string[];
   description: string;
   lyricsTopic: string;
-  withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;
 }
@@ -221,7 +218,6 @@ export interface RefineCreativeBoostParams {
   seedGenres: string[];
   /** Suno V5 styles (0-4 selections, mutually exclusive with seedGenres) */
   sunoStyles: string[];
-  withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;
   /** Optional genre count enforcement for non-Direct Mode refinement. */

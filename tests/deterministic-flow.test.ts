@@ -113,11 +113,7 @@ describe('Deterministic Generation Flow', () => {
 
   describe('Quick Vibes Mode', () => {
     test('generates quick vibes deterministically for lofi-study category', () => {
-      const result = buildDeterministicQuickVibes(
-        'lofi-study',
-        false, // wordlessVocals
-        false // maxMode
-      );
+      const result = buildDeterministicQuickVibes('lofi-study', false);
 
       expect(result).toBeDefined();
       expect(result.text).toBeDefined();
@@ -126,42 +122,23 @@ describe('Deterministic Generation Flow', () => {
     });
 
     test('generates quick vibes deterministically for cafe-coffeeshop category', () => {
-      const result = buildDeterministicQuickVibes(
-        'cafe-coffeeshop',
-        false,
-        false
-      );
+      const result = buildDeterministicQuickVibes('cafe-coffeeshop', false);
 
       expect(result.text).toBeDefined();
       expect(result.title).toBeDefined();
     });
 
     test('generates quick vibes deterministically for ambient-focus category', () => {
-      const result = buildDeterministicQuickVibes(
-        'ambient-focus',
-        false,
-        false
-      );
+      const result = buildDeterministicQuickVibes('ambient-focus', false);
 
       expect(result.text).toBeDefined();
       expect(result.title).toBeDefined();
     });
 
-    test('generates quick vibes with wordless vocals', () => {
-      const result = buildDeterministicQuickVibes(
-        'lofi-study',
-        true, // wordlessVocals
-        false
-      );
-
-      expect(result.text).toContain('wordless vocals');
-    });
-
     test('generates quick vibes in max mode format', () => {
       const result = buildDeterministicQuickVibes(
         'lofi-study',
-        false,
-        true // maxMode
+        true
       );
 
       // MAX mode uses lowercase field names with quoted values
@@ -172,8 +149,7 @@ describe('Deterministic Generation Flow', () => {
     test('generates quick vibes in standard mode format', () => {
       const result = buildDeterministicQuickVibes(
         'lofi-study',
-        false,
-        false // standard mode
+        false
       );
 
       expect(result.text).toContain('Instruments:');
@@ -224,21 +200,11 @@ describe('Deterministic Generation Flow', () => {
     test('same seed produces same quick vibes output', () => {
       const rng = () => 0.5;
 
-      const result1 = buildDeterministicQuickVibes(
-        'lofi-study',
-        false,
-        false,
-        rng
-      );
+      const result1 = buildDeterministicQuickVibes('lofi-study', false, rng);
 
       const rng2 = () => 0.5;
 
-      const result2 = buildDeterministicQuickVibes(
-        'lofi-study',
-        false,
-        false,
-        rng2
-      );
+      const result2 = buildDeterministicQuickVibes('lofi-study', false, rng2);
 
       expect(result1.text).toBe(result2.text);
       expect(result1.title).toBe(result2.title);

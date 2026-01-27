@@ -900,6 +900,46 @@ Genre affinities ensure contextually appropriate selection:
 | **Moderate** | Standard, balanced | peaceful |
 | **Intense** | Strong, powerful | blissful |
 
+#### Genre-Aware Mood Selection
+
+When generating Creative Boost prompts, the system considers the selected genre 
+when choosing moods. This prevents semantic mismatches like "chaotic ambient" or 
+"feral jazz".
+
+##### Selection Priority
+
+1. **Explicit Mood Category** (user override)
+   - When user selects a mood category from dropdown
+   - Completely bypasses genre-aware selection
+   
+2. **Genre Moods**
+   - Retrieves moods from genre's definition
+   - Applies intensity transformation based on creativity level
+   
+3. **Generic Pools** (fallback)
+   - Used when genre has no defined moods
+   - Preserves existing creativity-level behavior
+
+##### Intensity Scaling
+
+| Creativity Level | Intensity | Example (Ambient) |
+|------------------|-----------|-------------------|
+| Low (0-10%) | mild | "hazy" instead of "dreamy" |
+| Safe (11-30%) | mild | "contemplative" instead of "meditative" |
+| Normal (31-60%) | moderate | "dreamy" (unchanged) |
+| Adventurous (61-85%) | intense | "surreal" instead of "dreamy" |
+| High (86-100%) | intense | "otherworldly" instead of "ethereal" |
+
+##### Compound Genres
+
+For compound genres like "jazz ambient", the system uses the first word (primary genre)
+for mood selection. "jazz ambient" would get jazz moods, not ambient moods.
+
+##### Fallback Behavior
+
+When a genre has no defined moods in the registry, the system falls back to 
+generic creativity-level mood pools (the original behavior).
+
 ---
 
 ### Title Generation
@@ -1114,7 +1154,6 @@ All choices come from carefully curated, tested databases:
 
 - **Creativity level** (0-100) - Determines genre pools, blending strategy, mood intensity
 - **Seed genres** - App uses your genres if provided
-- **Wordless vocals** - Enable/disable vocal elements
 - **MAX mode** - Simple vs detailed prompt with production tags
 - **Mood category** - Override creativity-based mood with specific vibe
 - **Quick Vibes category** - Choose from 16 pre-made templates

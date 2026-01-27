@@ -113,23 +113,18 @@ describe('Quick Vibes Templates v3.0', () => {
 
     for (const category of newCategories) {
       it(`should generate valid prompt for ${category}`, () => {
-        const result = buildDeterministicQuickVibes(category, false, false, () => 0.5);
+        const result = buildDeterministicQuickVibes(category, false, () => 0.5);
         expect(result.text).toBeTruthy();
         expect(result.text.length).toBeGreaterThan(10);
         expect(result.title).toBeTruthy();
       });
 
       it(`should generate MAX mode prompt for ${category}`, () => {
-        const result = buildDeterministicQuickVibes(category, false, true, () => 0.5);
+        const result = buildDeterministicQuickVibes(category, true, () => 0.5);
         // MAX mode uses lowercase field names
         expect(result.text).toContain('genre:');
         expect(result.text).toContain('mood:');
         expect(result.text).toContain('instruments:');
-      });
-
-      it(`should include wordless vocals when requested for ${category}`, () => {
-        const result = buildDeterministicQuickVibes(category, true, false, () => 0.5);
-        expect(result.text).toContain('wordless vocals');
       });
     }
   });

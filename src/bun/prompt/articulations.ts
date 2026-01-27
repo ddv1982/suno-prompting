@@ -129,6 +129,12 @@ export const INSTRUMENT_CATEGORIES: Record<string, InstrumentCategory> = {
   'analog synth': 'synth',
   'FM synth': 'synth',
   'Moog synth': 'synth',
+  'Prophet synth': 'synth',
+  'Oberheim synth': 'synth',
+  'Juno synth': 'synth',
+  'evolving pad': 'synth',
+  'warm pad': 'synth',
+  'textural pad': 'synth',
   'arpeggiator': 'synth',
   'supersaw': 'synth',
   

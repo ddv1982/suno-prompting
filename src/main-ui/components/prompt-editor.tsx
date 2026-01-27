@@ -74,12 +74,12 @@ export function PromptEditor({ output, input, generation, modes, quickVibes, cre
           />
 
           {promptMode === 'quickVibes' ? (
-            <QuickVibesPanel input={quickVibes.input} originalInput={quickVibes.originalInput} withWordlessVocals={quickVibes.withWordlessVocals} maxMode={maxMode}
+            <QuickVibesPanel input={quickVibes.input} originalInput={quickVibes.originalInput} maxMode={maxMode}
               storyMode={storyMode} isLLMAvailable={isLLMAvailable}
               isGenerating={isGenerating} hasCurrentPrompt={!!currentPrompt} onInputChange={handlers.onQuickVibesInputChange}
-              onWordlessVocalsChange={handlers.onWordlessVocalsChange} onMaxModeChange={handlers.onMaxModeChange}
+              onMaxModeChange={handlers.onMaxModeChange}
               onStoryModeChange={handlers.onStoryModeChange}
-              onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.withWordlessVocals, quickVibes.input.sunoStyles, quickVibes.input.moodCategory); }}
+              onGenerate={() => { handlers.onGenerateQuickVibes(quickVibes.input.category, quickVibes.input.customDescription, quickVibes.input.sunoStyles, quickVibes.input.moodCategory); }}
               onRefine={handlers.onRefineQuickVibes} />
           ) : promptMode === 'creativeBoost' ? (
             <CreativeBoostPanel input={creativeBoost.input} maxMode={maxMode} storyMode={storyMode} lyricsMode={lyricsMode}

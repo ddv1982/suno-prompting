@@ -21,7 +21,7 @@ import {
   prependMaxHeaders,
 } from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
-import { selectGenreForLevel, mapSliderToLevel, selectMoodForLevel } from '@bun/prompt/creative-boost';
+import { selectGenreForLevel, getCreativityLevel, selectMoodForLevel } from '@bun/prompt/creative-boost';
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
 
@@ -159,7 +159,7 @@ export async function generateCreativeBoost(
   options: GenerateCreativeBoostOptions,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
-  const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, withWordlessVocals, maxMode, withLyrics, config } = options;
+  const { creativityLevel, seedGenres, sunoStyles, description, lyricsTopic, maxMode, withLyrics, config } = options;
   const rng = runtime?.rng ?? Math.random;
 
   // Validate input (styles limit + mutual exclusivity)
@@ -175,7 +175,7 @@ export async function generateCreativeBoost(
     return generateDirectMode(sunoStyles, lyricsTopic, description, withLyrics, maxMode, config, runtime);
   }
 
-  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withWordlessVocals, withLyrics });
+  log.info('generateCreativeBoost:deterministic', { creativityLevel, seedGenres, maxMode, withLyrics });
 
   const ollamaEndpoint = config.getOllamaEndpoint?.();
 
@@ -185,12 +185,12 @@ export async function generateCreativeBoost(
   );
 
   // 2. Select genre and mood based on creativity level
-  const level = mapSliderToLevel(creativityLevel);
+  const level = getCreativityLevel(creativityLevel);
   const selectedGenre = selectGenreForLevel(level, resolvedGenres, rng);
   const selectedMood = selectMoodForLevel(level, rng);
 
   // 3. Build style prompt
-  const styleResult = buildCreativeBoostStyle(selectedGenre, maxMode, withWordlessVocals, runtime);
+  const styleResult = buildCreativeBoostStyle(selectedGenre, maxMode, runtime);
 
   // 4. Generate title (use LLM when available for more creative titles)
   const { title } = await generateCreativeBoostTitle(

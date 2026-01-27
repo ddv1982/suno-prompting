@@ -61,7 +61,7 @@ Let the rhythm flow`,
 
   it("returns exact styles when sunoStyles provided (direct mode)", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["lo-fi jazz", "dark goa trance"], "", "", false, true, false
+      50, [], ["lo-fi jazz", "dark goa trance"], "", "", true, false
     );
 
     expect(result.text).toContain("lo-fi jazz, dark goa trance");
@@ -70,7 +70,7 @@ Let the rhythm flow`,
 
   it("handles single style selection", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["k-pop"], "", "", false, false, false
+      50, [], ["k-pop"], "", "", false, false
     );
 
     expect(result.text).toContain("k-pop");
@@ -80,7 +80,7 @@ Let the rhythm flow`,
   it("handles maximum 4 styles", async () => {
     const styles = ["style1", "style2", "style3", "style4"];
     const result = await engine.generateCreativeBoost(
-      50, [], styles, "", "", false, false, false
+      50, [], styles, "", "", false, false
     );
 
     expect(result.text).toContain("style1, style2, style3, style4");
@@ -88,7 +88,7 @@ Let the rhythm flow`,
 
   it("bypasses LLM for style generation in direct mode (title only)", async () => {
     await engine.generateCreativeBoost(
-      50, [], ["hip-hop"], "", "", false, true, false
+      50, [], ["hip-hop"], "", "", true, false
     );
 
     expect(generateTextCalls).toBe(1);
@@ -96,7 +96,7 @@ Let the rhythm flow`,
 
   it("makes 2 LLM calls in direct mode with lyrics (title + lyrics)", async () => {
     await engine.generateCreativeBoost(
-      50, [], ["indie rock"], "", "", false, true, true
+      50, [], ["indie rock"], "", "", true, true
     );
 
     expect(generateTextCalls).toBe(2);
@@ -106,7 +106,7 @@ Let the rhythm flow`,
     engine.setUseSunoTags(true);
 
     await engine.generateCreativeBoost(
-      50, [], ["indie rock"], "", "", false, false, true
+      50, [], ["indie rock"], "", "", false, true
     );
 
     expect(generateTextCalls).toBe(2);
@@ -115,7 +115,7 @@ Let the rhythm flow`,
 
   it("generates lyrics without max mode header in direct mode", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["indie rock"], "", "love story", false, true, true
+      50, [], ["indie rock"], "", "love story", false, true
     );
 
     expect(result.lyrics).toBeDefined();
@@ -125,7 +125,7 @@ Let the rhythm flow`,
 
   it("generates lyrics with standard section tags in direct mode", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["synthwave"], "", "space adventure", false, false, true
+      50, [], ["synthwave"], "", "space adventure", false, true
     );
 
     expect(result.lyrics).toBeDefined();
@@ -136,7 +136,7 @@ Let the rhythm flow`,
 
   it("uses deterministic generation when sunoStyles is empty", async () => {
     const result = await engine.generateCreativeBoost(
-      50, ["rock"], [], "energetic song", "", false, true, false
+      50, ["rock"], [], "energetic song", "", true, false
     );
 
     expect(generateTextCalls).toBe(0);
@@ -146,7 +146,7 @@ Let the rhythm flow`,
 
   it("returns a generated title in direct mode", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["lo-fi beats"], "", "", false, false, false
+      50, [], ["lo-fi beats"], "", "", false, false
     );
 
     expect(result.title).toBe("Neon Dreams");
@@ -154,14 +154,14 @@ Let the rhythm flow`,
 
   it("respects maxMode parameter in direct mode (enriched output)", async () => {
     const resultMax = await engine.generateCreativeBoost(
-      50, [], ["ambient", "chillwave"], "", "", false, true, false
+      50, [], ["ambient", "chillwave"], "", "", true, false
     );
 
     expect(resultMax.text).toContain("[Is_MAX_MODE: MAX]");
     expect(resultMax.text).toContain("ambient, chillwave");
 
     const resultStd = await engine.generateCreativeBoost(
-      50, [], ["ambient", "chillwave"], "", "", false, false, false
+      50, [], ["ambient", "chillwave"], "", "", false, false
     );
 
     expect(resultStd.text).not.toContain("[Is_MAX_MODE: MAX]");
@@ -185,7 +185,7 @@ describe("generateDirectMode title context priority (Bug 4)", () => {
 
   it("uses description when provided for title context", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["dream-pop"], "love song about summer", "heartbreak theme", false, false, false
+      50, [], ["dream-pop"], "love song about summer", "heartbreak theme", false, false
     );
 
     expect(generateTextCalls).toBe(1);
@@ -194,7 +194,7 @@ describe("generateDirectMode title context priority (Bug 4)", () => {
 
   it("falls back to lyricsTopic when description is empty", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["synthwave"], "", "space adventure", false, false, false
+      50, [], ["synthwave"], "", "space adventure", false, false
     );
 
     expect(generateTextCalls).toBe(1);
@@ -203,7 +203,7 @@ describe("generateDirectMode title context priority (Bug 4)", () => {
 
   it("uses empty string when both description and lyricsTopic are empty", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], ["ambient"], "", "", false, false, false
+      50, [], ["ambient"], "", "", false, false
     );
 
     expect(result.title).toBeDefined();

@@ -8,6 +8,7 @@
  */
 
 import { extractKeywordsForTitle } from '@bun/keywords';
+import { extractBaseGenre } from '@shared/utils/genre';
 
 import { GENRE_TITLE_PATTERNS, DEFAULT_PATTERNS } from './datasets/modifiers';
 import { selectRandom, interpolatePattern } from './patterns';
@@ -54,7 +55,7 @@ export function generateDeterministicTitle(
   description?: string
 ): string {
   // Get genre-specific patterns or fall back to defaults
-  const genreLower = genre.toLowerCase().split(' ')[0] ?? 'pop';
+  const genreLower = extractBaseGenre(genre) || 'pop';
   const patterns = GENRE_TITLE_PATTERNS[genreLower] ?? DEFAULT_PATTERNS;
 
   // Select a random pattern

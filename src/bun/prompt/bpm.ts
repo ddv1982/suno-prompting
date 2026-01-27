@@ -1,5 +1,6 @@
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments/genres';
 import { parseGenreComponents } from '@bun/prompt/genre-parser';
+import { extractBaseGenre } from '@shared/utils/genre';
 import { randomIntInclusive, type Rng } from '@shared/utils/random';
 
 /**
@@ -125,8 +126,8 @@ export function injectBpmRange(prompt: string, genre: string): string {
 
 export function getRandomBpmForGenre(genre: string, rng: Rng = Math.random): number | null {
   // Handle multi-genre: "jazz fusion" → "jazz", "jazz, rock" → "jazz"
-  const firstGenre = genre.split(',')[0]?.trim().toLowerCase() || '';
-  const baseGenre = firstGenre.split(' ')[0] || firstGenre;
+  const firstGenre = genre.split(',')[0]?.trim().toLowerCase() ?? '';
+  const baseGenre = extractBaseGenre(firstGenre) || firstGenre;
 
   const genreDef = GENRE_REGISTRY[baseGenre as GenreType];
   if (!genreDef?.bpm) return null;

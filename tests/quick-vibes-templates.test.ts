@@ -58,7 +58,7 @@ describe('QUICK_VIBES_TEMPLATES', () => {
 
 describe('buildDeterministicQuickVibes', () => {
   it('returns text and title for lofi-study category', () => {
-    const result = buildDeterministicQuickVibes('lofi-study', false, true);
+    const result = buildDeterministicQuickVibes('lofi-study', true);
 
     expect(result.text).toBeDefined();
     expect(result.title).toBeDefined();
@@ -66,14 +66,8 @@ describe('buildDeterministicQuickVibes', () => {
     expect(result.title.length).toBeGreaterThan(0);
   });
 
-  it('includes wordless vocals when requested', () => {
-    const result = buildDeterministicQuickVibes('lofi-study', true, true);
-
-    expect(result.text).toContain('wordless vocals');
-  });
-
   it('uses MAX mode format when maxMode is true', () => {
-    const result = buildDeterministicQuickVibes('cafe-coffeeshop', false, true);
+    const result = buildDeterministicQuickVibes('cafe-coffeeshop', true);
 
     // MAX mode uses lowercase field names with quoted values
     expect(result.text).toContain('genre:');
@@ -82,7 +76,7 @@ describe('buildDeterministicQuickVibes', () => {
   });
 
   it('uses simpler format when maxMode is false', () => {
-    const result = buildDeterministicQuickVibes('ambient-focus', false, false);
+    const result = buildDeterministicQuickVibes('ambient-focus', false);
 
     // Standard mode has genre and mood in first line, Instruments capitalized
     expect(result.text).toContain('Instruments:');
@@ -98,18 +92,18 @@ describe('buildDeterministicQuickVibes', () => {
     };
 
     rngIndex = 0;
-    const result1 = buildDeterministicQuickVibes('lofi-chill', false, true, seededRng);
+    const result1 = buildDeterministicQuickVibes('lofi-chill', true, seededRng);
 
     rngIndex = 0;
-    const result2 = buildDeterministicQuickVibes('lofi-chill', false, true, seededRng);
+    const result2 = buildDeterministicQuickVibes('lofi-chill', true, seededRng);
 
     expect(result1.text).toBe(result2.text);
     expect(result1.title).toBe(result2.title);
   });
 
   it('produces different output with different RNG', () => {
-    const result1 = buildDeterministicQuickVibes('latenight-chill', false, true, () => RNG_FIXED_LOW);
-    const result2 = buildDeterministicQuickVibes('latenight-chill', false, true, () => RNG_FIXED_HIGH);
+    const result1 = buildDeterministicQuickVibes('latenight-chill', true, () => RNG_FIXED_LOW);
+    const result2 = buildDeterministicQuickVibes('latenight-chill', true, () => RNG_FIXED_HIGH);
 
     // Different RNG values should produce different outputs
     expect(result1.text).not.toBe(result2.text);
@@ -156,8 +150,7 @@ describe('trace instrumentation', () => {
       },
     } as TraceCollector;
 
-    buildDeterministicQuickVibes('lofi-study', false, true, {
-      withWordlessVocals: false,
+    buildDeterministicQuickVibes('lofi-study', true, {
       maxMode: true,
       rng: () => 0.5,
       trace: mockTrace,
@@ -181,8 +174,7 @@ describe('trace instrumentation', () => {
       },
     } as TraceCollector;
 
-    buildDeterministicQuickVibes('lofi-study', false, true, {
-      withWordlessVocals: false,
+    buildDeterministicQuickVibes('lofi-study', true, {
       maxMode: true,
       rng: () => 0.5,
       trace: mockTrace,
@@ -195,8 +187,7 @@ describe('trace instrumentation', () => {
 
   it('does not throw when trace is undefined', () => {
     expect(() => {
-      buildDeterministicQuickVibes('lofi-study', false, true, {
-        withWordlessVocals: false,
+      buildDeterministicQuickVibes('lofi-study', true, {
         maxMode: true,
         rng: () => 0.5,
       });

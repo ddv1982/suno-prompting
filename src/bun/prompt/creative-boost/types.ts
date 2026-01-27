@@ -23,8 +23,6 @@ export interface BuildCreativeBoostOptions {
   creativityLevel: number;
   /** User-provided seed genres */
   seedGenres: string[];
-  /** Include wordless vocals */
-  withWordlessVocals: boolean;
   /** Use MAX mode format */
   maxMode: boolean;
   /** Optional mood category to override mood selection */

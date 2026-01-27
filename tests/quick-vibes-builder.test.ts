@@ -19,24 +19,18 @@ const {
 describe("Quick Vibes Builder", () => {
   describe("buildQuickVibesSystemPrompt", () => {
     it("includes char limit instruction", () => {
-      const prompt = buildQuickVibesSystemPrompt(false);
+      const prompt = buildQuickVibesSystemPrompt();
       expect(prompt).toContain(`${APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT} characters`);
     });
 
     it("handles instrumental mode (no vocals)", () => {
-      const prompt = buildQuickVibesSystemPrompt(false);
+      const prompt = buildQuickVibesSystemPrompt();
       expect(prompt).toContain("instrumental");
       expect(prompt).toContain("do NOT mention vocals");
     });
 
-    it("handles wordless vocals mode", () => {
-      const prompt = buildQuickVibesSystemPrompt(true);
-      expect(prompt).toContain("WORDLESS VOCALS");
-      expect(prompt).toContain("wordless vocalizations");
-    });
-
     it("excludes realism tags instructions", () => {
-      const prompt = buildQuickVibesSystemPrompt(false);
+      const prompt = buildQuickVibesSystemPrompt();
       expect(prompt).not.toContain("vinyl warmth");
     });
   });
@@ -155,26 +149,21 @@ describe("Quick Vibes Categories", () => {
 
 describe("buildQuickVibesRefineSystemPrompt", () => {
   it("includes base Quick Vibes instructions", () => {
-    const prompt = buildQuickVibesRefineSystemPrompt(false);
+    const prompt = buildQuickVibesRefineSystemPrompt();
     expect(prompt).toContain(`${APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT} characters`);
     expect(prompt).toContain("Quick Vibes");
   });
 
   it("includes refinement instructions", () => {
-    const prompt = buildQuickVibesRefineSystemPrompt(false);
+    const prompt = buildQuickVibesRefineSystemPrompt();
     expect(prompt).toContain("REFINING");
     expect(prompt).toContain("user feedback");
   });
 
   it("excludes realism tags instructions", () => {
-    const prompt = buildQuickVibesRefineSystemPrompt(false);
+    const prompt = buildQuickVibesRefineSystemPrompt();
     expect(prompt).not.toContain("realism tags");
     expect(prompt).not.toContain("vinyl warmth");
-  });
-
-  it("includes wordless vocals instructions when enabled", () => {
-    const prompt = buildQuickVibesRefineSystemPrompt(true);
-    expect(prompt).toContain("WORDLESS VOCALS");
   });
 });
 

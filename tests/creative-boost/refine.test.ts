@@ -59,7 +59,7 @@ This is how we thrive`,
     const sunoStyles = ["lo-fi jazz", "dark goa trance"];
     const result = await engine.refineCreativeBoost(
       "lo-fi jazz, dark goa trance", "Old Title", undefined,
-      "Make it more upbeat", "", "", [], sunoStyles, false, false, false
+      "Make it more upbeat", "", "", [], sunoStyles, false, false
     );
 
     expect(result.text).toContain("lo-fi jazz, dark goa trance");
@@ -70,7 +70,7 @@ This is how we thrive`,
     const result = await engine.refineCreativeBoost(
       "indie rock, shoegaze", "Old Title", undefined,
       "Make the title more energetic", "", "", [],
-      ["indie rock", "shoegaze"], false, false, false
+      ["indie rock", "shoegaze"], false, false
     );
 
     expect(result.title).toBe("Upbeat Vibes");
@@ -81,7 +81,7 @@ This is how we thrive`,
     const result = await engine.refineCreativeBoost(
       "synthpop, electro", "Electric Nights", undefined,
       "Add more emotion", "love story", "", [],
-      ["synthpop", "electro"], false, true, true
+      ["synthpop", "electro"], true, true
     );
 
     expect(result.lyrics).toBeDefined();
@@ -113,7 +113,7 @@ This is how we thrive`,
 
     const result = await engine.refineCreativeBoost(
       "original rock prompt", "Original Title", undefined,
-      "make it heavier", "", "", ["rock"], [], false, true, false
+      "make it heavier", "", "", ["rock"], [], true, false
     );
 
     expect(generateTextCalls).toBeGreaterThanOrEqual(2);
@@ -124,7 +124,7 @@ This is how we thrive`,
     await engine.refineCreativeBoost(
       "chill hop, lo-fi", "Chill Session", undefined,
       "Make it mellower", "", "", [],
-      ["chill hop", "lo-fi"], false, false, true
+      ["chill hop", "lo-fi"], false, true
     );
 
     expect(generateTextCalls).toBe(2);
@@ -134,7 +134,7 @@ This is how we thrive`,
     await engine.refineCreativeBoost(
       "ambient, drone", "Peaceful Drift", undefined,
       "Make it darker", "", "", [],
-      ["ambient", "drone"], false, false, false
+      ["ambient", "drone"], false, false
     );
 
     expect(generateTextCalls).toBe(1);
@@ -149,7 +149,7 @@ This is how we thrive`,
     const result = await engine.refineCreativeBoost(
       "chill, lo-fi", "Old Title", undefined,
       "", "love story", "", [],
-      ["chill", "lo-fi"], false, false, true
+      ["chill", "lo-fi"], false, true
     );
 
     expect(result.lyrics).toBeDefined();
@@ -176,7 +176,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "lo-fi, chill", "Old Title", undefined,
       "make it more epic", "peaceful journey", "", [],
-      ["lo-fi", "chill"], false, false, false
+      ["lo-fi", "chill"], false, false
     );
 
     expect(generateTextCalls).toBe(1);
@@ -187,7 +187,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "jazz, smooth", "Old Title", undefined,
       "", "ocean voyage", "", [],
-      ["jazz", "smooth"], false, false, false
+      ["jazz", "smooth"], false, false
     );
 
     expect(generateTextCalls).toBe(0);
@@ -198,7 +198,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "rock, alternative", "Original Title", undefined,
       "", "", "", [],
-      ["rock", "alternative"], false, false, false
+      ["rock", "alternative"], false, false
     );
 
     expect(result.title).toBe("Original Title");
@@ -209,7 +209,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
     const result = await engine.refineCreativeBoost(
       "electronic, dance", "Old Title", undefined,
       "", "night city vibes", "", [],
-      ["electronic", "dance"], false, false, false
+      ["electronic", "dance"], false, false
     );
 
     expect(generateTextCalls).toBe(0);
@@ -245,7 +245,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "old-style, chillwave", "Old Title", undefined,
       "", "", "", [],
-      ["dream-pop", "shoegaze"], false, false, false
+      ["dream-pop", "shoegaze"], false, false
     );
 
     expect(result.text).toContain("dream-pop, shoegaze");
@@ -258,7 +258,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "lo-fi, chill", "Original Title", undefined,
       "", "", "", [],
-      ["dream-pop", "shoegaze"], false, false, false
+      ["dream-pop", "shoegaze"], false, false
     );
 
     expect(result.title).toBe("Original Title");
@@ -271,7 +271,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "rock, metal", "Rock Title", "[VERSE]\nExisting lyrics",
       "", "some topic", "", [],
-      ["jazz", "smooth"], false, false, true
+      ["jazz", "smooth"], false, true
     );
 
     expect(result.lyrics).toBe("[VERSE]\nExisting lyrics");
@@ -284,7 +284,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "old-style, ambient", "Old Title", undefined,
       "make it more energetic", "", "", [],
-      ["rock", "punk"], false, false, false
+      ["rock", "punk"], false, false
     );
 
     expect(result.text).toContain("rock, punk");
@@ -297,7 +297,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "chill, lo-fi", "Old Title", undefined,
       "add more feeling", "love theme", "", [],
-      ["dream-pop", "ethereal"], false, false, true
+      ["dream-pop", "ethereal"], false, true
     );
 
     expect(result.text).toContain("dream-pop, ethereal");
@@ -311,7 +311,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "dream-pop, shoegaze", "Title", undefined,
       "", "", "", [],
-      ["dream-pop", "shoegaze"], false, false, false
+      ["dream-pop", "shoegaze"], false, false
     );
 
     expect(result.text).toContain("dream-pop, shoegaze");
@@ -323,7 +323,7 @@ This is the chorus`,
     const result = await engine.refineCreativeBoost(
       "old-style, old-style-2", "Title", undefined,
       "", "", "", [],
-      ["single-new-style"], false, false, false
+      ["single-new-style"], false, false
     );
 
     expect(result.text).toContain("single-new-style");

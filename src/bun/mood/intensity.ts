@@ -145,6 +145,167 @@ export const MOOD_INTENSITY_MAP: Record<string, IntensityVariants> = {
   flowing: { mild: 'gentle', moderate: 'flowing', intense: 'surging' },
   driving: { mild: 'propulsive', moderate: 'driving', intense: 'relentless' },
   pulsating: { mild: 'rhythmic', moderate: 'pulsating', intense: 'throbbing' },
+
+  // Ambient/Meditative category
+  meditative: { mild: 'contemplative', moderate: 'meditative', intense: 'transcendent' },
+  floaty: { mild: 'airy', moderate: 'floaty', intense: 'weightless' },
+  spacious: { mild: 'open', moderate: 'spacious', intense: 'vast' },
+  calming: { mild: 'soothing', moderate: 'calming', intense: 'deeply peaceful' },
+
+  // Jazz/Sophisticated category
+  smooth: { mild: 'silky', moderate: 'smooth', intense: 'buttery' },
+  'late night': { mild: 'evening', moderate: 'late night', intense: 'after hours' },
+  cool: { mild: 'relaxed', moderate: 'cool', intense: 'ice cold' },
+
+  // Metal/Heavy category
+  brutal: { mild: 'heavy', moderate: 'brutal', intense: 'pulverizing' },
+  crushing: { mild: 'heavy', moderate: 'crushing', intense: 'devastating' },
+
+  // Blues category
+  smoky: { mild: 'hazy', moderate: 'smoky', intense: 'smoldering' },
+  mournful: { mild: 'somber', moderate: 'mournful', intense: 'grief-stricken' },
+
+  // World/Rhythmic category
+  rhythmic: { mild: 'steady', moderate: 'rhythmic', intense: 'driving' },
+  exotic: { mild: 'foreign', moderate: 'exotic', intense: 'otherworldly' },
+  ornate: { mild: 'decorated', moderate: 'ornate', intense: 'lavishly ornate' },
+  ancient: { mild: 'timeless', moderate: 'ancient', intense: 'primordial' },
+  traditional: { mild: 'classic', moderate: 'traditional', intense: 'deeply rooted' },
+
+  // Dreamy/Hazy category
+  hazy: { mild: 'soft', moderate: 'hazy', intense: 'foggy' },
+  breezy: { mild: 'light', moderate: 'breezy', intense: 'windswept' },
+  'lo-fi': { mild: 'warm', moderate: 'lo-fi', intense: 'heavily distorted' },
+
+  // Adventure/Action category
+  adventurous: { mild: 'curious', moderate: 'adventurous', intense: 'daring' },
+  exciting: { mild: 'interesting', moderate: 'exciting', intense: 'thrilling' },
+  triumphant: { mild: 'victorious', moderate: 'triumphant', intense: 'gloriously triumphant' },
+
+  // Complex/Intellectual category
+  complex: { mild: 'nuanced', moderate: 'complex', intense: 'labyrinthine' },
+  cerebral: { mild: 'thoughtful', moderate: 'cerebral', intense: 'intellectually dense' },
+  glitchy: { mild: 'stuttering', moderate: 'glitchy', intense: 'fractured' },
+  'avant-garde': { mild: 'unconventional', moderate: 'avant-garde', intense: 'radically experimental' },
+
+  // Folk/Traditional category
+  lively: { mild: 'animated', moderate: 'lively', intense: 'vivacious' },
+  spirited: { mild: 'energetic', moderate: 'spirited', intense: 'exuberant' },
+  rustic: { mild: 'simple', moderate: 'rustic', intense: 'ruggedly rustic' },
+
+  // Sweet/Playful category
+  sweet: { mild: 'gentle', moderate: 'sweet', intense: 'saccharine' },
+  maximalist: { mild: 'full', moderate: 'maximalist', intense: 'overwhelming' },
+  wild: { mild: 'untamed', moderate: 'wild', intense: 'feral' },
+  exuberant: { mild: 'enthusiastic', moderate: 'exuberant', intense: 'overflowing' },
+
+  // Deep/Underground category
+  deep: { mild: 'profound', moderate: 'deep', intense: 'bottomless' },
+  underground: { mild: 'alternative', moderate: 'underground', intense: 'subterranean' },
+
+  // Chill/Cozy category
+  chill: { mild: 'relaxed', moderate: 'chill', intense: 'ice cold chill' },
+  cozy: { mild: 'comfortable', moderate: 'cozy', intense: 'deeply snug' },
+
+  // Technical category
+  technical: { mild: 'skilled', moderate: 'technical', intense: 'virtuosic' },
+  angular: { mild: 'sharp', moderate: 'angular', intense: 'jagged' },
+  intricate: { mild: 'detailed', moderate: 'intricate', intense: 'labyrinthine' },
+  precise: { mild: 'accurate', moderate: 'precise', intense: 'surgically precise' },
+
+  // Emotional/Vulnerable category
+  confessional: { mild: 'personal', moderate: 'confessional', intense: 'soul-baring' },
+  cathartic: { mild: 'releasing', moderate: 'cathartic', intense: 'purging' },
+
+  // Funk/Groove category
+  tight: { mild: 'locked in', moderate: 'tight', intense: 'airtight' },
+  syncopated: { mild: 'off-beat', moderate: 'syncopated', intense: 'heavily syncopated' },
+  swaggering: { mild: 'confident', moderate: 'swaggering', intense: 'outrageously cocky' },
+
+  // Pop/Catchy category
+  catchy: { mild: 'memorable', moderate: 'catchy', intense: 'earworm' },
+  upbeat: { mild: 'positive', moderate: 'upbeat', intense: 'exhilarating' },
+  polished: { mild: 'clean', moderate: 'polished', intense: 'immaculately polished' },
+
+  // Bouncy/Party category
+  bouncy: { mild: 'springy', moderate: 'bouncy', intense: 'hyperactive' },
+  party: { mild: 'social', moderate: 'party', intense: 'raging party' },
+  liquid: { mild: 'smooth', moderate: 'liquid', intense: 'flowing like water' },
+
+  // Retro category
+  retro: { mild: 'vintage', moderate: 'retro', intense: 'throwback' },
+  'feel-good': { mild: 'pleasant', moderate: 'feel-good', intense: 'euphoric' },
+  neon: { mild: 'bright', moderate: 'neon', intense: 'blindingly neon' },
+
+  // Classical/Noble category
+  noble: { mild: 'dignified', moderate: 'noble', intense: 'regal' },
+  regal: { mild: 'stately', moderate: 'regal', intense: 'imperial' },
+  soaring: { mild: 'rising', moderate: 'soaring', intense: 'sky-high' },
+
+  // Story/Character category
+  'story driven': { mild: 'narrative', moderate: 'story driven', intense: 'epic narrative' },
+  hard: { mild: 'firm', moderate: 'hard', intense: 'uncompromising' },
+  moody: { mild: 'temperamental', moderate: 'moody', intense: 'brooding' },
+
+  // Futuristic category
+  futuristic: { mild: 'modern', moderate: 'futuristic', intense: 'far future' },
+  cyberpunk: { mild: 'digital', moderate: 'cyberpunk', intense: 'dystopian cyber' },
+
+  // Night/Contemplative category
+  contemplative: { mild: 'reflective', moderate: 'contemplative', intense: 'deeply philosophical' },
+
+  // Energy category
+  'high energy': { mild: 'energetic', moderate: 'high energy', intense: 'explosive' },
+  pulsing: { mild: 'throbbing', moderate: 'pulsing', intense: 'relentlessly pulsing' },
+
+  // Caribbean/Summer category
+  caribbean: { mild: 'tropical', moderate: 'caribbean', intense: 'island fever' },
+  infectious: { mild: 'catchy', moderate: 'infectious', intense: 'unstoppable' },
+  summer: { mild: 'warm', moderate: 'summer', intense: 'scorching summer' },
+
+  // Rebellion category
+  rebellious: { mild: 'defiant', moderate: 'rebellious', intense: 'revolutionary' },
+  urgent: { mild: 'pressing', moderate: 'urgent', intense: 'desperate' },
+  youthful: { mild: 'fresh', moderate: 'youthful', intense: 'teenage' },
+
+  // Nature/Positive category
+  sunny: { mild: 'bright', moderate: 'sunny', intense: 'radiant' },
+  rootsy: { mild: 'grounded', moderate: 'rootsy', intense: 'deeply rooted' },
+  positive: { mild: 'optimistic', moderate: 'positive', intense: 'radiantly positive' },
+
+  // Chaos/Tribal category
+  chaotic: { mild: 'unpredictable', moderate: 'chaotic', intense: 'anarchic' },
+  tribal: { mild: 'communal', moderate: 'tribal', intense: 'primal tribal' },
+  primal: { mild: 'basic', moderate: 'primal', intense: 'raw and primal' },
+
+  // Cold/Stark category
+  cold: { mild: 'cool', moderate: 'cold', intense: 'frigid' },
+  stark: { mild: 'bare', moderate: 'stark', intense: 'harshly stark' },
+
+  // Heavy/Psychedelic category
+  fuzzy: { mild: 'warm', moderate: 'fuzzy', intense: 'heavily distorted' },
+  trippy: { mild: 'surreal', moderate: 'trippy', intense: 'mind-bending' },
+  thunderous: { mild: 'rumbling', moderate: 'thunderous', intense: 'earth-shaking' },
+
+  // Grand/Character category
+  grand: { mild: 'impressive', moderate: 'grand', intense: 'magnificent' },
+  honest: { mild: 'genuine', moderate: 'honest', intense: 'brutally honest' },
+  charming: { mild: 'pleasant', moderate: 'charming', intense: 'enchanting' },
+
+  // Smooth/Urban category
+  slick: { mild: 'smooth', moderate: 'slick', intense: 'ultra-slick' },
+  urban: { mild: 'city', moderate: 'urban', intense: 'street' },
+  street: { mild: 'urban', moderate: 'street', intense: 'gritty street' },
+
+  // Bright/Angry category
+  bright: { mild: 'clear', moderate: 'bright', intense: 'dazzling' },
+  angry: { mild: 'frustrated', moderate: 'angry', intense: 'furious' },
+  angsty: { mild: 'restless', moderate: 'angsty', intense: 'tortured' },
+  disaffected: { mild: 'detached', moderate: 'disaffected', intense: 'alienated' },
+
+  // Romantic/Sensual category
+  romantic: { mild: 'tender', moderate: 'romantic', intense: 'passionately romantic' },
+  sensual: { mild: 'intimate', moderate: 'sensual', intense: 'seductive' },
 };
 
 /**

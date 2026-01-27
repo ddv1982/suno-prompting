@@ -52,7 +52,7 @@ export function CreativeBoostPanel({
     seedGenres: input.seedGenres,
   }).success;
 
-  const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleWordlessVocalsChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine: handleRefine });
+  const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine: handleRefine });
 
   const handleMoodCategoryChange = (category: MoodCategory | null): void => {
     onInputChange(prev => ({ ...prev, moodCategory: category }));
@@ -111,13 +111,11 @@ export function CreativeBoostPanel({
         )}
 
         <TogglesSection
-          withWordlessVocals={input.withWordlessVocals}
           maxMode={maxMode}
           storyMode={storyMode}
           lyricsMode={lyricsMode}
           isLLMAvailable={isLLMAvailable}
           isDirectMode={isDirectMode}
-          onWordlessVocalsChange={handleWordlessVocalsChange}
           onMaxModeChange={onMaxModeChange}
           onStoryModeChange={onStoryModeChange}
           onLyricsModeChange={handleLyricsToggleChange}

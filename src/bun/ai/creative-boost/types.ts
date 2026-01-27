@@ -32,7 +32,6 @@ export interface GenerateCreativeBoostOptions {
   sunoStyles: string[];
   description: string;
   lyricsTopic: string;
-  withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;
   config: CreativeBoostEngineConfig;
@@ -50,7 +49,6 @@ export interface RefineCreativeBoostOptions {
   description: string;
   seedGenres: string[];
   sunoStyles: string[];
-  withWordlessVocals: boolean;
   maxMode: boolean;
   withLyrics: boolean;
   config: CreativeBoostEngineConfig;

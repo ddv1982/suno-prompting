@@ -16,7 +16,6 @@ const log = createLogger('QuickVibes');
 
 type QuickVibesActionsConfig = GenerationActionDeps & {
   setPendingInput: (input: string) => void;
-  withWordlessVocals: boolean;
   getQuickVibesInput: () => QuickVibesInput;
 };
 
@@ -24,7 +23,6 @@ export interface QuickVibesActionsResult {
   handleGenerateQuickVibes: (
     category: QuickVibesCategory | null,
     customDescription: string,
-    wordlessVocals: boolean,
     sunoStyles?: string[],
     moodCategory?: MoodCategory | null
   ) => Promise<void>;
@@ -37,7 +35,6 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     isGenerating,
     currentSession,
     setPendingInput,
-    withWordlessVocals,
     getQuickVibesInput,
     showToast,
   } = config;
@@ -48,7 +45,6 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
   const handleGenerateQuickVibes = useCallback(async (
     category: QuickVibesCategory | null,
     customDescription: string,
-    wordlessVocals: boolean,
     sunoStyles: string[] = [],
     moodCategory: MoodCategory | null = null
   ) => {
@@ -61,13 +57,13 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
       {
         action: 'quickVibes',
         apiCall: async () => {
-          const result = await rpcClient.generateQuickVibes({ category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles, moodCategory });
+          const result = await rpcClient.generateQuickVibes({ category, customDescription, sunoStyles, moodCategory });
           if (!result.ok) throw new Error(formatRpcError(result.error));
           return result.value;
         },
         originalInput,
         promptMode: 'quickVibes',
-        modeInput: { quickVibesInput: { category, customDescription, withWordlessVocals: wordlessVocals, sunoStyles, moodCategory } },
+        modeInput: { quickVibesInput: { category, customDescription, sunoStyles, moodCategory } },
         successMessage: "Quick Vibes prompt generated.",
         errorContext: "generate Quick Vibes",
         log,
@@ -81,8 +77,8 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
     if (isGenerating) return;
     if (!currentSession?.quickVibesInput) return;
 
-    const { category, customDescription, withWordlessVocals: storedWithWordlessVocals, sunoStyles: storedSunoStyles } = currentSession.quickVibesInput;
-    await handleGenerateQuickVibes(category, customDescription, storedWithWordlessVocals ?? false, storedSunoStyles ?? []);
+    const { category, customDescription, sunoStyles: storedSunoStyles } = currentSession.quickVibesInput;
+    await handleGenerateQuickVibes(category, customDescription, storedSunoStyles ?? []);
   }, [isGenerating, currentSession, handleGenerateQuickVibes]);
 
   const handleRefineQuickVibes = useCallback(async (input: string): Promise<boolean> => {
@@ -99,7 +95,6 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
             currentTitle: currentSession.currentTitle,
             description: uiInput.customDescription,
             feedback: input,
-            withWordlessVocals,
             category: uiInput.category,
             sunoStyles: uiInput.sunoStyles,
           });
@@ -108,7 +103,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
         },
         originalInput: currentSession.originalInput || '',
         promptMode: 'quickVibes',
-        modeInput: { quickVibesInput: { ...uiInput, withWordlessVocals } },
+        modeInput: { quickVibesInput: uiInput },
         successMessage: "Quick Vibes prompt refined.",
         feedback: input,
         errorContext: "refine Quick Vibes",
@@ -117,7 +112,7 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
       },
       sessionDeps
     );
-  }, [execute, sessionDeps, getQuickVibesInput, currentSession, withWordlessVocals, setPendingInput]);
+  }, [execute, sessionDeps, getQuickVibesInput, currentSession, setPendingInput]);
 
   return {
     handleGenerateQuickVibes,

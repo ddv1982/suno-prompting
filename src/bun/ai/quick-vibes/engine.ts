@@ -122,7 +122,7 @@ export async function generateQuickVibes(
   config: QuickVibesEngineConfig,
   runtime?: TraceRuntime
 ): Promise<GenerationResult> {
-  const { category, customDescription, withWordlessVocals, sunoStyles } = options;
+  const { category, customDescription, sunoStyles } = options;
   const rng = runtime?.rng ?? Math.random;
 
   // Validate input (styles limit + mutual exclusivity with category)
@@ -145,12 +145,11 @@ export async function generateQuickVibes(
 
   // Category-based generation: fully deterministic (no LLM)
   if (category) {
-    log.info('generateQuickVibes:deterministic', { category, withWordlessVocals });
+    log.info('generateQuickVibes:deterministic', { category });
     const { text, title } = buildDeterministicQuickVibes(
       category,
-      withWordlessVocals,
       config.isMaxMode(),
-      { withWordlessVocals, maxMode: config.isMaxMode(), rng, trace: runtime?.trace }
+      { maxMode: config.isMaxMode(), rng, trace: runtime?.trace }
     );
 
     const deterministicResult = applyQuickVibesMaxMode(text, config.isMaxMode());

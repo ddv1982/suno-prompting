@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'bun:test';
 
 import {
-  getCreativityLevel,
   buildCreativeBoostSystemPrompt,
   buildCreativeBoostUserPrompt,
   parseCreativeBoostResponse,
   buildCreativeBoostRefineSystemPrompt,
   buildCreativeBoostRefineUserPrompt,
 } from '@bun/prompt/creative-boost-builder';
+import { getCreativityLevel } from '@shared/creative-boost-utils';
 
 // ============================================================================
 // Task 9.1: Unit Tests for getCreativityLevel
@@ -92,59 +92,52 @@ describe('getCreativityLevel', () => {
 describe('buildCreativeBoostSystemPrompt', () => {
   describe('creativity guidance', () => {
     it('includes LOW guidance for low creativity level', () => {
-      const prompt = buildCreativeBoostSystemPrompt(10, false);
+      const prompt = buildCreativeBoostSystemPrompt(10);
       expect(prompt).toContain('CREATIVITY: LOW');
       expect(prompt).toContain('single genres');
       expect(prompt).toContain('genre-pure');
     });
 
     it('includes SAFE guidance for safe creativity level', () => {
-      const prompt = buildCreativeBoostSystemPrompt(35, false);
+      const prompt = buildCreativeBoostSystemPrompt(35);
       expect(prompt).toContain('CREATIVITY: SAFE');
       expect(prompt).toContain('established combinations');
       expect(prompt).toContain('recognized genre pairings');
     });
 
     it('includes NORMAL guidance for normal creativity level', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, false);
+      const prompt = buildCreativeBoostSystemPrompt(50);
       expect(prompt).toContain('CREATIVITY: NORMAL');
       expect(prompt).toContain('BALANCED');
       expect(prompt).toContain('musically coherent');
     });
 
     it('includes ADVENTUROUS guidance for adventurous creativity level', () => {
-      const prompt = buildCreativeBoostSystemPrompt(65, false);
+      const prompt = buildCreativeBoostSystemPrompt(65);
       expect(prompt).toContain('CREATIVITY: ADVENTUROUS');
       expect(prompt).toContain('Push boundaries');
       expect(prompt).toContain('unusual combinations');
     });
 
     it('includes HIGH guidance for high creativity level', () => {
-      const prompt = buildCreativeBoostSystemPrompt(90, false);
+      const prompt = buildCreativeBoostSystemPrompt(90);
       expect(prompt).toContain('CREATIVITY: HIGH');
       expect(prompt).toContain('EXPERIMENTAL');
       expect(prompt).toContain('INVENT entirely new');
     });
 
     it('different levels produce different guidance', () => {
-      const lowPrompt = buildCreativeBoostSystemPrompt(10, false);
-      const highPrompt = buildCreativeBoostSystemPrompt(90, false);
+      const lowPrompt = buildCreativeBoostSystemPrompt(10);
+      const highPrompt = buildCreativeBoostSystemPrompt(90);
       expect(lowPrompt).not.toBe(highPrompt);
       expect(lowPrompt).toContain('LOW');
       expect(highPrompt).toContain('HIGH');
     });
   });
 
-  describe('vocal modes', () => {
-    it('includes wordless vocals instructions when withWordlessVocals is true', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, true);
-      expect(prompt).toContain('WORDLESS VOCALS');
-      expect(prompt).toContain('wordless vocalizations');
-      expect(prompt).toContain('NO actual words');
-    });
-
-    it('focuses on musical style when withWordlessVocals is false', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, false);
+  describe('vocal guidance', () => {
+    it('focuses on musical style (vocals handled separately)', () => {
+      const prompt = buildCreativeBoostSystemPrompt(50);
       expect(prompt).toContain('VOCALS: Focus on the musical style');
       expect(prompt).toContain('handled separately');
     });
@@ -152,19 +145,19 @@ describe('buildCreativeBoostSystemPrompt', () => {
 
   describe('output format', () => {
     it('specifies JSON output format', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, false);
+      const prompt = buildCreativeBoostSystemPrompt(50);
       expect(prompt).toContain('JSON object');
       expect(prompt).toContain('"title"');
       expect(prompt).toContain('"style"');
     });
 
     it('does not include lyrics field (lyrics generated separately)', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, false);
+      const prompt = buildCreativeBoostSystemPrompt(50);
       expect(prompt).not.toContain('"lyrics"');
     });
 
     it('warns against markdown code blocks', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, false);
+      const prompt = buildCreativeBoostSystemPrompt(50);
       expect(prompt).toContain('OUTPUT FORMAT RULES');
       expect(prompt).toContain('no markdown code blocks');
     });
@@ -172,7 +165,7 @@ describe('buildCreativeBoostSystemPrompt', () => {
 
   describe('context integration', () => {
     it('includes context integration instructions', () => {
-      const prompt = buildCreativeBoostSystemPrompt(50, false);
+      const prompt = buildCreativeBoostSystemPrompt(50);
       expect(prompt).toContain('CONTEXT INTEGRATION');
       expect(prompt).toContain('BPM');
       expect(prompt).toContain('Mood');
@@ -425,15 +418,9 @@ describe('parseCreativeBoostResponse', () => {
 // ============================================================================
 
 describe('buildCreativeBoostRefineSystemPrompt', () => {
-  describe('vocal modes', () => {
-    it('includes wordless vocals guidance when withWordlessVocals is true', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(true);
-      expect(prompt).toContain('WORDLESS VOCALS');
-      expect(prompt).toContain('wordless vocalizations');
-    });
-
-    it('focuses on musical style when withWordlessVocals is false', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(false);
+  describe('vocal guidance', () => {
+    it('focuses on musical style (vocals handled separately)', () => {
+      const prompt = buildCreativeBoostRefineSystemPrompt();
       expect(prompt).toContain('VOCALS: Focus on the musical style');
       expect(prompt).toContain('handled separately');
     });
@@ -441,32 +428,32 @@ describe('buildCreativeBoostRefineSystemPrompt', () => {
 
   describe('output format', () => {
     it('specifies JSON output format', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(false);
+      const prompt = buildCreativeBoostRefineSystemPrompt();
       expect(prompt).toContain('JSON object');
       expect(prompt).toContain('"title"');
       expect(prompt).toContain('"style"');
     });
 
     it('does not include lyrics field (lyrics generated separately)', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(false);
+      const prompt = buildCreativeBoostRefineSystemPrompt();
       expect(prompt).not.toContain('"lyrics"');
     });
 
     it('warns against markdown code blocks', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(false);
+      const prompt = buildCreativeBoostRefineSystemPrompt();
       expect(prompt).toContain('Do NOT wrap the JSON in markdown code blocks');
     });
   });
 
   describe('refinement context', () => {
     it('mentions refining existing prompt', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(false);
+      const prompt = buildCreativeBoostRefineSystemPrompt();
       expect(prompt).toContain('REFINING');
       expect(prompt).toContain('existing');
     });
 
     it('mentions applying feedback thoughtfully', () => {
-      const prompt = buildCreativeBoostRefineSystemPrompt(false);
+      const prompt = buildCreativeBoostRefineSystemPrompt();
       expect(prompt).toContain('feedback');
       expect(prompt).toContain('thoughtfully');
     });

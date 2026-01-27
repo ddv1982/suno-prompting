@@ -35,6 +35,7 @@ import {
 } from '@bun/prompt/tags';
 import { getVocalSuggestionsForGenre } from '@bun/prompt/vocal-descriptors';
 import { DEFAULT_GENRE } from '@shared/constants';
+import { extractBaseGenre } from '@shared/utils/genre';
 import { selectRandomN } from '@shared/utils/random';
 
 import type { RemixResult } from './types';
@@ -106,8 +107,8 @@ function selectNewGenreValue(
 
 /** Update BPM based on genre */
 function updateBpmForNewGenre(prompt: string, newGenreValue: string): string {
-  const firstGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() || '';
-  const baseGenre = firstGenre.split(' ')[0] || firstGenre;
+  const firstGenre = newGenreValue.split(',')[0]?.trim().toLowerCase() ?? '';
+  const baseGenre = extractBaseGenre(firstGenre) || firstGenre;
   const genreDef = GENRE_REGISTRY[baseGenre as GenreType];
   if (genreDef?.bpm) {
     return replaceFieldLine(prompt, 'BPM', `${genreDef.bpm.typical}`);

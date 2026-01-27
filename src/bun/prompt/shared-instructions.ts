@@ -19,12 +19,6 @@ export const CONTEXT_INTEGRATION_INSTRUCTIONS = `CONTEXT INTEGRATION (use ALL de
 - Vocal style: Weave vocal descriptors naturally into the output`;
 
 /**
- * Vocal style integration guidance.
- * Instructions for incorporating wordless vocals into generated prompts.
- */
-export const WORDLESS_VOCALS_GUIDANCE = `WORDLESS VOCALS: Include wordless vocalizations only (humming, oohs, aahs, vocal textures). NO actual words or lyrics.`;
-
-/**
  * Standard output format instructions for JSON responses.
  * Used by all LLM-based generation modes.
  */

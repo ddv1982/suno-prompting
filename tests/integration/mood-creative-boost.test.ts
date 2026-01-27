@@ -63,10 +63,9 @@ describe('Creative Boost Simple mode with mood category', () => {
     const rng = createFixedRng(0.5);
 
     // Act
-    const result = buildDeterministicCreativeBoost(50, [], false, true, {
+    const result = buildDeterministicCreativeBoost(50, [], true, {
       creativityLevel: 50,
       seedGenres: [],
-      withWordlessVocals: false,
       maxMode: true,
       moodCategory,
       rng,
@@ -81,7 +80,7 @@ describe('Creative Boost Simple mode with mood category', () => {
     const rng = createFixedRng(0.5);
 
     // Act
-    const result = buildDeterministicCreativeBoost(50, [], false, true, rng);
+    const result = buildDeterministicCreativeBoost(50, [], true, rng);
 
     // Assert - the result should contain a mood (MAX mode uses lowercase)
     expect(result.text).toContain('mood:');
@@ -94,10 +93,9 @@ describe('Creative Boost Simple mode with mood category', () => {
     const rng = createFixedRng(0.5);
 
     // Act - high creativity level normally gives extreme moods
-    const result = buildDeterministicCreativeBoost(90, [], false, true, {
+    const result = buildDeterministicCreativeBoost(90, [], true, {
       creativityLevel: 90,
       seedGenres: [],
-      withWordlessVocals: false,
       maxMode: true,
       moodCategory,
       rng,

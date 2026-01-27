@@ -257,7 +257,7 @@ describe('v3.0 Performance: Quick Vibes', () => {
 
     for (const category of allCategories) {
       const stats = benchmark(() => {
-        buildDeterministicQuickVibes(category, false, false);
+        buildDeterministicQuickVibes(category, false);
       }, 50);
 
       categoryTimes.push({ category, avg: stats.average, max: stats.max });
@@ -298,7 +298,7 @@ describe('v3.0 Performance: Quick Vibes', () => {
 
     for (const category of newCategories) {
       const stats = benchmark(() => {
-        buildDeterministicQuickVibes(category, false, false);
+        buildDeterministicQuickVibes(category, false);
       }, 50);
 
       times.push(stats.average);
@@ -312,7 +312,7 @@ describe('v3.0 Performance: Quick Vibes', () => {
 
   test('should generate Quick Vibes with maxMode in <1ms', () => {
     const stats = benchmark(() => {
-      buildDeterministicQuickVibes('workout-energy', true, true);
+      buildDeterministicQuickVibes('workout-energy', true);
     }, ITERATIONS);
 
     console.info(formatStats(stats, 'Quick Vibes maxMode'));
@@ -360,7 +360,7 @@ describe('v3.0 Performance: Comprehensive Summary', () => {
         case 3: {
           // Quick Vibes generation
           const category = allCategories[workloadIndex % allCategories.length]!;
-          buildDeterministicQuickVibes(category, false, false);
+          buildDeterministicQuickVibes(category, false);
           break;
         }
         case 4: {

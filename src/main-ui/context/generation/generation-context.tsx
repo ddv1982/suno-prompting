@@ -24,7 +24,7 @@ export const useGenerationContext = (): GenerationContextType => {
 
 function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
   const { currentSession, generateId, saveSession } = useSessionContext();
-  const { withWordlessVocals, getQuickVibesInput, setPendingInput, creativeBoostInput } = useEditorContext();
+  const { getQuickVibesInput, setPendingInput, creativeBoostInput } = useEditorContext();
   const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
 
@@ -64,7 +64,6 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
   const quickVibesActions = useQuickVibesActions({
     ...baseDeps,
     setPendingInput,
-    withWordlessVocals,
     getQuickVibesInput,
   });
   const creativeBoostActions = useCreativeBoostActions({

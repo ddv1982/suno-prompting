@@ -14,8 +14,6 @@ export interface GenerateQuickVibesOptions {
   category: QuickVibesCategory | null;
   /** Custom description when no category is selected */
   customDescription: string;
-  /** Whether to include wordless vocals in instruments */
-  withWordlessVocals: boolean;
   /** Suno V5 style tags for direct mode */
   sunoStyles: string[];
 }
@@ -32,8 +30,6 @@ export interface RefineQuickVibesOptions {
   description?: string;
   /** User feedback to apply */
   feedback: string;
-  /** Whether to include wordless vocals */
-  withWordlessVocals: boolean;
   /** Category for deterministic refinement (optional) */
   category?: QuickVibesCategory | null;
   /** Suno V5 style tags for direct mode */

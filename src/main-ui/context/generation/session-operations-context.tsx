@@ -22,7 +22,7 @@ export function useSessionOperationsContext(): SessionOperationsContextValue {
 
 export function SessionOperationsProvider({ children }: { children: ReactNode }): ReactNode {
   const { currentSession, setCurrentSession, saveSession, generateId } = useSessionContext();
-  const { resetEditor, setLyricsTopic, setPromptMode, setQuickVibesInput, setWithWordlessVocals, resetQuickVibesInput, setCreativeBoostInput } = useEditorContext();
+  const { resetEditor, setLyricsTopic, setPromptMode, setQuickVibesInput, resetQuickVibesInput, setCreativeBoostInput } = useEditorContext();
   const { setChatMessages, setValidation, setDebugTrace } = useGenerationStateContext();
 
   const selectSession = useCallback((session: PromptSession) => {
@@ -34,12 +34,10 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
 
     if (session.promptMode === 'quickVibes' && session.quickVibesInput) {
       setQuickVibesInput(session.quickVibesInput);
-      setWithWordlessVocals(session.quickVibesInput.withWordlessVocals ?? false);
     } else if (session.promptMode === 'creativeBoost' && session.creativeBoostInput) {
       setCreativeBoostInput(session.creativeBoostInput);
     } else {
       resetQuickVibesInput();
-      setWithWordlessVocals(false);
     }
   }, [
     resetQuickVibesInput,
@@ -50,7 +48,6 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
     setPromptMode,
     setQuickVibesInput,
     setValidation,
-    setWithWordlessVocals,
   ]);
 
   const newProject = useCallback(() => {

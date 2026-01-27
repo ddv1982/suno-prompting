@@ -25,7 +25,6 @@ export function createQuickVibesMethods(
   generateQuickVibes: (
     category: QuickVibesCategory | null,
     customDescription: string,
-    withWordlessVocals: boolean,
     sunoStyles: string[],
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
@@ -34,7 +33,6 @@ export function createQuickVibesMethods(
     currentTitle?: string;
     description?: string;
     feedback: string;
-    withWordlessVocals: boolean;
     category?: QuickVibesCategory | null;
     sunoStyles?: string[];
   }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }) => Promise<GenerationResult>;
@@ -44,12 +42,11 @@ export function createQuickVibesMethods(
   async function generateQuickVibes(
     category: QuickVibesCategory | null,
     customDescription: string,
-    withWordlessVocals: boolean,
     sunoStyles: string[],
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ): Promise<GenerationResult> {
     return generateQuickVibesImpl(
-      { category, customDescription, withWordlessVocals, sunoStyles },
+      { category, customDescription, sunoStyles },
       {
         getModel: generationConfig.getModel,
         isMaxMode: generationConfig.isMaxMode,
@@ -67,7 +64,6 @@ export function createQuickVibesMethods(
     currentTitle?: string;
     description?: string;
     feedback: string;
-    withWordlessVocals: boolean;
     category?: QuickVibesCategory | null;
     sunoStyles?: string[];
   }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }): Promise<GenerationResult> {

@@ -7,11 +7,14 @@
  */
 
 import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS, type GenreType, selectInstrumentsForGenre as selectInstruments } from '@bun/instruments';
-import { filterSunoStylesByMoodCategory, selectMoodsForCategory, type MoodCategory } from '@bun/mood';
+import { applyIntensityToMoods, filterSunoStylesByMoodCategory, selectMoodsForCategory, type MoodCategory } from '@bun/mood';
+import { getMoodsForGenre } from '@bun/prompt/sections/variations';
+import { extractBaseGenre } from '@shared/utils/genre';
 import { selectRandom, selectRandomN } from '@shared/utils/random';
 
 import {
   ADVENTUROUS_TRIPLE_PROBABILITY,
+  CREATIVITY_TO_INTENSITY,
   NORMAL_BLEND_PROBABILITY,
   NORMAL_SUFFIX_PROBABILITY,
   SAFE_MULTI_GENRE_PROBABILITY,
@@ -252,9 +255,10 @@ export function generateDeterministicCreativeBoostTitle(
 /**
  * Select mood appropriate for creativity level.
  *
- * When moodCategory is provided, uses moods from that category instead of
- * level-based pools. Falls back to level-based pools if category selection
- * returns empty.
+ * Selection priority:
+ * 1. Explicit mood category override (highest priority)
+ * 2. Genre-aware selection (if genre provided with moods)
+ * 3. Generic creativity-level pools (fallback)
  *
  * Mood intensity scales with creativity level:
  * - low: Calm, peaceful moods
@@ -266,6 +270,7 @@ export function generateDeterministicCreativeBoostTitle(
  * @param level - Creativity level to select mood for
  * @param rng - Random number generator for deterministic selection
  * @param moodCategory - Optional mood category to override level-based selection
+ * @param genre - Optional genre string for genre-aware mood selection
  * @returns Selected mood string
  *
  * @example
@@ -279,13 +284,18 @@ export function generateDeterministicCreativeBoostTitle(
  * @example
  * selectMoodForLevel('normal', () => 0.5, 'calm');
  * // Uses a mood from 'calm' category instead of 'normal' pool
+ *
+ * @example
+ * selectMoodForLevel('high', () => 0.5, undefined, 'jazz');
+ * // Uses a jazz-specific mood with intense intensity
  */
 export function selectMoodForLevel(
   level: CreativityLevel,
   rng: () => number,
   moodCategory?: MoodCategory,
+  genre?: string,
 ): string {
-  // If mood category provided, use moods from that category
+  // Priority 1: Explicit mood category override
   if (moodCategory) {
     const categoryMoods = selectMoodsForCategory(moodCategory, 1, rng);
     if (categoryMoods[0]) {
@@ -294,6 +304,21 @@ export function selectMoodForLevel(
     // Fall through to level-based selection if category returns empty
   }
 
+  // Priority 2: Genre-aware selection
+  if (genre) {
+    // Safe assertion: GENRE_REGISTRY lookup handles unknown genres gracefully via genreData check
+    const baseGenre = extractBaseGenre(genre) as GenreType;
+    const genreData = GENRE_REGISTRY[baseGenre];
+
+    if (genreData?.moods && genreData.moods.length > 0) {
+      const genreMoods = getMoodsForGenre(baseGenre);
+      const intensity = CREATIVITY_TO_INTENSITY[level];
+      const intensifiedMoods = applyIntensityToMoods(genreMoods, intensity);
+      return selectRandom(intensifiedMoods, rng);
+    }
+  }
+
+  // Priority 3: Generic creativity-level pools (existing behavior)
   const pool = MOOD_POOLS[level];
   return selectRandom(pool, rng);
 }
@@ -325,7 +350,7 @@ export function getInstrumentsForGenre(
   rng: () => number
 ): string[] {
   // Try to find the genre in registry using first word
-  const baseGenre = genre.split(' ')[0]?.toLowerCase() as GenreType;
+  const baseGenre = extractBaseGenre(genre) as GenreType;
   const genreData = GENRE_REGISTRY[baseGenre];
 
   if (genreData) {

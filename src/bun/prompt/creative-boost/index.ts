@@ -8,7 +8,10 @@
  */
 
 // Main builder
-export { buildDeterministicCreativeBoost, mapSliderToLevel } from './builder';
+export { buildDeterministicCreativeBoost } from './builder';
+
+// Re-export getCreativityLevel from shared for convenience
+export { getCreativityLevel } from '@shared/creative-boost-utils';
 
 // Constants
 export {

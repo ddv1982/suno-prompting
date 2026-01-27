@@ -70,8 +70,6 @@ export interface QuickVibesState {
   input: QuickVibesInput;
   /** Original input from session (for refine mode change detection) */
   originalInput?: QuickVibesInput | null;
-  /** Whether wordless vocals are enabled */
-  withWordlessVocals: boolean;
 }
 
 /** Creative Boost mode state */
@@ -108,10 +106,9 @@ export interface EditorHandlers {
   onStoryModeChange: (mode: boolean) => void;
   onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
   onQuickVibesInputChange: (input: QuickVibesInput) => void;
-  onWordlessVocalsChange: (value: boolean) => void;
   onCreativeBoostInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
   onGenerate: (input: string) => Promise<boolean>;
-  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, withWordlessVocals: boolean, sunoStyles: string[], moodCategory: MoodCategory | null) => void;
+  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, sunoStyles: string[], moodCategory: MoodCategory | null) => void;
   onRefineQuickVibes: (feedback: string) => Promise<boolean>;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => Promise<boolean>;

@@ -6,6 +6,7 @@ import { selectInstrumentsForGenre } from '@bun/instruments/guidance';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { formatGenreLabels } from '@shared/labels';
+import { extractBaseGenre } from '@shared/utils/genre';
 
 // Re-export DEFAULT_GENRE for backwards compatibility
 export { DEFAULT_GENRE } from '@shared/constants';
@@ -183,7 +184,7 @@ export function resolveGenre(
     // Suno V5 styles: inject EXACTLY as-is (comma-separated if multiple)
     return {
       forOutput: sunoStyles.join(', '),
-      forLookup: sunoStyles[0]?.split(' ')[0] || DEFAULT_GENRE,
+      forLookup: extractBaseGenre(sunoStyles[0] ?? '') || DEFAULT_GENRE,
     };
   }
   

@@ -26,8 +26,6 @@ export interface QuickVibesTemplate {
 }
 
 export interface BuildQuickVibesOptions {
-  /** Whether to include wordless vocals in instruments */
-  withWordlessVocals: boolean;
   /** Whether to use MAX mode format (quoted fields) or standard */
   maxMode: boolean;
   /** Optional mood category to override template moods */

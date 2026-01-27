@@ -72,3 +72,28 @@ export function selectMoodWithIntensity(
 export function moodHasIntensityVariants(mood: string): boolean {
   return mood.toLowerCase() in MOOD_INTENSITY_MAP;
 }
+
+/**
+ * Apply intensity transformation to an array of moods.
+ *
+ * Transforms each mood to its intensity variant using MOOD_INTENSITY_MAP.
+ * Moods without mappings are returned unchanged.
+ *
+ * @param moods - Array of mood strings to transform
+ * @param intensity - Target intensity level (mild/moderate/intense)
+ * @returns Array of intensity-transformed mood strings
+ *
+ * @example
+ * applyIntensityToMoods(['dreamy', 'ethereal'], 'mild')
+ * // Returns: ['hazy', 'airy']
+ *
+ * @example
+ * applyIntensityToMoods(['dreamy', 'ethereal'], 'intense')
+ * // Returns: ['surreal', 'otherworldly']
+ */
+export function applyIntensityToMoods(
+  moods: readonly string[],
+  intensity: MoodIntensity,
+): string[] {
+  return moods.map(mood => getIntensityVariant(mood, intensity));
+}

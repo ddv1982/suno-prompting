@@ -398,13 +398,13 @@ describe("RPC Handlers", () => {
       const result = await handlers.generateQuickVibes({
         category: "lofi-study",
         customDescription: "relaxing",
-        withWordlessVocals: true,
+        
         sunoStyles: [],
       });
 
       expect(result.prompt).toBe("Quick vibes prompt");
       expect(result.versionId).toBeDefined();
-      expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", true, [], expect.anything());
+      expect(aiEngine.generateQuickVibes).toHaveBeenCalledWith("lofi-study", "relaxing", [], expect.anything());
     });
   });
 
@@ -513,7 +513,7 @@ bpm: "110"`;
       await expect(handlers.generateQuickVibes({
         category: "lofi-study",
         customDescription: "",
-        withWordlessVocals: false,
+        
         sunoStyles: ["dream-pop"],
       })).rejects.toThrow("Cannot use both Category and Suno V5 Styles");
     });
@@ -526,7 +526,7 @@ bpm: "110"`;
       await expect(handlers.generateQuickVibes({
         category: null,
         customDescription: "",
-        withWordlessVocals: false,
+        
         sunoStyles: ["a", "b", "c", "d", "e"], // 5 is too many
       })).rejects.toThrow("Maximum 4 Suno V5 styles allowed");
     });
@@ -539,7 +539,7 @@ bpm: "110"`;
       await expect(handlers.refineQuickVibes({
         currentPrompt: "test",
         feedback: "make it better",
-        withWordlessVocals: false,
+        
         category: "lofi-study",
         sunoStyles: ["dream-pop"],
       })).rejects.toThrow("Cannot use both Category and Suno V5 Styles");
@@ -556,7 +556,7 @@ bpm: "110"`;
         sunoStyles: [],
         description: "",
         lyricsTopic: "",
-        withWordlessVocals: false,
+        
         maxMode: false,
         withLyrics: false,
       })).rejects.toThrow("Invalid creativity level");
@@ -573,7 +573,7 @@ bpm: "110"`;
         sunoStyles: [],
         description: "",
         lyricsTopic: "",
-        withWordlessVocals: false,
+        
         maxMode: false,
         withLyrics: false,
       })).rejects.toThrow("Maximum 4 seed genres allowed");
@@ -590,7 +590,7 @@ bpm: "110"`;
         sunoStyles: ["dream-pop"],
         description: "",
         lyricsTopic: "",
-        withWordlessVocals: false,
+        
         maxMode: false,
         withLyrics: false,
       })).rejects.toThrow("Cannot use both Seed Genres and Suno V5 Styles");
@@ -609,7 +609,7 @@ bpm: "110"`;
         description: "",
         seedGenres: [],
         sunoStyles: [],
-        withWordlessVocals: false,
+        
         maxMode: false,
         withLyrics: false,
       })).rejects.toThrow("Current prompt is required for refinement");
@@ -629,7 +629,7 @@ bpm: "110"`;
         description: "",
         seedGenres: [],
         sunoStyles: [],
-        withWordlessVocals: false,
+        
         maxMode: false,
         withLyrics: false,
       });
@@ -654,7 +654,7 @@ bpm: "110"`;
         description: "",
         seedGenres: [],
         sunoStyles: ["dream-pop", "shoegaze"],  // Direct Mode
-        withWordlessVocals: false,
+        
         maxMode: false,
         withLyrics: false,
       });

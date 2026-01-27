@@ -36,7 +36,6 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         sunoStyles,
         description,
         lyricsTopic,
-        withWordlessVocals,
         maxMode,
         withLyrics
       } = validate(GenerateCreativeBoostSchema, params);
@@ -48,7 +47,7 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         runtime.trace?.addRunEvent('run.start', 'generate.creativeBoost');
         const result = await aiEngine.generateCreativeBoost(
           creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-          withWordlessVocals, maxMode, withLyrics, runtime
+          maxMode, withLyrics, runtime
         );
         runtime.trace?.addRunEvent('run.end', 'success');
 
@@ -69,7 +68,6 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         description,
         seedGenres,
         sunoStyles,
-        withWordlessVocals,
         maxMode,
         withLyrics,
         targetGenreCount,
@@ -82,7 +80,7 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         runtime.trace?.addRunEvent('run.start', 'refine.creativeBoost');
         const result = await aiEngine.refineCreativeBoost(
           currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
-          seedGenres, sunoStyles, withWordlessVocals, maxMode, withLyrics, targetGenreCount, runtime
+          seedGenres, sunoStyles, maxMode, withLyrics, targetGenreCount, runtime
         );
         runtime.trace?.addRunEvent('run.end', 'success');
 

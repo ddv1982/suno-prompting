@@ -81,9 +81,15 @@ export const INSTRUMENT_REGISTRY: readonly InstrumentEntry[] = [
   { canonical: 'digital synth', category: 'pad', aliases: ['digital synthesizer'] },
   { canonical: 'FM synth', category: 'pad', aliases: ['FM synthesis', 'DX7'] },
   { canonical: 'Moog synth', category: 'pad', aliases: ['Moog', 'Minimoog'] },
+  { canonical: 'Prophet synth', category: 'pad', aliases: ['Prophet', 'Prophet-5', 'Rev2'] },
+  { canonical: 'Oberheim synth', category: 'pad', aliases: ['Oberheim', 'OB-6', 'OB-Xa'] },
+  { canonical: 'Juno synth', category: 'pad', aliases: ['Juno', 'Juno-106', 'Roland Juno'] },
   { canonical: 'synth', category: 'pad', aliases: ['synthesizer', 'synths'] },
   { canonical: 'crystalline synth pads', category: 'pad', aliases: ['crystal pads', 'glassy pads'] },
   { canonical: 'ambient pad', category: 'pad', aliases: ['atmospheric pad', 'drone pad'] },
+  { canonical: 'evolving pad', category: 'pad', aliases: ['evolving texture', 'morphing pad'] },
+  { canonical: 'warm pad', category: 'pad', aliases: ['thick pad', 'lush pad'] },
+  { canonical: 'textural pad', category: 'pad', aliases: ['texture pad', 'ambient texture'] },
 
   // Synth variants (workstation-inspired)
   { canonical: 'synth strings', category: 'pad', aliases: ['string synth', 'synthetic strings'] },

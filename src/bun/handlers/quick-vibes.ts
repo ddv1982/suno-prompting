@@ -46,30 +46,29 @@ async function runQuickVibesAction(
 export function createQuickVibesHandlers(aiEngine: AIEngine): QuickVibesHandlers {
   return {
     generateQuickVibes: async (params) => {
-      const { category, customDescription, withWordlessVocals, sunoStyles } = validate(GenerateQuickVibesSchema, params);
+      const { category, customDescription, sunoStyles } = validate(GenerateQuickVibesSchema, params);
 
       return runQuickVibesAction(
         aiEngine,
         'generateQuickVibes',
         'generate.quickVibes',
-        { category, customDescription, withWordlessVocals, sunoStylesCount: sunoStyles.length },
-        (runtime) => aiEngine.generateQuickVibes(category, customDescription, withWordlessVocals, sunoStyles, runtime)
+        { category, customDescription, sunoStylesCount: sunoStyles.length },
+        (runtime) => aiEngine.generateQuickVibes(category, customDescription, sunoStyles, runtime)
       );
     },
     refineQuickVibes: async (params) => {
-      const { currentPrompt, currentTitle, description, feedback, withWordlessVocals, category, sunoStyles } = validate(RefineQuickVibesSchema, params);
+      const { currentPrompt, currentTitle, description, feedback, category, sunoStyles } = validate(RefineQuickVibesSchema, params);
 
       return runQuickVibesAction(
         aiEngine,
         'refineQuickVibes',
         'generate.quickVibes',
-        { feedback, withWordlessVocals, category, sunoStylesCount: sunoStyles.length },
+        { feedback, category, sunoStylesCount: sunoStyles.length },
         (runtime) => aiEngine.refineQuickVibes({
           currentPrompt,
           currentTitle,
           description,
           feedback,
-          withWordlessVocals,
           category,
           sunoStyles,
         }, runtime)

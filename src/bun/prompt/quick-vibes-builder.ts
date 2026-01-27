@@ -1,4 +1,3 @@
-import { WORDLESS_VOCALS_GUIDANCE } from '@bun/prompt/shared-instructions';
 import { MAX_MODE_HEADER } from '@bun/prompt/tags';
 import { APP_CONSTANTS } from '@shared/constants';
 import { QUICK_VIBES_CATEGORIES } from '@shared/quick-vibes-categories';
@@ -8,10 +7,8 @@ import type { QuickVibesCategory } from '@shared/types';
 /**
  * Builds the system prompt for Quick Vibes generation
  */
-function buildQuickVibesSystemPrompt(withWordlessVocals: boolean): string {
-  const vocalInstruction = withWordlessVocals 
-    ? WORDLESS_VOCALS_GUIDANCE
-    : 'This is instrumental music - do NOT mention vocals or singing.';
+function buildQuickVibesSystemPrompt(): string {
+  const vocalInstruction = 'This is instrumental music - do NOT mention vocals or singing.';
 
   return `You are a Quick Vibes prompt writer for Suno V5. Generate short, evocative music prompts that capture a mood or atmosphere.
 
@@ -107,8 +104,8 @@ export function applyQuickVibesMaxMode(prompt: string, maxMode: boolean): string
 /**
  * Builds the system prompt for Quick Vibes refinement
  */
-export function buildQuickVibesRefineSystemPrompt(withWordlessVocals: boolean): string {
-  const basePrompt = buildQuickVibesSystemPrompt(withWordlessVocals);
+export function buildQuickVibesRefineSystemPrompt(): string {
+  const basePrompt = buildQuickVibesSystemPrompt();
   
   return `${basePrompt}
 

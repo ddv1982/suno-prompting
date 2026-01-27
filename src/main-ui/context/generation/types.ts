@@ -84,7 +84,6 @@ export interface GenerationContextType
   handleGenerateQuickVibes: (
     category: QuickVibesCategory | null,
     customDescription: string,
-    withWordlessVocals: boolean,
     sunoStyles: string[],
     moodCategory?: MoodCategory | null
   ) => Promise<void>;

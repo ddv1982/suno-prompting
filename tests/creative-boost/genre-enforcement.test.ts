@@ -65,7 +65,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"\nmood: "energetic"',
       "Original Title", undefined, "make it more jazzy",
-      "", "", ["rock", "jazz", "funk"], [], false, true, false, 3
+      "", "", ["rock", "jazz", "funk"], [], true, false, 3
     );
 
     const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
@@ -78,7 +78,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock, jazz, funk"\nbpm: "100"',
       "Original Title", undefined, "simplify the genre",
-      "", "", ["rock"], [], false, true, false, 1
+      "", "", ["rock"], [], true, false, 1
     );
 
     const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
@@ -91,7 +91,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "100"',
       "Original Title", undefined, "make it a fusion",
-      "", "", ["rock", "jazz", "funk", "pop"], [], false, true, false, 4
+      "", "", ["rock", "jazz", "funk", "pop"], [], true, false, 4
     );
 
     const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);
@@ -119,7 +119,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
     const result = await engine.refineCreativeBoost(
       "lo-fi, chillwave", "Original Title", undefined,
       "make it warmer", "", "", [],
-      ["lo-fi", "chillwave"], false, false, false, 3
+      ["lo-fi", "chillwave"], false, false, 3
     );
 
     expect(result.text).toContain("lo-fi, chillwave");
@@ -130,7 +130,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
     const styles = ["synthwave", "retrowave", "outrun"];
     const result = await engine.refineCreativeBoost(
       "old styles", "Title", undefined,
-      "", "", "", [], styles, false, false, false, 1
+      "", "", "", [], styles, false, false, 1
     );
 
     expect(result.text).toContain("synthwave, retrowave, outrun");
@@ -170,7 +170,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
   it("does not call enforceGenreCount when targetGenreCount is 0", async () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"', "Title", undefined,
-      "add jazz elements", "", "", ["rock"], [], false, true, false, 0
+      "add jazz elements", "", "", ["rock"], [], true, false, 0
     );
 
     expect(result.text).toContain('genre:');
@@ -180,7 +180,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
   it("does not call enforceGenreCount when targetGenreCount is undefined", async () => {
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"', "Title", undefined,
-      "add jazz elements", "", "", ["rock"], [], false, true, false
+      "add jazz elements", "", "", ["rock"], [], true, false
     );
 
     expect(result.text).toContain('genre:');
@@ -210,7 +210,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount i
 
     const result = await engine.refineCreativeBoost(
       'genre: "rock"\nbpm: "120"', "Title", undefined,
-      "make it jazzy", "", "", ["rock", "jazz", "funk"], [], false, true, false, 3
+      "make it jazzy", "", "", ["rock", "jazz", "funk"], [], true, false, 3
     );
 
     const genreMatch = /genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(result.text);

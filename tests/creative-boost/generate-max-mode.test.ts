@@ -46,21 +46,21 @@ describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
 
   it("generates deterministically without LLM when maxMode is true (no lyrics)", async () => {
     await engine.generateCreativeBoost(
-      50, [], [], "ambient soundscape", "", false, true, false
+      50, [], [], "ambient soundscape", "", true, false
     );
     expect(generateTextCalls).toBe(0);
   });
 
   it("generates deterministically without LLM when maxMode is false (no lyrics)", async () => {
     await engine.generateCreativeBoost(
-      50, [], [], "ambient soundscape", "", false, false, false
+      50, [], [], "ambient soundscape", "", false, false
     );
     expect(generateTextCalls).toBe(0);
   });
 
   it("returns Max Format structure when maxMode is true", async () => {
     const result = await engine.generateCreativeBoost(
-      50, ["jazz"], [], "smooth vibes", "", false, true, false
+      50, ["jazz"], [], "smooth vibes", "", true, false
     );
 
     expect(result.text).toContain('[Is_MAX_MODE: MAX](MAX)');
@@ -73,7 +73,7 @@ describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
 
   it("returns Non-Max Format structure when maxMode is false", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], [], "chill vibes", "", false, false, false
+      50, [], [], "chill vibes", "", false, false
     );
 
     expect(result.text).toContain('Genre:');
@@ -89,7 +89,7 @@ describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
 
   it("returns deterministic title", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], [], "", "", false, false, false
+      50, [], [], "", "", false, false
     );
 
     expect(result.title).toBeDefined();
@@ -122,7 +122,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
   it("makes AI call for max conversion when maxMode is true", async () => {
     await engine.refineCreativeBoost(
       "original prompt", "Original Title", undefined, "make it warmer",
-      "", "", [], [], false, true, false
+      "", "", [], [], true, false
     );
     expect(generateTextCalls).toBe(2);
   });
@@ -130,7 +130,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
   it("makes AI call for non-max conversion when maxMode is false", async () => {
     await engine.refineCreativeBoost(
       "original prompt", "Original Title", undefined, "make it warmer",
-      "", "", [], [], false, false, false
+      "", "", [], [], false, false
     );
     expect(generateTextCalls).toBe(2);
   });
@@ -138,7 +138,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
   it("returns Max Format structure when maxMode is true", async () => {
     const result = await engine.refineCreativeBoost(
       "original prompt", "Original Title", undefined, "add more bass",
-      "", "", [], [], false, true, false
+      "", "", [], [], true, false
     );
 
     expect(result.text).toContain(MAX_MODE_SIGNATURE);
@@ -149,7 +149,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
   it("returns Non-Max Format structure when maxMode is false", async () => {
     const result = await engine.refineCreativeBoost(
       "original prompt", "Original Title", undefined, "add more bass",
-      "", "", [], [], false, false, false
+      "", "", [], [], false, false
     );
 
     expect(result.text).toContain('Genre:');
@@ -172,7 +172,7 @@ describe("AIEngine.generateCreativeBoost performance instruments", () => {
 
   it("passes performance instruments from seed genre to conversion", async () => {
     const result = await engine.generateCreativeBoost(
-      50, ["jazz"], [], "smooth night jazz", "", false, true, false
+      50, ["jazz"], [], "smooth night jazz", "", true, false
     );
 
     expect(result.text).toContain("instruments:");
@@ -181,7 +181,7 @@ describe("AIEngine.generateCreativeBoost performance instruments", () => {
 
   it("uses performance instruments for compound genres", async () => {
     const result = await engine.generateCreativeBoost(
-      50, ["ambient rock"], [], "atmospheric rock", "", false, true, false
+      50, ["ambient rock"], [], "atmospheric rock", "", true, false
     );
 
     expect(result.text).toContain("instruments:");
@@ -189,7 +189,7 @@ describe("AIEngine.generateCreativeBoost performance instruments", () => {
 
   it("handles empty seedGenres gracefully", async () => {
     const result = await engine.generateCreativeBoost(
-      50, [], [], "something cool", "", false, true, false
+      50, [], [], "something cool", "", true, false
     );
 
     expect(result.text).toContain("instruments:");
@@ -208,7 +208,7 @@ describe("AIEngine.refineCreativeBoost performance instruments", () => {
   it("passes performance instruments during refinement", async () => {
     const result = await engine.refineCreativeBoost(
       "current prompt text", "Current Title", undefined,
-      "make it more energetic", "", "", ["electronic"], [], false, true, false
+      "make it more energetic", "", "", ["electronic"], [], true, false
     );
 
     expect(result.text).toContain("instruments:");
