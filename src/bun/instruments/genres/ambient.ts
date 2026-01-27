@@ -15,6 +15,9 @@ export const AMBIENT_GENRE: GenreDefinition = {
         'analog synth pads', 'crystalline synth pads', 'warm pad', 'textural pad',
         // Classic ambient synths - Moog synth kept to maintain multi-genre threshold
         'Moog synth', 'Juno synth', 'Prophet synth',
+        // Modern ambient-capable synths
+        'Nord Stage synth', 'Novation Peak synth', 'Roland Jupiter-X synth',
+        'Roland Fantom synth', 'Modal Argon synth',
       ],
     },
     // Evolving textures and synthesis
@@ -99,6 +102,13 @@ export const AMBIENT_GENRE: GenreDefinition = {
     ['Moog synth', 'Juno synth'],
     ['Moog synth', 'Prophet synth'],
     ['Juno synth', 'Prophet synth'],
+    // Modern synth exclusions - prevent multiple hardware brands
+    ['Nord Stage synth', 'Novation Peak synth'],
+    ['Nord Stage synth', 'Roland Jupiter-X synth'],
+    ['Nord Stage synth', 'Roland Fantom synth'],
+    ['Roland Jupiter-X synth', 'Roland Fantom synth'],
+    ['Novation Peak synth', 'Modal Argon synth'],
+    ['Modal Argon synth', 'Roland Jupiter-X synth'],
     ['warm pad', 'analog synth pads'],
     ['evolving pad', 'textural pad'],
   ],
