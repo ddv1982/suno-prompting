@@ -13,7 +13,7 @@ import * as http from 'node:http';
 
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
-import { AIGenerationError, OllamaTimeoutError, getErrorMessage } from '@shared/errors';
+import { AIGenerationError, OllamaTimeoutError, getErrorMessage, validateOllamaEndpoint } from '@shared/errors';
 
 const log = createLogger('OllamaClient');
 
@@ -122,6 +122,8 @@ export async function generateWithOllama(
   model: string = DEFAULT_OLLAMA_MODEL,
   options?: OllamaGenerationOptions
 ): Promise<string> {
+  validateOllamaEndpoint(endpoint);
+
   log.info('generateWithOllama:start', {
     endpoint,
     model,

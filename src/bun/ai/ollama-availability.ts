@@ -13,7 +13,7 @@
 import * as http from 'node:http';
 
 import { APP_CONSTANTS } from '@shared/constants';
-import { getErrorMessage } from '@shared/errors';
+import { getErrorMessage, validateOllamaEndpoint } from '@shared/errors';
 import { createLogger } from '@shared/logger';
 
 const log = createLogger('OllamaAvailability');
@@ -104,6 +104,8 @@ async function ollamaTagsRequest(
 export async function checkOllamaAvailable(
   endpoint: string = APP_CONSTANTS.OLLAMA.DEFAULT_ENDPOINT
 ): Promise<{ available: boolean; hasGemma: boolean }> {
+  validateOllamaEndpoint(endpoint);
+
   const now = Date.now();
 
   // Return cached result if still valid

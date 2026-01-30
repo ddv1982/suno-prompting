@@ -217,10 +217,11 @@ describe("RPC Handlers", () => {
       const storage = createMockStorage();
       const handlers = createHandlers(aiEngine as any, storage as any);
 
-      const result = await handlers.deleteSession({ id: "test-id" });
+      const sessionId = Bun.randomUUIDv7();
+      const result = await handlers.deleteSession({ id: sessionId });
 
       expect(result.success).toBe(true);
-      expect(storage.deleteSession).toHaveBeenCalledWith("test-id");
+      expect(storage.deleteSession).toHaveBeenCalledWith(sessionId);
     });
   });
 

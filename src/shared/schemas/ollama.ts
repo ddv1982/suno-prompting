@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { validateOllamaEndpoint } from '@shared/errors';
+
 /**
  * Schema for setting Ollama configuration.
  * All fields are optional - only provided fields will be updated.
@@ -27,6 +29,22 @@ export const SetOllamaSettingsSchema = z.object({
     .min(2048, 'Context length must be at least 2048')
     .max(8192, 'Context length must be at most 8192')
     .optional(),
-});
+}).superRefine(
+  (data, ctx) => {
+    if (data.endpoint) {
+      try {
+        validateOllamaEndpoint(data.endpoint);
+      } catch (error) {
+        // Add the actual error message as a Zod issue
+        ctx.addIssue({
+          code: "custom",
+          message: (error as Error).message,
+          path: ['endpoint'],
+        });
+        return z.NEVER;
+      }
+    }
+  }
+);
 
 export type SetOllamaSettingsInput = z.infer<typeof SetOllamaSettingsSchema>;

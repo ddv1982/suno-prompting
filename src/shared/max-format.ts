@@ -53,3 +53,29 @@ export function isMaxFormat(text: string): boolean {
  * Re-exported from APP_CONSTANTS for convenience.
  */
 export const MAX_MODE_HEADER = APP_CONSTANTS.MAX_MODE_HEADER;
+
+/**
+ * Formats a prompt in MAX mode format.
+ * Uses lowercase field names consistent with Full Prompt MAX mode.
+ *
+ * @param genre - The genre string
+ * @param mood - The mood string
+ * @param instruments - Array of instrument names
+ * @returns MAX mode formatted text
+ *
+ * @example
+ * formatMaxModePrompt('jazz', 'smooth', ['Rhodes', 'upright bass', 'brushed drums'])
+ * // Returns: 'genre: "jazz"\nmood: "smooth"\ninstruments: "Rhodes, upright bass, brushed drums"'
+ */
+export function formatMaxModePrompt(
+  genre: string,
+  mood: string,
+  instruments: readonly string[]
+): string {
+  const lines = [
+    `genre: "${genre}"`,
+    `mood: "${mood}"`,
+    `instruments: "${instruments.join(', ')}"`,
+  ];
+  return lines.join('\n');
+}

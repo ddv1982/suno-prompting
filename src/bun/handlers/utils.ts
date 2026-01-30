@@ -1,7 +1,9 @@
 import { createLogger } from '@bun/logger';
 import { maybeCreateTraceCollector } from '@bun/trace';
+import { enforceTraceSizeCap } from '@shared/trace';
 import { createSeededRng } from '@shared/utils/random';
 
+import type { GenerationResult } from '@bun/ai';
 import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { PromptMode, TraceRunAction } from '@shared/types';
 
@@ -64,6 +66,69 @@ export async function withErrorHandling<T>(
     log.error(`${actionName}:failed`, error);
     throw error;
   }
+}
+
+export type HandlerResultTransformer<TResult, TReturn> = (result: TResult, runtime: TraceRuntime, versionId: string) => TReturn;
+
+/**
+ * Creates a standardized handler runner that handles common RPC handler patterns:
+ * - Creates unique version ID
+ * - Creates trace runtime (when debug mode enabled)
+ * - Adds trace events (run.start, run.end)
+ * - Enforces trace size cap
+ * - Logs results
+ *
+ * @param aiEngine - The AI engine instance
+ * @param actionName - Name of the action (for logging)
+ * @param traceAction - Trace action type
+ * @param promptMode - Prompt mode for trace context
+ * @param meta - Additional metadata for logging
+ * @param operation - The async operation to execute with runtime
+ * @param transformResult - Optional function to transform the result before returning
+ * @returns Promise with transformed result
+ */
+export async function createHandlerRunner<TResult extends GenerationResult, TReturn = Pick<GenerationResult, 'text' | 'title' | 'debugTrace' | 'storyModeFallback'> & { prompt: string; versionId: string }>(
+  aiEngine: { isDebugMode: () => boolean },
+  actionName: string,
+  traceAction: TraceRunAction,
+  promptMode: PromptMode,
+  meta: ActionMeta,
+  operation: (runtime: TraceRuntime) => Promise<TResult>,
+  transformResult?: HandlerResultTransformer<TResult, TReturn>
+): Promise<TReturn> {
+  return withErrorHandling(actionName, async () => {
+    const versionId = Bun.randomUUIDv7();
+    const runtime = createTraceRuntime(aiEngine, versionId, traceAction, promptMode);
+
+    runtime.trace?.addRunEvent('run.start', traceAction);
+    const result = await operation(runtime);
+    runtime.trace?.addRunEvent('run.end', 'success');
+
+    const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : result.debugTrace;
+
+    const defaultTransform: HandlerResultTransformer<TResult, TReturn> = (result, _runtime, versionId) => {
+      return {
+        prompt: result.text,
+        title: result.title,
+        versionId,
+        debugTrace,
+        storyModeFallback: result.storyModeFallback,
+      } as TReturn;
+    };
+
+    const transformedResult = transformResult
+      ? transformResult(result, runtime, versionId)
+      : defaultTransform(result, runtime, versionId);
+
+    log.info(`${actionName}:result`, {
+      versionId,
+      promptLength: result.text.length,
+      hasTitle: !!result.title,
+      storyModeFallback: result.storyModeFallback,
+    });
+
+    return transformedResult;
+  }, meta);
 }
 
 export { log };

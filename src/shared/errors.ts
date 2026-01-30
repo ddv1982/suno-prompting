@@ -118,6 +118,99 @@ export class OllamaTimeoutError extends AppError {
 }
 
 /**
+ * Error thrown when Ollama endpoint URL is not localhost.
+ * Prevents SSRF attacks by restricting to localhost only.
+ */
+export class InvalidOllamaEndpointError extends ValidationError {
+    constructor(endpoint: string) {
+        super(
+            `Ollama endpoint must be localhost only. Received: ${endpoint}`,
+            'endpoint'
+        );
+        this.name = 'InvalidOllamaEndpointError';
+    }
+}
+
+/**
+ * Checks if a hostname is a valid localhost address.
+ * Includes IPv4, IPv6, and common IPv6 representations to prevent SSRF bypasses.
+ *
+ * @param hostname - The hostname to check
+ * @returns true if hostname is localhost
+ */
+function isValidLocalhostHostname(hostname: string): boolean {
+    const isLocalhost =
+        // IPv4 localhost
+        hostname === '127.0.0.1' ||
+        hostname === 'localhost' ||
+        // IPv6 localhost variations
+        hostname === '::1' ||
+        hostname === '[::1]' ||
+        // IPv4-mapped IPv6 addresses (common bypass technique)
+        hostname === '::ffff:127.0.0.1' ||
+        hostname === '0:0:0:0:ffff:127.0.0.1' ||
+        hostname === '0:0:0:0:ffff:7f00:1' ||
+        // Bracket-wrapped IPv6 variations
+        hostname === '[::ffff:127.0.0.1]' ||
+        hostname === '[0:0:0:0:ffff:127.0.0.1]' ||
+        hostname === '[0:0:0:0:ffff:7f00:1]' ||
+        // IPv4-mapped IPv6 in hex
+        hostname === '::ffff:7f00:1';
+
+    return isLocalhost;
+}
+
+/**
+ * Validates that an Ollama endpoint is localhost only.
+ * Prevents SSRF attacks by restricting to localhost only.
+ *
+ * Security measures:
+ * - Whitelists specific localhost addresses (IPv4 and IPv6)
+ * - Validates protocol is http or https only
+ * - Prevents DNS rebinding by strict hostname checking
+ * - Blocks common IPv6 bypass techniques
+ *
+ * @param endpoint - The endpoint URL to validate
+ * @throws InvalidOllamaEndpointError if endpoint is not localhost or invalid
+ * @returns void if endpoint is valid
+ */
+export function validateOllamaEndpoint(endpoint: string): void {
+    try {
+        const url = new URL(endpoint);
+        const hostname = url.hostname.toLowerCase();
+
+        // Validate protocol - only allow http or https to prevent protocol confusion attacks
+        const allowedProtocols = ['http:', 'https:'];
+        if (!allowedProtocols.includes(url.protocol)) {
+            throw new InvalidOllamaEndpointError(
+                `Invalid protocol: ${url.protocol}. Only http and https are allowed.`
+            );
+        }
+
+        // Validate hostname is localhost
+        if (!isValidLocalhostHostname(hostname)) {
+            throw new InvalidOllamaEndpointError(endpoint);
+        }
+
+        // Validate port range (non-privileged ports only: 1024-65535)
+        // Note: URL parser returns empty string for default ports (80 for http, 443 for https)
+        const defaultPort = url.protocol === 'https:' ? 443 : 80;
+        const port = url.port ? parseInt(url.port, 10) : defaultPort;
+        if (port < 1024 || port > 65535) {
+            throw new ValidationError(
+                `Port must be between 1024 and 65535. Received: ${port}`,
+                'endpoint'
+            );
+        }
+    } catch (error) {
+        if (error instanceof InvalidOllamaEndpointError || error instanceof ValidationError) {
+            throw error;
+        }
+        throw new ValidationError(`Invalid Ollama endpoint format: ${endpoint}`, 'endpoint');
+    }
+}
+
+/**
  * Extracts error message from unknown error type.
  * Use this instead of repeating `error instanceof Error ? error.message : fallback` pattern.
  */

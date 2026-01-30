@@ -7,6 +7,7 @@
  */
 
 import { getCreativityLevel } from '@shared/creative-boost-utils';
+import { formatMaxModePrompt } from '@shared/max-format';
 
 import {
   generateDeterministicCreativeBoostTitle,
@@ -56,14 +57,8 @@ export function buildDeterministicCreativeBoost(
 
   // Build the prompt based on mode
   if (maxMode) {
-    // Use lowercase field names consistent with Full Prompt MAX mode
-    const lines = [
-      `genre: "${genre}"`,
-      `mood: "${mood}"`,
-      `instruments: "${instruments.join(', ')}"`,
-    ];
     return {
-      text: lines.join('\n'),
+      text: formatMaxModePrompt(genre, mood, instruments),
       title,
       genre,
     };

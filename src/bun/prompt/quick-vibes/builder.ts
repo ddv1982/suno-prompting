@@ -8,6 +8,7 @@
 
 import { selectMoodsForCategory } from '@bun/mood';
 import { traceDecision } from '@bun/trace';
+import { formatMaxModePrompt } from '@shared/max-format';
 import { selectRandom } from '@shared/utils/random';
 
 import { QUICK_VIBES_TEMPLATES } from './templates';
@@ -172,14 +173,8 @@ export function buildDeterministicQuickVibes(
 
   // Build the prompt based on mode
   if (maxMode) {
-    // Use lowercase field names consistent with Full Prompt MAX mode
-    const lines = [
-      `genre: "${genre}"`,
-      `mood: "${mood}"`,
-      `instruments: "${instruments.join(', ')}"`,
-    ];
     return {
-      text: lines.join('\n'),
+      text: formatMaxModePrompt(genre, mood, instruments),
       title,
     };
   }
