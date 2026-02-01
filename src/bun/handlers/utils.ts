@@ -105,6 +105,7 @@ export async function createHandlerRunner<TResult extends GenerationResult, TRet
     runtime.trace?.addRunEvent('run.end', 'success');
 
     const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : result.debugTrace;
+    result.debugTrace = debugTrace;
 
     const defaultTransform: HandlerResultTransformer<TResult, TReturn> = (result, _runtime, versionId) => {
       return {
