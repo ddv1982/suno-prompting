@@ -1,0 +1,25 @@
+{
+  "entry": [
+    "src/bun/index.ts",
+    "src/main-ui/index.tsx",
+    "scripts/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "scripts/**/*.ts",
+    "tests/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "src/types/electrobun/**",
+    "src/main-ui/dist.css",
+    "build/**",
+    "artifacts/**",
+    "dist/**",
+    "node_modules/**"
+  ],
+  "ignoreDependencies": [
+    "tailwindcss",
+    "tailwindcss-animate"
+  ]
+}

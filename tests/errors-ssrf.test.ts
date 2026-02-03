@@ -15,10 +15,8 @@ describe("SSRF Prevention: validateOllamaEndpoint", () => {
       "http://localhost:8080",
       "http://127.0.0.1:8080",
       "http://[::1]:11434",
-      "https://127.0.0.1:11434",
-      "https://localhost:11434",
-      // Note: Default ports (80 for http, 443 for https) are rejected
-      // as they are privileged ports. Users must explicitly specify a port.
+      // Note: Default ports (80 for http) are rejected as privileged.
+      // Users must explicitly specify a port.
     ];
 
     validEndpoints.forEach((endpoint) => {
@@ -92,6 +90,8 @@ describe("SSRF Prevention: validateOllamaEndpoint", () => {
 
   describe("protocol validation", () => {
     const invalidProtocols = [
+      "https://127.0.0.1:11434",
+      "https://localhost:11434",
       "ftp://127.0.0.1:11434",
       "file://127.0.0.1",
       "ws://127.0.0.1:11434",
@@ -216,7 +216,7 @@ describe("Zod Schema: SetOllamaSettingsSchema", () => {
       if (!result.success && result.error?.issues?.[0]) {
         expect(result.error.issues[0].path).toContain("endpoint");
         // Note: The URL regex catches invalid protocols before superRefine
-        expect(result.error.issues[0].message).toContain("valid URL");
+        expect(result.error.issues[0].message).toContain("valid http URL");
       }
     });
 
