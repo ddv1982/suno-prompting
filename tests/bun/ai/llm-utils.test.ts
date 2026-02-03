@@ -15,6 +15,9 @@ const mockGenerateText = mock(async (_options?: unknown) => ({
   finishReason: 'stop',
   usage: { inputTokens: 10, outputTokens: 20 },
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 // Mock Ollama client
 const mockGenerateWithOllama = mock(async () => 'ollama response');
@@ -22,6 +25,8 @@ const mockGenerateWithOllama = mock(async () => 'ollama response');
 beforeEach(async () => {
   await mock.module('ai', () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   await mock.module('@bun/ai/ollama-client', () => ({

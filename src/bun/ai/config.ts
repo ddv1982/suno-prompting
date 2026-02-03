@@ -1,15 +1,30 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { createOpenAI } from '@ai-sdk/openai';
-import { createProviderRegistry, type LanguageModel } from 'ai';
+import * as aiSdk from 'ai';
 
 import { APP_CONSTANTS } from '@shared/constants';
 
 import { DEFAULT_OLLAMA_CONFIG } from './ollama-provider';
 
 import type { AppConfig, AIProvider, APIKeys, OllamaConfig } from '@shared/types';
+import type { LanguageModel } from 'ai';
 
-type ProviderRegistry = ReturnType<typeof createProviderRegistry>;
+type ProviderRegistry = ReturnType<typeof aiSdk.createProviderRegistry>;
+
+const createProviderRegistrySafe = (
+  ...args: Parameters<typeof aiSdk.createProviderRegistry>
+): ProviderRegistry => {
+  const creator =
+    aiSdk.createProviderRegistry ??
+    (aiSdk as { experimental_createProviderRegistry?: typeof aiSdk.createProviderRegistry }).experimental_createProviderRegistry;
+
+  if (!creator) {
+    throw new Error('AI SDK missing createProviderRegistry export. Please upgrade the ai package.');
+  }
+
+  return creator(...args);
+};
 
 export class AIConfig {
   private provider: AIProvider = APP_CONSTANTS.AI.DEFAULT_PROVIDER;
@@ -25,7 +40,7 @@ export class AIConfig {
   private ollamaConfig: OllamaConfig = { ...DEFAULT_OLLAMA_CONFIG };
 
   private buildRegistry(): ProviderRegistry {
-    this.registry = createProviderRegistry({
+    this.registry = createProviderRegistrySafe({
       openai: createOpenAI({ apiKey: this.apiKeys.openai ?? '' }),
       anthropic: createAnthropic({ apiKey: this.apiKeys.anthropic ?? '' }),
       groq: createGroq({ apiKey: this.apiKeys.groq ?? '' }),

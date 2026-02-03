@@ -38,6 +38,9 @@ const mockGenerateText = mock(async () => ({
   finishReason: 'stop',
   usage: { inputTokens: 100, outputTokens: 50 },
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
@@ -88,6 +91,8 @@ describe('Story Mode Generation Integration', () => {
 
     await mock.module('ai', () => ({
       generateText: mockGenerateText,
+      createProviderRegistry: mockCreateProviderRegistry,
+      experimental_createProviderRegistry: mockCreateProviderRegistry,
     }));
 
     await mock.module('@bun/ai/thematic-context', () => ({

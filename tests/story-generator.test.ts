@@ -27,6 +27,9 @@ const mockGenerateText = mock(async () => ({
   finishReason: 'stop',
   usage: { inputTokens: 100, outputTokens: 50 },
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 // Mock Ollama client for offline mode tests
 const mockGenerateWithOllama = mock(async () =>
@@ -43,6 +46,8 @@ let STORY_GENERATION_TIMEOUT_MS: typeof import('@bun/ai/story-generator').STORY_
 beforeEach(async () => {
   await mock.module('ai', () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   await mock.module('@bun/ai/ollama-client', () => ({

@@ -264,14 +264,20 @@ describe('extractThematicContext', () => {
   let extractThematicContext: typeof import('@bun/ai/thematic-context').extractThematicContext;
   let clearThematicCache: typeof import('@bun/ai/thematic-context').clearThematicCache;
   let mockGenerateText: ReturnType<typeof mock>;
+  let mockCreateProviderRegistry: ReturnType<typeof mock>;
 
   beforeEach(async () => {
     mockGenerateText = mock(() => {
       throw new Error('Unexpected generateText call');
     });
+    mockCreateProviderRegistry = mock(() => ({
+      languageModel: () => ({}),
+    }));
 
     await mock.module('ai', () => ({
       generateText: mockGenerateText,
+      createProviderRegistry: mockCreateProviderRegistry,
+      experimental_createProviderRegistry: mockCreateProviderRegistry,
     }));
 
     ({ extractThematicContext, clearThematicCache } = await import('@bun/ai/thematic-context'));

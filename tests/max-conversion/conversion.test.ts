@@ -3,6 +3,9 @@ import { describe, test, it, expect, mock, beforeEach, afterEach } from 'bun:tes
 const mockGenerateText = mock(async () => ({
   text: '{"styleTags": "studio polish, warm analog, natural room", "recording": "intimate studio session with vintage microphone"}',
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 let convertToMaxFormat: typeof import('@bun/prompt/conversion').convertToMaxFormat;
 
@@ -17,6 +20,8 @@ describe('convertToMaxFormat', () => {
 
     await mock.module('ai', () => ({
       generateText: mockGenerateText,
+      createProviderRegistry: mockCreateProviderRegistry,
+      experimental_createProviderRegistry: mockCreateProviderRegistry,
     }));
 
     ({ convertToMaxFormat } = await import('@bun/prompt/conversion'));

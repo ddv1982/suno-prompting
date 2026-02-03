@@ -7,6 +7,7 @@ let mockCheckOllamaAvailable: ReturnType<typeof mock>;
 let mockInvalidateOllamaCache: ReturnType<typeof mock>;
 let mockGenerateWithOllama: ReturnType<typeof mock>;
 let mockGenerateText: ReturnType<typeof mock>;
+let mockCreateProviderRegistry: ReturnType<typeof mock>;
 let mockExtractGenreFromPrompt: ReturnType<typeof mock>;
 let mockExtractMoodFromPrompt: ReturnType<typeof mock>;
 let mockRemixStyleTags: ReturnType<typeof mock>;
@@ -28,6 +29,9 @@ beforeEach(async () => {
       }),
     })
   );
+  mockCreateProviderRegistry = mock(() => ({
+    languageModel: () => ({}),
+  }));
   mockExtractGenreFromPrompt = mock(() => 'jazz');
   mockExtractMoodFromPrompt = mock(() => 'mellow');
   mockRemixStyleTags = mock((prompt: string) => ({
@@ -46,6 +50,8 @@ beforeEach(async () => {
 
   await mock.module('ai', () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   await mock.module('@bun/prompt/deterministic', () => ({
@@ -331,4 +337,3 @@ describe('refinePrompt with local LLM (offline mode)', () => {
     expect(mockGenerateWithOllama).toHaveBeenCalled();
   });
 });
-

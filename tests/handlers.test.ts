@@ -7,12 +7,17 @@ import { type PromptSession, type AppConfig, DEFAULT_API_KEYS } from "@shared/ty
 const mockGenerateText = mock(async () => ({
   text: '{"styleTags": "raw, energetic", "recording": "studio session"}',
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 let createHandlers: typeof import("@bun/handlers").createHandlers;
 
 beforeEach(async () => {
   await mock.module("ai", () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   ({ createHandlers } = await import("@bun/handlers"));

@@ -10,12 +10,17 @@ const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 const mockGenerateText = mock(async () => ({
   text: "warm lo-fi beats to study to",
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 let AIEngine: typeof import("@bun/ai/engine").AIEngine;
 
 beforeEach(async () => {
   await mock.module("ai", () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   ({ AIEngine } = await import("@bun/ai/engine"));

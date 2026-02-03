@@ -22,12 +22,17 @@ Let the rhythm flow`,
     };
   }
 });
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 let AIEngine: typeof import("@bun/ai/engine").AIEngine;
 
 beforeEach(async () => {
   await mock.module("ai", () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   ({ AIEngine } = await import("@bun/ai/engine"));

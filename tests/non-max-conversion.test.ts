@@ -11,6 +11,9 @@ const mockGenerateText = mock(async () => ({
     outro: 'Peaceful resolution and fade',
   }),
 }));
+const mockCreateProviderRegistry = mock(() => ({
+  languageModel: () => ({}),
+}));
 
 let parseStyleDescription: typeof import('@bun/prompt/conversion').parseStyleDescription;
 let inferBpm: typeof import('@bun/prompt/conversion').inferBpm;
@@ -20,6 +23,8 @@ let convertToNonMaxFormat: typeof import('@bun/prompt/conversion').convertToNonM
 beforeEach(async () => {
   await mock.module('ai', () => ({
     generateText: mockGenerateText,
+    createProviderRegistry: mockCreateProviderRegistry,
+    experimental_createProviderRegistry: mockCreateProviderRegistry,
   }));
 
   ({
