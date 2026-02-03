@@ -1,6 +1,5 @@
 {
   "name": "groq-suno-prompter",
-  "module": "index.ts",
   "type": "module",
   "scripts": {
     "build": "bun build:css && electrobun build",
@@ -28,6 +27,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "knip": "knip -t tsconfig.typecheck.json --no-exit-code --include files,dependencies,unlisted",
     "validate": "bun run typecheck && bun run lint && bun run test:coverage",
     "prepare": "husky"
   },
@@ -41,6 +41,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "7.0.1",
     "husky": "^9.1.7",
+    "knip": "^5.83.0",
     "typescript-eslint": "^8.51.0"
   },
   "peerDependencies": {
@@ -54,7 +55,6 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-scroll-area": "^1.2.10",
-    "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
@@ -65,7 +65,6 @@
     "cmdk": "^1.1.1",
     "electrobun": "0.8.0",
     "lucide-react": "^0.562.0",
-    "ollama-ai-provider-v2": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "tailwind-merge": "^3.4.0",

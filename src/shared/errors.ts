@@ -179,11 +179,11 @@ export function validateOllamaEndpoint(endpoint: string): void {
         const url = new URL(endpoint);
         const hostname = url.hostname.toLowerCase();
 
-        // Validate protocol - only allow http or https to prevent protocol confusion attacks
-        const allowedProtocols = ['http:', 'https:'];
+        // Validate protocol - only allow http to prevent protocol confusion attacks
+        const allowedProtocols = ['http:'];
         if (!allowedProtocols.includes(url.protocol)) {
             throw new InvalidOllamaEndpointError(
-                `Invalid protocol: ${url.protocol}. Only http and https are allowed.`
+                `Invalid protocol: ${url.protocol}. Only http is allowed.`
             );
         }
 

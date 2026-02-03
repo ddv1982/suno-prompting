@@ -8,7 +8,7 @@ import { validateOllamaEndpoint } from '@shared/errors';
  */
 export const SetOllamaSettingsSchema = z.object({
   /** Ollama server endpoint URL */
-  endpoint: z.string().regex(/^https?:\/\/.+/, 'Endpoint must be a valid URL').optional(),
+  endpoint: z.string().regex(/^http:\/\/.+/, 'Endpoint must be a valid http URL').optional(),
   /** Temperature for generation (0-1) */
   temperature: z
     .number()

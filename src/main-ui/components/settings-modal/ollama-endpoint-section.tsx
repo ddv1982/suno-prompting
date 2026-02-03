@@ -28,7 +28,7 @@ export function OllamaEndpointSection({
         className="font-mono text-sm"
       />
       <p className="text-xs text-muted-foreground">
-        The URL where your Ollama server is running
+        The URL where your Ollama server is running (http only)
       </p>
     </div>
   );
