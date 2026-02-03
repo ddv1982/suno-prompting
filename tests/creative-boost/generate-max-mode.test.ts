@@ -1,12 +1,10 @@
-import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
-afterAll(() => {
-  mock.restore();
-});
-
-import { AIEngine } from "@bun/ai/engine";
 import { MAX_MODE_SIGNATURE } from "@shared/max-format";
 
+import { setAiGenerateTextMock } from "../helpers/ai-mock";
+
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 // Track generateText calls to detect conversion AI calls
 let generateTextCalls = 0;
 
@@ -31,12 +29,20 @@ const mockGenerateText = mock(async (_args?: unknown) => {
   }
 });
 
-void mock.module("ai", () => ({
-  generateText: mockGenerateText,
-}));
+let AIEngine: typeof import("@bun/ai/engine").AIEngine;
+
+beforeEach(async () => {
+  setAiGenerateTextMock(mockGenerateText);
+
+  ({ AIEngine } = await import("@bun/ai/engine"));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -98,7 +104,7 @@ describe("AIEngine.generateCreativeBoost Max Mode (Deterministic)", () => {
 });
 
 describe("AIEngine.refineCreativeBoost Max Mode", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -162,7 +168,7 @@ describe("AIEngine.refineCreativeBoost Max Mode", () => {
 });
 
 describe("AIEngine.generateCreativeBoost performance instruments", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -197,7 +203,7 @@ describe("AIEngine.generateCreativeBoost performance instruments", () => {
 });
 
 describe("AIEngine.refineCreativeBoost performance instruments", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();

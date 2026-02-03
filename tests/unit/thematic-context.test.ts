@@ -1,10 +1,10 @@
-import { test, expect, describe, mock, afterEach } from 'bun:test';
+import { test, expect, describe, mock, beforeEach, afterEach } from 'bun:test';
 
-import { extractThematicContext } from '@bun/ai/thematic-context';
 import { ThematicContextSchema } from '@shared/schemas/thematic-context';
 
-import type { LanguageModel } from 'ai';
+import { setAiGenerateTextMock } from '../helpers/ai-mock';
 
+import type { LanguageModel } from 'ai';
 describe('ThematicContextSchema', () => {
   describe('valid inputs', () => {
     test('accepts valid thematic context with 3 themes and 2 moods', () => {
@@ -262,6 +262,20 @@ describe('ThematicContextSchema', () => {
 });
 
 describe('extractThematicContext', () => {
+  let extractThematicContext: typeof import('@bun/ai/thematic-context').extractThematicContext;
+  let clearThematicCache: typeof import('@bun/ai/thematic-context').clearThematicCache;
+  let mockGenerateText: ReturnType<typeof mock>;
+
+  beforeEach(async () => {
+    mockGenerateText = mock(() => {
+      throw new Error('Unexpected generateText call');
+    });
+    setAiGenerateTextMock(mockGenerateText);
+
+    ({ extractThematicContext, clearThematicCache } = await import('@bun/ai/thematic-context'));
+    clearThematicCache();
+  });
+
   afterEach(() => {
     mock.restore();
   });
@@ -325,18 +339,11 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      // Mock the AI module by importing dynamically
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: validResponse }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: validResponse });
 
-      // Re-import to get mocked version
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'exploring an alien jungle with bioluminescent plants',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).not.toBeNull();
@@ -346,17 +353,11 @@ describe('extractThematicContext', () => {
     });
 
     test('returns null on malformed JSON (not valid JSON)', async () => {
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: 'this is not json' }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: 'this is not json' });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'malformed json test description here',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).toBeNull();
@@ -369,17 +370,11 @@ describe('extractThematicContext', () => {
         // Missing 'scene' field
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: invalidResponse }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: invalidResponse });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'missing field test description here',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).toBeNull();
@@ -392,17 +387,11 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: validResponse }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: validResponse });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'two themes test description here',
         getModel: createMockGetModel(),
-        
       });
 
       // 2 themes is now valid, normalized to 3
@@ -413,51 +402,33 @@ describe('extractThematicContext', () => {
 
   describe('error handling', () => {
     test('returns null on timeout', async () => {
-      void mock.module('ai', () => ({
-        generateText: () => Promise.reject(new Error('Timeout: AbortError')),
-      }));
+      mockGenerateText.mockRejectedValueOnce(new Error('Timeout: AbortError'));
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'timeout test description here',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).toBeNull();
     });
 
     test('returns null on LLM unavailable error', async () => {
-      void mock.module('ai', () => ({
-        generateText: () => Promise.reject(new Error('API key not configured')),
-      }));
+      mockGenerateText.mockRejectedValueOnce(new Error('API key not configured'));
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'llm unavailable test description',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).toBeNull();
     });
 
     test('returns null on network error', async () => {
-      void mock.module('ai', () => ({
-        generateText: () => Promise.reject(new Error('Network error: ECONNREFUSED')),
-      }));
+      mockGenerateText.mockRejectedValueOnce(new Error('Network error: ECONNREFUSED'));
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'network error test description',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).toBeNull();
@@ -472,16 +443,11 @@ describe('extractThematicContext', () => {
         scene: 'a short scene here',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: validResponse }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: validResponse });
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: '10 chars!x', // exactly 10 chars
         getModel: createMockGetModel(),
-        
       });
 
       // Should attempt extraction (not be skipped)
@@ -506,16 +472,11 @@ describe('extractThematicContext', () => {
         }
       `;
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: validResponse }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: validResponse });
 
-      const { extractThematicContext: extract } = await import('@bun/ai/thematic-context');
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'exploring an alien jungle with bioluminescent plants',
         getModel: createMockGetModel(),
-        
       });
 
       expect(result).not.toBeNull();
@@ -525,17 +486,11 @@ describe('extractThematicContext', () => {
     test('handles JSON with markdown code fence (should now work)', async () => {
       const responseWithMarkdown = '```json\n{"themes":["a","b","c"],"moods":["x","y"],"scene":"short scene here"}\n```';
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: responseWithMarkdown }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: responseWithMarkdown });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'exploring an alien jungle with bioluminescent plants',
         getModel: createMockGetModel(),
-        
       });
 
       // Markdown fence is now stripped before parsing
@@ -553,22 +508,17 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => {
-          callCount++;
-          return Promise.resolve({ text: validResponse });
-        },
-      }));
+      mockGenerateText.mockImplementation(() => {
+        callCount++;
+        return Promise.resolve({ text: validResponse });
+      });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result1 = await extract({
+      const result1 = await extractThematicContext({
         description: 'exploring an alien jungle',
         getModel: createMockGetModel(),
       });
 
-      const result2 = await extract({
+      const result2 = await extractThematicContext({
         description: 'exploring an alien jungle',
         getModel: createMockGetModel(),
       });
@@ -585,22 +535,17 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => {
-          callCount++;
-          return Promise.resolve({ text: validResponse });
-        },
-      }));
+      mockGenerateText.mockImplementation(() => {
+        callCount++;
+        return Promise.resolve({ text: validResponse });
+      });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      await extract({
+      await extractThematicContext({
         description: 'Exploring An Alien Jungle',
         getModel: createMockGetModel(),
       });
 
-      await extract({
+      await extractThematicContext({
         description: 'exploring an alien jungle',
         getModel: createMockGetModel(),
       });
@@ -617,14 +562,9 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: response }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: response });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'exploring an alien jungle with many plants',
         getModel: createMockGetModel(),
       });
@@ -639,14 +579,9 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: response }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: response });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'exploring alien jungles with plants',
         getModel: createMockGetModel(),
       });
@@ -661,14 +596,9 @@ describe('extractThematicContext', () => {
         scene: 'first steps into an alien jungle',
       });
 
-      void mock.module('ai', () => ({
-        generateText: () => Promise.resolve({ text: response }),
-      }));
+      mockGenerateText.mockResolvedValueOnce({ text: response });
 
-      const { extractThematicContext: extract, clearThematicCache } = await import('@bun/ai/thematic-context');
-      clearThematicCache();
-
-      const result = await extract({
+      const result = await extractThematicContext({
         description: 'exploring alien jungles with lots of plants',
         getModel: createMockGetModel(),
       });

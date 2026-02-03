@@ -28,6 +28,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "knip": "knip -t tsconfig.typecheck.json --no-exit-code --include files,dependencies,unlisted",
+    "bundle:report": "bun run scripts/report-bundle-size.ts",
     "validate": "bun run typecheck && bun run lint && bun run test:coverage",
     "prepare": "husky"
   },

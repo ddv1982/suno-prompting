@@ -1,12 +1,10 @@
-import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
-afterAll(() => {
-  mock.restore();
-});
-
-import { AIEngine } from "@bun/ai/engine";
 import { APP_CONSTANTS } from "@shared/constants";
 
+import { setAiGenerateTextMock } from "./helpers/ai-mock";
+
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 
 // Mock the AI SDK generateText
@@ -14,12 +12,20 @@ const mockGenerateText = mock(async () => ({
   text: "warm lo-fi beats to study to",
 }));
 
-void mock.module("ai", () => ({
-  generateText: mockGenerateText,
-}));
+let AIEngine: typeof import("@bun/ai/engine").AIEngine;
+
+beforeEach(async () => {
+  setAiGenerateTextMock(mockGenerateText);
+
+  ({ AIEngine } = await import("@bun/ai/engine"));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 describe("AIEngine.generateQuickVibes", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -100,7 +106,7 @@ describe("AIEngine.generateQuickVibes", () => {
 });
 
 describe("AIEngine.generateQuickVibes Direct Mode", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -161,7 +167,7 @@ describe("AIEngine.generateQuickVibes Direct Mode", () => {
 });
 
 describe("AIEngine.refineQuickVibes Direct Mode", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -258,7 +264,7 @@ describe("AIEngine.refineQuickVibes Direct Mode", () => {
 });
 
 describe("AIEngine.generateQuickVibes Direct Mode Title Generation", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();

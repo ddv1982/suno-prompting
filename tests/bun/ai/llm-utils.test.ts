@@ -4,9 +4,11 @@
  * Tests wrapAIError and the split callLLM paths
  */
 
-import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
+import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
 import { AIGenerationError } from '@shared/errors';
+
+import { setAiGenerateTextMock } from '../../helpers/ai-mock';
 
 // Mock the AI SDK before importing callLLM
 const mockGenerateText = mock(async (_options?: unknown) => ({
@@ -19,16 +21,15 @@ const mockGenerateText = mock(async (_options?: unknown) => ({
 // Mock Ollama client
 const mockGenerateWithOllama = mock(async () => 'ollama response');
 
-// Mock modules at the AI SDK level (same level as other test files)
-void mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
+beforeEach(async () => {
+  setAiGenerateTextMock(mockGenerateText);
 
-void mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mockGenerateWithOllama,
-}));
+  await mock.module('@bun/ai/ollama-client', () => ({
+    generateWithOllama: mockGenerateWithOllama,
+  }));
+});
 
-afterAll(() => {
+afterEach(() => {
   mock.restore();
 });
 

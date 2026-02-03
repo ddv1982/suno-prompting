@@ -1,27 +1,35 @@
-import { describe, test, it, expect, mock, beforeEach, afterAll } from 'bun:test';
+import { describe, test, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 
-afterAll(() => {
-  mock.restore();
-});
-
-import { convertToMaxFormat } from '@bun/prompt/conversion';
+import { setAiGenerateTextMock } from '../helpers/ai-mock';
 
 const mockGenerateText = mock(async () => ({
   text: '{"styleTags": "studio polish, warm analog, natural room", "recording": "intimate studio session with vintage microphone"}',
 }));
 
-void mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
+let convertToMaxFormat: typeof import('@bun/prompt/conversion').convertToMaxFormat;
+const defaultMaxAiResponse =
+  '{"styleTags": "studio polish, warm analog, natural room", "recording": "intimate studio session with vintage microphone"}';
+
+async function setupConvertToMaxFormat() {
+  mockGenerateText.mockClear();
+  mockGenerateText.mockImplementation(async () => ({
+    text: defaultMaxAiResponse,
+  }));
+
+  setAiGenerateTextMock(mockGenerateText);
+
+  ({ convertToMaxFormat } = await import('@bun/prompt/conversion'));
+}
 
 describe('convertToMaxFormat', () => {
   const mockGetModel = () => ({} as any);
 
-  beforeEach(() => {
-    mockGenerateText.mockClear();
-    mockGenerateText.mockImplementation(async () => ({
-      text: '{"styleTags": "studio polish, warm analog, natural room", "recording": "intimate studio session with vintage microphone"}',
-    }));
+  beforeEach(async () => {
+    await setupConvertToMaxFormat();
+  });
+
+  afterEach(() => {
+    mock.restore();
   });
 
   it('converts standard prompt successfully', async () => {
@@ -228,11 +236,8 @@ Mood: energetic`;
 describe('convertToMaxFormat with sunoStyles', () => {
   const mockGetModel = () => ({} as any);
 
-  beforeEach(() => {
-    mockGenerateText.mockClear();
-    mockGenerateText.mockImplementation(async () => ({
-      text: '{"styleTags": "studio polish, warm analog", "recording": "intimate studio session"}',
-    }));
+  beforeEach(async () => {
+    await setupConvertToMaxFormat();
   });
 
   it('prioritizes sunoStyles over seedGenres', async () => {
@@ -372,11 +377,8 @@ describe('convertToMaxFormat with sunoStyles', () => {
 describe('convertToMaxFormat with performanceInstruments', () => {
   const mockGetModel = () => ({} as any);
 
-  beforeEach(() => {
-    mockGenerateText.mockClear();
-    mockGenerateText.mockImplementation(async () => ({
-      text: '{"styleTags": "studio polish, warm analog", "recording": "intimate studio session"}',
-    }));
+  beforeEach(async () => {
+    await setupConvertToMaxFormat();
   });
 
   test('uses performanceInstruments in output when no instruments parsed', async () => {
@@ -419,11 +421,8 @@ describe('convertToMaxFormat with performanceInstruments', () => {
 describe('convertToMaxFormat with bpmRange', () => {
   const mockGetModel = () => ({} as any);
 
-  beforeEach(() => {
-    mockGenerateText.mockClear();
-    mockGenerateText.mockImplementation(async () => ({
-      text: '{"styleTags": "studio polish, warm analog", "recording": "intimate studio session"}',
-    }));
+  beforeEach(async () => {
+    await setupConvertToMaxFormat();
   });
 
   test('uses provided bpmRange instead of genre inference', async () => {

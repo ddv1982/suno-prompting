@@ -15,9 +15,11 @@ import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import { createSeededRng } from '@shared/utils/random';
 
+import { setAiGenerateTextMock } from '../helpers/ai-mock';
+import { setExtractThematicContextMock } from '../helpers/thematic-context-mock';
+
 import type { GenerationConfig } from '@bun/ai/types';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
-
 // ============================================
 // Mock Setup
 // ============================================
@@ -39,19 +41,7 @@ const mockGenerateText = mock(async () => ({
   usage: { inputTokens: 100, outputTokens: 50 },
 }));
 
-await mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
-
-await mock.module('@bun/ai/thematic-context', () => ({
-  extractThematicContext: mockExtractThematicContext,
-}));
-
-// For story generation we need to mock within the module or test via the higher-level function
-// Let's test via generateInitial which uses the real story generator
-
-// Import after mocking
-const { generateInitial } = await import('@bun/ai/generation');
+let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 // ============================================
 // Test Helpers
@@ -80,7 +70,7 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
 // ============================================
 
 describe('Story Mode Generation Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockExtractThematicContext.mockReset();
     mockGenerateText.mockReset();
 
@@ -97,6 +87,12 @@ describe('Story Mode Generation Integration', () => {
       finishReason: 'stop',
       usage: { inputTokens: 100, outputTokens: 50 },
     });
+
+    setAiGenerateTextMock(mockGenerateText);
+
+    setExtractThematicContextMock(async () => mockExtractThematicContext());
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
   });
 
   afterEach(() => {
@@ -392,7 +388,7 @@ describe('Story Mode Generation Integration', () => {
 // ============================================
 
 describe('Story Mode + Lyrics Mode interaction', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockGenerateText.mockReset();
     mockExtractThematicContext.mockReset();
 
@@ -436,6 +432,16 @@ describe('Story Mode + Lyrics Mode interaction', () => {
         };
       }
     });
+
+    setAiGenerateTextMock(mockGenerateText);
+
+    setExtractThematicContextMock(async () => mockExtractThematicContext());
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
+  });
+
+  afterEach(() => {
+    mock.restore();
   });
 
   test('Story Mode + Lyrics Mode generates narrative with lyrics', async () => {

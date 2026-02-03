@@ -35,13 +35,16 @@ describe('fireAndForget', () => {
     consoleSpy.mockRestore();
   });
 
-  test('does not throw when promise rejects', () => {
+  test('does not throw when promise rejects', async () => {
     const consoleSpy = spyOn(console, 'error').mockImplementation(() => {});
 
     // This should not throw
     expect(() => {
       fireAndForget(Promise.reject(new Error('Should not throw')), 'test');
     }).not.toThrow();
+
+    // Allow the rejection handler to run before restoring the spy
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
     consoleSpy.mockRestore();
   });
