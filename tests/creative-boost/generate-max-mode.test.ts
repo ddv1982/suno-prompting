@@ -4,6 +4,8 @@ import { MAX_MODE_SIGNATURE } from "@shared/max-format";
 
 import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 
+import { setAiGenerateTextMock } from "../helpers/ai-mock";
+
 // Track generateText calls to detect conversion AI calls
 let generateTextCalls = 0;
 
@@ -27,18 +29,11 @@ const mockGenerateText = mock(async (_args?: unknown) => {
     };
   }
 });
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
-}));
 
 let AIEngine: typeof import("@bun/ai/engine").AIEngine;
 
 beforeEach(async () => {
-  await mock.module("ai", () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   ({ AIEngine } = await import("@bun/ai/engine"));
 });

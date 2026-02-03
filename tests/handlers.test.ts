@@ -3,22 +3,17 @@ import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
 import { APP_CONSTANTS } from "@shared/constants";
 import { type PromptSession, type AppConfig, DEFAULT_API_KEYS } from "@shared/types";
 
+import { setAiGenerateTextMock } from "./helpers/ai-mock";
+
 // Mock the AI SDK for handler tests (same as max-conversion.test.ts)
 const mockGenerateText = mock(async () => ({
   text: '{"styleTags": "raw, energetic", "recording": "studio session"}',
-}));
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
 }));
 
 let createHandlers: typeof import("@bun/handlers").createHandlers;
 
 beforeEach(async () => {
-  await mock.module("ai", () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   ({ createHandlers } = await import("@bun/handlers"));
 });

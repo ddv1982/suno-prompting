@@ -8,6 +8,8 @@ import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
 import { AIGenerationError } from '@shared/errors';
 
+import { setAiGenerateTextMock } from '../../helpers/ai-mock';
+
 // Mock the AI SDK before importing callLLM
 const mockGenerateText = mock(async (_options?: unknown) => ({
   text: 'generated response',
@@ -15,19 +17,12 @@ const mockGenerateText = mock(async (_options?: unknown) => ({
   finishReason: 'stop',
   usage: { inputTokens: 10, outputTokens: 20 },
 }));
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
-}));
 
 // Mock Ollama client
 const mockGenerateWithOllama = mock(async () => 'ollama response');
 
 beforeEach(async () => {
-  await mock.module('ai', () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   await mock.module('@bun/ai/ollama-client', () => ({
     generateWithOllama: mockGenerateWithOllama,

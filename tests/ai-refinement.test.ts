@@ -2,15 +2,13 @@ import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
 import type { RefinementConfig } from '@bun/ai/types';
 
+import { setAiGenerateTextMock } from './helpers/ai-mock';
+
 let refinePrompt: typeof import('@bun/ai/refinement').refinePrompt;
 let mockCheckOllamaAvailable: ReturnType<typeof mock>;
 let mockInvalidateOllamaCache: ReturnType<typeof mock>;
 let mockGenerateWithOllama: ReturnType<typeof mock>;
 let mockGenerateText: ReturnType<typeof mock>;
-let mockCreateProviderRegistry: ReturnType<typeof mock>;
-let mockExtractGenreFromPrompt: ReturnType<typeof mock>;
-let mockExtractMoodFromPrompt: ReturnType<typeof mock>;
-let mockRemixStyleTags: ReturnType<typeof mock>;
 
 beforeEach(async () => {
   mockCheckOllamaAvailable = mock(() =>
@@ -29,15 +27,7 @@ beforeEach(async () => {
       }),
     })
   );
-  mockCreateProviderRegistry = mock(() => ({
-    languageModel: () => ({}),
-  }));
-  mockExtractGenreFromPrompt = mock(() => 'jazz');
-  mockExtractMoodFromPrompt = mock(() => 'mellow');
-  mockRemixStyleTags = mock((prompt: string) => ({
-    text: `${prompt} with remixed style tags`,
-    genre: 'jazz',
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   await mock.module('@bun/ai/ollama-availability', () => ({
     checkOllamaAvailable: mockCheckOllamaAvailable,
@@ -46,18 +36,6 @@ beforeEach(async () => {
 
   await mock.module('@bun/ai/ollama-client', () => ({
     generateWithOllama: mockGenerateWithOllama,
-  }));
-
-  await mock.module('ai', () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
-
-  await mock.module('@bun/prompt/deterministic', () => ({
-    extractGenreFromPrompt: mockExtractGenreFromPrompt,
-    extractMoodFromPrompt: mockExtractMoodFromPrompt,
-    remixStyleTags: mockRemixStyleTags,
   }));
 
   ({ refinePrompt } = await import('@bun/ai/refinement'));
@@ -224,7 +202,6 @@ describe('refinePrompt with local LLM (offline mode)', () => {
     // Reset all mocks before each test
     mockGenerateWithOllama.mockClear();
     mockGenerateText.mockClear();
-    mockRemixStyleTags.mockClear();
   });
 
   test('uses deterministic refinement for style when local LLM is active (no lyrics mode)', async () => {
@@ -233,9 +210,14 @@ describe('refinePrompt with local LLM (offline mode)', () => {
       isLyricsMode: () => false,
     });
 
+    const currentPrompt = `genre: "jazz"
+mood: "smooth"
+style tags: "old tags, outdated"
+instruments: "piano"`;
+
     const result = await refinePrompt(
       {
-        currentPrompt: 'A jazz song with smooth vibes',
+        currentPrompt,
         currentTitle: 'Jazz Song',
         feedback: 'Add more piano',
       },
@@ -244,7 +226,8 @@ describe('refinePrompt with local LLM (offline mode)', () => {
 
     // Style should be refined deterministically
     expect(result.text).toBeDefined();
-    expect(result.text).toContain('with remixed style tags');
+    expect(result.text).toContain('style tags:');
+    expect(result.text).not.toContain('old tags, outdated');
     expect(result.lyrics).toBeUndefined();
     
     // Should NOT call Ollama for style refinement
@@ -259,9 +242,14 @@ describe('refinePrompt with local LLM (offline mode)', () => {
       isLyricsMode: () => true,
     });
 
+    const currentPrompt = `genre: "jazz"
+mood: "smooth"
+style tags: "old tags, outdated"
+instruments: "piano"`;
+
     const result = await refinePrompt(
       {
-        currentPrompt: 'A jazz song with smooth vibes',
+        currentPrompt,
         currentTitle: 'Jazz Song',
         feedback: 'Make the lyrics more emotional',
         currentLyrics: '[Verse 1]\nOriginal lyrics about love',
@@ -271,7 +259,8 @@ describe('refinePrompt with local LLM (offline mode)', () => {
 
     // Style should be deterministic, lyrics refined via LLM
     expect(result.text).toBeDefined();
-    expect(result.text).toContain('with remixed style tags');
+    expect(result.text).toContain('style tags:');
+    expect(result.text).not.toContain('old tags, outdated');
     expect(result.lyrics).toBeDefined();
     expect(result.lyrics).toContain('Refined lyrics from Ollama');
     
@@ -287,9 +276,14 @@ describe('refinePrompt with local LLM (offline mode)', () => {
       isLyricsMode: () => true,
     });
 
+    const currentPrompt = `genre: "rock"
+mood: "smooth"
+style tags: "old tags, outdated"
+instruments: "guitar"`;
+
     const result = await refinePrompt(
       {
-        currentPrompt: 'A rock ballad',
+        currentPrompt,
         currentTitle: 'Rock Ballad',
         feedback: 'Add more guitar',
         currentLyrics: '[Verse 1]\nOriginal rock lyrics',
@@ -299,7 +293,8 @@ describe('refinePrompt with local LLM (offline mode)', () => {
 
     // Cloud: uses deterministic style + cloud LLM for lyrics (unified architecture)
     expect(result.text).toBeDefined();
-    expect(result.text).toContain('with remixed style tags'); // Deterministic style
+    expect(result.text).toContain('style tags:'); // Deterministic style
+    expect(result.text).not.toContain('old tags, outdated');
     expect(result.title).toBe('Rock Ballad'); // Title preserved (not from LLM)
     expect(result.lyrics).toBeDefined();
     

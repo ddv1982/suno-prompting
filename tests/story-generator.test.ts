@@ -16,6 +16,8 @@ import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 import type { StoryGenerationInput, StoryGenerationOptions } from '@bun/ai/story-generator';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
 
+import { setAiGenerateTextMock } from './helpers/ai-mock';
+
 // ============================================
 // Mock AI SDK (generateText) - NOT @bun/ai/llm-utils
 // This avoids module mock conflicts with llm-utils.test.ts
@@ -26,9 +28,6 @@ const mockGenerateText = mock(async () => ({
   response: { modelId: 'gpt-4' },
   finishReason: 'stop',
   usage: { inputTokens: 100, outputTokens: 50 },
-}));
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
 }));
 
 // Mock Ollama client for offline mode tests
@@ -44,11 +43,7 @@ let STORY_GENERATION_SYSTEM_PROMPT: typeof import('@bun/ai/story-generator').STO
 let STORY_GENERATION_TIMEOUT_MS: typeof import('@bun/ai/story-generator').STORY_GENERATION_TIMEOUT_MS;
 
 beforeEach(async () => {
-  await mock.module('ai', () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   await mock.module('@bun/ai/ollama-client', () => ({
     generateWithOllama: mockGenerateWithOllama,

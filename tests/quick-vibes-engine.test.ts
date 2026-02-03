@@ -4,24 +4,19 @@ import { APP_CONSTANTS } from "@shared/constants";
 
 import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 
+import { setAiGenerateTextMock } from "./helpers/ai-mock";
+
 const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 
 // Mock the AI SDK generateText
 const mockGenerateText = mock(async () => ({
   text: "warm lo-fi beats to study to",
 }));
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
-}));
 
 let AIEngine: typeof import("@bun/ai/engine").AIEngine;
 
 beforeEach(async () => {
-  await mock.module("ai", () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   ({ AIEngine } = await import("@bun/ai/engine"));
 });

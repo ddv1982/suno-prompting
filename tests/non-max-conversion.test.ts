@@ -2,6 +2,8 @@ import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 
+import { setAiGenerateTextMock } from './helpers/ai-mock';
+
 // Mock the AI SDK for conversion tests
 const mockGenerateText = mock(async () => ({
   text: JSON.stringify({
@@ -11,9 +13,6 @@ const mockGenerateText = mock(async () => ({
     outro: 'Peaceful resolution and fade',
   }),
 }));
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
-}));
 
 let parseStyleDescription: typeof import('@bun/prompt/conversion').parseStyleDescription;
 let inferBpm: typeof import('@bun/prompt/conversion').inferBpm;
@@ -21,11 +20,7 @@ let buildNonMaxFormatPrompt: typeof import('@bun/prompt/conversion').buildNonMax
 let convertToNonMaxFormat: typeof import('@bun/prompt/conversion').convertToNonMaxFormat;
 
 beforeEach(async () => {
-  await mock.module('ai', () => ({
-    generateText: mockGenerateText,
-    createProviderRegistry: mockCreateProviderRegistry,
-    experimental_createProviderRegistry: mockCreateProviderRegistry,
-  }));
+  setAiGenerateTextMock(mockGenerateText);
 
   ({
     parseStyleDescription,

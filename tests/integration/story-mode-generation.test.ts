@@ -18,6 +18,8 @@ import { createSeededRng } from '@shared/utils/random';
 import type { GenerationConfig } from '@bun/ai/types';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
 
+import { setAiGenerateTextMock } from '../helpers/ai-mock';
+
 // ============================================
 // Mock Setup
 // ============================================
@@ -37,9 +39,6 @@ const mockGenerateText = mock(async () => ({
   response: { modelId: 'gpt-4' },
   finishReason: 'stop',
   usage: { inputTokens: 100, outputTokens: 50 },
-}));
-const mockCreateProviderRegistry = mock(() => ({
-  languageModel: () => ({}),
 }));
 
 let generateInitial: typeof import('@bun/ai/generation').generateInitial;
@@ -89,11 +88,7 @@ describe('Story Mode Generation Integration', () => {
       usage: { inputTokens: 100, outputTokens: 50 },
     });
 
-    await mock.module('ai', () => ({
-      generateText: mockGenerateText,
-      createProviderRegistry: mockCreateProviderRegistry,
-      experimental_createProviderRegistry: mockCreateProviderRegistry,
-    }));
+    setAiGenerateTextMock(mockGenerateText);
 
     await mock.module('@bun/ai/thematic-context', () => ({
       extractThematicContext: async () => {
@@ -398,7 +393,7 @@ describe('Story Mode Generation Integration', () => {
 // ============================================
 
 describe('Story Mode + Lyrics Mode interaction', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockGenerateText.mockReset();
     mockExtractThematicContext.mockReset();
 
@@ -442,6 +437,21 @@ describe('Story Mode + Lyrics Mode interaction', () => {
         };
       }
     });
+
+    setAiGenerateTextMock(mockGenerateText);
+
+    await mock.module('@bun/ai/thematic-context', () => ({
+      extractThematicContext: async () => {
+        const result = await mockExtractThematicContext();
+        return result;
+      },
+    }));
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
+  });
+
+  afterEach(() => {
+    mock.restore();
   });
 
   test('Story Mode + Lyrics Mode generates narrative with lyrics', async () => {
