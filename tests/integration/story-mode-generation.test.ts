@@ -16,6 +16,7 @@ import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 import { createSeededRng } from '@shared/utils/random';
 
 import { setAiGenerateTextMock } from '../helpers/ai-mock';
+import { setExtractThematicContextMock } from '../helpers/thematic-context-mock';
 
 import type { GenerationConfig } from '@bun/ai/types';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
@@ -89,12 +90,7 @@ describe('Story Mode Generation Integration', () => {
 
     setAiGenerateTextMock(mockGenerateText);
 
-    await mock.module('@bun/ai/thematic-context', () => ({
-      extractThematicContext: async () => {
-        const result = await mockExtractThematicContext();
-        return result;
-      },
-    }));
+    setExtractThematicContextMock(async () => mockExtractThematicContext());
 
     ({ generateInitial } = await import('@bun/ai/generation'));
   });
@@ -439,12 +435,7 @@ describe('Story Mode + Lyrics Mode interaction', () => {
 
     setAiGenerateTextMock(mockGenerateText);
 
-    await mock.module('@bun/ai/thematic-context', () => ({
-      extractThematicContext: async () => {
-        const result = await mockExtractThematicContext();
-        return result;
-      },
-    }));
+    setExtractThematicContextMock(async () => mockExtractThematicContext());
 
     ({ generateInitial } = await import('@bun/ai/generation'));
   });

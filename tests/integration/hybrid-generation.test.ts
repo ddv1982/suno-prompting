@@ -1,5 +1,7 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 
+import { setExtractThematicContextMock } from '../helpers/thematic-context-mock';
+
 import type { GenerationConfig } from '@bun/ai/types';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
 
@@ -61,13 +63,10 @@ describe('Hybrid Generation Integration', () => {
     mockExtractThematicContext.mockResolvedValue(MOCK_THEMATIC_CONTEXT);
     extractionStartTime = null;
 
-    await mock.module('@bun/ai/thematic-context', () => ({
-      extractThematicContext: async () => {
-        extractionStartTime = performance.now();
-        const result = await mockExtractThematicContext();
-        return result;
-      },
-    }));
+    setExtractThematicContextMock(async () => {
+      extractionStartTime = performance.now();
+      return mockExtractThematicContext();
+    });
 
     await mock.module('@bun/ai/ollama-availability', () => ({
       checkOllamaAvailable: mockCheckOllamaAvailable,

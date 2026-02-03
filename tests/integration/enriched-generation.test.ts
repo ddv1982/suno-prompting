@@ -19,6 +19,8 @@ import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 import { APP_CONSTANTS } from '@shared/constants';
 import { createSeededRng } from '@shared/utils/random';
 
+import { setExtractThematicContextMock } from '../helpers/thematic-context-mock';
+
 import type { GenerationConfig } from '@bun/ai/types';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
 
@@ -210,9 +212,7 @@ describe('Enriched Generation Integration', () => {
     mockExtractThematicContext.mockReset();
     mockExtractThematicContext.mockResolvedValue(MOCK_FULLY_ENRICHED_CONTEXT);
 
-    await mock.module('@bun/ai/thematic-context', () => ({
-      extractThematicContext: mockExtractThematicContext,
-    }));
+    setExtractThematicContextMock(mockExtractThematicContext);
 
     await mock.module('@bun/ai/ollama-availability', () => ({
       checkOllamaAvailable: mockCheckOllamaAvailable,

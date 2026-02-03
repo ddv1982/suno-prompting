@@ -12,6 +12,7 @@
 
 import { afterEach, mock } from 'bun:test';
 
+import type { extractThematicContext as extractThematicContextType } from '@bun/ai/thematic-context';
 import type { generateText as generateTextType } from 'ai';
 
 // Store original fetch for potential restoration
@@ -30,6 +31,7 @@ Object.defineProperty(globalThis, 'fetch', {
 });
 
 type GenerateTextFn = typeof generateTextType;
+type ExtractThematicContextFn = typeof extractThematicContextType;
 
 const defaultGenerateTextMock = mock(async (..._args: unknown[]) => {
   throw new Error('AI generateText mock not configured');
@@ -54,9 +56,28 @@ void mock.module('ai', () => ({
   experimental_createProviderRegistry: createProviderRegistryMock,
 }));
 
+const thematicModuleUrl = new URL('../src/bun/ai/thematic-context', import.meta.url);
+const thematicModule = await import(thematicModuleUrl.href);
+const realExtractThematicContext = thematicModule.extractThematicContext as ExtractThematicContextFn;
+const realClearThematicCache = thematicModule.clearThematicCache as () => void;
+
+type ThematicMockGlobals = typeof globalThis & {
+  __extractThematicContextMock?: ExtractThematicContextFn;
+};
+
+const thematicGlobals = globalThis as ThematicMockGlobals;
+thematicGlobals.__extractThematicContextMock = realExtractThematicContext;
+
+void mock.module('@bun/ai/thematic-context', () => ({
+  extractThematicContext: (...args: Parameters<ExtractThematicContextFn>) =>
+    (thematicGlobals.__extractThematicContextMock ?? realExtractThematicContext)(...args),
+  clearThematicCache: realClearThematicCache,
+}));
+
 afterEach(() => {
   defaultGenerateTextMock.mockClear();
   aiGlobals.__aiGenerateTextMock = defaultGenerateTextFn;
+  thematicGlobals.__extractThematicContextMock = realExtractThematicContext;
 });
 
 // Export both for test access
