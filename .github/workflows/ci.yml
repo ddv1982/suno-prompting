@@ -19,3 +19,5 @@ jobs:
       - run: bun run lint
       - run: bun test --max-concurrency=1
       - run: bun run knip
+      - run: bun run build:linux
+      - run: bun run bundle:report
