@@ -1,10 +1,5 @@
-import { describe, expect, test, mock, beforeEach, afterAll } from "bun:test";
+import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
 
-afterAll(() => {
-  mock.restore();
-});
-
-import { createHandlers } from "@bun/handlers";
 import { APP_CONSTANTS } from "@shared/constants";
 import { type PromptSession, type AppConfig, DEFAULT_API_KEYS } from "@shared/types";
 
@@ -13,9 +8,19 @@ const mockGenerateText = mock(async () => ({
   text: '{"styleTags": "raw, energetic", "recording": "studio session"}',
 }));
 
-void mock.module("ai", () => ({
-  generateText: mockGenerateText,
-}));
+let createHandlers: typeof import("@bun/handlers").createHandlers;
+
+beforeEach(async () => {
+  await mock.module("ai", () => ({
+    generateText: mockGenerateText,
+  }));
+
+  ({ createHandlers } = await import("@bun/handlers"));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 // Mock AIEngine
 function createMockAIEngine() {

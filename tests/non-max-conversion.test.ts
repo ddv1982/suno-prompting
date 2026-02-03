@@ -1,16 +1,6 @@
-import { describe, it, expect, mock, beforeEach, afterAll } from 'bun:test';
-
-afterAll(() => {
-  mock.restore();
-});
+import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import {
-  parseStyleDescription,
-  inferBpm,
-  buildNonMaxFormatPrompt,
-  convertToNonMaxFormat,
-} from '@bun/prompt/conversion';
 
 // Mock the AI SDK for conversion tests
 const mockGenerateText = mock(async () => ({
@@ -22,9 +12,27 @@ const mockGenerateText = mock(async () => ({
   }),
 }));
 
-void mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
+let parseStyleDescription: typeof import('@bun/prompt/conversion').parseStyleDescription;
+let inferBpm: typeof import('@bun/prompt/conversion').inferBpm;
+let buildNonMaxFormatPrompt: typeof import('@bun/prompt/conversion').buildNonMaxFormatPrompt;
+let convertToNonMaxFormat: typeof import('@bun/prompt/conversion').convertToNonMaxFormat;
+
+beforeEach(async () => {
+  await mock.module('ai', () => ({
+    generateText: mockGenerateText,
+  }));
+
+  ({
+    parseStyleDescription,
+    inferBpm,
+    buildNonMaxFormatPrompt,
+    convertToNonMaxFormat,
+  } = await import('@bun/prompt/conversion'));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 // ============================================================================
 // parseStyleDescription Tests

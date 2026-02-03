@@ -11,11 +11,7 @@
  * Task 5.1: Unit Tests for Story Generator Module
  */
 
-import { describe, test, expect, mock, beforeEach, afterAll } from 'bun:test';
-
-afterAll(() => {
-  mock.restore();
-});
+import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import type { StoryGenerationInput, StoryGenerationOptions } from '@bun/ai/story-generator';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
@@ -37,23 +33,35 @@ const mockGenerateWithOllama = mock(async () =>
   'Ethereal synth pads float through the night at 120 BPM, driven by pulsing bass and shimmering arpeggios.'
 );
 
-await mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
+let generateStoryNarrative: typeof import('@bun/ai/story-generator').generateStoryNarrative;
+let generateStoryNarrativeWithTimeout: typeof import('@bun/ai/story-generator').generateStoryNarrativeWithTimeout;
+let extractStructuredDataForStory: typeof import('@bun/ai/story-generator').extractStructuredDataForStory;
+let prependMaxHeaders: typeof import('@bun/ai/story-generator').prependMaxHeaders;
+let STORY_GENERATION_SYSTEM_PROMPT: typeof import('@bun/ai/story-generator').STORY_GENERATION_SYSTEM_PROMPT;
+let STORY_GENERATION_TIMEOUT_MS: typeof import('@bun/ai/story-generator').STORY_GENERATION_TIMEOUT_MS;
 
-await mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mockGenerateWithOllama,
-}));
+beforeEach(async () => {
+  await mock.module('ai', () => ({
+    generateText: mockGenerateText,
+  }));
 
-// Import after mocking
-const {
-  generateStoryNarrative,
-  generateStoryNarrativeWithTimeout,
-  extractStructuredDataForStory,
-  prependMaxHeaders,
-  STORY_GENERATION_SYSTEM_PROMPT,
-  STORY_GENERATION_TIMEOUT_MS,
-} = await import('@bun/ai/story-generator');
+  await mock.module('@bun/ai/ollama-client', () => ({
+    generateWithOllama: mockGenerateWithOllama,
+  }));
+
+  ({
+    generateStoryNarrative,
+    generateStoryNarrativeWithTimeout,
+    extractStructuredDataForStory,
+    prependMaxHeaders,
+    STORY_GENERATION_SYSTEM_PROMPT,
+    STORY_GENERATION_TIMEOUT_MS,
+  } = await import('@bun/ai/story-generator'));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 // ============================================
 // Test Helpers

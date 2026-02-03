@@ -28,21 +28,7 @@ const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: false, hasGemma: false })
 );
 
-await mock.module('@bun/ai/thematic-context', () => ({
-  extractThematicContext: mockExtractThematicContext,
-}));
-
-await mock.module('@bun/ai/ollama-availability', () => ({
-  checkOllamaAvailable: mockCheckOllamaAvailable,
-  invalidateOllamaCache: mock(() => {}),
-}));
-
-await mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mock(() => Promise.reject(new Error('Ollama offline'))),
-}));
-
-// Import after mocking
-const { generateInitial } = await import('@bun/ai/generation');
+let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
@@ -63,9 +49,24 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
 }
 
 describe('Fallback Integration Tests', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockExtractThematicContext.mockReset();
     mockExtractThematicContext.mockResolvedValue(null);
+
+    await mock.module('@bun/ai/thematic-context', () => ({
+      extractThematicContext: mockExtractThematicContext,
+    }));
+
+    await mock.module('@bun/ai/ollama-availability', () => ({
+      checkOllamaAvailable: mockCheckOllamaAvailable,
+      invalidateOllamaCache: mock(() => {}),
+    }));
+
+    await mock.module('@bun/ai/ollama-client', () => ({
+      generateWithOllama: mock(() => Promise.reject(new Error('Ollama offline'))),
+    }));
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
   });
 
   afterEach(() => {

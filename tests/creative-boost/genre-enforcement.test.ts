@@ -1,10 +1,6 @@
-import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
-afterAll(() => {
-  mock.restore();
-});
-
-import { AIEngine } from "@bun/ai/engine";
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 
 let generateTextCalls = 0;
 
@@ -28,12 +24,22 @@ const mockGenerateText = mock(async () => {
   }
 });
 
-void mock.module("ai", () => ({
-  generateText: mockGenerateText,
-}));
+let AIEngine: typeof import("@bun/ai/engine").AIEngine;
+
+beforeEach(async () => {
+  await mock.module("ai", () => ({
+    generateText: mockGenerateText,
+  }));
+
+  ({ AIEngine } = await import("@bun/ai/engine"));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -102,7 +108,7 @@ describe("AIEngine.refineCreativeBoost genre count enforcement", () => {
 });
 
 describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -139,7 +145,7 @@ describe("AIEngine.refineCreativeBoost skips enforcement for Direct Mode", () =>
 });
 
 describe("AIEngine.refineCreativeBoost skips enforcement when targetGenreCount is 0 or undefined", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();

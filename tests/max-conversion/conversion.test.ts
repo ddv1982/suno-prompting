@@ -1,27 +1,29 @@
-import { describe, test, it, expect, mock, beforeEach, afterAll } from 'bun:test';
-
-afterAll(() => {
-  mock.restore();
-});
-
-import { convertToMaxFormat } from '@bun/prompt/conversion';
+import { describe, test, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 const mockGenerateText = mock(async () => ({
   text: '{"styleTags": "studio polish, warm analog, natural room", "recording": "intimate studio session with vintage microphone"}',
 }));
 
-void mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
+let convertToMaxFormat: typeof import('@bun/prompt/conversion').convertToMaxFormat;
 
 describe('convertToMaxFormat', () => {
   const mockGetModel = () => ({} as any);
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockGenerateText.mockClear();
     mockGenerateText.mockImplementation(async () => ({
       text: '{"styleTags": "studio polish, warm analog, natural room", "recording": "intimate studio session with vintage microphone"}',
     }));
+
+    await mock.module('ai', () => ({
+      generateText: mockGenerateText,
+    }));
+
+    ({ convertToMaxFormat } = await import('@bun/prompt/conversion'));
+  });
+
+  afterEach(() => {
+    mock.restore();
   });
 
   it('converts standard prompt successfully', async () => {

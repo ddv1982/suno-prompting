@@ -1,8 +1,4 @@
-import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
-
-afterAll(() => {
-  mock.restore();
-});
+import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
@@ -14,20 +10,27 @@ const mockCheckOllamaAvailable = mock(() =>
 );
 const mockInvalidateOllamaCache = mock(() => {});
 
-await mock.module('@bun/ai/ollama-availability', () => ({
-  checkOllamaAvailable: mockCheckOllamaAvailable,
-  invalidateOllamaCache: mockInvalidateOllamaCache,
-}));
-
 // Mock Ollama client for local LLM calls
 const mockGenerateWithOllama = mock(() => Promise.resolve('Generated text from Ollama'));
 
-await mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mockGenerateWithOllama,
-}));
+let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
-// Import after mocking
-const { generateInitial } = await import('@bun/ai/generation');
+beforeEach(async () => {
+  await mock.module('@bun/ai/ollama-availability', () => ({
+    checkOllamaAvailable: mockCheckOllamaAvailable,
+    invalidateOllamaCache: mockInvalidateOllamaCache,
+  }));
+
+  await mock.module('@bun/ai/ollama-client', () => ({
+    generateWithOllama: mockGenerateWithOllama,
+  }));
+
+  ({ generateInitial } = await import('@bun/ai/generation'));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {

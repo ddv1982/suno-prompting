@@ -152,21 +152,7 @@ const mockCheckOllamaAvailable = mock(() =>
   Promise.resolve({ available: true, hasGemma: true })
 );
 
-await mock.module('@bun/ai/thematic-context', () => ({
-  extractThematicContext: mockExtractThematicContext,
-}));
-
-await mock.module('@bun/ai/ollama-availability', () => ({
-  checkOllamaAvailable: mockCheckOllamaAvailable,
-  invalidateOllamaCache: mock(() => {}),
-}));
-
-await mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mock(() => Promise.resolve('Generated text')),
-}));
-
-// Import after mocking
-const { generateInitial } = await import('@bun/ai/generation');
+let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
@@ -220,9 +206,24 @@ function assertNoArtistNames(output: string): void {
 }
 
 describe('Enriched Generation Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockExtractThematicContext.mockReset();
     mockExtractThematicContext.mockResolvedValue(MOCK_FULLY_ENRICHED_CONTEXT);
+
+    await mock.module('@bun/ai/thematic-context', () => ({
+      extractThematicContext: mockExtractThematicContext,
+    }));
+
+    await mock.module('@bun/ai/ollama-availability', () => ({
+      checkOllamaAvailable: mockCheckOllamaAvailable,
+      invalidateOllamaCache: mock(() => {}),
+    }));
+
+    await mock.module('@bun/ai/ollama-client', () => ({
+      generateWithOllama: mock(() => Promise.resolve('Generated text')),
+    }));
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
   });
 
   afterEach(() => {

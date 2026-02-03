@@ -1,10 +1,6 @@
-import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
-afterAll(() => {
-  mock.restore();
-});
-
-import { AIEngine } from "@bun/ai/engine";
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 
 let generateTextCalls = 0;
 
@@ -25,12 +21,22 @@ This is how we thrive`,
   }
 });
 
-void mock.module("ai", () => ({
-  generateText: mockGenerateText,
-}));
+let AIEngine: typeof import("@bun/ai/engine").AIEngine;
+
+beforeEach(async () => {
+  await mock.module("ai", () => ({
+    generateText: mockGenerateText,
+  }));
+
+  ({ AIEngine } = await import("@bun/ai/engine"));
+});
+
+afterEach(() => {
+  mock.restore();
+});
 
 describe("AIEngine.refineCreativeBoost Direct Mode", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -159,7 +165,7 @@ This is how we thrive`,
 });
 
 describe("refineDirectMode title context priority (Bug 4)", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();
@@ -218,7 +224,7 @@ describe("refineDirectMode title context priority (Bug 4)", () => {
 });
 
 describe("refineDirectMode style updates (Bug 3)", () => {
-  let engine: AIEngine;
+  let engine: AIEngineType;
 
   beforeEach(() => {
     engine = new AIEngine();

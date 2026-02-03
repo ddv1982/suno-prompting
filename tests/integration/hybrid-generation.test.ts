@@ -35,25 +35,7 @@ const mockCheckOllamaAvailable = mock(() =>
 // Track timing for parallel execution verification
 let extractionStartTime: number | null = null;
 
-await mock.module('@bun/ai/thematic-context', () => ({
-  extractThematicContext: async () => {
-    extractionStartTime = performance.now();
-    const result = await mockExtractThematicContext();
-    return result;
-  },
-}));
-
-await mock.module('@bun/ai/ollama-availability', () => ({
-  checkOllamaAvailable: mockCheckOllamaAvailable,
-  invalidateOllamaCache: mock(() => {}),
-}));
-
-await mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mock(() => Promise.resolve('Generated text')),
-}));
-
-// Import after mocking
-const { generateInitial } = await import('@bun/ai/generation');
+let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
@@ -74,10 +56,29 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
 }
 
 describe('Hybrid Generation Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockExtractThematicContext.mockReset();
     mockExtractThematicContext.mockResolvedValue(MOCK_THEMATIC_CONTEXT);
     extractionStartTime = null;
+
+    await mock.module('@bun/ai/thematic-context', () => ({
+      extractThematicContext: async () => {
+        extractionStartTime = performance.now();
+        const result = await mockExtractThematicContext();
+        return result;
+      },
+    }));
+
+    await mock.module('@bun/ai/ollama-availability', () => ({
+      checkOllamaAvailable: mockCheckOllamaAvailable,
+      invalidateOllamaCache: mock(() => {}),
+    }));
+
+    await mock.module('@bun/ai/ollama-client', () => ({
+      generateWithOllama: mock(() => Promise.resolve('Generated text')),
+    }));
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
   });
 
   afterEach(() => {
