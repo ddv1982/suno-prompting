@@ -2,10 +2,9 @@ import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
 import { APP_CONSTANTS } from "@shared/constants";
 
-import type { AIEngine as AIEngineType } from "@bun/ai/engine";
-
 import { setAiGenerateTextMock } from "./helpers/ai-mock";
 
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 const QUICK_VIBES_MAX_CHARS = APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
 
 // Mock the AI SDK generateText

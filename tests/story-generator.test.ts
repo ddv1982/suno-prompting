@@ -13,11 +13,10 @@
 
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 
-import type { StoryGenerationInput, StoryGenerationOptions } from '@bun/ai/story-generator';
-import type { ThematicContext } from '@shared/schemas/thematic-context';
-
 import { setAiGenerateTextMock } from './helpers/ai-mock';
 
+import type { StoryGenerationInput, StoryGenerationOptions } from '@bun/ai/story-generator';
+import type { ThematicContext } from '@shared/schemas/thematic-context';
 // ============================================
 // Mock AI SDK (generateText) - NOT @bun/ai/llm-utils
 // This avoids module mock conflicts with llm-utils.test.ts

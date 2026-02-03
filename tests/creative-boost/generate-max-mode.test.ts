@@ -2,10 +2,9 @@ import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
 import { MAX_MODE_SIGNATURE } from "@shared/max-format";
 
-import type { AIEngine as AIEngineType } from "@bun/ai/engine";
-
 import { setAiGenerateTextMock } from "../helpers/ai-mock";
 
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 // Track generateText calls to detect conversion AI calls
 let generateTextCalls = 0;
 

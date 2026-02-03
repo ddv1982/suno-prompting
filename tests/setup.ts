@@ -12,6 +12,8 @@
 
 import { afterEach, mock } from 'bun:test';
 
+import type { generateText as generateTextType } from 'ai';
+
 // Store original fetch for potential restoration
 const originalFetch = globalThis.fetch;
 
@@ -27,30 +29,34 @@ Object.defineProperty(globalThis, 'fetch', {
   configurable: true,
 });
 
-const defaultGenerateTextMock = mock(async () => {
+type GenerateTextFn = typeof generateTextType;
+
+const defaultGenerateTextMock = mock(async (..._args: unknown[]) => {
   throw new Error('AI generateText mock not configured');
 });
+const defaultGenerateTextFn = defaultGenerateTextMock as unknown as GenerateTextFn;
 
 type AiMockGlobals = typeof globalThis & {
-  __aiGenerateTextMock?: typeof defaultGenerateTextMock;
+  __aiGenerateTextMock?: GenerateTextFn;
 };
 
 const aiGlobals = globalThis as AiMockGlobals;
-aiGlobals.__aiGenerateTextMock = defaultGenerateTextMock;
+aiGlobals.__aiGenerateTextMock = defaultGenerateTextFn;
 
 const createProviderRegistryMock = () => ({
   languageModel: () => ({}),
 });
 
-mock.module('ai', () => ({
-  generateText: (...args) => aiGlobals.__aiGenerateTextMock?.(...args),
+void mock.module('ai', () => ({
+  generateText: (...args: Parameters<GenerateTextFn>) =>
+    (aiGlobals.__aiGenerateTextMock ?? defaultGenerateTextFn)(...args),
   createProviderRegistry: createProviderRegistryMock,
   experimental_createProviderRegistry: createProviderRegistryMock,
 }));
 
 afterEach(() => {
   defaultGenerateTextMock.mockClear();
-  aiGlobals.__aiGenerateTextMock = defaultGenerateTextMock;
+  aiGlobals.__aiGenerateTextMock = defaultGenerateTextFn;
 });
 
 // Export both for test access

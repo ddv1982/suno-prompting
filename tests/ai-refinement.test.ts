@@ -1,9 +1,8 @@
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
-import type { RefinementConfig } from '@bun/ai/types';
-
 import { setAiGenerateTextMock } from './helpers/ai-mock';
 
+import type { RefinementConfig } from '@bun/ai/types';
 let refinePrompt: typeof import('@bun/ai/refinement').refinePrompt;
 let mockCheckOllamaAvailable: ReturnType<typeof mock>;
 let mockInvalidateOllamaCache: ReturnType<typeof mock>;

@@ -1,9 +1,8 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
-import type { AIEngine as AIEngineType } from "@bun/ai/engine";
-
 import { setAiGenerateTextMock } from "../helpers/ai-mock";
 
+import type { AIEngine as AIEngineType } from "@bun/ai/engine";
 let generateTextCalls = 0;
 
 const mockGenerateText = mock(async () => {

@@ -2,10 +2,9 @@ import { test, expect, describe, mock, beforeEach, afterEach } from 'bun:test';
 
 import { ThematicContextSchema } from '@shared/schemas/thematic-context';
 
-import type { LanguageModel } from 'ai';
-
 import { setAiGenerateTextMock } from '../helpers/ai-mock';
 
+import type { LanguageModel } from 'ai';
 describe('ThematicContextSchema', () => {
   describe('valid inputs', () => {
     test('accepts valid thematic context with 3 themes and 2 moods', () => {

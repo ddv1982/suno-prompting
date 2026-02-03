@@ -15,11 +15,10 @@ import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import { createSeededRng } from '@shared/utils/random';
 
-import type { GenerationConfig } from '@bun/ai/types';
-import type { ThematicContext } from '@shared/schemas/thematic-context';
-
 import { setAiGenerateTextMock } from '../helpers/ai-mock';
 
+import type { GenerationConfig } from '@bun/ai/types';
+import type { ThematicContext } from '@shared/schemas/thematic-context';
 // ============================================
 // Mock Setup
 // ============================================
