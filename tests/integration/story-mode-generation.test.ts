@@ -39,19 +39,7 @@ const mockGenerateText = mock(async () => ({
   usage: { inputTokens: 100, outputTokens: 50 },
 }));
 
-await mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
-
-await mock.module('@bun/ai/thematic-context', () => ({
-  extractThematicContext: mockExtractThematicContext,
-}));
-
-// For story generation we need to mock within the module or test via the higher-level function
-// Let's test via generateInitial which uses the real story generator
-
-// Import after mocking
-const { generateInitial } = await import('@bun/ai/generation');
+let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 // ============================================
 // Test Helpers
@@ -80,7 +68,7 @@ function createMockConfig(overrides: Partial<GenerationConfig> = {}): Generation
 // ============================================
 
 describe('Story Mode Generation Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockExtractThematicContext.mockReset();
     mockGenerateText.mockReset();
 
@@ -97,6 +85,19 @@ describe('Story Mode Generation Integration', () => {
       finishReason: 'stop',
       usage: { inputTokens: 100, outputTokens: 50 },
     });
+
+    await mock.module('ai', () => ({
+      generateText: mockGenerateText,
+    }));
+
+    await mock.module('@bun/ai/thematic-context', () => ({
+      extractThematicContext: async () => {
+        const result = await mockExtractThematicContext();
+        return result;
+      },
+    }));
+
+    ({ generateInitial } = await import('@bun/ai/generation'));
   });
 
   afterEach(() => {

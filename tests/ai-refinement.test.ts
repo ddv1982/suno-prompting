@@ -1,63 +1,65 @@
-import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
-
-afterAll(() => {
-  mock.restore();
-});
+import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
 import type { RefinementConfig } from '@bun/ai/types';
 
-// Mock Ollama availability checks
-const mockCheckOllamaAvailable = mock(() =>
-  Promise.resolve({ available: true, hasGemma: true })
-);
-const mockInvalidateOllamaCache = mock(() => {});
+let refinePrompt: typeof import('@bun/ai/refinement').refinePrompt;
+let mockCheckOllamaAvailable: ReturnType<typeof mock>;
+let mockInvalidateOllamaCache: ReturnType<typeof mock>;
+let mockGenerateWithOllama: ReturnType<typeof mock>;
+let mockGenerateText: ReturnType<typeof mock>;
+let mockExtractGenreFromPrompt: ReturnType<typeof mock>;
+let mockExtractMoodFromPrompt: ReturnType<typeof mock>;
+let mockRemixStyleTags: ReturnType<typeof mock>;
 
-await mock.module('@bun/ai/ollama-availability', () => ({
-  checkOllamaAvailable: mockCheckOllamaAvailable,
-  invalidateOllamaCache: mockInvalidateOllamaCache,
-}));
+beforeEach(async () => {
+  mockCheckOllamaAvailable = mock(() =>
+    Promise.resolve({ available: true, hasGemma: true })
+  );
+  mockInvalidateOllamaCache = mock(() => {});
+  mockGenerateWithOllama = mock(() =>
+    Promise.resolve('[Verse]\nRefined lyrics from Ollama')
+  );
+  mockGenerateText = mock(() =>
+    Promise.resolve({
+      text: JSON.stringify({
+        prompt: 'Refined jazz prompt with more piano',
+        title: 'Refined Title',
+        lyrics: '[VERSE]\nRefined lyrics here',
+      }),
+    })
+  );
+  mockExtractGenreFromPrompt = mock(() => 'jazz');
+  mockExtractMoodFromPrompt = mock(() => 'mellow');
+  mockRemixStyleTags = mock((prompt: string) => ({
+    text: `${prompt} with remixed style tags`,
+    genre: 'jazz',
+  }));
 
-// Mock generateWithOllama for local LLM calls
-const mockGenerateWithOllama = mock(() =>
-  Promise.resolve('[Verse]\nRefined lyrics from Ollama')
-);
+  await mock.module('@bun/ai/ollama-availability', () => ({
+    checkOllamaAvailable: mockCheckOllamaAvailable,
+    invalidateOllamaCache: mockInvalidateOllamaCache,
+  }));
 
-await mock.module('@bun/ai/ollama-client', () => ({
-  generateWithOllama: mockGenerateWithOllama,
-}));
+  await mock.module('@bun/ai/ollama-client', () => ({
+    generateWithOllama: mockGenerateWithOllama,
+  }));
 
-// Mock generateText before importing refinement module
-const mockGenerateText = mock(() =>
-  Promise.resolve({
-    text: JSON.stringify({
-      prompt: 'Refined jazz prompt with more piano',
-      title: 'Refined Title',
-      lyrics: '[VERSE]\nRefined lyrics here',
-    }),
-  })
-);
+  await mock.module('ai', () => ({
+    generateText: mockGenerateText,
+  }));
 
-await mock.module('ai', () => ({
-  generateText: mockGenerateText,
-}));
+  await mock.module('@bun/prompt/deterministic', () => ({
+    extractGenreFromPrompt: mockExtractGenreFromPrompt,
+    extractMoodFromPrompt: mockExtractMoodFromPrompt,
+    remixStyleTags: mockRemixStyleTags,
+  }));
 
-// Mock deterministic functions - re-export all others to avoid breaking other tests
-const actualDeterministicModule = await import('@bun/prompt/deterministic');
-const mockExtractGenreFromPrompt = mock(() => 'jazz');
-const mockExtractMoodFromPrompt = mock(() => 'mellow');
-const mockRemixStyleTags = mock((prompt: string) => ({
-  text: `${prompt} with remixed style tags`,
-  genre: 'jazz',
-}));
+  ({ refinePrompt } = await import('@bun/ai/refinement'));
+});
 
-await mock.module('@bun/prompt/deterministic', () => ({
-  ...actualDeterministicModule,
-  extractGenreFromPrompt: mockExtractGenreFromPrompt,
-  extractMoodFromPrompt: mockExtractMoodFromPrompt,
-  remixStyleTags: mockRemixStyleTags,
-}));
-
-const { refinePrompt } = await import('@bun/ai/refinement');
+afterEach(() => {
+  mock.restore();
+});
 
 function createMockConfig(overrides: Partial<RefinementConfig> = {}): RefinementConfig {
   return {
@@ -329,5 +331,4 @@ describe('refinePrompt with local LLM (offline mode)', () => {
     expect(mockGenerateWithOllama).toHaveBeenCalled();
   });
 });
-
 
