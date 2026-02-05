@@ -18,10 +18,7 @@ import { type LanguageModel } from 'ai';
 import { generateTitle, generateLyrics } from '@bun/ai/content-generator';
 import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
 import { createLogger } from '@bun/logger';
-import {
-  extractGenreFromPrompt,
-  extractMoodFromPrompt,
-} from '@bun/prompt/deterministic';
+import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 import { APP_CONSTANTS } from '@shared/constants';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
@@ -53,9 +50,9 @@ export async function remixTitle(
 ): Promise<{ title: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
-  
+
   log.info('remixTitle', { genre, mood, offline: !!ollamaEndpoint, hasLyrics: !!currentLyrics });
-  
+
   const result = await generateTitle({
     description: originalInput,
     genre,

@@ -26,10 +26,10 @@ export const GENRE_ALIASES = {
   // Hip-hop variants → trap (closest match in our registry)
   'hip hop': 'trap',
   'hip-hop': 'trap',
-  'hiphop': 'trap',
-  'rap': 'trap',
+  hiphop: 'trap',
+  rap: 'trap',
   'boom bap': 'lofi',
-  'boombap': 'lofi',
+  boombap: 'lofi',
   'lofi hip hop': 'lofi',
   'lofi hiphop': 'lofi',
 
@@ -46,7 +46,7 @@ export const GENRE_ALIASES = {
   'synth wave': 'synthwave',
   'synth-wave': 'synthwave',
   'retro wave': 'synthwave',
-  'retrowave': 'synthwave',
+  retrowave: 'synthwave',
 
   // Metal variants
   'heavy metal': 'metal',
@@ -58,23 +58,23 @@ export const GENRE_ALIASES = {
   'doom metal': 'stonerrock',
   'stoner metal': 'stonerrock',
   'sludge metal': 'stonerrock',
-  'doom': 'stonerrock',
+  doom: 'stonerrock',
 
   // Electronic variants
-  'edm': 'electronic',
-  'electro': 'electronic',
-  'electronica': 'electronic',
+  edm: 'electronic',
+  electro: 'electronic',
+  electronica: 'electronic',
   'techno music': 'melodictechno',
   'tech house': 'house',
   'deep house': 'house',
   'progressive house': 'house',
   'progressive trance': 'trance',
-  'psytrance': 'trance',
+  psytrance: 'trance',
   'psy-trance': 'trance',
   'goa trance': 'trance',
 
   // Rock variants
-  'alternative': 'indie',
+  alternative: 'indie',
   'alt rock': 'indie',
   'alt-rock': 'indie',
   'alternative rock': 'indie',
@@ -84,23 +84,23 @@ export const GENRE_ALIASES = {
   'math rock': 'mathrock',
 
   // Drum & Bass variants
-  'dnb': 'drumandbass',
+  dnb: 'drumandbass',
   'd&b': 'drumandbass',
   'd n b': 'drumandbass',
   'drum n bass': 'drumandbass',
   'drum and bass': 'drumandbass',
   'drum-n-bass': 'drumandbass',
   'liquid dnb': 'drumandbass',
-  'neurofunk': 'drumandbass',
+  neurofunk: 'drumandbass',
 
   // Lo-fi variants
   'lo-fi': 'lofi',
   'lo fi': 'lofi',
-  'lowfi': 'lofi',
+  lowfi: 'lofi',
 
   // Trip-hop variants
   'trip-hop': 'downtempo',
-  'triphop': 'downtempo',
+  triphop: 'downtempo',
   'trip hop': 'downtempo',
 
   // Jazz variants
@@ -108,19 +108,19 @@ export const GENRE_ALIASES = {
   'nu-jazz': 'jazz',
   'acid jazz': 'jazz',
   'smooth jazz': 'jazz',
-  'bebop': 'jazz',
-  'bop': 'jazz',
+  bebop: 'jazz',
+  bop: 'jazz',
   'cool jazz': 'jazz',
 
   // Soul variants
   'neo soul': 'soul',
   'neo-soul': 'soul',
-  'motown': 'soul',
+  motown: 'soul',
 
   // New wave variants
   'new wave': 'synthpop',
   'new-wave': 'synthpop',
-  'newwave': 'synthpop',
+  newwave: 'synthpop',
 
   // Garage variants
   'uk garage': 'ukgarage',
@@ -130,25 +130,25 @@ export const GENRE_ALIASES = {
   'two-step': 'ukgarage',
 
   // Dubstep variants
-  'brostep': 'dubstep',
-  'riddim': 'dubstep',
+  brostep: 'dubstep',
+  riddim: 'dubstep',
 
   // Country variants
-  'western': 'country',
+  western: 'country',
   'country western': 'country',
 
   // Classical variants
-  'orchestral': 'classical',
-  'baroque': 'classical',
+  orchestral: 'classical',
+  baroque: 'classical',
   'chamber music': 'classical',
 
   // Ambient variants
-  'atmospheric': 'ambient',
-  'drone': 'ambient',
+  atmospheric: 'ambient',
+  drone: 'ambient',
 
   // World music variants
   'world music': 'afrobeat',
-  'world': 'afrobeat',
+  world: 'afrobeat',
 } as const satisfies Record<string, GenreType>;
 
 /**

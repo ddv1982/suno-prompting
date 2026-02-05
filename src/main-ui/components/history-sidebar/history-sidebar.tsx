@@ -6,18 +6,26 @@
  * @module components/history-sidebar/history-sidebar
  */
 
-import { Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { Plus, Search } from 'lucide-react';
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/section-label";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu } from "@/components/ui/sidebar";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { SectionLabel } from '@/components/ui/section-label';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+} from '@/components/ui/sidebar';
 
-import { HistoryItem } from "./history-item";
+import { HistoryItem } from './history-item';
 
-import type { HistorySidebarProps } from "./types";
-import type { ReactElement } from "react";
+import type { HistorySidebarProps } from './types';
+import type { ReactElement } from 'react';
 
 /**
  * Main History Sidebar component for browsing and managing prompt sessions.
@@ -29,13 +37,14 @@ export function HistorySidebar({
   onDeleteSession,
   onNewProject,
 }: HistorySidebarProps): ReactElement {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
   const q = query.trim().toLowerCase();
   const filtered = q
-    ? sessions.filter(s => 
-        (s.originalInput || "").toLowerCase().includes(q) ||
-        (s.currentTitle || "").toLowerCase().includes(q)
+    ? sessions.filter(
+        (s) =>
+          (s.originalInput || '').toLowerCase().includes(q) ||
+          (s.currentTitle || '').toLowerCase().includes(q)
       )
     : sessions;
 
@@ -50,23 +59,25 @@ export function HistorySidebar({
             <SectionLabel>History</SectionLabel>
           </SidebarGroupLabel>
           <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={onNewProject}
-            className="font-semibold interactive"
-          >
-            <Plus className="w-3 h-3" />
-            NEW
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={onNewProject}
+              className="font-semibold interactive"
+            >
+              <Plus className="w-3 h-3" />
+              NEW
+            </Button>
+          </div>
         </div>
 
         <div className="mt-3 relative">
           <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
             value={query}
-            onChange={(e) => { setQuery(e.target.value); }}
+            onChange={(e) => {
+              setQuery(e.target.value);
+            }}
             placeholder="Search projects…"
             className="pl-9"
           />
@@ -78,7 +89,7 @@ export function HistorySidebar({
             <SidebarMenu className="gap-1">
               {filtered.length === 0 ? (
                 <div className="ui-helper italic p-8 text-center leading-relaxed opacity-70">
-                  {sessions.length === 0 ? "No projects yet." : "No matches."}
+                  {sessions.length === 0 ? 'No projects yet.' : 'No matches.'}
                 </div>
               ) : (
                 filtered.map((session) => (
@@ -86,7 +97,9 @@ export function HistorySidebar({
                     key={session.id}
                     session={session}
                     isActive={session.id === currentSessionId}
-                    onSelect={() => { onSelectSession(session); }}
+                    onSelect={() => {
+                      onSelectSession(session);
+                    }}
                     onDelete={() => onDeleteSession(session.id)}
                   />
                 ))

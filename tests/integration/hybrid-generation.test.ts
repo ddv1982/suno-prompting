@@ -25,14 +25,12 @@ const MOCK_THEMATIC_CONTEXT: ThematicContext = {
 
 // Mock the thematic context extraction module
 // Returns ThematicContext | null to match the real function signature
-const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(
-  () => Promise.resolve(MOCK_THEMATIC_CONTEXT)
+const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(() =>
+  Promise.resolve(MOCK_THEMATIC_CONTEXT)
 );
 
 // Mock Ollama availability to prevent real network calls
-const mockCheckOllamaAvailable = mock(() =>
-  Promise.resolve({ available: true, hasGemma: true })
-);
+const mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: true, hasGemma: true }));
 
 // Track timing for parallel execution verification
 let extractionStartTime: number | null = null;
@@ -41,7 +39,7 @@ let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
-    getModel: () => ({} as unknown),
+    getModel: () => ({}) as unknown,
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
@@ -99,8 +97,9 @@ describe('Hybrid Generation Integration', () => {
       expect(result.text).toBeDefined();
       // At least one theme should be appended to style tags
       // Note: Due to 10-tag limit, not all themes may appear in final output
-      const hasTheme = result.text.toLowerCase().includes('alien') ||
-                       result.text.toLowerCase().includes('bioluminescent');
+      const hasTheme =
+        result.text.toLowerCase().includes('alien') ||
+        result.text.toLowerCase().includes('bioluminescent');
       expect(hasTheme).toBe(true);
     });
 
@@ -137,8 +136,9 @@ describe('Hybrid Generation Integration', () => {
         expect(recordingMatch[1].toLowerCase()).not.toContain('alien jungle');
       }
       // Themes should still appear
-      const hasTheme = result.text.toLowerCase().includes('alien') ||
-                       result.text.toLowerCase().includes('bioluminescent');
+      const hasTheme =
+        result.text.toLowerCase().includes('alien') ||
+        result.text.toLowerCase().includes('bioluminescent');
       expect(hasTheme).toBe(true);
     });
 
@@ -148,10 +148,7 @@ describe('Hybrid Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'exploring an alien jungle' },
-        config
-      );
+      const result = await generateInitial({ description: 'exploring an alien jungle' }, config);
 
       // First mood should be capitalized in header
       expect(result.text).toContain('Wondrous');
@@ -163,10 +160,7 @@ describe('Hybrid Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      await generateInitial(
-        { description: 'a summer beach song' },
-        config
-      );
+      await generateInitial({ description: 'a summer beach song' }, config);
 
       // Verify extraction was called (parameters are passed internally)
       expect(mockExtractThematicContext).toHaveBeenCalledTimes(1);
@@ -177,7 +171,7 @@ describe('Hybrid Generation Integration', () => {
     test('deterministic result is available even with slow LLM extraction', async () => {
       // Simulate slow LLM extraction (200ms)
       mockExtractThematicContext.mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
         return MOCK_THEMATIC_CONTEXT;
       });
 
@@ -187,10 +181,7 @@ describe('Hybrid Generation Integration', () => {
       });
 
       const startTime = performance.now();
-      const result = await generateInitial(
-        { description: 'a jazz song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a jazz song' }, config);
       const endTime = performance.now();
 
       expect(result.text).toBeDefined();
@@ -206,7 +197,7 @@ describe('Hybrid Generation Integration', () => {
       mockExtractThematicContext.mockImplementation(async () => {
         // Record when extraction starts
         extractionStartTime = performance.now();
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise((resolve) => setTimeout(resolve, 50));
         return MOCK_THEMATIC_CONTEXT;
       });
 
@@ -216,10 +207,7 @@ describe('Hybrid Generation Integration', () => {
       });
 
       deterministicStartTime = performance.now();
-      await generateInitial(
-        { description: 'a rock song' },
-        config
-      );
+      await generateInitial({ description: 'a rock song' }, config);
 
       // Extraction should start very close to the deterministic start
       // (within 10ms, indicating parallel execution)
@@ -241,10 +229,7 @@ describe('Hybrid Generation Integration', () => {
       });
 
       // Should not throw - falls back to deterministic
-      const result = await generateInitial(
-        { description: 'a pop song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a pop song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -259,10 +244,7 @@ describe('Hybrid Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'a classical song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a classical song' }, config);
 
       // Should have standard deterministic format
       expect(result.text).toContain('Genre:');
@@ -279,10 +261,7 @@ describe('Hybrid Generation Integration', () => {
         isMaxMode: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'exploring an alien jungle' },
-        config
-      );
+      const result = await generateInitial({ description: 'exploring an alien jungle' }, config);
 
       expect(result.text).toContain('MAX_MODE');
       // LLM moods should replace genre moods in style tags
@@ -303,10 +282,7 @@ describe('Hybrid Generation Integration', () => {
         isMaxMode: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'an electronic song' },
-        config
-      );
+      const result = await generateInitial({ description: 'an electronic song' }, config);
 
       expect(result.text).toContain('MAX_MODE');
       expect(result.text).toBeDefined();
@@ -320,10 +296,7 @@ describe('Hybrid Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      await generateInitial(
-        { description: '' },
-        config
-      );
+      await generateInitial({ description: '' }, config);
 
       // Extraction should not be called for empty description
       expect(mockExtractThematicContext).not.toHaveBeenCalled();

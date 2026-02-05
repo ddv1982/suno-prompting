@@ -13,7 +13,12 @@ import * as http from 'node:http';
 
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
-import { AIGenerationError, OllamaTimeoutError, getErrorMessage, validateOllamaEndpoint } from '@shared/errors';
+import {
+  AIGenerationError,
+  OllamaTimeoutError,
+  getErrorMessage,
+  validateOllamaEndpoint,
+} from '@shared/errors';
 
 const log = createLogger('OllamaClient');
 
@@ -55,48 +60,49 @@ interface OllamaChatResponse {
  * Make an HTTP request to Ollama using node:http.
  * This avoids Bun fetch issues with empty response bodies.
  */
-async function ollamaRequest(
-  endpoint: string,
-  body: string,
-  timeoutMs: number
-): Promise<string> {
+async function ollamaRequest(endpoint: string, body: string, timeoutMs: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const url = new URL(endpoint);
     const port = url.port ? parseInt(url.port, 10) : 11434;
-    
-    const req = http.request({
-      hostname: url.hostname,
-      port,
-      path: '/api/chat',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
+
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port,
+        path: '/api/chat',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+        timeout: timeoutMs,
       },
-      timeout: timeoutMs,
-    }, (res) => {
-      let data = '';
-      res.on('data', (chunk: Buffer | string) => {
-        data += String(chunk);
-      });
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          reject(new AIGenerationError(`Ollama returned status ${String(res.statusCode)}: ${data}`));
-        } else {
-          resolve(data);
-        }
-      });
-    });
-    
+      (res) => {
+        let data = '';
+        res.on('data', (chunk: Buffer | string) => {
+          data += String(chunk);
+        });
+        res.on('end', () => {
+          if (res.statusCode !== 200) {
+            reject(
+              new AIGenerationError(`Ollama returned status ${String(res.statusCode)}: ${data}`)
+            );
+          } else {
+            resolve(data);
+          }
+        });
+      }
+    );
+
     req.on('error', (error: Error) => {
       reject(new AIGenerationError(`Ollama request failed: ${error.message}`, error));
     });
-    
+
     req.on('timeout', () => {
       req.destroy();
       reject(new OllamaTimeoutError(timeoutMs));
     });
-    
+
     req.write(body);
     req.end();
   });
@@ -164,7 +170,7 @@ export async function generateWithOllama(
   try {
     const responseText = await ollamaRequest(endpoint, body, timeoutMs);
     const response = JSON.parse(responseText) as OllamaChatResponse;
-    
+
     const content = response.message.content;
     log.info('generateWithOllama:success', {
       responseLength: content.length,
@@ -181,6 +187,9 @@ export async function generateWithOllama(
     // Wrap unexpected errors
     const errorMessage = getErrorMessage(error);
     log.error('generateWithOllama:failed', { error: errorMessage });
-    throw new AIGenerationError(`Ollama generation failed: ${errorMessage}`, error instanceof Error ? error : undefined);
+    throw new AIGenerationError(
+      `Ollama generation failed: ${errorMessage}`,
+      error instanceof Error ? error : undefined
+    );
   }
 }

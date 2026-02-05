@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const AFROCUBAN_GENRE: GenreDefinition = {
   name: 'Afro-Cuban',
   keywords: ['afro-cuban', 'cuban', 'son cubano', 'rumba', 'mambo', 'salsa'],
-  description: 'Rhythmic Afro-Cuban music blending African percussion with Cuban melodies and harmonies',
+  description:
+    'Rhythmic Afro-Cuban music blending African percussion with Cuban melodies and harmonies',
   pools: {
     percussion: {
       pick: { min: 1, max: 2 },

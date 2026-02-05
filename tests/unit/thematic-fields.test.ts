@@ -77,19 +77,16 @@ describe('VocalCharacterSchema', () => {
 });
 
 describe('EnergyLevelSchema', () => {
-  test.each([
-    'ambient',
-    'relaxed',
-    'moderate',
-    'energetic',
-    'intense',
-  ] as const)('validates "%s"', (level) => {
-    const result = EnergyLevelSchema.safeParse(level);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toBe(level);
+  test.each(['ambient', 'relaxed', 'moderate', 'energetic', 'intense'] as const)(
+    'validates "%s"',
+    (level) => {
+      const result = EnergyLevelSchema.safeParse(level);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toBe(level);
+      }
     }
-  });
+  );
 
   test('rejects invalid value', () => {
     const result = EnergyLevelSchema.safeParse('invalid');
@@ -103,12 +100,7 @@ describe('SpatialHintSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  test.each([
-    'intimate',
-    'room',
-    'hall',
-    'vast',
-  ] as const)('validates space "%s"', (space) => {
+  test.each(['intimate', 'room', 'hall', 'vast'] as const)('validates space "%s"', (space) => {
     const result = SpatialHintSchema.safeParse({ space });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -116,12 +108,7 @@ describe('SpatialHintSchema', () => {
     }
   });
 
-  test.each([
-    'dry',
-    'natural',
-    'wet',
-    'cavernous',
-  ] as const)('validates reverb "%s"', (reverb) => {
+  test.each(['dry', 'natural', 'wet', 'cavernous'] as const)('validates reverb "%s"', (reverb) => {
     const result = SpatialHintSchema.safeParse({ reverb });
     expect(result.success).toBe(true);
     if (result.success) {

@@ -211,14 +211,12 @@ export function resolveGenre(
     const primaryGenre = detectedGenres[0] ?? 'pop';
 
     // For display, join multiple genres or use single genre
-    const displayGenre =
-      detectedGenres.length > 1 ? detectedGenres.join(' ') : primaryGenre;
+    const displayGenre = detectedGenres.length > 1 ? detectedGenres.join(' ') : primaryGenre;
 
     traceDecision(trace, {
       domain: 'genre',
       key: 'deterministic.genre.resolve',
-      branchTaken:
-        detectedGenres.length > 1 ? 'multi-keyword-detection' : 'keyword-detection',
+      branchTaken: detectedGenres.length > 1 ? 'multi-keyword-detection' : 'keyword-detection',
       why: `detected=${detectedGenres.join(', ')}`,
     });
 

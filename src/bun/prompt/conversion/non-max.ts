@@ -7,20 +7,30 @@
  */
 
 import { callLLM } from '@bun/ai/llm-utils';
-import { extractFirstGenre, inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
+import {
+  extractFirstGenre,
+  inferBpm,
+  enhanceInstruments,
+  resolveGenre,
+} from '@bun/prompt/conversion-utils';
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
 import { cleanJsonResponse } from '@shared/prompt-utils';
 
 import { parseStyleDescription } from './parser';
 
-import type { ParsedStyleDescription, NonMaxSectionContent, NonMaxFormatFields, NonMaxConversionResult } from './types';
+import type {
+  ParsedStyleDescription,
+  NonMaxSectionContent,
+  NonMaxFormatFields,
+  NonMaxConversionResult,
+} from './types';
 import type { ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 // Re-export shared utilities for backwards compatibility
-export { 
-  DEFAULT_BPM, 
-  DEFAULT_GENRE, 
+export {
+  DEFAULT_BPM,
+  DEFAULT_GENRE,
   extractFirstGenre,
   inferBpm,
   enhanceInstruments,
@@ -74,7 +84,7 @@ function buildNonMaxConversionUserPrompt(parsed: ParsedStyleDescription): string
   const parts: string[] = [];
 
   parts.push(`Style description: ${parsed.description}`);
-  
+
   if (parsed.detectedGenre) {
     parts.push(`Detected genre: ${parsed.detectedGenre}`);
   }
@@ -152,7 +162,7 @@ function buildMoodLine(moods: string[], genre: string | null): string {
   if (moods.length > 0) {
     return moods.join(', ');
   }
-  
+
   // Default moods based on genre
   const genreMoods: Record<string, string> = {
     jazz: 'smooth, sophisticated, warm',
@@ -165,7 +175,7 @@ function buildMoodLine(moods: string[], genre: string | null): string {
     pop: 'catchy, uplifting, vibrant',
     blues: 'soulful, raw, emotional',
   };
-  
+
   const firstGenre = genre ? extractFirstGenre(genre) : '';
   return genreMoods[firstGenre] || 'evocative, atmospheric, dynamic';
 }
@@ -175,18 +185,18 @@ function buildMoodLine(moods: string[], genre: string | null): string {
  */
 export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
   const lines: string[] = [];
-  
+
   // Header line
   lines.push(`[${fields.mood}, ${fields.genre}]`);
   lines.push('');
-  
+
   // Metadata
   lines.push(`Genre: ${fields.genre}`);
   lines.push(`BPM: ${fields.bpm}`);
   lines.push(`Mood: ${fields.mood}`);
   lines.push(`Instruments: ${fields.instruments}`);
   lines.push('');
-  
+
   // Sections
   lines.push(`[INTRO] ${fields.sections.intro}`);
   lines.push(`[VERSE] ${fields.sections.verse}`);
@@ -205,7 +215,7 @@ export function buildNonMaxFormatPrompt(fields: NonMaxFormatFields): string {
 
 /**
  * Convert a Creative Boost style description to non-max Suno format
- * 
+ *
  * Genre priority:
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
  * 2. seedGenres (if provided) - format using display names
@@ -216,7 +226,15 @@ export async function convertToNonMaxFormat(
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
 ): Promise<NonMaxConversionResult> {
-  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint } = options;
+  const {
+    seedGenres,
+    sunoStyles,
+    performanceInstruments,
+    performanceVocalStyle,
+    chordProgression,
+    bpmRange,
+    ollamaEndpoint,
+  } = options;
   // Parse the style description
   const parsed = parseStyleDescription(styleDescription);
 
@@ -231,8 +249,8 @@ export async function convertToNonMaxFormat(
 
   // Build instruments string with articulations (with non-max fallback)
   const baseInstruments = enhanceInstruments(
-    parsed.detectedInstruments, 
-    genre.forLookup, 
+    parsed.detectedInstruments,
+    genre.forLookup,
     'ambient textures, subtle pads',
     performanceInstruments
   );
@@ -242,7 +260,10 @@ export async function convertToNonMaxFormat(
     ? `${baseInstruments}, ${chordProgression} harmony`
     : baseInstruments;
 
-  const instruments = injectVocalStyleIntoInstrumentsCsv(instrumentsWithProgression, performanceVocalStyle);
+  const instruments = injectVocalStyleIntoInstrumentsCsv(
+    instrumentsWithProgression,
+    performanceVocalStyle
+  );
 
   // Build mood line
   const mood = buildMoodLine(parsed.detectedMoods, genre.forLookup);
@@ -256,8 +277,8 @@ export async function convertToNonMaxFormat(
     sections,
   });
 
-  return { 
-    convertedPrompt, 
+  return {
+    convertedPrompt,
     wasConverted: true,
   };
 }

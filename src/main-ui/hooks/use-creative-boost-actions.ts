@@ -23,12 +23,16 @@ const buildSavedCreativeBoostInput = (input: CreativeBoostInput): CreativeBoostI
 });
 
 const buildCreativeBoostOriginalInput = (input: CreativeBoostInput): string => {
-  return [
-    `[creativity: ${input.creativityLevel}%]`,
-    input.seedGenres.length > 0 ? `[genres: ${input.seedGenres.join(', ')}]` : null,
-    input.sunoStyles.length > 0 ? `[suno-styles: ${input.sunoStyles.join(', ')}]` : null,
-    input.description || null,
-  ].filter(Boolean).join(' ') || 'Creative Boost';
+  return (
+    [
+      `[creativity: ${input.creativityLevel}%]`,
+      input.seedGenres.length > 0 ? `[genres: ${input.seedGenres.join(', ')}]` : null,
+      input.sunoStyles.length > 0 ? `[suno-styles: ${input.sunoStyles.join(', ')}]` : null,
+      input.description || null,
+    ]
+      .filter(Boolean)
+      .join(' ') || 'Creative Boost'
+  );
 };
 
 type CreativeBoostActionsConfig = GenerationActionDeps & {
@@ -43,15 +47,11 @@ export interface CreativeBoostActionsResult {
   handleRefineCreativeBoost: (feedback: string) => Promise<boolean>;
 }
 
-export function useCreativeBoostActions(config: CreativeBoostActionsConfig): CreativeBoostActionsResult {
-  const {
-    currentSession,
-    setPendingInput,
-    showToast,
-    creativeBoostInput,
-    maxMode,
-    lyricsMode,
-  } = config;
+export function useCreativeBoostActions(
+  config: CreativeBoostActionsConfig
+): CreativeBoostActionsResult {
+  const { currentSession, setPendingInput, showToast, creativeBoostInput, maxMode, lyricsMode } =
+    config;
 
   const sessionDeps = useMemo(() => createSessionDeps(config, log), [config]);
   const { execute } = useGenerationAction(config);
@@ -78,59 +78,65 @@ export function useCreativeBoostActions(config: CreativeBoostActionsConfig): Cre
         originalInput,
         promptMode: 'creativeBoost',
         modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
-        successMessage: "Creative Boost prompt generated.",
-        errorContext: "generate Creative Boost",
+        successMessage: 'Creative Boost prompt generated.',
+        errorContext: 'generate Creative Boost',
         log,
-        onSuccess: () => { showToast('Creative Boost generated!', 'success'); },
+        onSuccess: () => {
+          showToast('Creative Boost generated!', 'success');
+        },
       },
       sessionDeps
     );
   }, [execute, sessionDeps, creativeBoostInput, maxMode, lyricsMode, showToast]);
 
-  const handleRefineCreativeBoost = useCallback(async (feedback: string): Promise<boolean> => {
-    if (!currentSession?.currentPrompt || !currentSession?.currentTitle) return false;
+  const handleRefineCreativeBoost = useCallback(
+    async (feedback: string): Promise<boolean> => {
+      if (!currentSession?.currentPrompt || !currentSession?.currentTitle) return false;
 
-    // Extract for TypeScript narrowing
-    const { currentPrompt, currentTitle, currentLyrics } = currentSession;
+      // Extract for TypeScript narrowing
+      const { currentPrompt, currentTitle, currentLyrics } = currentSession;
 
-    // Pass targetGenreCount to preserve genre count during refinement
-    // Only pass when seedGenres.length > 0, otherwise omit (backend treats undefined as "no enforcement")
-    const targetGenreCount = creativeBoostInput.seedGenres.length > 0
-      ? creativeBoostInput.seedGenres.length
-      : undefined;
+      // Pass targetGenreCount to preserve genre count during refinement
+      // Only pass when seedGenres.length > 0, otherwise omit (backend treats undefined as "no enforcement")
+      const targetGenreCount =
+        creativeBoostInput.seedGenres.length > 0 ? creativeBoostInput.seedGenres.length : undefined;
 
-    return execute(
-      {
-        action: 'creativeBoost',
-        apiCall: async () => {
-          const result = await rpcClient.refineCreativeBoost({
-            currentPrompt,
-            currentTitle,
-            currentLyrics,
-            feedback,
-            lyricsTopic: creativeBoostInput.lyricsTopic,
-            description: creativeBoostInput.description,
-            seedGenres: creativeBoostInput.seedGenres,
-            sunoStyles: creativeBoostInput.sunoStyles,
-            maxMode,
-            withLyrics: lyricsMode,
-            targetGenreCount,
-          });
-          if (!result.ok) throw new Error(formatRpcError(result.error));
-          return result.value;
+      return execute(
+        {
+          action: 'creativeBoost',
+          apiCall: async () => {
+            const result = await rpcClient.refineCreativeBoost({
+              currentPrompt,
+              currentTitle,
+              currentLyrics,
+              feedback,
+              lyricsTopic: creativeBoostInput.lyricsTopic,
+              description: creativeBoostInput.description,
+              seedGenres: creativeBoostInput.seedGenres,
+              sunoStyles: creativeBoostInput.sunoStyles,
+              maxMode,
+              withLyrics: lyricsMode,
+              targetGenreCount,
+            });
+            if (!result.ok) throw new Error(formatRpcError(result.error));
+            return result.value;
+          },
+          originalInput: currentSession.originalInput || '',
+          promptMode: 'creativeBoost',
+          modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
+          successMessage: 'Creative Boost prompt refined.',
+          feedback,
+          errorContext: 'refine Creative Boost',
+          log,
+          onSuccess: () => {
+            setPendingInput('');
+          },
         },
-        originalInput: currentSession.originalInput || '',
-        promptMode: 'creativeBoost',
-        modeInput: { creativeBoostInput: buildSavedCreativeBoostInput(creativeBoostInput) },
-        successMessage: "Creative Boost prompt refined.",
-        feedback,
-        errorContext: "refine Creative Boost",
-        log,
-        onSuccess: () => { setPendingInput(""); },
-      },
-      sessionDeps
-    );
-  }, [execute, sessionDeps, currentSession, creativeBoostInput, maxMode, lyricsMode, setPendingInput]);
+        sessionDeps
+      );
+    },
+    [execute, sessionDeps, currentSession, creativeBoostInput, maxMode, lyricsMode, setPendingInput]
+  );
 
   return {
     handleGenerateCreativeBoost,

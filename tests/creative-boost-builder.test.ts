@@ -198,7 +198,7 @@ describe('buildCreativeBoostUserPrompt', () => {
 
   it('omits description line when empty', () => {
     const prompt = buildCreativeBoostUserPrompt(50, [], '');
-    expect(prompt).not.toContain('User\'s description:');
+    expect(prompt).not.toContain("User's description:");
   });
 
   it('does not include lyrics topic when not provided', () => {
@@ -463,36 +463,38 @@ describe('buildCreativeBoostRefineSystemPrompt', () => {
 describe('buildCreativeBoostRefineUserPrompt', () => {
   it('includes current title', () => {
     const prompt = buildCreativeBoostRefineUserPrompt(
-      'lo-fi jazz', 'Midnight Vibes', 'make it darker'
+      'lo-fi jazz',
+      'Midnight Vibes',
+      'make it darker'
     );
     expect(prompt).toContain('Current title: "Midnight Vibes"');
   });
 
   it('includes current style/prompt', () => {
     const prompt = buildCreativeBoostRefineUserPrompt(
-      'lo-fi jazz with vinyl crackle', 'Test', 'more upbeat'
+      'lo-fi jazz with vinyl crackle',
+      'Test',
+      'more upbeat'
     );
     expect(prompt).toContain('Current style: "lo-fi jazz with vinyl crackle"');
   });
 
   it('does not include lyrics section (lyrics handled separately)', () => {
-    const prompt = buildCreativeBoostRefineUserPrompt(
-      'ambient', 'Floating', 'add more texture'
-    );
+    const prompt = buildCreativeBoostRefineUserPrompt('ambient', 'Floating', 'add more texture');
     expect(prompt).not.toContain('Current lyrics:');
   });
 
   it('includes user feedback', () => {
     const prompt = buildCreativeBoostRefineUserPrompt(
-      'rock', 'Power Up', 'add more distortion and energy'
+      'rock',
+      'Power Up',
+      'add more distortion and energy'
     );
     expect(prompt).toContain('User feedback: add more distortion and energy');
   });
 
   it('ends with generation instruction', () => {
-    const prompt = buildCreativeBoostRefineUserPrompt(
-      'jazz', 'Cool', 'more swing'
-    );
+    const prompt = buildCreativeBoostRefineUserPrompt('jazz', 'Cool', 'more swing');
     expect(prompt).toContain('Generate the refined prompt');
   });
 
@@ -509,44 +511,47 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
 
   it('includes lyrics topic when provided', () => {
     const prompt = buildCreativeBoostRefineUserPrompt(
-      'lo-fi jazz', 'Midnight Vibes', 'make it darker', 'heartbreak in the city'
+      'lo-fi jazz',
+      'Midnight Vibes',
+      'make it darker',
+      'heartbreak in the city'
     );
     expect(prompt).toContain('Lyrics topic: "heartbreak in the city"');
   });
 
   it('omits lyrics topic when not provided', () => {
-    const prompt = buildCreativeBoostRefineUserPrompt(
-      'ambient', 'Floating', 'add more texture'
-    );
+    const prompt = buildCreativeBoostRefineUserPrompt('ambient', 'Floating', 'add more texture');
     expect(prompt).not.toContain('Lyrics topic');
   });
 
   it('omits lyrics topic when empty string', () => {
     const prompt = buildCreativeBoostRefineUserPrompt(
-      'ambient', 'Floating', 'add more texture', ''
+      'ambient',
+      'Floating',
+      'add more texture',
+      ''
     );
     expect(prompt).not.toContain('Lyrics topic');
   });
 
   it('trims whitespace from lyrics topic', () => {
     const prompt = buildCreativeBoostRefineUserPrompt(
-      'jazz', 'Test', 'feedback', '  spaced topic  '
+      'jazz',
+      'Test',
+      'feedback',
+      '  spaced topic  '
     );
     expect(prompt).toContain('"spaced topic"');
     expect(prompt).not.toContain('"  spaced topic  "');
   });
 
   it('uses default regeneration feedback when feedback is empty', () => {
-    const prompt = buildCreativeBoostRefineUserPrompt(
-      'lo-fi jazz', 'Midnight Vibes', ''
-    );
+    const prompt = buildCreativeBoostRefineUserPrompt('lo-fi jazz', 'Midnight Vibes', '');
     expect(prompt).toContain('Regenerate with a fresh creative variation');
   });
 
   it('uses default regeneration feedback when feedback is whitespace only', () => {
-    const prompt = buildCreativeBoostRefineUserPrompt(
-      'ambient', 'Floating', '   '
-    );
+    const prompt = buildCreativeBoostRefineUserPrompt('ambient', 'Floating', '   ');
     expect(prompt).toContain('Regenerate with a fresh creative variation');
   });
 
@@ -557,7 +562,11 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
 
       // ACT
       const prompt = buildCreativeBoostRefineUserPrompt(
-        'lo-fi jazz', 'Midnight Vibes', 'make it darker', undefined, seedGenres
+        'lo-fi jazz',
+        'Midnight Vibes',
+        'make it darker',
+        undefined,
+        seedGenres
       );
 
       // ASSERT
@@ -572,7 +581,11 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
 
       // ACT
       const prompt = buildCreativeBoostRefineUserPrompt(
-        'ambient rock', 'Ethereal', 'more energy', undefined, seedGenres
+        'ambient rock',
+        'Ethereal',
+        'more energy',
+        undefined,
+        seedGenres
       );
 
       // ASSERT
@@ -583,7 +596,11 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
     it('omits performance guidance when seedGenres empty', () => {
       // ACT
       const prompt = buildCreativeBoostRefineUserPrompt(
-        'ambient', 'Floating', 'add texture', undefined, []
+        'ambient',
+        'Floating',
+        'add texture',
+        undefined,
+        []
       );
 
       // ASSERT
@@ -592,9 +609,7 @@ describe('buildCreativeBoostRefineUserPrompt', () => {
 
     it('omits performance guidance when seedGenres undefined', () => {
       // ACT
-      const prompt = buildCreativeBoostRefineUserPrompt(
-        'ambient', 'Floating', 'add texture'
-      );
+      const prompt = buildCreativeBoostRefineUserPrompt('ambient', 'Floating', 'add texture');
 
       // ASSERT
       expect(prompt).not.toContain('PERFORMANCE GUIDANCE');

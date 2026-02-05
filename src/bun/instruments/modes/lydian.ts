@@ -2,7 +2,8 @@ export const LYDIAN_DIATONIC = {
   scale: 'W-W-W-H-W-W-H (1-2-3-#4-5-6-7)',
   triads: ['I (maj)', 'II (maj)', 'iii (min)', 'iv° (dim)', 'V (maj)', 'vi (min)', 'vii (min)'],
   sevenths: ['Imaj7', 'II7', 'iii7', 'ivø7', 'Vmaj7', 'vi7', 'vii7'],
-  signatureSound: 'The II major chord (e.g., D in C Lydian) - creates the characteristic floating quality',
+  signatureSound:
+    'The II major chord (e.g., D in C Lydian) - creates the characteristic floating quality',
 } as const;
 
 export const LYDIAN_MODES = {

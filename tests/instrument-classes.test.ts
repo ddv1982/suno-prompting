@@ -47,7 +47,7 @@ describe('Instrument classes', () => {
 
   test('multigenre instruments appear in >=3 genres (or are force-included)', () => {
     const { genresByInstrument } = buildInstrumentToGenresIndex();
-    const force = new Set(MULTIGENRE_FORCE_INCLUDE.map(i => i.toLowerCase()));
+    const force = new Set(MULTIGENRE_FORCE_INCLUDE.map((i) => i.toLowerCase()));
     for (const i of MULTIGENRE_INSTRUMENTS) {
       const key = i.toLowerCase();
       const genres = genresByInstrument.get(key);
@@ -60,7 +60,7 @@ describe('Instrument classes', () => {
 
   test('force exclude items never appear in multigenre', () => {
     for (const i of MULTIGENRE_FORCE_EXCLUDE) {
-      expect(MULTIGENRE_INSTRUMENTS.map(x => x.toLowerCase())).not.toContain(i.toLowerCase());
+      expect(MULTIGENRE_INSTRUMENTS.map((x) => x.toLowerCase())).not.toContain(i.toLowerCase());
     }
   });
 });

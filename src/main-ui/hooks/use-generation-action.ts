@@ -41,10 +41,7 @@ export interface GenerationActionDeps {
  * Creates SessionDeps from GenerationActionDeps.
  * Used internally by generation action hooks.
  */
-export function createSessionDeps(
-  deps: GenerationActionDeps,
-  log: Logger
-): SessionDeps {
+export function createSessionDeps(deps: GenerationActionDeps, log: Logger): SessionDeps {
   return {
     currentSession: deps.currentSession,
     generateId: deps.generateId,
@@ -106,63 +103,73 @@ export function useGenerationAction(deps: GenerationActionDeps): UseGenerationAc
     errorOptimistic,
   } = deps;
 
-  const execute = useCallback(async <TResult extends GenerationResultBase>(
-    options: ExecuteGenerationOptions<TResult>,
-    sessionDeps: SessionDeps
-  ): Promise<boolean> => {
-    if (isGenerating) return false;
+  const execute = useCallback(
+    async <TResult extends GenerationResultBase>(
+      options: ExecuteGenerationOptions<TResult>,
+      sessionDeps: SessionDeps
+    ): Promise<boolean> => {
+      if (isGenerating) return false;
 
-    const {
-      action,
-      apiCall,
-      originalInput,
-      promptMode,
-      modeInput,
-      successMessage,
-      feedback,
-      errorContext,
-      log,
-      onSuccess,
-    } = options;
-
-    try {
-      // Start optimistic UI immediately
-      startOptimistic?.(action);
-      setGeneratingAction(action);
-
-      if (feedback) {
-        addUserMessage(setChatMessages, feedback);
-      }
-
-      const result = await apiCall();
-
-      if (!result?.prompt) {
-        throw new Error(`Invalid result received from ${errorContext}`);
-      }
-
-      await completeSessionUpdate(
-        sessionDeps,
-        result,
+      const {
+        action,
+        apiCall,
         originalInput,
         promptMode,
         modeInput,
         successMessage,
-        feedback
-      );
+        feedback,
+        errorContext,
+        log,
+        onSuccess,
+      } = options;
 
-      // Complete optimistic UI on success
-      completeOptimistic?.();
-      onSuccess?.();
-      return true;
-    } catch (error: unknown) {
-      // Reset optimistic UI on error
-      errorOptimistic?.();
-      handleGenerationError(error, errorContext, setChatMessages, sessionDeps.showToast, log);
-      return false;
-    } finally {
-      setGeneratingAction('none');
-    }
-  }, [isGenerating, setGeneratingAction, setChatMessages, startOptimistic, completeOptimistic, errorOptimistic]);
+      try {
+        // Start optimistic UI immediately
+        startOptimistic?.(action);
+        setGeneratingAction(action);
+
+        if (feedback) {
+          addUserMessage(setChatMessages, feedback);
+        }
+
+        const result = await apiCall();
+
+        if (!result?.prompt) {
+          throw new Error(`Invalid result received from ${errorContext}`);
+        }
+
+        await completeSessionUpdate(
+          sessionDeps,
+          result,
+          originalInput,
+          promptMode,
+          modeInput,
+          successMessage,
+          feedback
+        );
+
+        // Complete optimistic UI on success
+        completeOptimistic?.();
+        onSuccess?.();
+        return true;
+      } catch (error: unknown) {
+        // Reset optimistic UI on error
+        errorOptimistic?.();
+        handleGenerationError(error, errorContext, setChatMessages, sessionDeps.showToast, log);
+        return false;
+      } finally {
+        setGeneratingAction('none');
+      }
+    },
+    [
+      isGenerating,
+      setGeneratingAction,
+      setChatMessages,
+      startOptimistic,
+      completeOptimistic,
+      errorOptimistic,
+    ]
+  );
 
   return { execute };
 }

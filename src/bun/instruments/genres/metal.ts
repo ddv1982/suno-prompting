@@ -3,16 +3,27 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const METAL_GENRE: GenreDefinition = {
   name: 'Metal',
   keywords: [
-    'metal', 'heavy metal', 'doom metal', 'progressive metal', 'industrial',
-    'death metal', 'black metal', 'thrash metal', 'nu metal', 'gothic metal',
+    'metal',
+    'heavy metal',
+    'doom metal',
+    'progressive metal',
+    'industrial',
+    'death metal',
+    'black metal',
+    'thrash metal',
+    'nu metal',
+    'gothic metal',
   ],
   description: 'Heavy, aggressive music with downtuned guitars, powerful drums, and intense vocals',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
       instruments: [
-        'distorted guitar', 'guitar', 'seven-string guitar',
-        'eight-string guitar', 'baritone guitar',
+        'distorted guitar',
+        'guitar',
+        'seven-string guitar',
+        'eight-string guitar',
+        'baritone guitar',
       ],
     },
     pad: {
@@ -42,5 +53,15 @@ export const METAL_GENRE: GenreDefinition = {
     ['choir', 'strings'],
   ],
   bpm: { min: 100, max: 180, typical: 140 },
-  moods: ['Aggressive', 'Intense', 'Dark', 'Heavy', 'Brutal', 'Epic', 'Menacing', 'Powerful', 'Crushing'],
+  moods: [
+    'Aggressive',
+    'Intense',
+    'Dark',
+    'Heavy',
+    'Brutal',
+    'Epic',
+    'Menacing',
+    'Powerful',
+    'Crushing',
+  ],
 };

@@ -1,11 +1,11 @@
-import { MessageSquare } from "lucide-react";
+import { MessageSquare } from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge";
-import { FormLabel } from "@/components/ui/form-label";
-import { Textarea } from "@/components/ui/textarea";
-import { APP_CONSTANTS } from "@shared/constants";
+import { Badge } from '@/components/ui/badge';
+import { FormLabel } from '@/components/ui/form-label';
+import { Textarea } from '@/components/ui/textarea';
+import { APP_CONSTANTS } from '@shared/constants';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 const MAX_DESCRIPTION_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_DESCRIPTION_CHARS;
 
@@ -34,9 +34,9 @@ export function DescriptionInput({
       <div className="flex items-center justify-between">
         <FormLabel
           icon={<MessageSquare className="w-3 h-3" />}
-          badge={isDisabledByMode ? "disabled" : "optional"}
+          badge={isDisabledByMode ? 'disabled' : 'optional'}
         >
-          {isRefineMode ? "Refine feedback" : "Description"}
+          {isRefineMode ? 'Refine feedback' : 'Description'}
         </FormLabel>
         <Badge variant="secondary" className="ui-badge font-mono h-5">
           {charCount} / {MAX_DESCRIPTION_CHARS}
@@ -44,7 +44,9 @@ export function DescriptionInput({
       </div>
       <Textarea
         value={value}
-        onChange={(e): void => { onChange(e.target.value); }}
+        onChange={(e): void => {
+          onChange(e.target.value);
+        }}
         onKeyDown={onKeyDown}
         disabled={isDisabledByMode}
         autoDisable
@@ -54,14 +56,12 @@ export function DescriptionInput({
           isRefineMode
             ? "How should it change? (e.g., 'more upbeat', 'ethnic elements') or leave blank to regenerate"
             : isDisabledByMode
-              ? "Description not used with Suno V5 Styles"
+              ? 'Description not used with Suno V5 Styles'
               : "Describe the mood, style, or direction (e.g., 'dark cinematic orchestral')"
         }
       />
       {isDisabledByMode && (
-        <p className="ui-helper">
-          Description is not used when Suno V5 Styles are selected.
-        </p>
+        <p className="ui-helper">Description is not used when Suno V5 Styles are selected.</p>
       )}
     </div>
   );

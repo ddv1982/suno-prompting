@@ -20,10 +20,10 @@ export {
   SidebarProvider,
   useSidebar,
   type SidebarContextValue,
-} from "./sidebar-provider"
+} from './sidebar-provider';
 
 // Layout components
-export { Sidebar, SidebarInset, SidebarRail } from "./sidebar-layout"
+export { Sidebar, SidebarInset, SidebarRail } from './sidebar-layout';
 
 // Section components
 export {
@@ -34,7 +34,7 @@ export {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-} from "./sidebar-sections"
+} from './sidebar-sections';
 
 // Menu components
 export {
@@ -48,10 +48,10 @@ export {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "./sidebar-menu"
+} from './sidebar-menu';
 
 // Input components
-export { SidebarInput, SidebarSeparator } from "./sidebar-inputs"
+export { SidebarInput, SidebarSeparator } from './sidebar-inputs';
 
 // Trigger component
-export { SidebarTrigger } from "./sidebar-trigger"
+export { SidebarTrigger } from './sidebar-trigger';

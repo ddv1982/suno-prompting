@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const BALKAN_GENRE: GenreDefinition = {
   name: 'Balkan',
   keywords: ['balkan', 'balkan beats', 'balkan brass', 'gypsy', 'klezmer', 'romani'],
-  description: 'Energetic Eastern European music with brass bands, folk melodies, and driving rhythms',
+  description:
+    'Energetic Eastern European music with brass bands, folk melodies, and driving rhythms',
   pools: {
     brass: {
       pick: { min: 1, max: 2 },

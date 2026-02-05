@@ -1,11 +1,11 @@
-import { FileText } from "lucide-react";
+import { FileText } from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge";
-import { FormLabel } from "@/components/ui/form-label";
-import { Textarea } from "@/components/ui/textarea";
-import { APP_CONSTANTS } from "@shared/constants";
+import { Badge } from '@/components/ui/badge';
+import { FormLabel } from '@/components/ui/form-label';
+import { Textarea } from '@/components/ui/textarea';
+import { APP_CONSTANTS } from '@shared/constants';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 const MAX_LYRICS_TOPIC_CHARS = APP_CONSTANTS.CREATIVE_BOOST_MAX_LYRICS_TOPIC_CHARS;
 
@@ -23,10 +23,7 @@ export function LyricsTopicInput({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <FormLabel
-          icon={<FileText className="w-3 h-3" />}
-          badge="optional"
-        >
+        <FormLabel icon={<FileText className="w-3 h-3" />} badge="optional">
           Lyrics Topic
         </FormLabel>
         <Badge variant="secondary" className="ui-badge font-mono h-5">
@@ -35,7 +32,9 @@ export function LyricsTopicInput({
       </div>
       <Textarea
         value={value}
-        onChange={(e): void => { onChange(e.target.value); }}
+        onChange={(e): void => {
+          onChange(e.target.value);
+        }}
         onKeyDown={onKeyDown}
         autoDisable
         maxLength={MAX_LYRICS_TOPIC_CHARS}

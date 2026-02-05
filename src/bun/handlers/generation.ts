@@ -13,7 +13,13 @@ type GenerationHandlers = Pick<RPCHandlers, 'generateInitial' | 'refinePrompt'>;
 export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers {
   return {
     generateInitial: async (params) => {
-      const { description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles = [] } = validate(GenerateInitialSchema, params);
+      const {
+        description,
+        lockedPhrase,
+        lyricsTopic,
+        genreOverride,
+        sunoStyles = [],
+      } = validate(GenerateInitialSchema, params);
 
       validateSunoStylesLimit(sunoStyles);
       if (genreOverride && sunoStyles.length > 0) {
@@ -27,7 +33,11 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
         traceAction,
         'full',
         { description, genreOverride, sunoStylesCount: sunoStyles.length },
-        (runtime) => aiEngine.generateInitial({ description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles }, runtime),
+        (runtime) =>
+          aiEngine.generateInitial(
+            { description, lockedPhrase, lyricsTopic, genreOverride, sunoStyles },
+            runtime
+          ),
         (result, _runtime, versionId) => ({
           prompt: result.text,
           title: result.title,
@@ -65,18 +75,22 @@ export function createGenerationHandlers(aiEngine: AIEngine): GenerationHandlers
         traceAction,
         'full',
         { feedback, sunoStylesCount: sunoStyles.length, refinementType },
-        (runtime) => aiEngine.refinePrompt({
-          currentPrompt,
-          currentTitle: currentTitle ?? 'Untitled',
-          feedback,
-          currentLyrics,
-          lockedPhrase,
-          lyricsTopic,
-          genreOverride,
-          sunoStyles,
-          refinementType,
-          styleChanges,
-        }, runtime),
+        (runtime) =>
+          aiEngine.refinePrompt(
+            {
+              currentPrompt,
+              currentTitle: currentTitle ?? 'Untitled',
+              feedback,
+              currentLyrics,
+              lockedPhrase,
+              lyricsTopic,
+              genreOverride,
+              sunoStyles,
+              refinementType,
+              styleChanges,
+            },
+            runtime
+          ),
         (result, _runtime, versionId) => ({
           prompt: result.text,
           title: result.title,

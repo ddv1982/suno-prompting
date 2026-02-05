@@ -13,7 +13,6 @@ import type { GenreType } from '@bun/instruments/genres';
 import type { HarmonicStyle } from '@bun/instruments/modes';
 import type { Rng } from '@bun/instruments/services/random';
 
-
 /**
  * Mapping of genres to their preferred harmonic styles (modes).
  * Each array is ordered by preference/frequency of use in the genre.
@@ -150,12 +149,14 @@ export function getBlendedHarmonicStyle(
   const components = parseGenreComponents(genreString);
   if (components.length === 0) return null;
 
-  return collectAndPickFromGenres(
-    components,
-    GENRE_HARMONIC_STYLES as Record<string, readonly HarmonicStyle[]>,
-    DEFAULT_HARMONIC_STYLES,
-    rng
-  ) ?? null;
+  return (
+    collectAndPickFromGenres(
+      components,
+      GENRE_HARMONIC_STYLES as Record<string, readonly HarmonicStyle[]>,
+      DEFAULT_HARMONIC_STYLES,
+      rng
+    ) ?? null
+  );
 }
 
 /**

@@ -8,7 +8,12 @@
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
 import { createLogger } from '@bun/logger';
-import { buildDeterministicMaxPrompt, buildDeterministicStandardPrompt, extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
+import {
+  buildDeterministicMaxPrompt,
+  buildDeterministicStandardPrompt,
+  extractGenreFromPrompt,
+  extractMoodFromPrompt,
+} from '@bun/prompt/deterministic';
 import { detectAllGenres } from '@bun/prompt/deterministic/genre';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 
@@ -43,7 +48,7 @@ export interface GenerationDebugInfo {
 
 /**
  * Resolve genre for creative boost.
- * 
+ *
  * Priority order:
  * 1. Seed genres (explicit user selection)
  * 2. Description-based detection (keywords in user's description)
@@ -69,9 +74,9 @@ export async function resolveGenreForCreativeBoost(
   if (description?.trim()) {
     const detectedFromDescription = detectAllGenres(description);
     if (detectedFromDescription.length > 0) {
-      log.info('resolveGenreForCreativeBoost:fromDescription', { 
-        description: description.substring(0, 50), 
-        genres: detectedFromDescription 
+      log.info('resolveGenreForCreativeBoost:fromDescription', {
+        description: description.substring(0, 50),
+        genres: detectedFromDescription,
       });
       return { genres: detectedFromDescription };
     }
@@ -79,10 +84,16 @@ export async function resolveGenreForCreativeBoost(
 
   // Priority 3: Detect genre from lyrics topic if lyrics mode is ON and topic provided
   if (withLyrics && lyricsTopic?.trim()) {
-    const result = await detectGenreFromTopic(lyricsTopic.trim(), getModel, undefined, ollamaEndpoint, {
-      trace: runtime?.trace,
-      traceLabel: 'genre.detectFromTopic',
-    });
+    const result = await detectGenreFromTopic(
+      lyricsTopic.trim(),
+      getModel,
+      undefined,
+      ollamaEndpoint,
+      {
+        trace: runtime?.trace,
+        traceLabel: 'genre.detectFromTopic',
+      }
+    );
     log.info('resolveGenreForCreativeBoost:fromTopic', { topic: lyricsTopic, genre: result.genre });
     return {
       genres: [result.genre],
@@ -147,7 +158,9 @@ export async function generateCreativeBoostTitle(
 
   // Use description for topic-aware deterministic title generation
   const topicDescription = description?.trim();
-  return { title: generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, topicDescription) };
+  return {
+    title: generateDeterministicTitle(genre, mood, runtime?.rng ?? Math.random, topicDescription),
+  };
 }
 
 /**
@@ -171,10 +184,20 @@ export async function generateCreativeBoostLyrics(
   }
 
   const topic = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
-  const result = await generateLyrics(topic, genre, mood, maxMode, getModel, useSunoTags, undefined, ollamaEndpoint, {
-    trace: runtime?.trace,
-    traceLabel: 'lyrics.generate',
-  });
+  const result = await generateLyrics(
+    topic,
+    genre,
+    mood,
+    maxMode,
+    getModel,
+    useSunoTags,
+    undefined,
+    ollamaEndpoint,
+    {
+      trace: runtime?.trace,
+      traceLabel: 'lyrics.generate',
+    }
+  );
 
   return { lyrics: result.lyrics, debugInfo: result.debugInfo };
 }
@@ -192,16 +215,29 @@ export async function generateLyricsForCreativeBoost(
   useSunoTags: boolean,
   ollamaEndpoint?: string,
   runtime?: TraceRuntime
-): Promise<{ lyrics: string | undefined; debugInfo?: { systemPrompt: string; userPrompt: string } }> {
+): Promise<{
+  lyrics: string | undefined;
+  debugInfo?: { systemPrompt: string; userPrompt: string };
+}> {
   if (!withLyrics) return { lyrics: undefined };
 
   const genre = extractGenreFromPrompt(styleResult);
   const mood = extractMoodFromPrompt(styleResult);
   const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
-  const result = await generateLyrics(topicForLyrics, genre, mood, maxMode, getModel, useSunoTags, undefined, ollamaEndpoint, {
-    trace: runtime?.trace,
-    traceLabel: 'lyrics.generate',
-  });
+  const result = await generateLyrics(
+    topicForLyrics,
+    genre,
+    mood,
+    maxMode,
+    getModel,
+    useSunoTags,
+    undefined,
+    ollamaEndpoint,
+    {
+      trace: runtime?.trace,
+      traceLabel: 'lyrics.generate',
+    }
+  );
 
   return {
     lyrics: result.lyrics,

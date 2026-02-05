@@ -12,7 +12,6 @@ import { MOOD_CATEGORIES, MOOD_CATEGORY_KEYS } from '@bun/mood/categories';
 
 import type { MoodCategory } from '@bun/mood/types';
 
-
 /** Cached mapping of categories to compatible genres */
 let categoryToGenresCache: Map<MoodCategory, GenreType[]> | null = null;
 
@@ -41,9 +40,8 @@ function buildCategoryToGenresMapping(): Map<MoodCategory, GenreType[]> {
 
       const hasOverlap = genreMoodsLower.some((genreMood) =>
         categoryMoodsLower.some(
-          (catMood) =>
-            genreMood.includes(catMood) || catMood.includes(genreMood),
-        ),
+          (catMood) => genreMood.includes(catMood) || catMood.includes(genreMood)
+        )
       );
 
       if (hasOverlap) {

@@ -5,9 +5,7 @@ import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors'
 import type { GenerationConfig } from '@bun/ai/types';
 
 // Mock Ollama availability checks
-const mockCheckOllamaAvailable = mock(() =>
-  Promise.resolve({ available: true, hasGemma: true })
-);
+const mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: true, hasGemma: true }));
 const mockInvalidateOllamaCache = mock(() => {});
 
 // Mock Ollama client for local LLM calls
@@ -34,7 +32,7 @@ afterEach(() => {
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
-    getModel: () => ({} as any),
+    getModel: () => ({}) as any,
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
@@ -54,10 +52,7 @@ describe('generateInitial - deterministic path', () => {
   test('generates prompt without LLM when lyrics mode is OFF', async () => {
     const config = createMockConfig({ isLyricsMode: () => false });
 
-    const result = await generateInitial(
-      { description: 'A jazz song with piano' },
-      config
-    );
+    const result = await generateInitial({ description: 'A jazz song with piano' }, config);
 
     expect(result.text).toBeDefined();
     expect(result.text.length).toBeGreaterThan(0);
@@ -68,10 +63,7 @@ describe('generateInitial - deterministic path', () => {
   test('respects genre override', async () => {
     const config = createMockConfig({ isLyricsMode: () => false });
 
-    const result = await generateInitial(
-      { description: 'A song', genreOverride: 'jazz' },
-      config
-    );
+    const result = await generateInitial({ description: 'A song', genreOverride: 'jazz' }, config);
 
     expect(result.text.toLowerCase()).toContain('jazz');
   });
@@ -93,10 +85,7 @@ describe('generateInitial - deterministic path', () => {
       isMaxMode: () => true,
     });
 
-    const result = await generateInitial(
-      { description: 'An electronic song' },
-      config
-    );
+    const result = await generateInitial({ description: 'An electronic song' }, config);
 
     expect(result.text).toContain('MAX_MODE');
   });
@@ -107,10 +96,7 @@ describe('generateInitial - deterministic path', () => {
       isMaxMode: () => false,
     });
 
-    const result = await generateInitial(
-      { description: 'A blues song' },
-      config
-    );
+    const result = await generateInitial({ description: 'A blues song' }, config);
 
     expect(result.text).not.toContain('MAX_MODE');
   });
@@ -118,10 +104,7 @@ describe('generateInitial - deterministic path', () => {
   test('generates deterministic title from genre and mood', async () => {
     const config = createMockConfig({ isLyricsMode: () => false });
 
-    const result = await generateInitial(
-      { description: 'A melancholic jazz song' },
-      config
-    );
+    const result = await generateInitial({ description: 'A melancholic jazz song' }, config);
 
     expect(result.title).toBeDefined();
     expect(result.title?.length).toBeGreaterThan(0);
@@ -133,10 +116,7 @@ describe('generateInitial - edge cases', () => {
   test('handles empty description', async () => {
     const config = createMockConfig({ isLyricsMode: () => false });
 
-    const result = await generateInitial(
-      { description: '' },
-      config
-    );
+    const result = await generateInitial({ description: '' }, config);
 
     expect(result.text).toBeDefined();
     expect(result.title).toBeDefined();
@@ -146,10 +126,7 @@ describe('generateInitial - edge cases', () => {
     const config = createMockConfig({ isLyricsMode: () => false });
     const longDescription = 'jazz '.repeat(200);
 
-    const result = await generateInitial(
-      { description: longDescription },
-      config
-    );
+    const result = await generateInitial({ description: longDescription }, config);
 
     expect(result.text).toBeDefined();
     expect(result.text.length).toBeLessThanOrEqual(1000);
@@ -185,9 +162,9 @@ describe('generateInitial - offline mode with Ollama', () => {
       hasGemma: false,
     });
 
-    await expect(
-      generateInitial({ description: 'A jazz song' }, config)
-    ).rejects.toThrow(OllamaUnavailableError);
+    await expect(generateInitial({ description: 'A jazz song' }, config)).rejects.toThrow(
+      OllamaUnavailableError
+    );
   });
 
   test('throws OllamaModelMissingError when Gemma model not installed', async () => {
@@ -201,9 +178,9 @@ describe('generateInitial - offline mode with Ollama', () => {
       hasGemma: false,
     });
 
-    await expect(
-      generateInitial({ description: 'A rock song' }, config)
-    ).rejects.toThrow(OllamaModelMissingError);
+    await expect(generateInitial({ description: 'A rock song' }, config)).rejects.toThrow(
+      OllamaModelMissingError
+    );
   });
 
   test('checks Ollama availability with correct endpoint', async () => {
@@ -235,10 +212,7 @@ describe('generateInitial - offline mode with Ollama', () => {
       hasGemma: true,
     });
 
-    const result = await generateInitial(
-      { description: 'An electronic song' },
-      config
-    );
+    const result = await generateInitial({ description: 'An electronic song' }, config);
 
     expect(result.text).toBeDefined();
     expect(result.title).toBeDefined();
@@ -251,10 +225,7 @@ describe('generateInitial - offline mode with Ollama', () => {
       isUseLocalLLM: () => false,
     });
 
-    const result = await generateInitial(
-      { description: 'A blues song' },
-      config
-    );
+    const result = await generateInitial({ description: 'A blues song' }, config);
 
     expect(result.text).toBeDefined();
     expect(mockCheckOllamaAvailable).not.toHaveBeenCalled();
@@ -266,10 +237,7 @@ describe('generateInitial - offline mode with Ollama', () => {
       isUseLocalLLM: () => true,
     });
 
-    const result = await generateInitial(
-      { description: 'A country song' },
-      config
-    );
+    const result = await generateInitial({ description: 'A country song' }, config);
 
     expect(result.text).toBeDefined();
     expect(mockCheckOllamaAvailable).not.toHaveBeenCalled();

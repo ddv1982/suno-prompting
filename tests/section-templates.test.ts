@@ -418,10 +418,7 @@ describe('section-templates', () => {
         expect(result.allInstruments.length).toBeGreaterThan(0);
 
         // Should match combined instruments from sections
-        const expectedCount = result.sections.reduce(
-          (sum, s) => sum + s.instruments.length,
-          0
-        );
+        const expectedCount = result.sections.reduce((sum, s) => sum + s.instruments.length, 0);
         expect(result.allInstruments.length).toBe(expectedCount);
       });
     });

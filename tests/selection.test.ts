@@ -42,9 +42,11 @@ describe('selection', () => {
     });
 
     it('rejects invalid genre', () => {
-      expect(() => LLMResponseSchema.parse({
-        genre: 'invalid_genre',
-      })).toThrow();
+      expect(() =>
+        LLMResponseSchema.parse({
+          genre: 'invalid_genre',
+        })
+      ).toThrow();
     });
 
     it('accepts valid combination', () => {
@@ -185,12 +187,15 @@ describe('selection', () => {
         // These may be null depending on description
         expect(result.combination === null || typeof result.combination === 'string').toBe(true);
         expect(result.singleMode).toBeNull(); // Always null when using genreOverride path
-        expect(result.polyrhythmCombination === null || typeof result.polyrhythmCombination === 'string').toBe(true);
+        expect(
+          result.polyrhythmCombination === null || typeof result.polyrhythmCombination === 'string'
+        ).toBe(true);
       });
 
       it('works with all valid genres from GENRE_REGISTRY', () => {
         const genres = Object.keys(GENRE_REGISTRY);
-        for (const genre of genres.slice(0, 5)) { // Test first 5 to save time
+        for (const genre of genres.slice(0, 5)) {
+          // Test first 5 to save time
           const result = selectModes('test', genre);
           expect(result.genre).toBe(genre as typeof result.genre);
         }

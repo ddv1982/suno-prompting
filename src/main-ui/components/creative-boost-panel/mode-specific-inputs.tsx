@@ -1,12 +1,12 @@
-import { GenreMultiSelect } from "@/components/genre-multi-select";
-import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
-import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
+import { GenreMultiSelect } from '@/components/genre-multi-select';
+import { MoodCategoryCombobox } from '@/components/mood-category-combobox';
+import { SunoStylesMultiSelect } from '@/components/suno-styles-multi-select';
 
-import { DirectModeIndicator } from "./direct-mode-indicator";
+import { DirectModeIndicator } from './direct-mode-indicator';
 
-import type { MoodCategory } from "@bun/mood";
-import type { CreativeBoostInput } from "@shared/types";
-import type { ReactElement } from "react";
+import type { MoodCategory } from '@bun/mood';
+import type { CreativeBoostInput } from '@shared/types';
+import type { ReactElement } from 'react';
 
 interface ModeSpecificInputsProps {
   input: CreativeBoostInput;
@@ -56,8 +56,8 @@ export function ModeSpecificInputs({
         onChange={onGenresChange}
         maxSelections={4}
         disabled={hasStyles}
-        helperText={hasStyles ? "Disabled when Suno styles are selected" : undefined}
-        badgeText={hasStyles ? "disabled" : "optional"}
+        helperText={hasStyles ? 'Disabled when Suno styles are selected' : undefined}
+        badgeText={hasStyles ? 'disabled' : 'optional'}
       />
 
       <SunoStylesMultiSelect
@@ -65,8 +65,14 @@ export function ModeSpecificInputs({
         onChange={onSunoStylesChange}
         maxSelections={4}
         disabled={hasGenres}
-        helperText={hasGenres ? "Disabled when Seed Genres are selected" : isDirectMode ? "Selected styles will be used exactly as-is" : undefined}
-        badgeText={hasGenres ? "disabled" : "optional"}
+        helperText={
+          hasGenres
+            ? 'Disabled when Seed Genres are selected'
+            : isDirectMode
+              ? 'Selected styles will be used exactly as-is'
+              : undefined
+        }
+        badgeText={hasGenres ? 'disabled' : 'optional'}
       />
     </>
   );

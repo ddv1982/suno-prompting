@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface SectionLabelProps {
   children: React.ReactNode;
@@ -8,9 +8,5 @@ interface SectionLabelProps {
 }
 
 export function SectionLabel({ children, className }: SectionLabelProps): ReactElement {
-  return (
-    <span className={cn("label-section", className)}>
-      {children}
-    </span>
-  );
+  return <span className={cn('label-section', className)}>{children}</span>;
 }

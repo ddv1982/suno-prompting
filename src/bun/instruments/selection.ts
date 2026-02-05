@@ -10,7 +10,11 @@ import { GENRE_REGISTRY } from '@bun/instruments/genres';
 
 import type { GenreType } from '@bun/instruments/genres';
 import type { CombinationType, HarmonicStyle } from '@bun/instruments/modes';
-import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
+import type {
+  PolyrhythmCombinationType,
+  TimeSignatureType,
+  TimeSignatureJourneyType,
+} from '@bun/instruments/rhythms';
 
 /**
  * Mode Selection Module
@@ -96,10 +100,7 @@ function buildModeSelection(
  * selectModes('gibberish xyz')
  * // Returns: { genre: null, combination: null, ... }
  */
-export function selectModes(
-  description: string,
-  genreOverride?: string
-): ModeSelection {
+export function selectModes(description: string, genreOverride?: string): ModeSelection {
   // 1. Handle genre override (takes priority)
   if (genreOverride) {
     return buildModeSelection(
@@ -111,9 +112,7 @@ export function selectModes(
 
   // 2. Try keyword-based genre detection
   const genre = detectGenre(description);
-  const reasoning = genre
-    ? `Keyword detection: ${genre}`
-    : 'No genre keywords matched';
+  const reasoning = genre ? `Keyword detection: ${genre}` : 'No genre keywords matched';
 
   // 3. Detect combination first - if found, use that
   const combination = detectCombination(description);

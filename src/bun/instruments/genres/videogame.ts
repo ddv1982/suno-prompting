@@ -3,11 +3,26 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const VIDEOGAME_GENRE: GenreDefinition = {
   name: 'Video Game',
   keywords: [
-    'video game', 'game music', 'gaming', 'chiptune', '8-bit', '8 bit',
-    'retro game', 'pixel', 'arcade', 'boss battle', 'level music',
-    'rpg', 'jrpg', 'adventure game', 'platformer', 'nintendo', 'sega',
+    'video game',
+    'game music',
+    'gaming',
+    'chiptune',
+    '8-bit',
+    '8 bit',
+    'retro game',
+    'pixel',
+    'arcade',
+    'boss battle',
+    'level music',
+    'rpg',
+    'jrpg',
+    'adventure game',
+    'platformer',
+    'nintendo',
+    'sega',
   ],
-  description: 'Dynamic, immersive music blending orchestral, electronic, and retro elements for interactive experiences',
+  description:
+    'Dynamic, immersive music blending orchestral, electronic, and retro elements for interactive experiences',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -39,5 +54,15 @@ export const VIDEOGAME_GENRE: GenreDefinition = {
     ['taiko drums', 'timpani'],
   ],
   bpm: { min: 100, max: 160, typical: 130 },
-  moods: ['Adventurous', 'Heroic', 'Exciting', 'Mysterious', 'Energetic', 'Triumphant', 'Whimsical', 'Intense', 'Nostalgic'],
+  moods: [
+    'Adventurous',
+    'Heroic',
+    'Exciting',
+    'Mysterious',
+    'Energetic',
+    'Triumphant',
+    'Whimsical',
+    'Intense',
+    'Nostalgic',
+  ],
 };

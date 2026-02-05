@@ -140,7 +140,7 @@ describe('useRefinedFeedback', () => {
 
     test('manual pattern: triggerRefinedFeedback called directly', () => {
       let state = createInitialState();
-      
+
       // Simulate manual async operation
       const success = true;
       if (success) {

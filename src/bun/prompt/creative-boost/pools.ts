@@ -49,10 +49,7 @@ const SAFE_GENRES: readonly string[] = [
 ];
 
 /** Normal creativity: Mix of single and established combinations */
-const NORMAL_GENRES: readonly string[] = [
-  ...LOW_GENRES,
-  ...SAFE_GENRES.slice(0, 8),
-];
+const NORMAL_GENRES: readonly string[] = [...LOW_GENRES, ...SAFE_GENRES.slice(0, 8)];
 
 /** Adventurous creativity: Cross-genre blends */
 const ADVENTUROUS_BASE_GENRES: readonly string[] = [
@@ -148,18 +145,62 @@ export const MOOD_POOLS: Record<CreativityLevel, readonly string[]> = {
 
 export const CREATIVE_TITLE_WORDS = {
   adjectives: [
-    'Cosmic', 'Electric', 'Vivid', 'Crystal', 'Velvet', 'Golden', 'Silver',
-    'Midnight', 'Infinite', 'Ethereal', 'Wild', 'Savage', 'Gentle', 'Fierce',
-    'Ancient', 'Future', 'Digital', 'Analog', 'Sacred', 'Mystic',
+    'Cosmic',
+    'Electric',
+    'Vivid',
+    'Crystal',
+    'Velvet',
+    'Golden',
+    'Silver',
+    'Midnight',
+    'Infinite',
+    'Ethereal',
+    'Wild',
+    'Savage',
+    'Gentle',
+    'Fierce',
+    'Ancient',
+    'Future',
+    'Digital',
+    'Analog',
+    'Sacred',
+    'Mystic',
   ],
   nouns: [
-    'Dreams', 'Echoes', 'Shadows', 'Waves', 'Spirits', 'Visions', 'Horizons',
-    'Thunder', 'Lightning', 'Storm', 'Ocean', 'Mountain', 'Desert', 'Forest',
-    'City', 'Universe', 'Galaxy', 'Pulse', 'Rhythm', 'Soul',
+    'Dreams',
+    'Echoes',
+    'Shadows',
+    'Waves',
+    'Spirits',
+    'Visions',
+    'Horizons',
+    'Thunder',
+    'Lightning',
+    'Storm',
+    'Ocean',
+    'Mountain',
+    'Desert',
+    'Forest',
+    'City',
+    'Universe',
+    'Galaxy',
+    'Pulse',
+    'Rhythm',
+    'Soul',
   ],
   suffixes: [
-    'Rising', 'Falling', 'Awakening', 'Ascending', 'Descending', 'Burning',
-    'Fading', 'Glowing', 'Dancing', 'Calling', 'Dreaming', 'Wandering',
+    'Rising',
+    'Falling',
+    'Awakening',
+    'Ascending',
+    'Descending',
+    'Burning',
+    'Fading',
+    'Glowing',
+    'Dancing',
+    'Calling',
+    'Dreaming',
+    'Wandering',
   ],
 } as const;
 

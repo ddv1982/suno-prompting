@@ -20,9 +20,9 @@ import type { Era, SpatialHint } from '@shared/schemas/thematic-context';
 /**
  * Reverb type descriptors for spatial audio processing.
  * Controls perceived room size and reverb character.
- * 
+ *
  * Total: 15 reverb types
- * 
+ *
  * @example
  * // Use in production descriptor
  * const reverb = REVERB_TYPES[5]; // 'Chamber Reverb'
@@ -45,7 +45,7 @@ export const REVERB_TYPES = [
   'Natural Space Reverb',
 ] as const;
 
-export type ReverbType = typeof REVERB_TYPES[number];
+export type ReverbType = (typeof REVERB_TYPES)[number];
 
 export const HARMONY_STYLES = [
   'Stacked Harmonies',
@@ -61,14 +61,14 @@ export const HARMONY_STYLES = [
   'Open Voicings',
 ] as const;
 
-export type HarmonyStyle = typeof HARMONY_STYLES[number];
+export type HarmonyStyle = (typeof HARMONY_STYLES)[number];
 
 /**
  * Recording texture descriptors for overall sonic character.
  * Controls the perceived quality, warmth, and polish of the production.
- * 
+ *
  * Total: 17 texture types
- * 
+ *
  * @example
  * // Use in production descriptor
  * const texture = RECORDING_TEXTURES[5]; // 'Analog Warmth'
@@ -94,14 +94,14 @@ export const RECORDING_TEXTURES = [
   'Rich Saturation',
 ] as const;
 
-export type RecordingTexture = typeof RECORDING_TEXTURES[number];
+export type RecordingTexture = (typeof RECORDING_TEXTURES)[number];
 
 /**
  * Stereo imaging descriptors for spatial width and positioning.
  * Controls the perceived width and stereo field of the mix.
- * 
+ *
  * Total: 10 imaging types
- * 
+ *
  * @example
  * // Use in production descriptor
  * const imaging = STEREO_IMAGING[0]; // 'Wide Stereo'
@@ -119,14 +119,14 @@ export const STEREO_IMAGING = [
   'Mid-Side Enhanced',
 ] as const;
 
-export type StereoImaging = typeof STEREO_IMAGING[number];
+export type StereoImaging = (typeof STEREO_IMAGING)[number];
 
 /**
  * Dynamic range descriptors for compression and loudness control.
  * Controls the perceived dynamics, compression, and loudness of the mix.
- * 
+ *
  * Total: 12 dynamic types
- * 
+ *
  * @example
  * // Use in production descriptor
  * const dynamic = DYNAMIC_DESCRIPTORS[2]; // 'Natural Dynamics'
@@ -147,11 +147,14 @@ export const DYNAMIC_DESCRIPTORS = [
 ] as const;
 
 // Genre-specific production suggestions
-export const GENRE_PRODUCTION_STYLES: Record<string, {
-  reverbs: readonly string[];
-  textures: readonly string[];
-  dynamics: readonly string[];
-}> = {
+export const GENRE_PRODUCTION_STYLES: Record<
+  string,
+  {
+    reverbs: readonly string[];
+    textures: readonly string[];
+    dynamics: readonly string[];
+  }
+> = {
   jazz: {
     reverbs: ['Long Hall Reverb', 'Lounge Club Reverb', 'Studio Reverb', 'Chamber Reverb'],
     textures: ['Analog Warmth', 'Intimate Recording', 'Live Room Sound', 'Organic Feel'],
@@ -272,11 +275,11 @@ export function getProductionSuggestionsForGenre(
   rng: () => number = Math.random
 ): { reverb: string; texture: string; dynamic: string } {
   const style = GENRE_PRODUCTION_STYLES[genre.toLowerCase()] ?? DEFAULT_PRODUCTION_STYLE;
-  
+
   const reverbIdx = Math.floor(rng() * style.reverbs.length);
   const textureIdx = Math.floor(rng() * style.textures.length);
   const dynamicIdx = Math.floor(rng() * style.dynamics.length);
-  
+
   return {
     reverb: style.reverbs[reverbIdx] ?? 'Studio Reverb',
     texture: style.textures[textureIdx] ?? 'Polished Production',
@@ -286,35 +289,35 @@ export function getProductionSuggestionsForGenre(
 
 /**
  * Build multi-dimensional production descriptor for Suno V5 (new in v2).
- * 
+ *
  * Selects one tag from each production dimension independently for maximum variety.
- * This multi-dimensional approach enables 30,600 unique combinations 
+ * This multi-dimensional approach enables 30,600 unique combinations
  * (15 reverb × 17 texture × 10 stereo × 12 dynamic) compared to 204 combinations
  * from the legacy blended string approach.
- * 
+ *
  * Each dimension is selected independently using the provided RNG, ensuring
  * deterministic output when a seeded RNG is used. All tags are returned in
  * lowercase for consistency with Suno V5 requirements.
- * 
+ *
  * @param rng - Seeded random number generator for deterministic selection
  * @returns ProductionDescriptor with one selection from each dimension
- * 
+ *
  * @example
  * // Deterministic selection with seeded RNG
  * const rng = seedRng(12345);
  * const production = buildProductionDescriptorMulti(rng);
- * // Returns: { 
- * //   reverb: 'plate reverb', 
- * //   texture: 'warm character', 
- * //   stereo: 'wide stereo', 
- * //   dynamic: 'punchy mix' 
+ * // Returns: {
+ * //   reverb: 'plate reverb',
+ * //   texture: 'warm character',
+ * //   stereo: 'wide stereo',
+ * //   dynamic: 'punchy mix'
  * // }
- * 
+ *
  * @example
  * // Random selection with default RNG
  * const production = buildProductionDescriptorMulti();
  * // Returns: { reverb: '...', texture: '...', stereo: '...', dynamic: '...' }
- * 
+ *
  * @since v2.0.0
  */
 export function buildProductionDescriptorMulti(
@@ -325,7 +328,7 @@ export function buildProductionDescriptorMulti(
   const texture = selectRandom(RECORDING_TEXTURES, rng).toLowerCase();
   const stereo = selectRandom(STEREO_IMAGING, rng).toLowerCase();
   const dynamic = selectRandom(DYNAMIC_DESCRIPTORS, rng).toLowerCase();
-  
+
   return { reverb, texture, stereo, dynamic };
 }
 
@@ -340,10 +343,10 @@ export function buildProductionDescriptorMulti(
  * authentic spatial character in the mix.
  */
 const SPACE_REVERBS: Record<string, readonly string[]> = {
-  'intimate': ['Tight Dry Room', 'Short Room Reverb', 'Studio Reverb'],
-  'room': ['Short Room Reverb', 'Chamber Reverb', 'Studio Reverb'],
-  'hall': ['Long Hall Reverb', 'Concert Hall Reverb', 'Plate Reverb'],
-  'vast': ['Cathedral Reverb', 'Concert Hall Reverb', 'Wide Stereo Reverb'],
+  intimate: ['Tight Dry Room', 'Short Room Reverb', 'Studio Reverb'],
+  room: ['Short Room Reverb', 'Chamber Reverb', 'Studio Reverb'],
+  hall: ['Long Hall Reverb', 'Concert Hall Reverb', 'Plate Reverb'],
+  vast: ['Cathedral Reverb', 'Concert Hall Reverb', 'Wide Stereo Reverb'],
 };
 
 /**
@@ -372,10 +375,7 @@ const SPACE_REVERBS: Record<string, readonly string[]> = {
  * selectReverbWithSpatialHint(rng)
  * // Returns: any reverb from REVERB_TYPES
  */
-export function selectReverbWithSpatialHint(
-  rng: () => number,
-  spatialHint?: SpatialHint
-): string {
+export function selectReverbWithSpatialHint(rng: () => number, spatialHint?: SpatialHint): string {
   // Fall back to random selection when no spatial hint
   if (!spatialHint?.space && !spatialHint?.reverb) {
     return selectRandom(REVERB_TYPES, rng).toLowerCase();
@@ -437,7 +437,7 @@ export const ERA_TEXTURE_BIASES: Record<Era, readonly string[]> = {
   '80s': ['Digital Precision', 'Crystal Clear', 'Polished Production'],
   '90s': ['Raw Performance Texture', 'Lo-Fi Dusty', 'Live Room Sound'],
   '2000s': ['Polished Production', 'Digital Precision', 'Studio Polish'],
-  'modern': ['Crystal Clear', 'Dynamic Presence', 'Rich Saturation'],
+  modern: ['Crystal Clear', 'Dynamic Presence', 'Rich Saturation'],
 };
 
 /**
@@ -477,9 +477,10 @@ export function buildProductionDescriptorWithEra(
   let texture: string;
   if (era && rng() < ERA_TEXTURE_BIAS_CHANCE) {
     const biasedTextures = ERA_TEXTURE_BIASES[era];
-    texture = biasedTextures.length > 0
-      ? selectRandom(biasedTextures, rng).toLowerCase()
-      : selectRandom(RECORDING_TEXTURES, rng).toLowerCase();
+    texture =
+      biasedTextures.length > 0
+        ? selectRandom(biasedTextures, rng).toLowerCase()
+        : selectRandom(RECORDING_TEXTURES, rng).toLowerCase();
   } else {
     texture = selectRandom(RECORDING_TEXTURES, rng).toLowerCase();
   }

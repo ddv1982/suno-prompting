@@ -13,12 +13,14 @@ interface QuickVibesInput {
   withWordlessVocals: boolean;
 }
 
-type StoredInput = {
-  sunoStyles?: string[];
-  customDescription?: string;
-  category: string | null;
-  withWordlessVocals?: boolean;
-} | undefined;
+type StoredInput =
+  | {
+      sunoStyles?: string[];
+      customDescription?: string;
+      category: string | null;
+      withWordlessVocals?: boolean;
+    }
+  | undefined;
 
 describe('handleRefineQuickVibes style fallback pattern', () => {
   function calculateEffectiveSunoStyles(
@@ -32,9 +34,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
     uiInput: QuickVibesInput,
     storedInput: StoredInput
   ): string[] {
-    return uiInput.sunoStyles.length > 0
-      ? uiInput.sunoStyles
-      : storedInput?.sunoStyles ?? [];
+    return uiInput.sunoStyles.length > 0 ? uiInput.sunoStyles : (storedInput?.sunoStyles ?? []);
   }
 
   test('uses UI styles when populated', () => {
@@ -51,7 +51,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
     };
 
     const result = calculateEffectiveSunoStyles(uiInput, storedInput);
-    
+
     expect(result).toEqual(['dream-pop']);
     expect(result).not.toEqual(['lo-fi']);
   });
@@ -70,7 +70,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
     };
 
     const result = calculateEffectiveSunoStyles(uiInput, storedInput);
-    
+
     expect(result).toEqual([]);
     expect(result).not.toEqual(['lo-fi', 'chillwave']);
   });
@@ -90,7 +90,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
 
     const buggyResult = calculateEffectiveSunoStylesBuggy(uiInput, storedInput);
     expect(buggyResult).toEqual(['lo-fi', 'chillwave']);
-    
+
     const fixedResult = calculateEffectiveSunoStyles(uiInput, storedInput);
     expect(fixedResult).toEqual([]);
   });
@@ -105,7 +105,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
     const storedInput: StoredInput = undefined;
 
     const result = calculateEffectiveSunoStyles(uiInput, storedInput);
-    
+
     expect(result).toEqual([]);
   });
 
@@ -123,7 +123,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
     };
 
     const result = calculateEffectiveSunoStyles(uiInput, storedInput);
-    
+
     expect(result).toEqual(['dream-pop', 'shoegaze', 'ambient']);
     expect(result.length).toBe(3);
   });
@@ -142,7 +142,7 @@ describe('handleRefineQuickVibes style fallback pattern', () => {
     };
 
     const effectiveSunoStyles = calculateEffectiveSunoStyles(uiInput, storedInput);
-    
+
     const apiCallParams = {
       currentPrompt: 'existing prompt',
       currentTitle: 'Existing Title',
@@ -187,7 +187,7 @@ describe('handleRefineQuickVibes category pattern', () => {
     };
 
     const result = getEffectiveCategory(uiInput, storedInput);
-    
+
     expect(result).toBeNull();
     expect(result).not.toBe('lofi-study');
   });
@@ -207,13 +207,13 @@ describe('handleRefineQuickVibes category pattern', () => {
 
     const buggyCategory = getEffectiveCategoryBuggy(uiInput, storedInput);
     expect(buggyCategory).toBe('lofi-study');
-    
+
     const wouldCauseValidationError = buggyCategory !== null && uiInput.sunoStyles.length > 0;
     expect(wouldCauseValidationError).toBe(true);
-    
+
     const fixedCategory = getEffectiveCategory(uiInput, storedInput);
     expect(fixedCategory).toBeNull();
-    
+
     const passesValidation = fixedCategory === null || uiInput.sunoStyles.length === 0;
     expect(passesValidation).toBe(true);
   });
@@ -232,7 +232,7 @@ describe('handleRefineQuickVibes category pattern', () => {
     };
 
     const result = getEffectiveCategory(uiInput, storedInput);
-    
+
     expect(result).toBe('lofi-study');
   });
 
@@ -250,7 +250,7 @@ describe('handleRefineQuickVibes category pattern', () => {
     };
 
     const result = getEffectiveCategory(uiInput, storedInput);
-    
+
     expect(result).toBe('ambient-focus');
     expect(result).not.toBe('lofi-study');
   });
@@ -265,7 +265,7 @@ describe('handleRefineQuickVibes category pattern', () => {
     const storedInput: StoredInput = undefined;
 
     const result = getEffectiveCategory(uiInput, storedInput);
-    
+
     expect(result).toBeNull();
   });
 
@@ -284,7 +284,7 @@ describe('handleRefineQuickVibes category pattern', () => {
 
     const effectiveCategory = uiInput.category;
     const effectiveSunoStyles = uiInput.sunoStyles;
-    
+
     const apiCallParams = {
       currentPrompt: 'existing prompt',
       currentTitle: 'Study Session',

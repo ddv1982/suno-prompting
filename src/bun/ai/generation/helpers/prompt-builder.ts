@@ -27,8 +27,20 @@ export function buildPromptForMode(
   thematicContext?: ThematicContext | null
 ): string {
   const deterministicResult = config.isMaxMode()
-    ? buildDeterministicMaxPrompt({ description, genreOverride, rng, trace, thematicContext: thematicContext ?? undefined })
-    : buildDeterministicStandardPrompt({ description, genreOverride, rng, trace, thematicContext: thematicContext ?? undefined });
+    ? buildDeterministicMaxPrompt({
+        description,
+        genreOverride,
+        rng,
+        trace,
+        thematicContext: thematicContext ?? undefined,
+      })
+    : buildDeterministicStandardPrompt({
+        description,
+        genreOverride,
+        rng,
+        trace,
+        thematicContext: thematicContext ?? undefined,
+      });
 
   let promptText = deterministicResult.text;
   if (lockedPhrase) {

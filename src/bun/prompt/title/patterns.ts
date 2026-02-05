@@ -35,7 +35,11 @@ const PREFERRED_MOOD_PROBABILITY = 0.7;
  * @param rng - Random number generator
  * @returns Filtered or weighted word pool
  */
-function filterByMood(words: readonly string[], mood: string, rng: () => number): readonly string[] {
+function filterByMood(
+  words: readonly string[],
+  mood: string,
+  rng: () => number
+): readonly string[] {
   const moodLower = mood.toLowerCase();
   const weights = MOOD_WORD_WEIGHTS[moodLower];
 
@@ -93,7 +97,7 @@ function getWord(
 
   // If topic keywords are available, prioritize them OVER mood filtering
   if (topicKeywords?.[category] && topicKeywords[category].length > 0) {
-    const topicRelevant = pool.filter(word => topicKeywords[category]?.includes(word));
+    const topicRelevant = pool.filter((word) => topicKeywords[category]?.includes(word));
     if (topicRelevant.length > 0) {
       // Use topic keywords directly without mood filtering
       // (topic relevance is more important than mood filtering)
@@ -142,16 +146,18 @@ export function interpolatePattern(
   rng: () => number,
   topicKeywords?: Record<string, string[]>
 ): string {
-  return pattern
-    // Original placeholders
-    .replace('{time}', getWord('time', mood, rng, topicKeywords))
-    .replace('{nature}', getWord('nature', mood, rng, topicKeywords))
-    .replace('{emotion}', getWord('emotion', mood, rng, topicKeywords))
-    .replace('{action}', getWord('action', mood, rng, topicKeywords))
-    .replace('{abstract}', getWord('abstract', mood, rng, topicKeywords))
-    // Extended placeholders
-    .replace('{number}', getWord('number', mood, rng, topicKeywords))
-    .replace('{place}', getWord('place', mood, rng, topicKeywords))
-    .replace('{single}', getWord('single', mood, rng, topicKeywords))
-    .replace('{question}', getWord('question', mood, rng, topicKeywords));
+  return (
+    pattern
+      // Original placeholders
+      .replace('{time}', getWord('time', mood, rng, topicKeywords))
+      .replace('{nature}', getWord('nature', mood, rng, topicKeywords))
+      .replace('{emotion}', getWord('emotion', mood, rng, topicKeywords))
+      .replace('{action}', getWord('action', mood, rng, topicKeywords))
+      .replace('{abstract}', getWord('abstract', mood, rng, topicKeywords))
+      // Extended placeholders
+      .replace('{number}', getWord('number', mood, rng, topicKeywords))
+      .replace('{place}', getWord('place', mood, rng, topicKeywords))
+      .replace('{single}', getWord('single', mood, rng, topicKeywords))
+      .replace('{question}', getWord('question', mood, rng, topicKeywords))
+  );
 }

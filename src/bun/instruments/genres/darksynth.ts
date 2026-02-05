@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const DARKSYNTH_GENRE: GenreDefinition = {
   name: 'Darksynth',
   keywords: ['darksynth', 'dark synthwave', 'horror synth', 'darkwave', 'cyberpunk'],
-  description: 'Dark, aggressive synthwave with cinematic horror elements and industrial influences',
+  description:
+    'Dark, aggressive synthwave with cinematic horror elements and industrial influences',
   pools: {
     synth: {
       pick: { min: 1, max: 2 },

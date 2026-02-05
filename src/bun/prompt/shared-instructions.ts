@@ -1,9 +1,9 @@
 /**
  * Shared prompt instructions and constants used across all prompt builders.
- * 
+ *
  * This file centralizes common instructions to prevent drift between different
  * generation modes (Full Prompt, Quick Vibes, Creative Boost).
- * 
+ *
  * @module prompt/shared-instructions
  */
 

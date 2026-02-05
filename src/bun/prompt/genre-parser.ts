@@ -25,14 +25,8 @@ import {
 import { pickRandom } from '@bun/instruments/services/random';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
-import {
-  GENRE_PRODUCTION_STYLES,
-  DEFAULT_PRODUCTION_STYLE,
-} from '@bun/prompt/production-elements';
-import {
-  GENRE_VOCAL_STYLES,
-  DEFAULT_VOCAL_STYLE,
-} from '@bun/prompt/vocal-descriptors';
+import { GENRE_PRODUCTION_STYLES, DEFAULT_PRODUCTION_STYLE } from '@bun/prompt/production-elements';
+import { GENRE_VOCAL_STYLES, DEFAULT_VOCAL_STYLE } from '@bun/prompt/vocal-descriptors';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { HarmonicStyle } from '@bun/instruments/modes';
@@ -61,9 +55,7 @@ export function parseGenreComponents(genre: string): GenreType[] {
   }
 
   // Split on common separators: spaces, hyphens, slashes, "and", "&"
-  const parts = normalized
-    .split(/[\s\-\/]+|(?:\s+and\s+)|(?:\s*&\s*)/)
-    .filter(Boolean);
+  const parts = normalized.split(/[\s\-\/]+|(?:\s+and\s+)|(?:\s*&\s*)/).filter(Boolean);
 
   // Extract recognized genres
   const recognized: GenreType[] = [];
@@ -97,10 +89,7 @@ function collectUnique<T>(arrays: readonly (readonly T[])[]): T[] {
  * Build a blended vocal descriptor from multiple genre components.
  * Combines vocal characteristics from each genre for a richer description.
  */
-export function buildBlendedVocalDescriptor(
-  genres: GenreType[],
-  rng: Rng = Math.random
-): string {
+export function buildBlendedVocalDescriptor(genres: GenreType[], rng: Rng = Math.random): string {
   if (genres.length === 0) {
     const style = DEFAULT_VOCAL_STYLE;
     const range = pickRandom(style.ranges, rng) ?? 'Tenor';
@@ -220,7 +209,10 @@ export function selectInstrumentsForMultiGenre(
 /** Maximum cache size to prevent unbounded memory growth */
 const GUIDANCE_CACHE_MAX_SIZE = 100;
 
-const guidanceCache = new Map<string, { vocal: string; production: string; instruments: string[] }>();
+const guidanceCache = new Map<
+  string,
+  { vocal: string; production: string; instruments: string[] }
+>();
 
 /**
  * Internal implementation of performance guidance building.

@@ -1,14 +1,15 @@
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
-import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/section-label";
-import { APP_CONSTANTS } from "@shared/constants";
+import { Input } from '@/components/ui/input';
+import { SectionLabel } from '@/components/ui/section-label';
+import { APP_CONSTANTS } from '@shared/constants';
 
-import type { AIProvider, APIKeys } from "@shared/types";
-import type { ReactElement } from "react";
+import type { AIProvider, APIKeys } from '@shared/types';
+import type { ReactElement } from 'react';
 
 const PROVIDERS = APP_CONSTANTS.AI.PROVIDERS;
-const selectClassName = "border-border data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-[var(--height-control-md)] w-full min-w-0 rounded-md border bg-input/30 px-[var(--space-3)] py-[var(--space-1)] text-[length:var(--text-footnote)] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
+const selectClassName =
+  'border-border data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-[var(--height-control-md)] w-full min-w-0 rounded-md border bg-input/30 px-[var(--space-3)] py-[var(--space-1)] text-[length:var(--text-footnote)] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50';
 
 interface ApiKeySectionProps {
   provider: AIProvider;
@@ -31,7 +32,7 @@ export function ApiKeySection({
   onApiKeyChange,
   onToggleShowKey,
 }: ApiKeySectionProps): ReactElement {
-  const currentProvider = PROVIDERS.find(p => p.id === provider) ?? PROVIDERS[0];
+  const currentProvider = PROVIDERS.find((p) => p.id === provider) ?? PROVIDERS[0];
   const currentApiKey = apiKeys[provider] || '';
 
   return (
@@ -40,7 +41,9 @@ export function ApiKeySection({
         <SectionLabel>AI Provider</SectionLabel>
         <select
           value={provider}
-          onChange={(e) => { onProviderChange(e.target.value as AIProvider); }}
+          onChange={(e) => {
+            onProviderChange(e.target.value as AIProvider);
+          }}
           disabled={loading}
           className={selectClassName}
         >
@@ -50,18 +53,18 @@ export function ApiKeySection({
             </option>
           ))}
         </select>
-        <p className="ui-helper">
-          Select your preferred AI provider
-        </p>
+        <p className="ui-helper">Select your preferred AI provider</p>
       </div>
 
       <div className="space-y-2">
         <SectionLabel>{currentProvider.name} API Key</SectionLabel>
         <div className="relative">
           <Input
-            type={showKey ? "text" : "password"}
+            type={showKey ? 'text' : 'password'}
             value={currentApiKey}
-            onChange={(e) => { onApiKeyChange(e.target.value); }}
+            onChange={(e) => {
+              onApiKeyChange(e.target.value);
+            }}
             placeholder={currentProvider.keyPlaceholder}
             className="pr-10 bg-input"
           />
@@ -74,7 +77,15 @@ export function ApiKeySection({
           </button>
         </div>
         <p className="ui-helper">
-          Get your key from <a href={currentProvider.keyUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{currentProvider.keyUrl.replace('https://', '')}</a>
+          Get your key from{' '}
+          <a
+            href={currentProvider.keyUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary hover:underline"
+          >
+            {currentProvider.keyUrl.replace('https://', '')}
+          </a>
         </p>
         {!currentApiKey && !loading && (
           <p className="ui-helper text-amber-500">

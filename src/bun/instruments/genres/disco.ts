@@ -35,5 +35,14 @@ export const DISCO_GENRE: GenreDefinition = {
     ['slap bass', 'bass'],
   ],
   bpm: { min: 110, max: 130, typical: 120 },
-  moods: ['Groovy', 'Funky', 'Euphoric', 'Danceable', 'Uplifting', 'Retro', 'Celebratory', 'Feel-good'],
+  moods: [
+    'Groovy',
+    'Funky',
+    'Euphoric',
+    'Danceable',
+    'Uplifting',
+    'Retro',
+    'Celebratory',
+    'Feel-good',
+  ],
 };

@@ -12,7 +12,10 @@
  */
 
 import { AIConfig } from '@bun/ai/config';
-import { generateInitial as generateInitialImpl, type GenerateInitialOptions } from '@bun/ai/generation';
+import {
+  generateInitial as generateInitialImpl,
+  type GenerateInitialOptions,
+} from '@bun/ai/generation';
 import { refinePrompt as refinePromptImpl, type RefinePromptOptions } from '@bun/ai/refinement';
 import { remixLyrics as remixLyricsImpl, remixTitle as remixTitleImpl } from '@bun/ai/remix';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
@@ -117,10 +120,17 @@ export class AIEngine {
   ): Promise<{ title: string }> {
     // Use LLM for title when lyrics mode is enabled OR when LLM is available
     if (this.config.isLyricsMode() || this.config.isLLMAvailable()) {
-      return remixTitleImpl(currentPrompt, originalInput, this.getModel, this.config.getOllamaEndpointIfLocal(), currentLyrics, {
-        trace: traceRuntime?.trace,
-        traceLabel: 'title.generate',
-      });
+      return remixTitleImpl(
+        currentPrompt,
+        originalInput,
+        this.getModel,
+        this.config.getOllamaEndpointIfLocal(),
+        currentLyrics,
+        {
+          trace: traceRuntime?.trace,
+          traceLabel: 'title.generate',
+        }
+      );
     }
     const genre = extractGenreFromPrompt(currentPrompt);
     const mood = extractMoodFromPrompt(currentPrompt);

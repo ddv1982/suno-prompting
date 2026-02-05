@@ -131,10 +131,7 @@ describe('getBlendedTimeSignature', () => {
 
     expect(result).not.toBeNull();
     // Result should be from either jazz or rock pool
-    const combinedPool = [
-      ...GENRE_TIME_SIGNATURES.jazz!,
-      ...GENRE_TIME_SIGNATURES.rock!,
-    ];
+    const combinedPool = [...GENRE_TIME_SIGNATURES.jazz!, ...GENRE_TIME_SIGNATURES.rock!];
     expect(combinedPool).toContain(result!);
   });
 
@@ -162,10 +159,7 @@ describe('getBlendedTimeSignature', () => {
     const result = getBlendedTimeSignature('jazz, rock');
 
     expect(result).not.toBeNull();
-    const combinedPool = [
-      ...GENRE_TIME_SIGNATURES.jazz!,
-      ...GENRE_TIME_SIGNATURES.rock!,
-    ];
+    const combinedPool = [...GENRE_TIME_SIGNATURES.jazz!, ...GENRE_TIME_SIGNATURES.rock!];
     expect(combinedPool).toContain(result!);
   });
 
@@ -423,10 +417,7 @@ describe('frequency-weighted selection', () => {
     call = 0;
     const fullPoolResult = getBlendedTimeSignature('jazz rock', fullPoolRng);
     // Should be a valid signature from the combined pool
-    const allSigs = [
-      ...GENRE_TIME_SIGNATURES.jazz!,
-      ...GENRE_TIME_SIGNATURES.rock!,
-    ];
+    const allSigs = [...GENRE_TIME_SIGNATURES.jazz!, ...GENRE_TIME_SIGNATURES.rock!];
     expect(allSigs).toContain(fullPoolResult!);
   });
 });

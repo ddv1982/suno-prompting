@@ -27,13 +27,17 @@ export function buildSongConceptParts(
   lyricsTopic?: string
 ): string[] {
   const trimmedTopic = lyricsTopic?.trim();
-  
+
   const parts = [header, description];
-  
+
   if (trimmedTopic) {
-    parts.push('', `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`, trimmedTopic);
+    parts.push(
+      '',
+      `LYRICS TOPIC (use this topic for lyrics content, NOT the musical style above):`,
+      trimmedTopic
+    );
   }
-  
+
   return parts;
 }
 
@@ -64,7 +68,7 @@ export function buildPerformanceGuidanceSection(
 ): string[] {
   const parts: string[] = [];
   const guidance = performanceGuidance ?? buildPerformanceGuidance(genre);
-  
+
   if (guidance) {
     parts.push('', 'PERFORMANCE GUIDANCE:');
     parts.push(`Vocal style: ${guidance.vocal}`);

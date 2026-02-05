@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 
-import {
-  generateDeterministicTitle,
-  generateTitleOptions,
-} from '@bun/prompt/title';
+import { generateDeterministicTitle, generateTitleOptions } from '@bun/prompt/title';
 
 // =============================================================================
 // Test Utilities
@@ -124,10 +121,17 @@ describe('title-generator', () => {
         for (let i = 0; i < 20; i++) {
           titles.push(generateDeterministicTitle('ambient', 'melancholic', rng));
         }
-        const melancholicWords = ['Shadow', 'Rain', 'Memory', 'Echo', 'Fading', 'Lost', 'Silence', 'Twilight'];
-        const hasMelancholicWord = titles.some((t) =>
-          melancholicWords.some((w) => t.includes(w))
-        );
+        const melancholicWords = [
+          'Shadow',
+          'Rain',
+          'Memory',
+          'Echo',
+          'Fading',
+          'Lost',
+          'Silence',
+          'Twilight',
+        ];
+        const hasMelancholicWord = titles.some((t) => melancholicWords.some((w) => t.includes(w)));
         expect(hasMelancholicWord).toBe(true);
       });
 
@@ -137,10 +141,16 @@ describe('title-generator', () => {
         for (let i = 0; i < 20; i++) {
           titles.push(generateDeterministicTitle('rock', 'energetic', rng));
         }
-        const energeticWords = ['Fire', 'Rising', 'Running', 'Dancing', 'Thunder', 'Burning', 'Flying'];
-        const hasEnergeticWord = titles.some((t) =>
-          energeticWords.some((w) => t.includes(w))
-        );
+        const energeticWords = [
+          'Fire',
+          'Rising',
+          'Running',
+          'Dancing',
+          'Thunder',
+          'Burning',
+          'Flying',
+        ];
+        const hasEnergeticWord = titles.some((t) => energeticWords.some((w) => t.includes(w)));
         expect(hasEnergeticWord).toBe(true);
       });
 

@@ -35,7 +35,14 @@ export const MINOR_MODES = {
   },
   harmonic_minor: {
     name: 'Harmonic Minor',
-    keywords: ['harmonic minor', 'classical', 'gothic', 'vampire', 'eastern european', 'dramatic tension'],
+    keywords: [
+      'harmonic minor',
+      'classical',
+      'gothic',
+      'vampire',
+      'eastern european',
+      'dramatic tension',
+    ],
     description: 'Dramatic and exotic - classical tension with raised 7th',
     chordType: 'm(maj7)',
     formula: '1 - 2 - b3 - 4 - 5 - b6 - 7',

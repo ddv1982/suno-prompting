@@ -1,8 +1,17 @@
-import { type GeneratingAction } from "@/context/generation";
-import { type ChatMessage } from "@/lib/chat-utils";
-import { type MoodCategory } from "@bun/mood";
-import { type TraceRun, type EditorMode, type AdvancedSelection, type PromptMode, type QuickVibesInput, type QuickVibesCategory, type CreativeBoostInput, type CreativeBoostMode } from "@shared/types";
-import { type ValidationResult } from "@shared/validation";
+import { type GeneratingAction } from '@/context/generation';
+import { type ChatMessage } from '@/lib/chat-utils';
+import { type MoodCategory } from '@bun/mood';
+import {
+  type TraceRun,
+  type EditorMode,
+  type AdvancedSelection,
+  type PromptMode,
+  type QuickVibesInput,
+  type QuickVibesCategory,
+  type CreativeBoostInput,
+  type CreativeBoostMode,
+} from '@shared/types';
+import { type ValidationResult } from '@shared/validation';
 
 /** State for the current prompt output display */
 export interface OutputState {
@@ -106,13 +115,25 @@ export interface EditorHandlers {
   onStoryModeChange: (mode: boolean) => void;
   onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
   onQuickVibesInputChange: (input: QuickVibesInput) => void;
-  onCreativeBoostInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
+  onCreativeBoostInputChange: (
+    input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)
+  ) => void;
   onGenerate: (input: string) => Promise<boolean>;
-  onGenerateQuickVibes: (category: QuickVibesCategory | null, customDescription: string, sunoStyles: string[], moodCategory: MoodCategory | null) => void;
+  onGenerateQuickVibes: (
+    category: QuickVibesCategory | null,
+    customDescription: string,
+    sunoStyles: string[],
+    moodCategory: MoodCategory | null
+  ) => void;
   onRefineQuickVibes: (feedback: string) => Promise<boolean>;
   onGenerateCreativeBoost: () => void;
   onRefineCreativeBoost: (feedback: string) => Promise<boolean>;
-  onConversionComplete: (originalInput: string, convertedPrompt: string, versionId: string, debugTrace?: TraceRun) => Promise<void>;
+  onConversionComplete: (
+    originalInput: string,
+    convertedPrompt: string,
+    versionId: string,
+    debugTrace?: TraceRun
+  ) => Promise<void>;
 }
 
 /** Configuration values for the editor */

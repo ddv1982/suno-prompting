@@ -63,7 +63,10 @@ function normalizeProviderId(raw: string | undefined): AIProvider | undefined {
   return undefined;
 }
 
-function inferCloudProviderInfo(model: LanguageModel): { providerId?: AIProvider; modelId?: string } {
+function inferCloudProviderInfo(model: LanguageModel): {
+  providerId?: AIProvider;
+  modelId?: string;
+} {
   if (model && typeof model === 'object') {
     const m = model as Record<string, unknown>;
     const providerRaw = typeof m.provider === 'string' ? m.provider : undefined;
@@ -86,7 +89,10 @@ function nowIso(ms: number): string {
   return new Date(ms).toISOString();
 }
 
-function computePromptSummary(systemPrompt: string, userPrompt: string): {
+function computePromptSummary(
+  systemPrompt: string,
+  userPrompt: string
+): {
   readonly messageCount: number;
   readonly totalChars: number;
   readonly preview: string;
@@ -100,14 +106,25 @@ function computePromptSummary(systemPrompt: string, userPrompt: string): {
   const preview = truncateTextWithMarker(previewRedacted, 900).text;
 
   const messages = [
-    { role: 'system' as const, content: truncateTextWithMarker(redactSecretsInText(systemPrompt), 3000).text },
-    { role: 'user' as const, content: truncateTextWithMarker(redactSecretsInText(userPrompt), 3000).text },
+    {
+      role: 'system' as const,
+      content: truncateTextWithMarker(redactSecretsInText(systemPrompt), 3000).text,
+    },
+    {
+      role: 'user' as const,
+      content: truncateTextWithMarker(redactSecretsInText(userPrompt), 3000).text,
+    },
   ];
 
   return { messageCount, totalChars, preview, messages };
 }
 
-function buildAttemptError(normalized: { type: string; message: string; status?: number; providerRequestId?: string }): AttemptTraceError {
+function buildAttemptError(normalized: {
+  type: string;
+  message: string;
+  status?: number;
+  providerRequestId?: string;
+}): AttemptTraceError {
   return {
     type: normalized.type,
     message: normalized.message,
@@ -127,14 +144,31 @@ function wrapAIError(error: unknown, errorContext: string): AIGenerationError {
 
 /** Execute LLM call without tracing (fast path) */
 async function callLLMWithoutTrace(options: CallLLMOptions): Promise<string> {
-  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, providerOptions, ollamaOptions } = options;
+  const {
+    getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext,
+    ollamaEndpoint,
+    timeoutMs,
+    maxRetries,
+    providerOptions,
+    ollamaOptions,
+  } = options;
 
   try {
     let rawResponse: string;
     if (ollamaEndpoint) {
       const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
       log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout });
-      rawResponse = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout, undefined, ollamaOptions);
+      rawResponse = await generateWithOllama(
+        ollamaEndpoint,
+        systemPrompt,
+        userPrompt,
+        timeout,
+        undefined,
+        ollamaOptions
+      );
     } else {
       const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
       const retries = maxRetries ?? APP_CONSTANTS.AI.MAX_RETRIES;
@@ -190,9 +224,22 @@ async function executeOllamaAttempt(
 ): Promise<{ text: string; telemetry: TraceTelemetry; latencyMs: number }> {
   const { systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts } = opts;
   const timeout = timeoutMs ?? APP_CONSTANTS.OLLAMA.GENERATION_TIMEOUT_MS;
-  log.info('callLLM:ollama', { errorContext, endpoint: ollamaEndpoint, timeout, attempt, totalAllowedAttempts: totalAttempts });
+  log.info('callLLM:ollama', {
+    errorContext,
+    endpoint: ollamaEndpoint,
+    timeout,
+    attempt,
+    totalAllowedAttempts: totalAttempts,
+  });
   const startMs = Date.now();
-  const text = await generateWithOllama(ollamaEndpoint, systemPrompt, userPrompt, timeout, undefined, ollamaOptions);
+  const text = await generateWithOllama(
+    ollamaEndpoint,
+    systemPrompt,
+    userPrompt,
+    timeout,
+    undefined,
+    ollamaOptions
+  );
   const latencyMs = Date.now() - startMs;
   return { text, telemetry: { latencyMs }, latencyMs };
 }
@@ -205,7 +252,12 @@ async function executeCloudAttempt(
 ): Promise<{ text: string; telemetry: TraceTelemetry; latencyMs: number; modelId?: string }> {
   const { systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts } = opts;
   const timeout = timeoutMs ?? APP_CONSTANTS.AI.TIMEOUT_MS;
-  log.info('callLLM:cloud', { errorContext, timeout, attempt, totalAllowedAttempts: totalAttempts });
+  log.info('callLLM:cloud', {
+    errorContext,
+    timeout,
+    attempt,
+    totalAllowedAttempts: totalAttempts,
+  });
   const startMs = Date.now();
 
   // Capture onFinish data for trace telemetry (onFinish is always called by AI SDK)
@@ -248,17 +300,38 @@ async function executeCloudAttempt(
 }
 
 /** Build initial provider info for tracing */
-function buildInitialProviderInfo(ollamaEndpoint: string | undefined, ollamaModel: string | undefined, getModel: () => LanguageModel): TraceProviderInfo {
+function buildInitialProviderInfo(
+  ollamaEndpoint: string | undefined,
+  ollamaModel: string | undefined,
+  getModel: () => LanguageModel
+): TraceProviderInfo {
   if (ollamaEndpoint) {
     return { id: 'ollama', model: ollamaModel ?? 'unknown', locality: 'local' };
   }
   const inferred = inferCloudProviderInfo(getModel());
-  return { id: inferred.providerId ?? 'openai', model: inferred.modelId ?? 'unknown', locality: 'cloud' };
+  return {
+    id: inferred.providerId ?? 'openai',
+    model: inferred.modelId ?? 'unknown',
+    locality: 'cloud',
+  };
 }
 
 /** Execute LLM call with tracing */
+// eslint-disable-next-line max-lines-per-function
 async function callLLMWithTrace(options: CallLLMOptions, trace: TraceCollector): Promise<string> {
-  const { getModel, systemPrompt, userPrompt, errorContext, ollamaEndpoint, timeoutMs, maxRetries, traceLabel, ollamaModel, providerOptions, ollamaOptions } = options;
+  const {
+    getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext,
+    ollamaEndpoint,
+    timeoutMs,
+    maxRetries,
+    traceLabel,
+    ollamaModel,
+    providerOptions,
+    ollamaOptions,
+  } = options;
 
   try {
     const label = traceLabel ?? errorContext;
@@ -275,26 +348,47 @@ async function callLLMWithTrace(options: CallLLMOptions, trace: TraceCollector):
     for (let attempt = 1; attempt <= totalAllowedAttempts; attempt += 1) {
       const startedMs = Date.now();
       const attemptOpts: TracedAttemptOptions = {
-        systemPrompt, userPrompt, timeoutMs, errorContext, attempt, totalAttempts: totalAllowedAttempts,
+        systemPrompt,
+        userPrompt,
+        timeoutMs,
+        errorContext,
+        attempt,
+        totalAttempts: totalAllowedAttempts,
       };
       try {
         if (ollamaEndpoint) {
           const result = await executeOllamaAttempt(ollamaEndpoint, attemptOpts, ollamaOptions);
           responseText = result.text;
           telemetry = result.telemetry;
-          attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(startedMs + result.latencyMs), latencyMs: result.latencyMs });
+          attempts.push({
+            attempt,
+            startedAt: nowIso(startedMs),
+            endedAt: nowIso(startedMs + result.latencyMs),
+            latencyMs: result.latencyMs,
+          });
         } else {
           const result = await executeCloudAttempt(getModel, providerOptions, attemptOpts);
           responseText = result.text;
           telemetry = result.telemetry;
           if (result.modelId) provider = { ...provider, model: result.modelId };
-          attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(startedMs + result.latencyMs), latencyMs: result.latencyMs });
+          attempts.push({
+            attempt,
+            startedAt: nowIso(startedMs),
+            endedAt: nowIso(startedMs + result.latencyMs),
+            latencyMs: result.latencyMs,
+          });
         }
         break;
       } catch (error: unknown) {
         lastError = error;
         const endedMs = Date.now();
-        attempts.push({ attempt, startedAt: nowIso(startedMs), endedAt: nowIso(endedMs), latencyMs: endedMs - startedMs, error: buildAttemptError(normalizeTraceError(error)) });
+        attempts.push({
+          attempt,
+          startedAt: nowIso(startedMs),
+          endedAt: nowIso(endedMs),
+          latencyMs: endedMs - startedMs,
+          error: buildAttemptError(normalizeTraceError(error)),
+        });
         if (attempt >= totalAllowedAttempts) break;
       }
     }
@@ -305,12 +399,26 @@ async function callLLMWithTrace(options: CallLLMOptions, trace: TraceCollector):
       throw new AIGenerationError(`Empty response from AI model (${errorContext})`);
     }
 
-    const tracedProviderOptions = providerOptions ? (redactSecretsDeep(providerOptions) as Record<string, unknown>) : undefined;
+    const tracedProviderOptions = providerOptions
+      ? (redactSecretsDeep(providerOptions) as Record<string, unknown>)
+      : undefined;
     trace.addLLMCallEvent({
       label: truncateTextWithMarker(label, 160).text,
       provider,
-      request: { maxRetries: maxRetriesResolved, providerOptions: tracedProviderOptions, inputSummary: { messageCount: requestSummary.messageCount, totalChars: requestSummary.totalChars, preview: requestSummary.preview }, messages: requestSummary.messages },
-      response: { previewText: truncateTextWithMarker(redactSecretsInText(responseText), 900).text, rawText: truncateTextWithMarker(redactSecretsInText(responseText), 7000).text },
+      request: {
+        maxRetries: maxRetriesResolved,
+        providerOptions: tracedProviderOptions,
+        inputSummary: {
+          messageCount: requestSummary.messageCount,
+          totalChars: requestSummary.totalChars,
+          preview: requestSummary.preview,
+        },
+        messages: requestSummary.messages,
+      },
+      response: {
+        previewText: truncateTextWithMarker(redactSecretsInText(responseText), 900).text,
+        rawText: truncateTextWithMarker(redactSecretsInText(responseText), 7000).text,
+      },
       telemetry,
       attempts: attempts.length > 0 ? attempts : undefined,
     });
@@ -335,7 +443,7 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
  * Used when generating titles in Direct Mode to provide better context.
  */
 function inferMoodFromStyles(styles: string[]): string {
-  const stylesLower = styles.map(s => s.toLowerCase()).join(' ');
+  const stylesLower = styles.map((s) => s.toLowerCase()).join(' ');
 
   // Check for mood keywords in styles
   if (/(dark|heavy|intense|aggressive|brutal|chaotic|doom)/i.test(stylesLower)) {
@@ -364,7 +472,7 @@ function inferMoodFromStyles(styles: string[]): string {
 /**
  * Generate a title for Direct Mode (Suno V5 Styles).
  * Used by both Quick Vibes and Creative Boost engines.
- * 
+ *
  * @param description - User's description
  * @param styles - Suno V5 styles array
  * @param getModel - Function to get the language model
@@ -382,10 +490,10 @@ export async function generateDirectModeTitle(
 
     const cleanDescription = description.trim();
     const styleText = styles.join(', ');
-    
+
     // Infer mood from styles instead of hardcoding 'creative'
     const mood = inferMoodFromStyles(styles);
-    
+
     // Build enhanced description that includes all styles context
     const titleDescription = cleanDescription
       ? `${cleanDescription}\n\nSuno V5 styles: ${styleText}`
@@ -393,14 +501,14 @@ export async function generateDirectModeTitle(
 
     // Use first style as genre hint, but pass full context in description
     const genre = styles[0] || 'music';
-    
-    log.info('generateDirectModeTitle', { 
-      stylesCount: styles.length, 
-      inferredMood: mood, 
+
+    log.info('generateDirectModeTitle', {
+      stylesCount: styles.length,
+      inferredMood: mood,
       hasDescription: !!cleanDescription,
       offline: !!ollamaEndpoint,
     });
-    
+
     const result = await generateTitle({
       description: titleDescription,
       genre,

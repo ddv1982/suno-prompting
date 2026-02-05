@@ -21,7 +21,6 @@ import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-gener
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 
-
 import type { GenerateInitialOptions, TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
@@ -63,7 +62,12 @@ export async function generateWithLyrics(
   const ollamaEndpoint = useOffline ? config.getOllamaEndpoint() : undefined;
 
   // 1. Determine genre detection strategy (prioritizes description keywords over LLM topic detection)
-  const { descriptionGenre, willDetectFromTopic } = resolveGenreStrategy(genreOverride, description, lyricsTopic, trace);
+  const { descriptionGenre, willDetectFromTopic } = resolveGenreStrategy(
+    genreOverride,
+    description,
+    lyricsTopic,
+    trace
+  );
 
   // 2. Run thematic extraction and genre detection in parallel
   const [thematicContext, genreResult] = await Promise.all([
@@ -77,7 +81,15 @@ export async function generateWithLyrics(
   logThematicContext(thematicContext);
 
   // 3. Build prompt deterministically with thematic context
-  const promptText = buildPromptForMode(description, resolvedGenreOverride, lockedPhrase, config, rng, trace, thematicContext);
+  const promptText = buildPromptForMode(
+    description,
+    resolvedGenreOverride,
+    lockedPhrase,
+    config,
+    rng,
+    trace,
+    thematicContext
+  );
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
 
@@ -95,7 +107,17 @@ export async function generateWithLyrics(
       trace,
       traceLabel: 'title.generate',
     }),
-    generateLyrics(topic, genre, mood, config.isMaxMode(), getModelFn, config.getUseSunoTags(), undefined, ollamaEndpoint, { trace, traceLabel: 'lyrics.generate' }),
+    generateLyrics(
+      topic,
+      genre,
+      mood,
+      config.isMaxMode(),
+      getModelFn,
+      config.getUseSunoTags(),
+      undefined,
+      ollamaEndpoint,
+      { trace, traceLabel: 'lyrics.generate' }
+    ),
   ]);
 
   const title = cleanTitle(titleResult.title);

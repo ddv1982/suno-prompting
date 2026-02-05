@@ -30,8 +30,9 @@ const mockGenerateText = mock(async () => ({
 }));
 
 // Mock Ollama client for offline mode tests
-const mockGenerateWithOllama = mock(async () =>
-  'Ethereal synth pads float through the night at 120 BPM, driven by pulsing bass and shimmering arpeggios.'
+const mockGenerateWithOllama = mock(
+  async () =>
+    'Ethereal synth pads float through the night at 120 BPM, driven by pulsing bass and shimmering arpeggios.'
 );
 
 let generateStoryNarrative: typeof import('@bun/ai/story-generator').generateStoryNarrative;
@@ -78,7 +79,9 @@ function createMockStoryInput(overrides: Partial<StoryGenerationInput> = {}): St
   };
 }
 
-function createMockStoryOptions(overrides: Partial<StoryGenerationOptions> = {}): StoryGenerationOptions {
+function createMockStoryOptions(
+  overrides: Partial<StoryGenerationOptions> = {}
+): StoryGenerationOptions {
   return {
     input: createMockStoryInput(overrides.input as Partial<StoryGenerationInput>),
     getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as unknown,
@@ -120,7 +123,8 @@ describe('prependMaxHeaders', () => {
   });
 
   test('preserves narrative content exactly', () => {
-    const narrative = 'The song features [special] "characters" and newlines\nacross multiple lines.';
+    const narrative =
+      'The song features [special] "characters" and newlines\nacross multiple lines.';
     const result = prependMaxHeaders(narrative);
 
     expect(result).toContain(narrative);
@@ -469,7 +473,9 @@ describe('generateStoryNarrativeWithTimeout', () => {
 
 describe('STORY_GENERATION_SYSTEM_PROMPT', () => {
   test('includes task description', () => {
-    expect(STORY_GENERATION_SYSTEM_PROMPT).toContain('transform structured music data into evocative narrative prose');
+    expect(STORY_GENERATION_SYSTEM_PROMPT).toContain(
+      'transform structured music data into evocative narrative prose'
+    );
   });
 
   test('specifies output requirements', () => {

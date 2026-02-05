@@ -22,10 +22,10 @@ interface State {
 /**
  * Error boundary for individual panels/sections.
  * Catches errors within a panel without crashing the entire application.
- * 
+ *
  * Use this around major UI sections (prompt editor, history sidebar, etc.)
  * to provide graceful degradation when a section fails.
- * 
+ *
  * @example
  * <PanelErrorBoundary panelName="PromptEditor">
  *   <PromptEditor />

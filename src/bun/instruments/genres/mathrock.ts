@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const MATHROCK_GENRE: GenreDefinition = {
   name: 'Math Rock',
   keywords: ['math rock', 'math-rock', 'technical rock', 'progressive rock', 'odd time'],
-  description: 'Technical, complex rock with unconventional time signatures and intricate guitar work',
+  description:
+    'Technical, complex rock with unconventional time signatures and intricate guitar work',
   pools: {
     guitar: {
       pick: { min: 1, max: 2 },

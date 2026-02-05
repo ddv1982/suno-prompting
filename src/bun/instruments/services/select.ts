@@ -12,7 +12,6 @@ import { shuffle, randomIntInclusive, rollChance } from '@bun/instruments/servic
 import type { GenreType, InstrumentPool } from '@bun/instruments/genres';
 import type { Rng } from '@bun/instruments/services/random';
 
-
 export interface InstrumentSelectionOptions {
   readonly userInstruments?: readonly string[];
   readonly maxTags?: number;
@@ -96,7 +95,7 @@ function pickFromPool(
   if (count <= 0) return [];
 
   const source = candidatesOverride ?? pool.instruments;
-  const available = source.filter(token => !hasExclusion(selected, token, exclusionRules));
+  const available = source.filter((token) => !hasExclusion(selected, token, exclusionRules));
   const shuffled = shuffle(available, rng);
   return pickUniqueTokens(shuffled, selected, count, exclusionRules);
 }
@@ -112,7 +111,7 @@ function pickFromList(
   if (remainingSlots <= 0) return [];
   const count = computePickCount(desired, remainingSlots, rng);
   if (count <= 0) return [];
-  const available = candidates.filter(token => !hasExclusion(selected, token, exclusionRules));
+  const available = candidates.filter((token) => !hasExclusion(selected, token, exclusionRules));
   const shuffled = shuffle(available, rng);
   return pickUniqueTokens(shuffled, selected, count, exclusionRules);
 }
@@ -149,7 +148,7 @@ function selectFromPools(
 
     const candidatesOverride = allowOrchestralFromPools
       ? undefined
-      : pool.instruments.filter(i => !isOrchestralColorInstrument(i));
+      : pool.instruments.filter((i) => !isOrchestralColorInstrument(i));
 
     const picks = pickFromPool(
       pool,
@@ -175,7 +174,7 @@ function calculateQuotaTargets(
   const multiTarget = multiGenre.enabled
     ? randomIntInclusive(multiGenre.count.min, multiGenre.count.max, rng)
     : 0;
-  
+
   const foundationalTarget = foundational.enabled
     ? randomIntInclusive(foundational.count.min, foundational.count.max, rng)
     : 0;
@@ -204,7 +203,7 @@ function fillMissingQuotas(
   rng: Rng
 ): string[] {
   let result = [...selected];
-  
+
   const existingMulti = result.filter(isMultiGenreInstrument).length;
   const existingFoundational = result.filter(isFoundationalInstrument).length;
   const existingOrchestral = result.filter(isOrchestralColorInstrument).length;
@@ -215,24 +214,36 @@ function fillMissingQuotas(
 
   if (result.length < maxTags && missingMulti > 0) {
     const picks = pickFromList(
-      MULTIGENRE_INSTRUMENTS, result, maxTags - result.length,
-      { min: missingMulti, max: missingMulti }, exclusionRules, rng
+      MULTIGENRE_INSTRUMENTS,
+      result,
+      maxTags - result.length,
+      { min: missingMulti, max: missingMulti },
+      exclusionRules,
+      rng
     );
     result = [...result, ...picks].slice(0, maxTags);
   }
 
   if (result.length < maxTags && missingFoundational > 0) {
     const picks = pickFromList(
-      FOUNDATIONAL_INSTRUMENTS, result, maxTags - result.length,
-      { min: missingFoundational, max: missingFoundational }, exclusionRules, rng
+      FOUNDATIONAL_INSTRUMENTS,
+      result,
+      maxTags - result.length,
+      { min: missingFoundational, max: missingFoundational },
+      exclusionRules,
+      rng
     );
     result = [...result, ...picks].slice(0, maxTags);
   }
 
   if (result.length < maxTags && missingOrchestral > 0) {
     const picks = pickFromList(
-      ORCHESTRAL_COLOR_INSTRUMENTS, result, maxTags - result.length,
-      { min: missingOrchestral, max: missingOrchestral }, exclusionRules, rng
+      ORCHESTRAL_COLOR_INSTRUMENTS,
+      result,
+      maxTags - result.length,
+      { min: missingOrchestral, max: missingOrchestral },
+      exclusionRules,
+      rng
     );
     result = [...result, ...picks].slice(0, maxTags);
   }
@@ -259,11 +270,22 @@ export function selectInstrumentsForGenre(
   const allowOrchestralFromPools = isOrchestralGenre(genre) || userWantsOrchestral;
 
   const poolSelected = selectFromPools(
-    def.poolOrder, def.pools, userSelected, maxTags, exclusionRules, allowOrchestralFromPools, rng
+    def.poolOrder,
+    def.pools,
+    userSelected,
+    maxTags,
+    exclusionRules,
+    allowOrchestralFromPools,
+    rng
   );
 
   const targets = calculateQuotaTargets(
-    genre, multiGenre, foundational, orchestralColor, userWantsOrchestral, rng
+    genre,
+    multiGenre,
+    foundational,
+    orchestralColor,
+    userWantsOrchestral,
+    rng
   );
 
   return fillMissingQuotas(poolSelected, targets, maxTags, exclusionRules, rng);

@@ -3,10 +3,7 @@ export { GenerationProvider, useGenerationContext } from './generation-context';
 export type { GenerationContextType, GeneratingAction } from './types';
 
 // Individual context exports for advanced use cases
-export {
-  GenerationStateProvider,
-  useGenerationStateContext,
-} from './generation-state-context';
+export { GenerationStateProvider, useGenerationStateContext } from './generation-state-context';
 export {
   SessionOperationsProvider,
   useSessionOperationsContext,

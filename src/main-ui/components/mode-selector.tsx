@@ -1,9 +1,9 @@
-import { Zap, FileText, Dice3 } from "lucide-react";
+import { Zap, FileText, Dice3 } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
-import type { PromptMode } from "@shared/types";
-import type { ReactElement } from "react";
+import type { PromptMode } from '@shared/types';
+import type { ReactElement } from 'react';
 
 interface ModeSelectorProps {
   promptMode: PromptMode;
@@ -23,7 +23,9 @@ export function ModeSelector({ promptMode, onPromptModeChange }: ModeSelectorPro
         <Button
           variant={promptMode === 'full' ? 'default' : 'outline'}
           size="xs"
-          onClick={() => { onPromptModeChange('full'); }}
+          onClick={() => {
+            onPromptModeChange('full');
+          }}
           autoDisable
           className="font-semibold"
         >
@@ -33,7 +35,9 @@ export function ModeSelector({ promptMode, onPromptModeChange }: ModeSelectorPro
         <Button
           variant={promptMode === 'quickVibes' ? 'default' : 'outline'}
           size="xs"
-          onClick={() => { onPromptModeChange('quickVibes'); }}
+          onClick={() => {
+            onPromptModeChange('quickVibes');
+          }}
           autoDisable
           className="font-semibold"
         >
@@ -43,7 +47,9 @@ export function ModeSelector({ promptMode, onPromptModeChange }: ModeSelectorPro
         <Button
           variant={promptMode === 'creativeBoost' ? 'default' : 'outline'}
           size="xs"
-          onClick={() => { onPromptModeChange('creativeBoost'); }}
+          onClick={() => {
+            onPromptModeChange('creativeBoost');
+          }}
           autoDisable
           className="font-semibold"
         >
@@ -51,9 +57,7 @@ export function ModeSelector({ promptMode, onPromptModeChange }: ModeSelectorPro
           Creative Boost
         </Button>
       </div>
-      <p className="ui-helper ml-0.5">
-        {helperText[promptMode]}
-      </p>
+      <p className="ui-helper ml-0.5">{helperText[promptMode]}</p>
     </div>
   );
 }

@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const SHOEGAZE_GENRE: GenreDefinition = {
   name: 'Shoegaze',
   keywords: ['shoegaze', 'shoegazing', 'dreamy rock', 'wall of sound', 'noise pop'],
-  description: 'Hazy, ethereal rock with heavily effected guitars, dense layers, and obscured vocals',
+  description:
+    'Hazy, ethereal rock with heavily effected guitars, dense layers, and obscured vocals',
   pools: {
     guitar: {
       pick: { min: 1, max: 2 },

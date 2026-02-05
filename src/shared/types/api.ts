@@ -2,36 +2,41 @@
 
 import type { MoodCategory } from '@bun/mood';
 import type { AIProvider, APIKeys } from '@shared/types/config';
-import type { PromptSession, PromptMode, QuickVibesCategory, CreativeBoostMode } from '@shared/types/domain';
+import type {
+  PromptSession,
+  PromptMode,
+  QuickVibesCategory,
+  CreativeBoostMode,
+} from '@shared/types/domain';
 import type { TraceRun } from '@shared/types/trace';
 import type { ValidationResult } from '@shared/validation';
 
 // Generation endpoints
-export interface GenerateInitialParams { 
-  description: string; 
-  lockedPhrase?: string; 
+export interface GenerateInitialParams {
+  description: string;
+  lockedPhrase?: string;
   lyricsTopic?: string;
   genreOverride?: string;
   /** Suno V5 styles for Direct Mode (mutually exclusive with genreOverride) */
   sunoStyles?: string[];
 }
-export interface GenerateInitialResponse { 
+export interface GenerateInitialResponse {
   prompt: string;
   title?: string;
   lyrics?: string;
-  versionId: string; 
-  validation: ValidationResult; 
+  versionId: string;
+  validation: ValidationResult;
   debugTrace?: TraceRun;
   /** Flag indicating Story Mode fell back to deterministic output */
   storyModeFallback?: boolean;
 }
 
-export interface RefinePromptParams { 
-  currentPrompt: string; 
+export interface RefinePromptParams {
+  currentPrompt: string;
   /** Feedback text for lyrics refinement (optional for style-only refinement) */
-  feedback?: string; 
-  lockedPhrase?: string; 
-  currentTitle?: string; 
+  feedback?: string;
+  lockedPhrase?: string;
+  currentTitle?: string;
   currentLyrics?: string;
   lyricsTopic?: string;
   genreOverride?: string;
@@ -60,39 +65,90 @@ export interface RefinePromptParams {
     moodCategory?: string | null;
   };
 }
-export interface RefinePromptResponse { 
-  prompt: string; 
-  title?: string; 
-  lyrics?: string; 
-  versionId: string; 
-  validation: ValidationResult; 
+export interface RefinePromptResponse {
+  prompt: string;
+  title?: string;
+  lyrics?: string;
+  versionId: string;
+  validation: ValidationResult;
   debugTrace?: TraceRun;
 }
 
 // Remix endpoints
-export interface RemixInstrumentsParams { currentPrompt: string; originalInput: string }
-export interface RemixInstrumentsResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
+export interface RemixInstrumentsParams {
+  currentPrompt: string;
+  originalInput: string;
+}
+export interface RemixInstrumentsResponse {
+  prompt: string;
+  versionId: string;
+  validation: ValidationResult;
+  debugTrace?: TraceRun;
+}
 
-export interface RemixGenreParams { currentPrompt: string }
-export interface RemixGenreResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
+export interface RemixGenreParams {
+  currentPrompt: string;
+}
+export interface RemixGenreResponse {
+  prompt: string;
+  versionId: string;
+  validation: ValidationResult;
+  debugTrace?: TraceRun;
+}
 
-export interface RemixMoodParams { currentPrompt: string }
-export interface RemixMoodResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
+export interface RemixMoodParams {
+  currentPrompt: string;
+}
+export interface RemixMoodResponse {
+  prompt: string;
+  versionId: string;
+  validation: ValidationResult;
+  debugTrace?: TraceRun;
+}
 
-export interface RemixStyleTagsParams { currentPrompt: string }
-export interface RemixStyleTagsResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
+export interface RemixStyleTagsParams {
+  currentPrompt: string;
+}
+export interface RemixStyleTagsResponse {
+  prompt: string;
+  versionId: string;
+  validation: ValidationResult;
+  debugTrace?: TraceRun;
+}
 
-export interface RemixRecordingParams { currentPrompt: string }
-export interface RemixRecordingResponse { prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }
+export interface RemixRecordingParams {
+  currentPrompt: string;
+}
+export interface RemixRecordingResponse {
+  prompt: string;
+  versionId: string;
+  validation: ValidationResult;
+  debugTrace?: TraceRun;
+}
 
-export interface RemixTitleParams { currentPrompt: string; originalInput: string; currentLyrics?: string }
-export interface RemixTitleResponse { title: string; debugTrace?: TraceRun }
+export interface RemixTitleParams {
+  currentPrompt: string;
+  originalInput: string;
+  currentLyrics?: string;
+}
+export interface RemixTitleResponse {
+  title: string;
+  debugTrace?: TraceRun;
+}
 
-export interface RemixLyricsParams { currentPrompt: string; originalInput: string; lyricsTopic?: string }
-export interface RemixLyricsResponse { lyrics: string }
+export interface RemixLyricsParams {
+  currentPrompt: string;
+  originalInput: string;
+  lyricsTopic?: string;
+}
+export interface RemixLyricsResponse {
+  lyrics: string;
+}
 
 // Settings endpoints
-export interface SetDebugModeParams { debugMode: boolean }
+export interface SetDebugModeParams {
+  debugMode: boolean;
+}
 
 export interface SaveAllSettingsParams {
   provider: AIProvider;
@@ -119,28 +175,60 @@ export interface GetAllSettingsResponse {
 }
 
 // Session endpoints
-export interface GetHistoryResponse { sessions: PromptSession[] }
-export interface SaveSessionParams { session: PromptSession }
-export interface DeleteSessionParams { id: string }
+export interface GetHistoryResponse {
+  sessions: PromptSession[];
+}
+export interface SaveSessionParams {
+  session: PromptSession;
+}
+export interface DeleteSessionParams {
+  id: string;
+}
 
 // Simple settings endpoints
-export interface SetApiKeyParams { apiKey: string }
-export interface SetModelParams { model: string }
-export interface SetSunoTagsParams { useSunoTags: boolean }
-export interface SetMaxModeParams { maxMode: boolean }
-export interface SetLyricsModeParams { lyricsMode: boolean }
-export interface SetStoryModeParams { storyMode: boolean }
-export interface SetUseLocalLLMParams { useLocalLLM: boolean }
+export interface SetApiKeyParams {
+  apiKey: string;
+}
+export interface SetModelParams {
+  model: string;
+}
+export interface SetSunoTagsParams {
+  useSunoTags: boolean;
+}
+export interface SetMaxModeParams {
+  maxMode: boolean;
+}
+export interface SetLyricsModeParams {
+  lyricsMode: boolean;
+}
+export interface SetStoryModeParams {
+  storyMode: boolean;
+}
+export interface SetUseLocalLLMParams {
+  useLocalLLM: boolean;
+}
 
 // Quick Vibes endpoints
-export interface GetPromptModeResponse { promptMode: PromptMode }
-export interface SetPromptModeParams { promptMode: PromptMode }
-export interface SetPromptModeResponse { success: boolean }
+export interface GetPromptModeResponse {
+  promptMode: PromptMode;
+}
+export interface SetPromptModeParams {
+  promptMode: PromptMode;
+}
+export interface SetPromptModeResponse {
+  success: boolean;
+}
 
 // Creative Boost Mode endpoints
-export interface GetCreativeBoostModeResponse { creativeBoostMode: CreativeBoostMode }
-export interface SetCreativeBoostModeParams { creativeBoostMode: CreativeBoostMode }
-export interface SetCreativeBoostModeResponse { success: boolean }
+export interface GetCreativeBoostModeResponse {
+  creativeBoostMode: CreativeBoostMode;
+}
+export interface SetCreativeBoostModeParams {
+  creativeBoostMode: CreativeBoostMode;
+}
+export interface SetCreativeBoostModeResponse {
+  success: boolean;
+}
 
 export interface GenerateQuickVibesParams {
   category: QuickVibesCategory | null;
@@ -178,7 +266,9 @@ export interface RefineQuickVibesResponse {
 }
 
 // Max Mode Format Conversion
-export interface ConvertToMaxFormatParams { text: string }
+export interface ConvertToMaxFormatParams {
+  text: string;
+}
 export interface ConvertToMaxFormatResponse {
   convertedPrompt: string;
   wasConverted: boolean;
@@ -199,9 +289,9 @@ export interface GenerateCreativeBoostParams {
 }
 
 export interface GenerateCreativeBoostResponse {
-  prompt: string;              // Full style/genre description
-  title: string;               // Generated title
-  lyrics?: string;             // Generated lyrics (when withLyrics: true)
+  prompt: string; // Full style/genre description
+  title: string; // Generated title
+  lyrics?: string; // Generated lyrics (when withLyrics: true)
   versionId: string;
   debugTrace?: TraceRun;
   /** Flag indicating Story Mode fell back to deterministic output */

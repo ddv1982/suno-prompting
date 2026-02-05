@@ -23,8 +23,8 @@ const log = createLogger('CreativeBoostHelpers');
  */
 function selectRandomGenres(excludeGenres: string[], count: number): string[] {
   const allGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
-  const excludeSet = new Set(excludeGenres.map(g => g.toLowerCase()));
-  const available = allGenres.filter(g => !excludeSet.has(g.toLowerCase()));
+  const excludeSet = new Set(excludeGenres.map((g) => g.toLowerCase()));
+  const available = allGenres.filter((g) => !excludeSet.has(g.toLowerCase()));
 
   return selectRandomN(available, Math.min(count, available.length));
 }

@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const BLUEGRASS_GENRE: GenreDefinition = {
   name: 'Bluegrass',
   keywords: ['bluegrass', 'newgrass', 'progressive bluegrass', 'mountain music', 'appalachian'],
-  description: 'Traditional acoustic American music with virtuosic picking, harmonies, and driving rhythms',
+  description:
+    'Traditional acoustic American music with virtuosic picking, harmonies, and driving rhythms',
   pools: {
     strings: {
       pick: { min: 1, max: 2 },

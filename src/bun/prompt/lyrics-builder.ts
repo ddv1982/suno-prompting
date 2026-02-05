@@ -1,11 +1,11 @@
 import { getBackingVocalsForGenre } from '@bun/prompt/vocal-descriptors';
 
 export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags = false): string {
-  const maxModeInstructions = maxMode 
+  const maxModeInstructions = maxMode
     ? `CRITICAL REQUIREMENT: The VERY FIRST LINE of your output MUST be exactly:
 ///*****///
 
-Then continue with the lyrics on subsequent lines.` 
+Then continue with the lyrics on subsequent lines.`
     : '';
 
   const backingVocals = useSunoTags
@@ -98,13 +98,13 @@ OUTPUT ONLY THE LYRICS. No explanations, no titles, no additional text.`;
  * @returns Formatted user prompt string
  */
 export function buildLyricsUserPrompt(
-  description: string, 
-  genre: string, 
+  description: string,
+  genre: string,
   mood: string,
   useSunoTags = false
 ): string {
   let backingVocalGuidance = '';
-  
+
   if (useSunoTags) {
     const backingVocals = getBackingVocalsForGenre(genre);
     const wordlessExamples = backingVocals.wordless.slice(0, 3).join(', ');
@@ -151,7 +151,12 @@ CREATIVITY PRIORITY:
 3. Avoid clichéd music-related metaphors unless they serve the topic`;
 }
 
-export function buildTitleUserPrompt(description: string, genre: string, mood: string, lyrics?: string): string {
+export function buildTitleUserPrompt(
+  description: string,
+  genre: string,
+  mood: string,
+  lyrics?: string
+): string {
   const contextFooter = `Genre: ${genre}
 Mood: ${mood}
 

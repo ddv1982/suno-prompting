@@ -1,7 +1,7 @@
-import { Check, ChevronsUpDown } from "lucide-react";
-import * as React from "react";
+import { Check, ChevronsUpDown } from 'lucide-react';
+import * as React from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -9,16 +9,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useAutoDisable } from "@/hooks/use-auto-disable";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAutoDisable } from '@/hooks/use-auto-disable';
+import { cn } from '@/lib/utils';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface ComboboxProps {
   options: { value: string; label: string }[];
@@ -36,20 +32,20 @@ interface ComboboxProps {
    */
   autoDisable?: boolean;
   className?: string;
-  "aria-label"?: string;
+  'aria-label'?: string;
 }
 
 export function Combobox({
   options,
   value,
   onValueChange,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
-  emptyText = "No results found.",
+  placeholder = 'Select...',
+  searchPlaceholder = 'Search...',
+  emptyText = 'No results found.',
   disabled,
   autoDisable = false,
   className,
-  "aria-label": ariaLabel,
+  'aria-label': ariaLabel,
 }: ComboboxProps): ReactElement {
   const [open, setOpen] = React.useState(false);
   const isDisabled = useAutoDisable(disabled, autoDisable);
@@ -66,8 +62,8 @@ export function Combobox({
           aria-label={ariaLabel}
           disabled={isDisabled}
           className={cn(
-            "h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal",
-            !value && "text-muted-foreground",
+            'h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal',
+            !value && 'text-muted-foreground',
             className
           )}
         >
@@ -92,8 +88,8 @@ export function Combobox({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      'mr-2 h-4 w-4',
+                      value === option.value ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                   {option.label}

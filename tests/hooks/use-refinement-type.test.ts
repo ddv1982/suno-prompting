@@ -1,7 +1,12 @@
 import { describe, test, expect } from 'bun:test';
 
 import type { UseRefinementTypeInput } from '@/hooks/use-refinement-type';
-import type { RefinementType, StyleChanges, AdvancedSelection, OriginalAdvancedSelection } from '@shared/types';
+import type {
+  RefinementType,
+  StyleChanges,
+  AdvancedSelection,
+  OriginalAdvancedSelection,
+} from '@shared/types';
 
 /**
  * Test suite for useRefinementType hook.
@@ -110,7 +115,14 @@ function computeRefinementType(input: UseRefinementTypeInput): {
   refinementType: RefinementType;
   styleChanges: StyleChanges | undefined;
 } {
-  const { currentSelection, originalSelection, feedbackText, lyricsMode, hasCurrentPrompt, moodCategory } = input;
+  const {
+    currentSelection,
+    originalSelection,
+    feedbackText,
+    lyricsMode,
+    hasCurrentPrompt,
+    moodCategory,
+  } = input;
 
   // Not in refine mode - no refinement possible
   if (!hasCurrentPrompt) {
@@ -189,7 +201,6 @@ function createInput(overrides: TestInputOverrides = {}): UseRefinementTypeInput
 }
 
 describe('useRefinementType', () => {
-
   describe('when no current prompt (not in refine mode)', () => {
     test('returns "none" when no current prompt', () => {
       // Arrange
@@ -516,7 +527,9 @@ describe('detectStyleChanges helper', () => {
   }
 
   // Helper to create full OriginalAdvancedSelection with partial overrides
-  function createFullOriginal(partial: Partial<OriginalAdvancedSelection>): OriginalAdvancedSelection {
+  function createFullOriginal(
+    partial: Partial<OriginalAdvancedSelection>
+  ): OriginalAdvancedSelection {
     return {
       seedGenres: [],
       sunoStyles: [],
@@ -531,7 +544,10 @@ describe('detectStyleChanges helper', () => {
   }
 
   test('returns undefined when original is null', () => {
-    const result = detectStyleChanges(createFullSelection({ seedGenres: ['jazz'], sunoStyles: [] }), null);
+    const result = detectStyleChanges(
+      createFullSelection({ seedGenres: ['jazz'], sunoStyles: [] }),
+      null
+    );
     expect(result).toBeUndefined();
   });
 

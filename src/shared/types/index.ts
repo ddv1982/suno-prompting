@@ -2,14 +2,27 @@
 
 // Result types
 export type { Result } from '@shared/types/result';
-export { Ok, Err, ok, err, isOk, isErr, unwrap, unwrapOr, map, mapErr, tryCatch, tryCatchAsync } from '@shared/types/result';
+export {
+  Ok,
+  Err,
+  ok,
+  err,
+  isOk,
+  isErr,
+  unwrap,
+  unwrapOr,
+  map,
+  mapErr,
+  tryCatch,
+  tryCatchAsync,
+} from '@shared/types/result';
 
 // Config types
 export type { AIProvider, APIKeys, AppConfig, OllamaConfig } from '@shared/types/config';
 export { DEFAULT_API_KEYS } from '@shared/types/config';
 
 // Domain types
-export type { 
+export type {
   PromptMode,
   QuickVibesCategory,
   QuickVibesInput,
@@ -18,9 +31,9 @@ export type {
   CreativitySliderValue,
   EditorMode,
   CreativeBoostMode,
-  AdvancedSelection, 
-  PromptVersion, 
-  PromptSession, 
+  AdvancedSelection,
+  PromptVersion,
+  PromptSession,
   ConversionOptions,
 } from '@shared/types/domain';
 export { EMPTY_ADVANCED_SELECTION, EMPTY_CREATIVE_BOOST_INPUT } from '@shared/types/domain';

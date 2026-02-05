@@ -66,17 +66,16 @@ export function escapeRegExp(str: string): string {
 export function replaceCountMarker(readme: string, marker: string, value: number): string {
   const startTag = `<!-- ${marker} -->`;
   const endTag = `<!-- /${marker} -->`;
-  const pattern = new RegExp(
-    `${escapeRegExp(startTag)}\\d+${escapeRegExp(endTag)}`,
-    'g',
-  );
+  const pattern = new RegExp(`${escapeRegExp(startTag)}\\d+${escapeRegExp(endTag)}`, 'g');
 
   const replacement = `${startTag}${value}${endTag}`;
   const result = readme.replace(pattern, replacement);
 
   // Validate marker was found
   if (result === readme && !readme.includes(replacement)) {
-    throw new Error(`Marker ${marker} not found in README. Expected pattern: ${startTag}N${endTag}`);
+    throw new Error(
+      `Marker ${marker} not found in README. Expected pattern: ${startTag}N${endTag}`
+    );
   }
 
   return result;
@@ -137,7 +136,7 @@ export function replaceGenrePrioritySection(readme: string, markdown: string): s
 
   if (start === -1 || end === -1 || end < start) {
     throw new Error(
-      `README is missing genre priority markers. Expected ${GENRE_PRIORITY_START} ... ${GENRE_PRIORITY_END}`,
+      `README is missing genre priority markers. Expected ${GENRE_PRIORITY_START} ... ${GENRE_PRIORITY_END}`
     );
   }
 
@@ -161,18 +160,18 @@ function listGenreInstruments(genre: GenreDefinition, options: Options): string[
   const { includeOptionalPools } = options;
 
   const requiredPools = genre.poolOrder
-    .map(k => genre.pools[k])
+    .map((k) => genre.pools[k])
     .filter((p): p is InstrumentPool => Boolean(p))
     .filter(isRequiredPool);
 
-  const requiredInstruments = uniqueInOrder(requiredPools.flatMap(p => p.instruments));
+  const requiredInstruments = uniqueInOrder(requiredPools.flatMap((p) => p.instruments));
   const picked: string[] = [...requiredInstruments];
 
   if (includeOptionalPools) {
     const optionalPools = genre.poolOrder
-      .map(k => genre.pools[k])
+      .map((k) => genre.pools[k])
       .filter((p): p is InstrumentPool => Boolean(p))
-      .filter(p => !isRequiredPool(p))
+      .filter((p) => !isRequiredPool(p))
       .sort((a, b) => poolWeight(b) - poolWeight(a));
 
     for (const pool of optionalPools) {
@@ -207,7 +206,7 @@ export function replaceGenreTableSection(readme: string, tableMarkdown: string):
 
   if (start === -1 || end === -1 || end < start) {
     throw new Error(
-      `README is missing genre table markers. Expected ${GENRE_TABLE_START} ... ${GENRE_TABLE_END}`,
+      `README is missing genre table markers. Expected ${GENRE_TABLE_START} ... ${GENRE_TABLE_END}`
     );
   }
 
@@ -233,7 +232,7 @@ export function replaceInstrumentClassesSection(readme: string, markdown: string
 
   if (start === -1 || end === -1 || end < start) {
     throw new Error(
-      `README is missing instrument classes markers. Expected ${INSTRUMENT_CLASSES_START} ... ${INSTRUMENT_CLASSES_END}`,
+      `README is missing instrument classes markers. Expected ${INSTRUMENT_CLASSES_START} ... ${INSTRUMENT_CLASSES_END}`
     );
   }
 

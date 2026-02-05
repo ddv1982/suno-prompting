@@ -8,7 +8,6 @@ import { mapToRpcError, type RpcError } from './errors';
 import type { SunoRPCSchema } from '@shared/types';
 import type { Result } from '@shared/types/result';
 
-
 const rpc = Electroview.defineRPC<SunoRPCSchema>({
   maxRequestTime: APP_CONSTANTS.AI.TIMEOUT_MS,
   handlers: {
@@ -30,13 +29,14 @@ export async function request<M extends RequestMethod>(
 ): Promise<Result<ResponseOf<M>, RpcError>> {
   try {
     // Electrobun RPC is dynamically keyed: rpc.request[method](params)
-    const fn = (rpc.request as Record<string, (p: unknown) => Promise<unknown>>)[
-      method as string
-    ];
+    const fn = (rpc.request as Record<string, (p: unknown) => Promise<unknown>>)[method as string];
 
     if (typeof fn !== 'function') {
       return Err(
-        mapToRpcError({ status: 404, message: 'RPC method not found' }, { method: method as string })
+        mapToRpcError(
+          { status: 404, message: 'RPC method not found' },
+          { method: method as string }
+        )
       );
     }
 

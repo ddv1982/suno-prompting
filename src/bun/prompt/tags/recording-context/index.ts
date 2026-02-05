@@ -1,9 +1,9 @@
 /**
  * Recording context descriptors and genre-specific recording environments
- * 
+ *
  * This module provides conflict-free recording descriptor selection with
  * genre-aware intelligence to ensure musically coherent combinations.
- * 
+ *
  * @module prompt/tags/recording-context
  */
 

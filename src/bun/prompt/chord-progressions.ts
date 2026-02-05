@@ -66,7 +66,7 @@ const POP_PROGRESSIONS: Record<string, ChordProgression> = {
     numerals: 'I - V - vi - iii',
     mood: ['cheerful', 'playful', 'nostalgic', 'uplifting'],
     genres: ['pop', 'rock', 'folk', 'classical'],
-    description: 'Based on Pachelbel\'s Canon - elegant and flowing',
+    description: "Based on Pachelbel's Canon - elegant and flowing",
   },
   the_empowerment: {
     name: 'The Empowerment Anthem',
@@ -263,7 +263,14 @@ export const ALL_PROGRESSIONS: Record<string, ChordProgression> = {
 
 // Genre to progression mapping
 export const GENRE_PROGRESSIONS: Record<string, readonly string[]> = {
-  jazz: ['the_two_five_one', 'the_turnaround', 'the_bossa', 'the_soul_vamp', 'the_smooth', 'the_lydian'],
+  jazz: [
+    'the_two_five_one',
+    'the_turnaround',
+    'the_bossa',
+    'the_soul_vamp',
+    'the_smooth',
+    'the_lydian',
+  ],
   pop: ['the_standard', 'the_sensitive', 'the_doo_wop', 'the_empowerment', 'the_canon'],
   rock: ['the_rock_and_roll', 'the_standard', 'the_creep', 'the_sensitive', 'the_dramatic_minor'],
   electronic: ['the_minor_pop', 'the_sad_loop', 'the_suspense', 'the_phrygian'],
@@ -290,7 +297,7 @@ export const GENRE_PROGRESSIONS: Record<string, readonly string[]> = {
 export function getProgressionsForGenre(genre: string): ChordProgression[] {
   const progressionKeys = GENRE_PROGRESSIONS[genre.toLowerCase()] ?? GENRE_PROGRESSIONS.pop ?? [];
   return progressionKeys
-    .map(key => ALL_PROGRESSIONS[key])
+    .map((key) => ALL_PROGRESSIONS[key])
     .filter((p): p is ChordProgression => p !== undefined);
 }
 
@@ -316,19 +323,13 @@ export function getRandomProgressionForGenre(
 }
 
 // Build chord progression descriptor string (full format with description)
-export function buildProgressionDescriptor(
-  genre: string,
-  rng: () => number = Math.random
-): string {
+export function buildProgressionDescriptor(genre: string, rng: () => number = Math.random): string {
   const progression = getRandomProgressionForGenre(genre, rng);
   return `${progression.name} (${progression.pattern}): ${progression.description}`;
 }
 
 // Build short chord progression string for instruments field (name + pattern only)
-export function buildProgressionShort(
-  genre: string,
-  rng: () => number = Math.random
-): string {
+export function buildProgressionShort(genre: string, rng: () => number = Math.random): string {
   const progression = getRandomProgressionForGenre(genre, rng);
   return `${progression.name} (${progression.pattern})`;
 }
@@ -352,13 +353,13 @@ const PROGRESSION_PATTERNS: readonly ProgressionPattern[] = [
 // Detect if description mentions a specific progression
 export function detectProgression(description: string): ChordProgression | null {
   const lower = description.toLowerCase();
-  
+
   for (const pattern of PROGRESSION_PATTERNS) {
-    if (pattern.keywords.some(keyword => lower.includes(keyword))) {
+    if (pattern.keywords.some((keyword) => lower.includes(keyword))) {
       return ALL_PROGRESSIONS[pattern.progressionKey] ?? null;
     }
   }
-  
+
   return null;
 }
 
@@ -371,12 +372,12 @@ function hasChordProgression(prompt: string): boolean {
 /**
  * Inject chord progression into instruments field if not already present.
  * Only applies to max mode format (quoted instruments field).
- * 
+ *
  * @param prompt - The full prompt text
  * @param genre - Genre to select progression from
  * @param rng - Optional random number generator for deterministic testing
  * @returns Modified prompt with chord progression injected
- * 
+ *
  * @example
  * const result = injectChordProgression(prompt, 'jazz');
  * // instruments: "piano, bass" → instruments: "piano, bass, The 2-5-1 (ii-V-I) harmony"
@@ -393,11 +394,11 @@ export function injectChordProgression(
   const progression = getRandomProgressionForGenre(genre, rng);
   const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
 
-  const quotedMatch = /^(instruments:\s*")([^"]*)"/mi.exec(prompt);
+  const quotedMatch = /^(instruments:\s*")([^"]*)"/im.exec(prompt);
   if (quotedMatch) {
     const existing = quotedMatch[2]?.trim();
     const newValue = existing ? `${existing}, ${harmonyTag}` : harmonyTag;
-    return prompt.replace(/^(instruments:\s*")[^"]*"/mi, `$1${newValue}"`);
+    return prompt.replace(/^(instruments:\s*")[^"]*"/im, `$1${newValue}"`);
   }
 
   return prompt;

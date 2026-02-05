@@ -15,10 +15,10 @@ const SPECIAL_CASES: Record<string, string> = {
   'j-pop': 'J-Pop',
   'g-funk': 'G-Funk',
   'p-funk': 'P-Funk',
-  'edm': 'EDM',
+  edm: 'EDM',
   'nu-disco': 'Nu-Disco',
-  'uk': 'UK',
-  'dnb': 'DnB',
+  uk: 'UK',
+  dnb: 'DnB',
 };
 
 /**

@@ -1,10 +1,10 @@
-import { BookOpen, FileText, Zap } from "lucide-react";
+import { BookOpen, FileText, Zap } from 'lucide-react';
 
-import { LLMUnavailableNotice } from "@/components/shared";
-import { ToggleRow } from "@/components/ui/toggle-row";
-import { getMaxModeHelperText, getStoryModeHelperText } from "@shared/constants";
+import { LLMUnavailableNotice } from '@/components/shared';
+import { ToggleRow } from '@/components/ui/toggle-row';
+import { getMaxModeHelperText, getStoryModeHelperText } from '@shared/constants';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface TogglesSectionProps {
   maxMode: boolean;
@@ -61,10 +61,9 @@ export function TogglesSection({
       <p className="ui-helper pl-6">
         {lyricsMode
           ? isDirectMode
-            ? "Will generate lyrics based on selected styles (no Max Mode header)."
-            : "Will generate lyrics based on genre and topic."
-          : "Instrumental output - no vocals."
-        }
+            ? 'Will generate lyrics based on selected styles (no Max Mode header).'
+            : 'Will generate lyrics based on genre and topic.'
+          : 'Instrumental output - no vocals.'}
       </p>
     </div>
   );

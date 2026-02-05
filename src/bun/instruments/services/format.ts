@@ -20,10 +20,22 @@ import {
   getBlendedTimeSignature,
   getBlendedPolyrhythm,
 } from '@bun/instruments/genres/mappings';
-import { HARMONIC_STYLES, ALL_COMBINATIONS, selectInstrumentsForMode } from '@bun/instruments/modes';
-import { ALL_POLYRHYTHM_COMBINATIONS, POLYRHYTHMS, TIME_SIGNATURES, TIME_SIGNATURE_JOURNEYS } from '@bun/instruments/rhythms';
+import {
+  HARMONIC_STYLES,
+  ALL_COMBINATIONS,
+  selectInstrumentsForMode,
+} from '@bun/instruments/modes';
+import {
+  ALL_POLYRHYTHM_COMBINATIONS,
+  POLYRHYTHMS,
+  TIME_SIGNATURES,
+  TIME_SIGNATURE_JOURNEYS,
+} from '@bun/instruments/rhythms';
 import { shuffle, pickRandom } from '@bun/instruments/services/random';
-import { selectInstrumentsForGenre, type InstrumentSelectionOptions } from '@bun/instruments/services/select';
+import {
+  selectInstrumentsForGenre,
+  type InstrumentSelectionOptions,
+} from '@bun/instruments/services/select';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
@@ -34,7 +46,11 @@ import { APP_CONSTANTS } from '@shared/constants';
 import type { RhythmicStyle } from '@bun/instruments/datasets/rhythm';
 import type { GenreType } from '@bun/instruments/genres';
 import type { HarmonicStyle, CombinationType } from '@bun/instruments/modes';
-import type { PolyrhythmCombinationType, TimeSignatureType, TimeSignatureJourneyType } from '@bun/instruments/rhythms';
+import type {
+  PolyrhythmCombinationType,
+  TimeSignatureType,
+  TimeSignatureJourneyType,
+} from '@bun/instruments/rhythms';
 import type { Rng } from '@bun/instruments/services/random';
 
 export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random): string {
@@ -47,7 +63,7 @@ export function getHarmonicGuidance(style: HarmonicStyle, rng: Rng = Math.random
     s.description,
     `Chord: ${s.chordType}`,
     `Formula: ${s.formula}`,
-    ...chars.map(c => `- ${c}`),
+    ...chars.map((c) => `- ${c}`),
     `Suggested Progression: ${String(prog)}`,
     `Examples: ${s.keyExamples}`,
   ];
@@ -69,7 +85,7 @@ export function getRhythmicGuidance(style: RhythmicStyle, rng: Rng = Math.random
     s.description,
     `Common ratios: ${s.commonRatios}`,
     `Suggested elements: ${s.instruments}`,
-    ...chars.map(c => `- ${c}`),
+    ...chars.map((c) => `- ${c}`),
   ].join('\n');
 }
 
@@ -77,11 +93,7 @@ export function getCombinationGuidance(combo: CombinationType, rng: Rng = Math.r
   const c = ALL_COMBINATIONS[combo];
   const progs = shuffle([...c.progressions], rng).slice(0, 3);
 
-  const lines = [
-    `MODAL COMBINATION: ${c.name}`,
-    c.description,
-    '',
-  ];
+  const lines = [`MODAL COMBINATION: ${c.name}`, c.description, ''];
 
   if ('sectionGuide' in c && c.sectionGuide) {
     lines.push('SECTION GUIDE:');
@@ -106,7 +118,7 @@ export function getCombinationGuidance(combo: CombinationType, rng: Rng = Math.r
   }
 
   lines.push('Suggested progressions:');
-  lines.push(...progs.map(p => `- ${p}`));
+  lines.push(...progs.map((p) => `- ${p}`));
 
   if ('famousExamples' in c && c.famousExamples) {
     lines.push('');
@@ -122,12 +134,7 @@ export function getCombinationGuidance(combo: CombinationType, rng: Rng = Math.r
 export function getPolyrhythmCombinationGuidance(combo: PolyrhythmCombinationType): string {
   const c = ALL_POLYRHYTHM_COMBINATIONS[combo];
 
-  const lines = [
-    `POLYRHYTHM COMBINATION: ${c.name}`,
-    c.description,
-    '',
-    'SECTION GUIDE:',
-  ];
+  const lines = [`POLYRHYTHM COMBINATION: ${c.name}`, c.description, '', 'SECTION GUIDE:'];
 
   const guide = c.sectionGuide;
   if ('chorus' in guide && 'bridgeOutro' in guide) {
@@ -161,7 +168,7 @@ export function getTimeSignatureGuidance(sig: TimeSignatureType, rng: Rng = Math
     `Grouping: ${String(grouping)}`,
     '',
     'Characteristics:',
-    ...chars.map(c => `- ${c}`),
+    ...chars.map((c) => `- ${c}`),
   ];
 
   if (s.famousExamples.length > 0) {
@@ -178,12 +185,7 @@ export function getTimeSignatureGuidance(sig: TimeSignatureType, rng: Rng = Math
 export function getTimeSignatureJourneyGuidance(journey: TimeSignatureJourneyType): string {
   const j = TIME_SIGNATURE_JOURNEYS[journey];
 
-  const lines = [
-    `TIME SIGNATURE JOURNEY: ${j.name}`,
-    j.description,
-    '',
-    'SECTION GUIDE:',
-  ];
+  const lines = [`TIME SIGNATURE JOURNEY: ${j.name}`, j.description, '', 'SECTION GUIDE:'];
 
   const guide = j.sectionGuide as {
     introVerse: string;
@@ -256,20 +258,20 @@ export function getGenreInstruments(
 
   if (userSelected.length > 0) {
     lines.push('User specified (MUST use):');
-    lines.push(...userSelected.map(t => `- ${t}`));
+    lines.push(...userSelected.map((t) => `- ${t}`));
   }
 
   // Apply articulations to suggested instruments
   const suggested = selected
-    .filter(t => !userSelected.includes(t))
-    .map(t => articulateInstrument(t, rng, APP_CONSTANTS.ARTICULATION_CHANCE));
-    
+    .filter((t) => !userSelected.includes(t))
+    .map((t) => articulateInstrument(t, rng, APP_CONSTANTS.ARTICULATION_CHANCE));
+
   if (suggested.length > 0) {
     if (userSelected.length > 0) {
       lines.push('');
       lines.push('Suggested additions:');
     }
-    lines.push(...suggested.map(t => `- ${t}`));
+    lines.push(...suggested.map((t) => `- ${t}`));
   }
 
   return lines.join('\n');

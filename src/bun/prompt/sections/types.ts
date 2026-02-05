@@ -7,7 +7,11 @@
  */
 
 import type { GenreType } from '@bun/instruments/genres';
-import type { Contrast, Dynamics, SectionType as SchemaSectionType } from '@shared/schemas/thematic-context';
+import type {
+  Contrast,
+  Dynamics,
+  SectionType as SchemaSectionType,
+} from '@shared/schemas/thematic-context';
 
 /**
  * Section types available for prompt generation.

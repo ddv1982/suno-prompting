@@ -32,14 +32,27 @@ function buildCreativeBoostConfig(generationConfig: GenerationConfig): CreativeB
 /** Create Creative Boost methods bound to configuration. */
 export function createCreativeBoostMethods(factories: ConfigFactories): {
   generateCreativeBoost: (
-    creativityLevel: number, seedGenres: string[], sunoStyles: string[], description: string,
-    lyricsTopic: string, maxMode: boolean, withLyrics: boolean,
+    creativityLevel: number,
+    seedGenres: string[],
+    sunoStyles: string[],
+    description: string,
+    lyricsTopic: string,
+    maxMode: boolean,
+    withLyrics: boolean,
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
   refineCreativeBoost: (
-    currentPrompt: string, currentTitle: string, currentLyrics: string | undefined, feedback: string,
-    lyricsTopic: string, description: string, seedGenres: string[], sunoStyles: string[],
-    maxMode: boolean, withLyrics: boolean, targetGenreCount?: number,
+    currentPrompt: string,
+    currentTitle: string,
+    currentLyrics: string | undefined,
+    feedback: string,
+    lyricsTopic: string,
+    description: string,
+    seedGenres: string[],
+    sunoStyles: string[],
+    maxMode: boolean,
+    withLyrics: boolean,
+    targetGenreCount?: number,
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
 } {
@@ -47,23 +60,61 @@ export function createCreativeBoostMethods(factories: ConfigFactories): {
 
   return {
     async generateCreativeBoost(
-      creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-      maxMode, withLyrics, runtime
+      creativityLevel,
+      seedGenres,
+      sunoStyles,
+      description,
+      lyricsTopic,
+      maxMode,
+      withLyrics,
+      runtime
     ) {
-      return generateCreativeBoostImpl({
-        creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-        maxMode, withLyrics, config: boostConfig,
-      }, runtime);
+      return generateCreativeBoostImpl(
+        {
+          creativityLevel,
+          seedGenres,
+          sunoStyles,
+          description,
+          lyricsTopic,
+          maxMode,
+          withLyrics,
+          config: boostConfig,
+        },
+        runtime
+      );
     },
 
     async refineCreativeBoost(
-      currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
-      seedGenres, sunoStyles, maxMode, withLyrics, targetGenreCount, runtime
+      currentPrompt,
+      currentTitle,
+      currentLyrics,
+      feedback,
+      lyricsTopic,
+      description,
+      seedGenres,
+      sunoStyles,
+      maxMode,
+      withLyrics,
+      targetGenreCount,
+      runtime
     ) {
-      return refineCreativeBoostImpl({
-        currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
-        seedGenres, sunoStyles, maxMode, withLyrics, targetGenreCount, config: boostConfig,
-      }, runtime);
+      return refineCreativeBoostImpl(
+        {
+          currentPrompt,
+          currentTitle,
+          currentLyrics,
+          feedback,
+          lyricsTopic,
+          description,
+          seedGenres,
+          sunoStyles,
+          maxMode,
+          withLyrics,
+          targetGenreCount,
+          config: boostConfig,
+        },
+        runtime
+      );
     },
   };
 }

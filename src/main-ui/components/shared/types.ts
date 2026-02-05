@@ -4,7 +4,7 @@
  * @module components/shared/types
  */
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 /**
  * Common props for submit buttons across panels.

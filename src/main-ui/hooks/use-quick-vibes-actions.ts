@@ -31,88 +31,103 @@ export interface QuickVibesActionsResult {
 }
 
 export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibesActionsResult {
-  const {
-    isGenerating,
-    currentSession,
-    setPendingInput,
-    getQuickVibesInput,
-    showToast,
-  } = config;
+  const { isGenerating, currentSession, setPendingInput, getQuickVibesInput, showToast } = config;
 
   const sessionDeps = useMemo(() => createSessionDeps(config, log), [config]);
   const { execute } = useGenerationAction(config);
 
-  const handleGenerateQuickVibes = useCallback(async (
-    category: QuickVibesCategory | null,
-    customDescription: string,
-    sunoStyles: string[] = [],
-    moodCategory: MoodCategory | null = null
-  ) => {
-    const originalInput = sunoStyles.length > 0
-      ? `[Suno V5] ${sunoStyles.join(', ')}`
-      : [category ? `[${category}]` : null, customDescription || null]
-          .filter(Boolean).join(' ') || 'Quick Vibes';
+  const handleGenerateQuickVibes = useCallback(
+    async (
+      category: QuickVibesCategory | null,
+      customDescription: string,
+      sunoStyles: string[] = [],
+      moodCategory: MoodCategory | null = null
+    ) => {
+      const originalInput =
+        sunoStyles.length > 0
+          ? `[Suno V5] ${sunoStyles.join(', ')}`
+          : [category ? `[${category}]` : null, customDescription || null]
+              .filter(Boolean)
+              .join(' ') || 'Quick Vibes';
 
-    await execute(
-      {
-        action: 'quickVibes',
-        apiCall: async () => {
-          const result = await rpcClient.generateQuickVibes({ category, customDescription, sunoStyles, moodCategory });
-          if (!result.ok) throw new Error(formatRpcError(result.error));
-          return result.value;
+      await execute(
+        {
+          action: 'quickVibes',
+          apiCall: async () => {
+            const result = await rpcClient.generateQuickVibes({
+              category,
+              customDescription,
+              sunoStyles,
+              moodCategory,
+            });
+            if (!result.ok) throw new Error(formatRpcError(result.error));
+            return result.value;
+          },
+          originalInput,
+          promptMode: 'quickVibes',
+          modeInput: { quickVibesInput: { category, customDescription, sunoStyles, moodCategory } },
+          successMessage: 'Quick Vibes prompt generated.',
+          errorContext: 'generate Quick Vibes',
+          log,
+          onSuccess: () => {
+            showToast('Quick Vibes generated!', 'success');
+          },
         },
-        originalInput,
-        promptMode: 'quickVibes',
-        modeInput: { quickVibesInput: { category, customDescription, sunoStyles, moodCategory } },
-        successMessage: "Quick Vibes prompt generated.",
-        errorContext: "generate Quick Vibes",
-        log,
-        onSuccess: () => { showToast('Quick Vibes generated!', 'success'); },
-      },
-      sessionDeps
-    );
-  }, [execute, sessionDeps, showToast]);
+        sessionDeps
+      );
+    },
+    [execute, sessionDeps, showToast]
+  );
 
   const handleRemixQuickVibes = useCallback(async () => {
     if (isGenerating) return;
     if (!currentSession?.quickVibesInput) return;
 
-    const { category, customDescription, sunoStyles: storedSunoStyles } = currentSession.quickVibesInput;
+    const {
+      category,
+      customDescription,
+      sunoStyles: storedSunoStyles,
+    } = currentSession.quickVibesInput;
     await handleGenerateQuickVibes(category, customDescription, storedSunoStyles ?? []);
   }, [isGenerating, currentSession, handleGenerateQuickVibes]);
 
-  const handleRefineQuickVibes = useCallback(async (input: string): Promise<boolean> => {
-    if (!currentSession?.currentPrompt) return false;
+  const handleRefineQuickVibes = useCallback(
+    async (input: string): Promise<boolean> => {
+      if (!currentSession?.currentPrompt) return false;
 
-    const uiInput = getQuickVibesInput();
+      const uiInput = getQuickVibesInput();
 
-    return execute(
-      {
-        action: 'quickVibes',
-        apiCall: async () => {
-          const result = await rpcClient.refineQuickVibes({
-            currentPrompt: currentSession.currentPrompt,
-            currentTitle: currentSession.currentTitle,
-            description: uiInput.customDescription,
-            feedback: input,
-            category: uiInput.category,
-            sunoStyles: uiInput.sunoStyles,
-          });
-          if (!result.ok) throw new Error(formatRpcError(result.error));
-          return result.value;
+      return execute(
+        {
+          action: 'quickVibes',
+          apiCall: async () => {
+            const result = await rpcClient.refineQuickVibes({
+              currentPrompt: currentSession.currentPrompt,
+              currentTitle: currentSession.currentTitle,
+              description: uiInput.customDescription,
+              feedback: input,
+              category: uiInput.category,
+              sunoStyles: uiInput.sunoStyles,
+            });
+            if (!result.ok) throw new Error(formatRpcError(result.error));
+            return result.value;
+          },
+          originalInput: currentSession.originalInput || '',
+          promptMode: 'quickVibes',
+          modeInput: { quickVibesInput: uiInput },
+          successMessage: 'Quick Vibes prompt refined.',
+          feedback: input,
+          errorContext: 'refine Quick Vibes',
+          log,
+          onSuccess: () => {
+            setPendingInput('');
+          },
         },
-        originalInput: currentSession.originalInput || '',
-        promptMode: 'quickVibes',
-        modeInput: { quickVibesInput: uiInput },
-        successMessage: "Quick Vibes prompt refined.",
-        feedback: input,
-        errorContext: "refine Quick Vibes",
-        log,
-        onSuccess: () => { setPendingInput(""); },
-      },
-      sessionDeps
-    );
-  }, [execute, sessionDeps, getQuickVibesInput, currentSession, setPendingInput]);
+        sessionDeps
+      );
+    },
+    [execute, sessionDeps, getQuickVibesInput, currentSession, setPendingInput]
+  );
 
   return {
     handleGenerateQuickVibes,

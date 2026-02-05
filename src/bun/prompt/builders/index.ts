@@ -1,9 +1,9 @@
 /**
  * Prompt builders for Suno V5
- * 
+ *
  * Re-exports all builder functions for backward compatibility.
  * This barrel export maintains the original @bun/prompt/builders import path.
- * 
+ *
  * @module prompt/builders
  */
 

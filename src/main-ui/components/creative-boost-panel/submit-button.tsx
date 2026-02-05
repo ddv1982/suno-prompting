@@ -1,8 +1,8 @@
-import { Dice3, Zap } from "lucide-react";
+import { Dice3, Zap } from 'lucide-react';
 
-import { PanelSubmitButton } from "@/components/shared";
+import { PanelSubmitButton } from '@/components/shared';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface SubmitButtonProps {
   isGenerating: boolean;

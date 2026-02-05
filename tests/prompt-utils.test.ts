@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'bun:test';
 
 import { MAX_MODE_HEADER, MAX_MODE_TAGS_HEADER, isMaxFormat } from '../src/shared/max-format';
-import { cleanJsonResponse, stripMaxModeHeader, isStructuredPrompt, detectRemixableFields } from '../src/shared/prompt-utils';
+import {
+  cleanJsonResponse,
+  stripMaxModeHeader,
+  isStructuredPrompt,
+  detectRemixableFields,
+} from '../src/shared/prompt-utils';
 
 // ============================================================================
 // Test Fixtures
@@ -147,7 +152,9 @@ describe('isStructuredPrompt', () => {
     });
 
     it('returns false for longer description', () => {
-      expect(isStructuredPrompt('I want a melancholic ballad about lost love in the style of 80s pop')).toBe(false);
+      expect(
+        isStructuredPrompt('I want a melancholic ballad about lost love in the style of 80s pop')
+      ).toBe(false);
     });
 
     it('returns false for description with genre word but not as field', () => {
@@ -426,7 +433,8 @@ Instruments: guitar, drums`;
 
   describe('narrative prose (Story Mode)', () => {
     it('returns all false for narrative prose', () => {
-      const narrative = 'A dreamy lo-fi track with warm synthesizers floating over a gentle drum pattern, perfect for late-night study sessions.';
+      const narrative =
+        'A dreamy lo-fi track with warm synthesizers floating over a gentle drum pattern, perfect for late-night study sessions.';
       const result = detectRemixableFields(narrative);
       expect(result.hasGenre).toBe(false);
       expect(result.hasMood).toBe(false);

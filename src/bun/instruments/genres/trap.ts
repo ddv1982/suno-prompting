@@ -3,8 +3,14 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const TRAP_GENRE: GenreDefinition = {
   name: 'Trap',
   keywords: [
-    'trap', 'dark trap', 'emo rap', 'cloud rap', 'cinematic trap',
-    'trap soul', 'melodic trap', 'phonk',
+    'trap',
+    'dark trap',
+    'emo rap',
+    'cloud rap',
+    'cinematic trap',
+    'trap soul',
+    'melodic trap',
+    'phonk',
   ],
   description: 'Heavy bass-driven music with rolling hi-hats, 808s, and atmospheric dark textures',
   pools: {
@@ -39,5 +45,15 @@ export const TRAP_GENRE: GenreDefinition = {
     ['synth pad', 'ambient pad'],
   ],
   bpm: { min: 130, max: 170, typical: 145 },
-  moods: ['Dark', 'Heavy', 'Menacing', 'Brooding', 'Ominous', 'Hard', 'Emotional', 'Moody', 'Aggressive'],
+  moods: [
+    'Dark',
+    'Heavy',
+    'Menacing',
+    'Brooding',
+    'Ominous',
+    'Hard',
+    'Emotional',
+    'Moody',
+    'Aggressive',
+  ],
 };

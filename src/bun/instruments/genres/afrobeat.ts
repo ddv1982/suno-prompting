@@ -2,8 +2,18 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const AFROBEAT_GENRE: GenreDefinition = {
   name: 'Afrobeat',
-  keywords: ['afrobeat', 'afrobeats', 'amapiano', 'afropop', 'afro house', 'african', 'nigerian', 'south african'],
-  description: 'African rhythms with infectious grooves, polyrhythmic percussion, and vibrant melodies',
+  keywords: [
+    'afrobeat',
+    'afrobeats',
+    'amapiano',
+    'afropop',
+    'afro house',
+    'african',
+    'nigerian',
+    'south african',
+  ],
+  description:
+    'African rhythms with infectious grooves, polyrhythmic percussion, and vibrant melodies',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -16,11 +26,29 @@ export const AFROBEAT_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['talking drum', 'balafon', 'kalimba', 'shekere', 'saxophone', 'baritone saxophone', 'trumpet', 'ogene'],
+      instruments: [
+        'talking drum',
+        'balafon',
+        'kalimba',
+        'shekere',
+        'saxophone',
+        'baritone saxophone',
+        'trumpet',
+        'ogene',
+      ],
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['djembe', 'percussion', 'drums', 'congas', 'shaker', '808', 'agogo bells', 'udu drum'],
+      instruments: [
+        'djembe',
+        'percussion',
+        'drums',
+        'congas',
+        'shaker',
+        '808',
+        'agogo bells',
+        'udu drum',
+      ],
     },
   },
   poolOrder: ['harmonic', 'color', 'pad', 'movement'],
@@ -31,5 +59,14 @@ export const AFROBEAT_GENRE: GenreDefinition = {
     ['djembe', 'drums'],
   ],
   bpm: { min: 100, max: 130, typical: 115 },
-  moods: ['Joyful', 'Celebratory', 'Danceable', 'Hypnotic', 'Uplifting', 'Groovy', 'Vibrant', 'Energetic'],
+  moods: [
+    'Joyful',
+    'Celebratory',
+    'Danceable',
+    'Hypnotic',
+    'Uplifting',
+    'Groovy',
+    'Vibrant',
+    'Energetic',
+  ],
 };

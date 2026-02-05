@@ -3,7 +3,7 @@ import type { CreativityLevel } from '@shared/types';
 /**
  * Maps a slider value (0-100) to a creativity level.
  * Uses 5 equal 20% ranges for clean slider positions at 0, 25, 50, 75, 100.
- * 
+ *
  * Ranges:
  * - 0-20: 'low' (single genres only)
  * - 21-40: 'safe' (registry multi-genre)

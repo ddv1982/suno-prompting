@@ -122,10 +122,7 @@ export function selectSectionInstruments(
  * @param values - Values to interpolate
  * @returns Interpolated string
  */
-export function interpolateTemplate(
-  template: string,
-  values: Record<string, string>
-): string {
+export function interpolateTemplate(template: string, values: Record<string, string>): string {
   let result = template;
   for (const [key, value] of Object.entries(values)) {
     result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);

@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 
-import { createLogger } from "@/lib/logger";
-import { rpcClient } from "@/services/rpc-client";
-import { APP_CONSTANTS } from "@shared/constants";
-import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from "@shared/types";
+import { createLogger } from '@/lib/logger';
+import { rpcClient } from '@/services/rpc-client';
+import { APP_CONSTANTS } from '@shared/constants';
+import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from '@shared/types';
 
 const log = createLogger('SettingsModalState');
 const MODELS_BY_PROVIDER = APP_CONSTANTS.AI.MODELS_BY_PROVIDER;
@@ -49,10 +49,11 @@ export interface SettingsModalActions {
  * @param isOpen - Whether the modal is currently open (triggers settings load)
  * @returns Tuple of [state, actions] for use in the settings modal component
  */
+// eslint-disable-next-line max-lines-per-function
 export function useSettingsModalState(isOpen: boolean): [SettingsModalState, SettingsModalActions] {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
   const [apiKeys, setApiKeys] = useState<APIKeys>({ ...DEFAULT_API_KEYS });
-  const [model, setModel] = useState<string>("");
+  const [model, setModel] = useState<string>('');
   const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
   const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
   const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
@@ -72,7 +73,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
       try {
         const result = await rpcClient.getAllSettings({});
         if (!result.ok) {
-          setError("Unable to load settings.");
+          setError('Unable to load settings.');
           return;
         }
 
@@ -80,7 +81,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         setProvider(settings.provider);
         setApiKeys(settings.apiKeys);
         const providerModels = MODELS_BY_PROVIDER[settings.provider];
-        const modelExists = providerModels.some(m => m.id === settings.model);
+        const modelExists = providerModels.some((m) => m.id === settings.model);
         setModel(modelExists ? settings.model : providerModels[0].id);
         setUseSunoTags(settings.useSunoTags);
         setDebugMode(settings.debugMode);
@@ -89,8 +90,8 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         setStoryMode(settings.storyMode);
         setUseLocalLLM(settings.useLocalLLM ?? true);
       } catch (err: unknown) {
-        log.error("fetchSettings:failed", err);
-        setError("Unable to load settings.");
+        log.error('fetchSettings:failed', err);
+        setError('Unable to load settings.');
       } finally {
         setLoading(false);
       }
@@ -105,44 +106,78 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     if (models.length > 0) setModel(models[0].id);
   }, []);
 
-  const handleApiKeyChange = useCallback((value: string): void => {
-    setApiKeys(prev => ({ ...prev, [provider]: value || null }));
-  }, [provider]);
+  const handleApiKeyChange = useCallback(
+    (value: string): void => {
+      setApiKeys((prev) => ({ ...prev, [provider]: value || null }));
+    },
+    [provider]
+  );
 
   const toggleShowKey = useCallback((): void => {
-    setShowKey(prev => !prev);
+    setShowKey((prev) => !prev);
   }, []);
 
-  const handleSave = useCallback(async (onClose: () => void): Promise<void> => {
-    setSaving(true);
-    setError(null);
-    try {
-      await rpcClient.saveAllSettings({
-        provider, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM,
-        apiKeys: {
-          groq: apiKeys.groq?.trim() || null,
-          openai: apiKeys.openai?.trim() || null,
-          anthropic: apiKeys.anthropic?.trim() || null,
-        },
-      });
-      onClose();
-    } catch (e: unknown) {
-      log.error("saveSettings:failed", e);
-      setError("Failed to save settings. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  }, [provider, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM, apiKeys]);
+  const handleSave = useCallback(
+    async (onClose: () => void): Promise<void> => {
+      setSaving(true);
+      setError(null);
+      try {
+        await rpcClient.saveAllSettings({
+          provider,
+          model,
+          useSunoTags,
+          debugMode,
+          maxMode,
+          lyricsMode,
+          storyMode,
+          useLocalLLM,
+          apiKeys: {
+            groq: apiKeys.groq?.trim() || null,
+            openai: apiKeys.openai?.trim() || null,
+            anthropic: apiKeys.anthropic?.trim() || null,
+          },
+        });
+        onClose();
+      } catch (e: unknown) {
+        log.error('saveSettings:failed', e);
+        setError('Failed to save settings. Please try again.');
+      } finally {
+        setSaving(false);
+      }
+    },
+    [provider, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM, apiKeys]
+  );
 
   const state: SettingsModalState = {
-    provider, apiKeys, model, useSunoTags, debugMode,
-    maxMode, lyricsMode, storyMode, useLocalLLM, showKey, saving, loading, error,
+    provider,
+    apiKeys,
+    model,
+    useSunoTags,
+    debugMode,
+    maxMode,
+    lyricsMode,
+    storyMode,
+    useLocalLLM,
+    showKey,
+    saving,
+    loading,
+    error,
   };
 
   const actions: SettingsModalActions = {
-    setProvider, handleProviderChange, handleApiKeyChange, setModel,
-    setUseSunoTags, setDebugMode, setMaxMode, setLyricsMode, setStoryMode,
-    setUseLocalLLM, setShowKey, toggleShowKey, handleSave,
+    setProvider,
+    handleProviderChange,
+    handleApiKeyChange,
+    setModel,
+    setUseSunoTags,
+    setDebugMode,
+    setMaxMode,
+    setLyricsMode,
+    setStoryMode,
+    setUseLocalLLM,
+    setShowKey,
+    toggleShowKey,
+    handleSave,
   };
 
   return [state, actions];

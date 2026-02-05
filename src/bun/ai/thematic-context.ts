@@ -281,7 +281,9 @@ function parseThematicResponse(rawResponse: string): ThematicContext | null {
     };
     return normalized;
   } catch (error: unknown) {
-    log.warn('parseThematicResponse:failed', { error: getErrorMessage(error, 'Unknown parse error') });
+    log.warn('parseThematicResponse:failed', {
+      error: getErrorMessage(error, 'Unknown parse error'),
+    });
     return null;
   }
 }

@@ -12,10 +12,7 @@ import { createSettingsHandlers } from './settings';
 
 import type { RPCHandlers } from '@shared/types';
 
-export function createHandlers(
-  aiEngine: AIEngine,
-  storage: StorageManager
-): RPCHandlers {
+export function createHandlers(aiEngine: AIEngine, storage: StorageManager): RPCHandlers {
   return {
     ...createGenerationHandlers(aiEngine),
     ...createRemixHandlers(aiEngine),

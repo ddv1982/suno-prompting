@@ -26,7 +26,12 @@ export {
   MULTI_GENRE_COMBINATIONS,
   isMultiGenre,
 } from '@bun/instruments/genres';
-export type { GenreType, GenreDefinition, InstrumentPool, MultiGenreCombination } from '@bun/instruments/genres';
+export type {
+  GenreType,
+  GenreDefinition,
+  InstrumentPool,
+  MultiGenreCombination,
+} from '@bun/instruments/genres';
 
 export {
   RHYTHMIC_STYLES,
@@ -60,10 +65,31 @@ export { extractInstruments, normalizeToken, matchInstrument } from '@bun/instru
 export type { ExtractionResult } from '@bun/instruments/extraction';
 
 // Detection exports
-export { detectHarmonic, detectRhythmic, detectAmbient, detectGenre, detectCombination, detectPolyrhythmCombination, detectTimeSignature, detectTimeSignatureJourney } from '@bun/instruments/detection';
+export {
+  detectHarmonic,
+  detectRhythmic,
+  detectAmbient,
+  detectGenre,
+  detectCombination,
+  detectPolyrhythmCombination,
+  detectTimeSignature,
+  detectTimeSignatureJourney,
+} from '@bun/instruments/detection';
 
 // Guidance exports
-export { getHarmonicGuidance, getRhythmicGuidance, getCombinationGuidance, getPolyrhythmCombinationGuidance, getTimeSignatureGuidance, getTimeSignatureJourneyGuidance, getGenreInstruments, getAmbientInstruments, selectInstrumentsForGenre, buildGuidanceFromSelection, getMultiGenreNuanceGuidance } from '@bun/instruments/guidance';
+export {
+  getHarmonicGuidance,
+  getRhythmicGuidance,
+  getCombinationGuidance,
+  getPolyrhythmCombinationGuidance,
+  getTimeSignatureGuidance,
+  getTimeSignatureJourneyGuidance,
+  getGenreInstruments,
+  getAmbientInstruments,
+  selectInstrumentsForGenre,
+  buildGuidanceFromSelection,
+  getMultiGenreNuanceGuidance,
+} from '@bun/instruments/guidance';
 export type { InstrumentSelectionOptions, ModeSelectionInput } from '@bun/instruments/guidance';
 
 // Selection exports

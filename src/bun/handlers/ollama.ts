@@ -30,10 +30,7 @@ type OllamaHandlers = Pick<
  * @param storage - Storage manager for persisting settings
  * @returns Ollama handler implementations
  */
-export function createOllamaHandlers(
-  aiEngine: AIEngine,
-  storage: StorageManager
-): OllamaHandlers {
+export function createOllamaHandlers(aiEngine: AIEngine, storage: StorageManager): OllamaHandlers {
   return {
     /**
      * Check Ollama server status and model availability.

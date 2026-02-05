@@ -374,9 +374,7 @@ describe('Story Mode Toggle source verification', () => {
   });
 
   test('full-prompt-panel mode-toggle uses correct props', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/components/prompt-editor/mode-toggle.tsx').text();
 
     // Verify Story Mode toggle props - simplified to match Lyrics/Max toggles
     expect(source).toContain('storyMode');

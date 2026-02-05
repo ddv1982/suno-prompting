@@ -96,7 +96,10 @@ export function normalizeTraceError(error: unknown): TraceErrorEvent['error'] {
   };
 }
 
-export function traceError(trace: TraceCollector | undefined, error: unknown): TraceErrorEvent['error'] {
+export function traceError(
+  trace: TraceCollector | undefined,
+  error: unknown
+): TraceErrorEvent['error'] {
   const normalized = normalizeTraceError(error);
   trace?.addErrorEvent(normalized);
   return normalized;

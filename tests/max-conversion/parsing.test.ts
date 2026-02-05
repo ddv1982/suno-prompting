@@ -227,12 +227,16 @@ Recording: intimate jazz club session
     expect(parsed.genre).toBe('jazz');
     expect(parsed.bpm).toBe('between 80 and 160');
     expect(parsed.moods).toEqual(['smooth', 'warm', 'sophisticated']);
-    expect(parsed.instruments).toEqual(['Arpeggiated Rhodes', 'breathy tenor sax', 'walking upright bass']);
+    expect(parsed.instruments).toEqual([
+      'Arpeggiated Rhodes',
+      'breathy tenor sax',
+      'walking upright bass',
+    ]);
     expect(parsed.styleTags).toBe('plate reverb, warm character, wide stereo, natural dynamics');
     expect(parsed.recording).toBe('intimate jazz club session');
     // Header + 2 actual sections = 3 sections extracted (header has no content after it)
     // The important sections (INTRO, VERSE) should be present
-    const actualSections = parsed.sections.filter(s => ['INTRO', 'VERSE'].includes(s.tag));
+    const actualSections = parsed.sections.filter((s) => ['INTRO', 'VERSE'].includes(s.tag));
     expect(actualSections).toHaveLength(2);
     expect(actualSections[0]?.tag).toBe('INTRO');
     expect(actualSections[1]?.tag).toBe('VERSE');

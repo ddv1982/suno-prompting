@@ -7,9 +7,9 @@
  * @module components/history-sidebar
  */
 
-export { HistorySidebar } from "./history-sidebar";
-export { HistoryItem } from "./history-item";
-export type { HistorySidebarProps, HistoryItemProps } from "./types";
+export { HistorySidebar } from './history-sidebar';
+export { HistoryItem } from './history-item';
+export type { HistorySidebarProps, HistoryItemProps } from './types';
 
 // Re-export SidebarInset for backward compatibility
-export { SidebarInset } from "@/components/ui/sidebar";
+export { SidebarInset } from '@/components/ui/sidebar';

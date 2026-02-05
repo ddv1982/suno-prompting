@@ -32,7 +32,7 @@ interface SliderConfig {
 function getTemperatureSliderConfig(temperature: number): SliderConfig {
   return {
     min: 0,
-    max: 1,  // Changed from 2 to 1 per Task 3.1
+    max: 1, // Changed from 2 to 1 per Task 3.1
     step: 0.1,
     value: temperature,
   };
@@ -104,38 +104,38 @@ describe('Ollama Advanced Section', () => {
   describe('Temperature Slider', () => {
     test('slider has max value of 1', () => {
       const config = getTemperatureSliderConfig(0.7);
-      
+
       expect(config.max).toBe(1);
     });
 
     test('slider has min value of 0', () => {
       const config = getTemperatureSliderConfig(0.7);
-      
+
       expect(config.min).toBe(0);
     });
 
     test('slider has step of 0.1', () => {
       const config = getTemperatureSliderConfig(0.7);
-      
+
       expect(config.step).toBe(0.1);
     });
 
     test('slider value reflects prop value', () => {
       const config = getTemperatureSliderConfig(0.5);
-      
+
       expect(config.value).toBe(0.5);
     });
 
     test('helper text contains correct range 0.0-1.0', () => {
       const helperText = getTemperatureHelperText();
-      
+
       expect(helperText).toContain('0.0-1.0');
       expect(helperText).not.toContain('0.0-2.0');
     });
 
     test('helper text describes randomness', () => {
       const helperText = getTemperatureHelperText();
-      
+
       expect(helperText).toContain('random');
     });
   });
@@ -206,7 +206,7 @@ describe('Ollama Advanced Section', () => {
 describe('Max Tokens Slider', () => {
   test('slider has correct min/max range', () => {
     const config = getMaxTokensSliderConfig(2000);
-    
+
     expect(config.min).toBe(500);
     expect(config.max).toBe(4000);
     expect(config.step).toBe(100);
@@ -214,7 +214,7 @@ describe('Max Tokens Slider', () => {
 
   test('slider value reflects prop value', () => {
     const config = getMaxTokensSliderConfig(3000);
-    
+
     expect(config.value).toBe(3000);
   });
 });
@@ -222,7 +222,7 @@ describe('Max Tokens Slider', () => {
 describe('Context Length Slider', () => {
   test('slider has correct min/max range', () => {
     const config = getContextLengthSliderConfig(4096);
-    
+
     expect(config.min).toBe(2048);
     expect(config.max).toBe(8192);
     expect(config.step).toBe(1024);
@@ -230,7 +230,7 @@ describe('Context Length Slider', () => {
 
   test('slider value reflects prop value', () => {
     const config = getContextLengthSliderConfig(6144);
-    
+
     expect(config.value).toBe(6144);
   });
 });
@@ -248,7 +248,7 @@ describe('Ollama Advanced Section source verification', () => {
     // Verify temperature slider has correct max value
     // The slider should have max={1}, not max={2}
     expect(source).toContain('max={1}');
-    
+
     // Verify the temperature slider section structure
     expect(source).toContain('Temperature');
     expect(source).toContain('Slider');
@@ -303,19 +303,17 @@ describe('Ollama Advanced Section source verification', () => {
 
 describe('OllamaAdvancedSection Component Export', () => {
   test('component is exported and callable', async () => {
-    const { OllamaAdvancedSection } = await import(
-      '@/components/settings-modal/ollama-advanced-section'
-    );
-    
+    const { OllamaAdvancedSection } =
+      await import('@/components/settings-modal/ollama-advanced-section');
+
     expect(OllamaAdvancedSection).toBeDefined();
     expect(typeof OllamaAdvancedSection).toBe('function');
   });
 
   test('component returns ReactElement (function component)', async () => {
-    const { OllamaAdvancedSection } = await import(
-      '@/components/settings-modal/ollama-advanced-section'
-    );
-    
+    const { OllamaAdvancedSection } =
+      await import('@/components/settings-modal/ollama-advanced-section');
+
     // Verify it's a function component by checking its name/type
     expect(OllamaAdvancedSection.name).toBe('OllamaAdvancedSection');
   });
@@ -331,14 +329,12 @@ describe('Temperature Slider Alignment with Zod Schema', () => {
     const componentSource = await Bun.file(
       'src/main-ui/components/settings-modal/ollama-advanced-section.tsx'
     ).text();
-    
-    const schemaSource = await Bun.file(
-      'src/shared/schemas/ollama.ts'
-    ).text();
-    
+
+    const schemaSource = await Bun.file('src/shared/schemas/ollama.ts').text();
+
     // Component should have max={1}
     expect(componentSource).toContain('max={1}');
-    
+
     // Schema should have .max(1) for temperature validation
     // Format: temperature: z.number()...max(1, 'Temperature must be at most 1')
     expect(schemaSource).toContain('.max(1');
@@ -348,7 +344,7 @@ describe('Temperature Slider Alignment with Zod Schema', () => {
     const componentSource = await Bun.file(
       'src/main-ui/components/settings-modal/ollama-advanced-section.tsx'
     ).text();
-    
+
     // Component should have min={0}
     expect(componentSource).toContain('min={0}');
   });

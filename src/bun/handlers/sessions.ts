@@ -8,10 +8,12 @@ import { validate } from './validated';
 import type { RPCHandlers } from '@shared/types';
 
 const DeleteSessionSchema = z.object({
-  id: z.string().regex(
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    'Session ID must be a valid UUID'
-  ),
+  id: z
+    .string()
+    .regex(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      'Session ID must be a valid UUID'
+    ),
 });
 
 type SessionHandlers = Pick<RPCHandlers, 'getHistory' | 'saveSession' | 'deleteSession'>;

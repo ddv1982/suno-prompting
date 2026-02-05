@@ -39,7 +39,9 @@ function resolveStyleTagsWithOverrides(
   thematicContext?: ThematicContext
 ): { styleTags: string; styleTagsArray: readonly string[]; moods: readonly string[] } {
   // Helper to replace mood tags with new moods
-  const replaceMoods = (newMoods: readonly string[]): { styleTags: string; styleTagsArray: readonly string[]; moods: readonly string[] } => {
+  const replaceMoods = (
+    newMoods: readonly string[]
+  ): { styleTags: string; styleTagsArray: readonly string[]; moods: readonly string[] } => {
     const nonMoodTags = styleResult.tags.filter((tag) => !styleResult.moodTags.includes(tag));
     const combinedTags = [...nonMoodTags.slice(0, 5), ...newMoods, ...nonMoodTags.slice(5)];
     const cappedTags = combinedTags.slice(0, 10);
@@ -78,7 +80,11 @@ function resolveStyleTagsWithOverrides(
       branchTaken: 'moodCategory.fallback',
       why: `moodCategory=${moodCategory} returned empty; using genre-derived style tags`,
     });
-    return { styleTags: styleResult.formatted, styleTagsArray: styleResult.tags, moods: styleResult.moodTags };
+    return {
+      styleTags: styleResult.formatted,
+      styleTagsArray: styleResult.tags,
+      moods: styleResult.moodTags,
+    };
   }
 
   // Priority 3: Creativity-based compound moods
@@ -101,7 +107,11 @@ function resolveStyleTagsWithOverrides(
     branchTaken: 'styleTags',
     why: 'no moodCategory override; using genre-derived style tags',
   });
-  return { styleTags: styleResult.formatted, styleTagsArray: styleResult.tags, moods: styleResult.moodTags };
+  return {
+    styleTags: styleResult.formatted,
+    styleTagsArray: styleResult.tags,
+    moods: styleResult.moodTags,
+  };
 }
 
 /**
@@ -142,10 +152,17 @@ function resolveStyleTagsWithOverrides(
  * // Style tags will include moods from 'calm' category
  * ```
  */
-export function buildDeterministicMaxPrompt(
-  options: DeterministicOptions,
-): DeterministicResult {
-  const { description, genreOverride, moodCategory, creativityLevel = 50, seed, rng: providedRng, trace, thematicContext } = options;
+export function buildDeterministicMaxPrompt(options: DeterministicOptions): DeterministicResult {
+  const {
+    description,
+    genreOverride,
+    moodCategory,
+    creativityLevel = 50,
+    seed,
+    rng: providedRng,
+    trace,
+    thematicContext,
+  } = options;
 
   // Determine RNG: use provided rng, or create seeded rng from seed, or default to Math.random
   const rng = providedRng ?? (seed !== undefined ? createSeededRng(seed) : Math.random);
@@ -175,7 +192,7 @@ export function buildDeterministicMaxPrompt(
     description,
     genreOverride,
     rng,
-    trace,
+    trace
   );
 
   // 2. Assemble instruments - blends from all genre components
@@ -192,7 +209,13 @@ export function buildDeterministicMaxPrompt(
 
   // 3b. Resolve style tags with mood overrides (thematic context moods REPLACE genre moods)
   const { styleTags, styleTagsArray } = resolveStyleTagsWithOverrides(
-    styleResult, primaryGenre, moodCategory, creativityLevel, rng, trace, thematicContext
+    styleResult,
+    primaryGenre,
+    moodCategory,
+    creativityLevel,
+    rng,
+    trace,
+    thematicContext
   );
 
   // 4. Get recording context (production/studio descriptors)

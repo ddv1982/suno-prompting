@@ -6,8 +6,18 @@
  * @module prompt/creative-boost/selection
  */
 
-import { GENRE_REGISTRY, MULTI_GENRE_COMBINATIONS, type GenreType, selectInstrumentsForGenre as selectInstruments } from '@bun/instruments';
-import { applyIntensityToMoods, filterSunoStylesByMoodCategory, selectMoodsForCategory, type MoodCategory } from '@bun/mood';
+import {
+  GENRE_REGISTRY,
+  MULTI_GENRE_COMBINATIONS,
+  type GenreType,
+  selectInstrumentsForGenre as selectInstruments,
+} from '@bun/instruments';
+import {
+  applyIntensityToMoods,
+  filterSunoStylesByMoodCategory,
+  selectMoodsForCategory,
+  type MoodCategory,
+} from '@bun/mood';
 import { getMoodsForGenre } from '@bun/prompt/sections/variations';
 import { extractBaseGenre } from '@shared/utils/genre';
 import { selectRandom, selectRandomN } from '@shared/utils/random';
@@ -19,7 +29,13 @@ import {
   NORMAL_SUFFIX_PROBABILITY,
   SAFE_MULTI_GENRE_PROBABILITY,
 } from './constants';
-import { CREATIVE_TITLE_WORDS, CREATIVITY_POOLS, HIGH_BASE_GENRES, HIGH_FUSION_GENRES, MOOD_POOLS } from './pools';
+import {
+  CREATIVE_TITLE_WORDS,
+  CREATIVITY_POOLS,
+  HIGH_BASE_GENRES,
+  HIGH_FUSION_GENRES,
+  MOOD_POOLS,
+} from './pools';
 
 import type { CreativityLevel } from '@shared/types';
 
@@ -45,12 +61,26 @@ function selectMultipleUnique<T>(items: readonly T[], count: number, rng: () => 
  * without completely replacing it.
  */
 const HIGH_CREATIVITY_MODIFIERS: readonly string[] = [
-  'dark', 'lo-fi', 'experimental', 'psychedelic', 'industrial',
-  'glitch', 'noise', 'drone', 'cosmic', 'post',
+  'dark',
+  'lo-fi',
+  'experimental',
+  'psychedelic',
+  'industrial',
+  'glitch',
+  'noise',
+  'drone',
+  'cosmic',
+  'post',
 ];
 
 const ADVENTUROUS_MODIFIERS: readonly string[] = [
-  'neo', 'synth', 'acid', 'space', 'hyper', 'micro', 'art',
+  'neo',
+  'synth',
+  'acid',
+  'space',
+  'hyper',
+  'micro',
+  'art',
 ];
 
 /**
@@ -128,7 +158,10 @@ function enhanceDetectedGenres(
         return detectedGenres.slice(0, 2).join(' ');
       }
       if (rng() < NORMAL_BLEND_PROBABILITY) {
-        const addition = selectRandom(pool.genres.filter(g => g !== primaryGenre), rng);
+        const addition = selectRandom(
+          pool.genres.filter((g) => g !== primaryGenre),
+          rng
+        );
         return `${primaryGenre} ${addition}`;
       }
       return primaryGenre;
@@ -156,10 +189,7 @@ function enhanceDetectedGenres(
  * Select random genres when no detection occurred.
  * This is the fallback for when user's description has no recognizable genre keywords.
  */
-function selectRandomForLevel(
-  level: CreativityLevel,
-  rng: () => number
-): string {
+function selectRandomForLevel(level: CreativityLevel, rng: () => number): string {
   const pool = CREATIVITY_POOLS[level];
 
   switch (level) {
@@ -293,7 +323,7 @@ export function selectMoodForLevel(
   level: CreativityLevel,
   rng: () => number,
   moodCategory?: MoodCategory,
-  genre?: string,
+  genre?: string
 ): string {
   // Priority 1: Explicit mood category override
   if (moodCategory) {
@@ -345,10 +375,7 @@ export function selectMoodForLevel(
  * getInstrumentsForGenre('unknown_genre', () => 0.5);
  * // ["piano", "guitar", "bass", "drums"] (fallback)
  */
-export function getInstrumentsForGenre(
-  genre: string,
-  rng: () => number
-): string[] {
+export function getInstrumentsForGenre(genre: string, rng: () => number): string[] {
   // Try to find the genre in registry using first word
   const baseGenre = extractBaseGenre(genre) as GenreType;
   const genreData = GENRE_REGISTRY[baseGenre];
@@ -386,7 +413,7 @@ export function getInstrumentsForGenre(
  */
 export function getSunoStylesForMoodCategory(
   moodCategory: MoodCategory | undefined,
-  allStyles: readonly string[],
+  allStyles: readonly string[]
 ): readonly string[] {
   if (!moodCategory) {
     return allStyles;

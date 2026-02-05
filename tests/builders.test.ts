@@ -205,10 +205,10 @@ describe('builders', () => {
     });
 
     it('extracts user-mentioned instruments from description', () => {
-      const result = buildMaxModeContextualPrompt(
-        'A song with piano and drums',
-        { ...createEmptySelection(), genre: 'jazz' as const }
-      );
+      const result = buildMaxModeContextualPrompt('A song with piano and drums', {
+        ...createEmptySelection(),
+        genre: 'jazz' as const,
+      });
       expect(result).toContain('User mentioned instruments:');
     });
   });

@@ -18,7 +18,7 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         description,
         lyricsTopic,
         maxMode,
-        withLyrics
+        withLyrics,
       } = validate(GenerateCreativeBoostSchema, params);
 
       return createHandlerRunner(
@@ -27,10 +27,17 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         'generate.creativeBoost',
         'creativeBoost',
         { creativityLevel, seedGenresCount: seedGenres.length },
-        (runtime) => aiEngine.generateCreativeBoost(
-          creativityLevel, seedGenres, sunoStyles, description, lyricsTopic,
-          maxMode, withLyrics, runtime
-        ),
+        (runtime) =>
+          aiEngine.generateCreativeBoost(
+            creativityLevel,
+            seedGenres,
+            sunoStyles,
+            description,
+            lyricsTopic,
+            maxMode,
+            withLyrics,
+            runtime
+          ),
         (result, _runtime, versionId) => ({
           prompt: result.text,
           title: result.title ?? 'Creative Boost',
@@ -62,10 +69,21 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
         'generate.creativeBoost',
         'creativeBoost',
         { feedback },
-        (runtime) => aiEngine.refineCreativeBoost(
-          currentPrompt, currentTitle, currentLyrics, feedback, lyricsTopic, description,
-          seedGenres, sunoStyles, maxMode, withLyrics, targetGenreCount, runtime
-        ),
+        (runtime) =>
+          aiEngine.refineCreativeBoost(
+            currentPrompt,
+            currentTitle,
+            currentLyrics,
+            feedback,
+            lyricsTopic,
+            description,
+            seedGenres,
+            sunoStyles,
+            maxMode,
+            withLyrics,
+            targetGenreCount,
+            runtime
+          ),
         (result, _runtime, versionId) => ({
           prompt: result.text,
           title: result.title ?? currentTitle,
@@ -75,6 +93,6 @@ export function createCreativeBoostHandlers(aiEngine: AIEngine): CreativeBoostHa
           storyModeFallback: result.storyModeFallback,
         })
       );
-    }
+    },
   };
 }

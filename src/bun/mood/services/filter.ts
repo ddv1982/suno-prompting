@@ -24,9 +24,7 @@ import type { MoodCategory } from '@bun/mood/types';
  * filterSunoStylesByMoodCategory('groove');
  * // ['funk', 'disco', 'g-funk', ...]
  */
-export function filterSunoStylesByMoodCategory(
-  category: MoodCategory,
-): string[] {
+export function filterSunoStylesByMoodCategory(category: MoodCategory): string[] {
   return getSunoStylesForCategory(category);
 }
 
@@ -56,10 +54,7 @@ export function filterGenresByMoodCategory(category: MoodCategory): GenreType[] 
  * isSunoStyleCompatibleWithCategory('funk', 'groove');
  * // true
  */
-export function isSunoStyleCompatibleWithCategory(
-  style: string,
-  category: MoodCategory,
-): boolean {
+export function isSunoStyleCompatibleWithCategory(style: string, category: MoodCategory): boolean {
   const compatibleStyles = getSunoStylesForCategory(category);
   // Compare lowercase to handle case differences
   const styleLower = style.toLowerCase();

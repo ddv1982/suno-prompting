@@ -184,34 +184,52 @@ describe('v3.0 Genre Expansion', () => {
       });
 
       it('should return scores for related electronic genres', () => {
-        expect(getCompatibilityScore('dubstep', 'drumandbass')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
-        expect(getCompatibilityScore('dubstep', 'electronic')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
-        expect(getCompatibilityScore('jungle', 'drumandbass')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
+        expect(getCompatibilityScore('dubstep', 'drumandbass')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
+        expect(getCompatibilityScore('dubstep', 'electronic')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
+        expect(getCompatibilityScore('jungle', 'drumandbass')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
       });
 
       it('should return scores for related rock genres', () => {
-        expect(getCompatibilityScore('shoegaze', 'dreampop')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
+        expect(getCompatibilityScore('shoegaze', 'dreampop')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
         expect(getCompatibilityScore('grunge', 'rock')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
         expect(getCompatibilityScore('emo', 'punk')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
       });
 
       it('should return scores for related synth genres', () => {
-        expect(getCompatibilityScore('darksynth', 'synthwave')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
-        expect(getCompatibilityScore('outrun', 'synthwave')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
+        expect(getCompatibilityScore('darksynth', 'synthwave')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
+        expect(getCompatibilityScore('outrun', 'synthwave')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
         expect(getCompatibilityScore('synthpop', 'pop')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
       });
 
       it('should return scores for related world genres', () => {
         expect(getCompatibilityScore('celtic', 'folk')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
         expect(getCompatibilityScore('bossanova', 'jazz')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
-        expect(getCompatibilityScore('afrocuban', 'latin')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
+        expect(getCompatibilityScore('afrocuban', 'latin')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
       });
 
       it('should return scores for related other genres', () => {
         expect(getCompatibilityScore('gospel', 'soul')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
-        expect(getCompatibilityScore('bluegrass', 'country')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
+        expect(getCompatibilityScore('bluegrass', 'country')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
         expect(getCompatibilityScore('ska', 'reggae')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
-        expect(getCompatibilityScore('dancehall', 'reggae')).toBeGreaterThanOrEqual(FUSION_THRESHOLD);
+        expect(getCompatibilityScore('dancehall', 'reggae')).toBeGreaterThanOrEqual(
+          FUSION_THRESHOLD
+        );
       });
 
       it('should return low scores for incompatible genres', () => {

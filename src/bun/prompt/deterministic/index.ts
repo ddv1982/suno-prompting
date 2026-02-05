@@ -27,11 +27,7 @@ export { DEFAULT_TAG_WEIGHTS } from './types';
 export { GENRE_TAG_WEIGHTS, getTagWeightsForGenre } from './weights';
 
 // Re-export genre aliases
-export {
-  GENRE_ALIASES,
-  resolveGenreAlias,
-  findGenreAliasInText,
-} from './aliases';
+export { GENRE_ALIASES, resolveGenreAlias, findGenreAliasInText } from './aliases';
 
 // Re-export genre detection
 export { detectAllGenres, detectGenreKeywordsOnly } from './genre';
@@ -66,7 +62,12 @@ export {
 
 // Re-export test helpers
 import { selectRandomGenre, parseMultiGenre } from './genre';
-import { joinRecordingDescriptors, selectMusicalKey, selectMusicalMode, selectKeyAndMode } from './helpers';
+import {
+  joinRecordingDescriptors,
+  selectMusicalKey,
+  selectMusicalMode,
+  selectKeyAndMode,
+} from './helpers';
 import { assembleInstruments } from './instruments';
 import { assembleStyleTags } from './styles';
 

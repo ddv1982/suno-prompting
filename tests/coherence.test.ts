@@ -104,17 +104,20 @@ describe('Coherence Validation', () => {
       expect(result.conflicts).toHaveLength(0);
     });
 
-    test.each(goodCombinations)('$name is valid at normal creativity (50)', ({ instruments, tags }) => {
-      // Arrange
-      const creativityLevel = 50;
+    test.each(goodCombinations)(
+      '$name is valid at normal creativity (50)',
+      ({ instruments, tags }) => {
+        // Arrange
+        const creativityLevel = 50;
 
-      // Act
-      const result = checkCoherence(instruments, tags, creativityLevel);
+        // Act
+        const result = checkCoherence(instruments, tags, creativityLevel);
 
-      // Assert
-      expect(result.valid).toBe(true);
-      expect(result.conflicts).toHaveLength(0);
-    });
+        // Assert
+        expect(result.valid).toBe(true);
+        expect(result.conflicts).toHaveLength(0);
+      }
+    );
   });
 
   describe('known-bad combinations', () => {
@@ -201,17 +204,20 @@ describe('Coherence Validation', () => {
       }
     );
 
-    test.each(badCombinations)('$name is valid at high creativity (>60)', ({ instruments, tags }) => {
-      // Arrange
-      const creativityLevel = 80;
+    test.each(badCombinations)(
+      '$name is valid at high creativity (>60)',
+      ({ instruments, tags }) => {
+        // Arrange
+        const creativityLevel = 80;
 
-      // Act
-      const result = checkCoherence(instruments, tags, creativityLevel);
+        // Act
+        const result = checkCoherence(instruments, tags, creativityLevel);
 
-      // Assert
-      expect(result.valid).toBe(true);
-      expect(result.conflicts).toHaveLength(0);
-    });
+        // Assert
+        expect(result.valid).toBe(true);
+        expect(result.conflicts).toHaveLength(0);
+      }
+    );
 
     test('creativity boundary at 60 is strict', () => {
       // Arrange

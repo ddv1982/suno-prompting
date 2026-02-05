@@ -49,7 +49,7 @@ describe('selectInstrumentsForMode', () => {
   });
 
   test('all returned instruments are from registry', () => {
-    const allCanonical = new Set(INSTRUMENT_REGISTRY.map(e => e.canonical));
+    const allCanonical = new Set(INSTRUMENT_REGISTRY.map((e) => e.canonical));
 
     for (let i = 0; i < 20; i++) {
       const instruments = selectInstrumentsForMode('lydian_augmented');
@@ -85,7 +85,7 @@ describe('selectInstrumentsForMode', () => {
       const instruments = selectInstrumentsForMode('lydian_augmented');
 
       for (const instrument of instruments) {
-        const entry = INSTRUMENT_REGISTRY.find(e => e.canonical === instrument);
+        const entry = INSTRUMENT_REGISTRY.find((e) => e.canonical === instrument);
         expect(entry).toBeDefined();
         expect(allowedCategories).toContain(entry!.category);
       }

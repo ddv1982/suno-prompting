@@ -14,7 +14,14 @@ import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
 import type { Logger } from '@/lib/logger';
-import type { PromptSession, PromptVersion, PromptMode, QuickVibesInput, CreativeBoostInput, TraceRun } from '@shared/types';
+import type {
+  PromptSession,
+  PromptVersion,
+  PromptMode,
+  QuickVibesInput,
+  CreativeBoostInput,
+  TraceRun,
+} from '@shared/types';
 
 /**
  * Build originalInput for Full Prompt mode.
@@ -27,11 +34,15 @@ export function buildFullPromptOriginalInput(
   genreOverride?: string,
   lyricsTopic?: string
 ): string {
-  return [
-    genreOverride ? `[genre: ${genreOverride}]` : null,
-    lyricsTopic?.trim() ? `[topic: ${lyricsTopic.trim()}]` : null,
-    description || null,
-  ].filter(Boolean).join(' ') || 'Full Prompt';
+  return (
+    [
+      genreOverride ? `[genre: ${genreOverride}]` : null,
+      lyricsTopic?.trim() ? `[topic: ${lyricsTopic.trim()}]` : null,
+      description || null,
+    ]
+      .filter(Boolean)
+      .join(' ') || 'Full Prompt'
+  );
 }
 
 /**
@@ -43,14 +54,14 @@ export function getErrorToastType(error: unknown): 'error' | 'warning' {
   // Warnings (recoverable, user-fixable)
   if (error instanceof ValidationError) return 'warning';
   if (error instanceof OllamaTimeoutError) return 'warning';
-  
+
   // All other errors are critical
   if (error instanceof OllamaUnavailableError) return 'error';
   if (error instanceof OllamaModelMissingError) return 'error';
   if (error instanceof AIGenerationError) return 'error';
   if (error instanceof StorageError) return 'error';
   if (error instanceof InvariantError) return 'error';
-  
+
   // Default: treat unknown errors as critical
   return 'error';
 }
@@ -85,10 +96,7 @@ export interface SessionDeps {
 /**
  * Creates a new version entry for the session history
  */
-export function createVersion(
-  result: GenerationResultBase,
-  feedback?: string
-): PromptVersion {
+export function createVersion(result: GenerationResultBase, feedback?: string): PromptVersion {
   return {
     id: result.versionId,
     content: result.prompt,
@@ -157,7 +165,7 @@ export function updateChatMessagesAfterGeneration(
   if (isNew) {
     setChatMessages(buildChatMessages(session));
   } else {
-    setChatMessages(prev => [...prev, { role: "ai", content: successMessage }]);
+    setChatMessages((prev) => [...prev, { role: 'ai', content: successMessage }]);
   }
 }
 
@@ -174,13 +182,10 @@ export function handleGenerationError(
 ): void {
   const errorMessage = getErrorMessage(error, `Failed to ${actionName}`);
   log.error(`${actionName}:failed`, error);
-  
+
   // Existing: Add to chat
-  setChatMessages(prev => [
-    ...prev,
-    { role: "ai", content: `Error: ${errorMessage}.` },
-  ]);
-  
+  setChatMessages((prev) => [...prev, { role: 'ai', content: `Error: ${errorMessage}.` }]);
+
   // NEW: Show toast notification
   const toastType = getErrorToastType(error);
   showToast(errorMessage, toastType);
@@ -193,7 +198,7 @@ export function addUserMessage(
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   content: string
 ): void {
-  setChatMessages(prev => [...prev, { role: "user", content }]);
+  setChatMessages((prev) => [...prev, { role: 'user', content }]);
 }
 
 /**
@@ -210,10 +215,18 @@ export async function completeSessionUpdate(
   successMessage: string,
   feedback?: string
 ): Promise<PromptSession> {
-  const { currentSession, generateId, saveSession, setDebugTrace, setChatMessages, setValidation, showToast } = deps;
-  
+  const {
+    currentSession,
+    generateId,
+    saveSession,
+    setDebugTrace,
+    setChatMessages,
+    setValidation,
+    showToast,
+  } = deps;
+
   setDebugTrace(result.debugTrace);
-  
+
   const { session, isNew } = createOrUpdateSession(
     currentSession,
     result,
@@ -223,15 +236,15 @@ export async function completeSessionUpdate(
     modeInput,
     feedback
   );
-  
+
   updateChatMessagesAfterGeneration(setChatMessages, session, isNew, successMessage);
   setValidation({ ...EMPTY_VALIDATION });
   await saveSession(session);
-  
+
   // Show warning toast when Story Mode falls back to deterministic output
   if (result.storyModeFallback) {
     showToast('Story Mode unavailable - using standard format', 'warning');
   }
-  
+
   return session;
 }

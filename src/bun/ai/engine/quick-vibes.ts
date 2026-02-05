@@ -19,23 +19,24 @@ import type { QuickVibesCategory } from '@shared/types';
 /**
  * Create Quick Vibes methods bound to configuration.
  */
-export function createQuickVibesMethods(
-  factories: ConfigFactories
-): {
+export function createQuickVibesMethods(factories: ConfigFactories): {
   generateQuickVibes: (
     category: QuickVibesCategory | null,
     customDescription: string,
     sunoStyles: string[],
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
-  refineQuickVibes: (options: {
-    currentPrompt: string;
-    currentTitle?: string;
-    description?: string;
-    feedback: string;
-    category?: QuickVibesCategory | null;
-    sunoStyles?: string[];
-  }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }) => Promise<GenerationResult>;
+  refineQuickVibes: (
+    options: {
+      currentPrompt: string;
+      currentTitle?: string;
+      description?: string;
+      feedback: string;
+      category?: QuickVibesCategory | null;
+      sunoStyles?: string[];
+    },
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
+  ) => Promise<GenerationResult>;
 } {
   const generationConfig = factories.getGenerationConfig();
 
@@ -59,14 +60,17 @@ export function createQuickVibesMethods(
     );
   }
 
-  async function refineQuickVibes(options: {
-    currentPrompt: string;
-    currentTitle?: string;
-    description?: string;
-    feedback: string;
-    category?: QuickVibesCategory | null;
-    sunoStyles?: string[];
-  }, runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }): Promise<GenerationResult> {
+  async function refineQuickVibes(
+    options: {
+      currentPrompt: string;
+      currentTitle?: string;
+      description?: string;
+      feedback: string;
+      category?: QuickVibesCategory | null;
+      sunoStyles?: string[];
+    },
+    runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
+  ): Promise<GenerationResult> {
     return refineQuickVibesImpl(
       { ...options, sunoStyles: options.sunoStyles ?? [] },
       {

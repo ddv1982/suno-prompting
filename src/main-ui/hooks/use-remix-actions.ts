@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react';
 
-import { executePromptRemix, executeSingleFieldRemix, type RemixExecutorDeps } from '@/lib/remix-executor';
+import {
+  executePromptRemix,
+  executeSingleFieldRemix,
+  type RemixExecutorDeps,
+} from '@/lib/remix-executor';
 import { rpcClient, unwrapOrThrowResult, type RpcError } from '@/services/rpc-client';
 import { type ValidationResult } from '@shared/validation';
 
@@ -16,30 +20,43 @@ export interface RemixActions {
   handleRemixLyrics: () => Promise<void>;
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
   const { currentSession } = deps;
 
   // Factory for prompt-only remix handlers (prompt → remixed prompt)
-  const makePromptRemix = useCallback((action: GeneratingAction, method: keyof typeof rpcClient, label: string, msg: string) => async () => {
-    if (!currentSession?.currentPrompt) return;
-    await executePromptRemix(
-      deps,
-      action as Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
+  const makePromptRemix = useCallback(
+    (action: GeneratingAction, method: keyof typeof rpcClient, label: string, msg: string) =>
       async () => {
-        const raw = await (rpcClient[method] as (p: { currentPrompt: string }) => Promise<{ ok: true; value: { prompt: string; versionId: string; validation: ValidationResult } } | { ok: false; error: RpcError }>)({ currentPrompt: currentSession.currentPrompt });
-        return unwrapOrThrowResult(raw);
+        if (!currentSession?.currentPrompt) return;
+        await executePromptRemix(
+          deps,
+          action as Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
+          async () => {
+            const raw = await (
+              rpcClient[method] as (p: { currentPrompt: string }) => Promise<
+                | {
+                    ok: true;
+                    value: { prompt: string; versionId: string; validation: ValidationResult };
+                  }
+                | { ok: false; error: RpcError }
+              >
+            )({ currentPrompt: currentSession.currentPrompt });
+            return unwrapOrThrowResult(raw);
+          },
+          label,
+          msg
+        );
       },
-      label,
-      msg
-    );
-  }, [currentSession, deps]);
+    [currentSession, deps]
+  );
 
   /**
    * Special handler for genre remix that preserves genre count in Creative Boost mode.
    */
   const handleRemixGenre = useCallback(async () => {
     if (!currentSession?.currentPrompt) return;
-    
+
     await executePromptRemix(
       deps,
       'remixGenre',
@@ -51,9 +68,25 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       'Genre remixed.'
     );
   }, [currentSession, deps]);
-  const handleRemixMood = useMemo(() => makePromptRemix('remixMood', 'remixMood', 'mood remix', 'Mood remixed.'), [makePromptRemix]);
-  const handleRemixStyleTags = useMemo(() => makePromptRemix('remixStyleTags', 'remixStyleTags', 'style tags remix', 'Style tags remixed.'), [makePromptRemix]);
-  const handleRemixRecording = useMemo(() => makePromptRemix('remixRecording', 'remixRecording', 'recording remix', 'Recording remixed.'), [makePromptRemix]);
+  const handleRemixMood = useMemo(
+    () => makePromptRemix('remixMood', 'remixMood', 'mood remix', 'Mood remixed.'),
+    [makePromptRemix]
+  );
+  const handleRemixStyleTags = useMemo(
+    () =>
+      makePromptRemix(
+        'remixStyleTags',
+        'remixStyleTags',
+        'style tags remix',
+        'Style tags remixed.'
+      ),
+    [makePromptRemix]
+  );
+  const handleRemixRecording = useMemo(
+    () =>
+      makePromptRemix('remixRecording', 'remixRecording', 'recording remix', 'Recording remixed.'),
+    [makePromptRemix]
+  );
 
   // Special case: remixInstruments needs originalInput
   const handleRemixInstruments = useCallback(async () => {
@@ -62,7 +95,10 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       deps,
       'remixInstruments',
       async () => {
-        const result = await rpcClient.remixInstruments({ currentPrompt: currentSession.currentPrompt, originalInput: currentSession.originalInput });
+        const result = await rpcClient.remixInstruments({
+          currentPrompt: currentSession.currentPrompt,
+          originalInput: currentSession.originalInput,
+        });
         return unwrapOrThrowResult(result);
       },
       'instruments remix',
@@ -95,7 +131,11 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
       deps,
       'remixLyrics',
       async () => {
-        const result = await rpcClient.remixLyrics({ currentPrompt: currentSession.currentPrompt, originalInput: currentSession.originalInput, lyricsTopic: currentSession.lyricsTopic });
+        const result = await rpcClient.remixLyrics({
+          currentPrompt: currentSession.currentPrompt,
+          originalInput: currentSession.originalInput,
+          lyricsTopic: currentSession.lyricsTopic,
+        });
         return unwrapOrThrowResult(result);
       },
       (r) => ({ currentLyrics: r.lyrics }),

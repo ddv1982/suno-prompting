@@ -207,7 +207,7 @@ describe('Lydian chord generation', () => {
       const chords = getLydianChords('C');
       expect(chords.extended.length).toBeGreaterThan(0);
 
-      const sus2Chords = chords.extended.filter(c => c.quality === 'sus2');
+      const sus2Chords = chords.extended.filter((c) => c.quality === 'sus2');
       expect(sus2Chords.length).toBe(7);
     });
 
@@ -315,7 +315,7 @@ describe('Lydian chord correctness (matching website)', () => {
   test('C Lydian chord qualities match website', () => {
     const chords = getLydianChords('C');
 
-    expect(chords.triads.map(t => t.quality)).toEqual([
+    expect(chords.triads.map((t) => t.quality)).toEqual([
       'maj',
       'maj',
       'min',
@@ -325,7 +325,7 @@ describe('Lydian chord correctness (matching website)', () => {
       'min',
     ]);
 
-    expect(chords.sevenths.map(s => s.quality)).toEqual([
+    expect(chords.sevenths.map((s) => s.quality)).toEqual([
       'maj7',
       'dom7',
       'min7',

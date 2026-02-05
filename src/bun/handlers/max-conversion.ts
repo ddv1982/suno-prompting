@@ -10,21 +10,25 @@ type MaxConversionHandlers = Pick<RPCHandlers, 'convertToMaxFormat'>;
 export function createMaxConversionHandlers(aiEngine: AIEngine): MaxConversionHandlers {
   return {
     convertToMaxFormat: async ({ text }) => {
-      return withErrorHandling('convertToMaxFormat', async () => {
-        const result = await convertToMaxFormat(text, aiEngine.getModel.bind(aiEngine));
-        const versionId = Bun.randomUUIDv7();
-        log.info('convertToMaxFormat:result', {
-          versionId,
-          wasConverted: result.wasConverted,
-          promptLength: result.convertedPrompt.length
-        });
-        return {
-          convertedPrompt: result.convertedPrompt,
-          wasConverted: result.wasConverted,
-          versionId,
-          debugTrace: undefined,
-        };
-      }, { textLength: text.length });
+      return withErrorHandling(
+        'convertToMaxFormat',
+        async () => {
+          const result = await convertToMaxFormat(text, aiEngine.getModel.bind(aiEngine));
+          const versionId = Bun.randomUUIDv7();
+          log.info('convertToMaxFormat:result', {
+            versionId,
+            wasConverted: result.wasConverted,
+            promptLength: result.convertedPrompt.length,
+          });
+          return {
+            convertedPrompt: result.convertedPrompt,
+            wasConverted: result.wasConverted,
+            versionId,
+            debugTrace: undefined,
+          };
+        },
+        { textLength: text.length }
+      );
     },
   };
 }

@@ -1,11 +1,11 @@
 /**
  * F7: UI tests for trace timeline rendering + Advanced gating + copy actions
- * 
+ *
  * These tests verify:
  * - Debug drawer components export correctly
  * - Timeline event card components are properly structured
  * - Trace summary generation for copy action
- * 
+ *
  * Note: Full interactive tests require browser environment.
  * These tests verify component structure, exports, and the summary generation logic.
  */
@@ -25,7 +25,8 @@ describe('Debug Drawer Components', () => {
     });
 
     test('exports DecisionCard', async () => {
-      const { DecisionCard } = await import('@/components/prompt-editor/debug-drawer/decision-card');
+      const { DecisionCard } =
+        await import('@/components/prompt-editor/debug-drawer/decision-card');
       expect(DecisionCard).toBeDefined();
       expect(typeof DecisionCard).toBe('function');
     });
@@ -43,13 +44,15 @@ describe('Debug Drawer Components', () => {
     });
 
     test('exports RunEventCard', async () => {
-      const { RunEventCard } = await import('@/components/prompt-editor/debug-drawer/run-event-card');
+      const { RunEventCard } =
+        await import('@/components/prompt-editor/debug-drawer/run-event-card');
       expect(RunEventCard).toBeDefined();
       expect(typeof RunEventCard).toBe('function');
     });
 
     test('exports TimelineEvent', async () => {
-      const { TimelineEvent } = await import('@/components/prompt-editor/debug-drawer/timeline-event');
+      const { TimelineEvent } =
+        await import('@/components/prompt-editor/debug-drawer/timeline-event');
       expect(TimelineEvent).toBeDefined();
       expect(typeof TimelineEvent).toBe('function');
     });
@@ -57,14 +60,16 @@ describe('Debug Drawer Components', () => {
 
   describe('trace summary generation (copy action)', () => {
     test('exports generateTraceSummaryText function', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
       expect(generateTraceSummaryText).toBeDefined();
       expect(typeof generateTraceSummaryText).toBe('function');
     });
 
     test('generates summary for minimal trace', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
-      
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
+
       const trace = {
         version: 1 as const,
         runId: 'test-run',
@@ -92,7 +97,7 @@ describe('Debug Drawer Components', () => {
       };
 
       const summary = generateTraceSummaryText(trace);
-      
+
       expect(typeof summary).toBe('string');
       expect(summary.length).toBeGreaterThan(0);
       expect(summary).toContain('Generate (Full)');
@@ -101,8 +106,9 @@ describe('Debug Drawer Components', () => {
     });
 
     test('summary includes LLM call information', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
-      
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
+
       const trace = {
         version: 1 as const,
         runId: 'test-run',
@@ -143,7 +149,7 @@ describe('Debug Drawer Components', () => {
       };
 
       const summary = generateTraceSummaryText(trace);
-      
+
       expect(summary).toContain('lyrics.generate');
       expect(summary).toContain('openai');
       expect(summary).toContain('gpt-4');
@@ -151,8 +157,9 @@ describe('Debug Drawer Components', () => {
     });
 
     test('summary includes decision information', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
-      
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
+
       const trace = {
         version: 1 as const,
         runId: 'test-run',
@@ -195,14 +202,15 @@ describe('Debug Drawer Components', () => {
       };
 
       const summary = generateTraceSummaryText(trace);
-      
+
       expect(summary).toContain('genre');
       expect(summary).toContain('jazz rock');
     });
 
     test('summary includes error information', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
-      
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
+
       const trace = {
         version: 1 as const,
         runId: 'test-run',
@@ -240,15 +248,16 @@ describe('Debug Drawer Components', () => {
       };
 
       const summary = generateTraceSummaryText(trace);
-      
+
       expect(summary).toContain('ai.generation');
       expect(summary).toContain('Model timeout');
       expect(summary).toContain('Errors:');
     });
 
     test('summary handles truncatedForCap flag', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
-      
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
+
       const trace = {
         version: 1 as const,
         runId: 'test-run',
@@ -276,13 +285,14 @@ describe('Debug Drawer Components', () => {
       };
 
       const summary = generateTraceSummaryText(trace);
-      
+
       expect(summary).toContain('Truncated for size cap: yes');
     });
 
     test('summary formats different action types', async () => {
-      const { generateTraceSummaryText } = await import('@/components/prompt-editor/debug-drawer/trace-summary');
-      
+      const { generateTraceSummaryText } =
+        await import('@/components/prompt-editor/debug-drawer/trace-summary');
+
       const actions = [
         { action: 'generate.full' as const, expected: 'Generate (Full)' },
         { action: 'generate.quickVibes' as const, expected: 'Generate (Quick Vibes)' },
@@ -367,7 +377,7 @@ describe('Advanced View Gating', () => {
   test('Advanced-only fields exist in LLM call type', async () => {
     // This test verifies the type structure supports Advanced gating
     const { enforceTraceSizeCap } = await import('@shared/trace');
-    
+
     // Create a trace with Advanced-only fields
     const trace = {
       version: 1 as const,
@@ -443,11 +453,11 @@ describe('Copy Actions Structure', () => {
     };
 
     const json = JSON.stringify(trace, null, 2);
-    
+
     expect(typeof json).toBe('string');
     expect(json).toContain('"version": 1');
     expect(json).toContain('"runId": "test"');
-    
+
     // Verify it can be parsed back
     const parsed = JSON.parse(json);
     expect(parsed.runId).toBe('test');

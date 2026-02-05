@@ -7,7 +7,16 @@ export const ELECTRONIC_GENRE: GenreDefinition = {
   pools: {
     pad: {
       pick: { min: 1, max: 2 },
-      instruments: ['synth pad', 'analog synth', 'FM synth', 'arpeggiator', 'synth', 'synth choir', 'supersaw', 'pluck synth'],
+      instruments: [
+        'synth pad',
+        'analog synth',
+        'FM synth',
+        'arpeggiator',
+        'synth',
+        'synth choir',
+        'supersaw',
+        'pluck synth',
+      ],
     },
     movement: {
       pick: { min: 2, max: 3 },
@@ -29,5 +38,14 @@ export const ELECTRONIC_GENRE: GenreDefinition = {
     ['supersaw', 'synth choir'],
   ],
   bpm: { min: 120, max: 150, typical: 128 },
-  moods: ['Euphoric', 'Energetic', 'Hypnotic', 'Driving', 'Pulsing', 'High Energy', 'Danceable', 'Intense'],
+  moods: [
+    'Euphoric',
+    'Energetic',
+    'Hypnotic',
+    'Driving',
+    'Pulsing',
+    'High Energy',
+    'Danceable',
+    'Intense',
+  ],
 };

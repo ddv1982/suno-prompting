@@ -27,7 +27,7 @@ interface ModeToggleDisabledState {
 
 /**
  * Compute the disabled state for all ModeToggle controls.
- * 
+ *
  * Buttons use autoDisable and get disabled from context.
  * Settings toggles (Lyrics, Max, Story) do NOT auto-disable - they're always interactive
  * except when explicitly disabled (e.g., Story when LLM unavailable).
@@ -169,9 +169,7 @@ describe('ModeToggle', () => {
 
 describe('ModeToggle source verification', () => {
   test('mode-toggle.tsx uses ToggleRow component for all toggles', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/components/prompt-editor/mode-toggle.tsx').text();
 
     // Verify uses ToggleRow (standard component) instead of custom implementation
     expect(source).toContain('import { ToggleRow }');
@@ -181,12 +179,10 @@ describe('ModeToggle source verification', () => {
   });
 
   test('mode-toggle.tsx uses autoDisable on buttons only', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/components/prompt-editor/mode-toggle.tsx').text();
 
     // Verify buttons use autoDisable prop
-    expect(source).toContain("autoDisable");
+    expect(source).toContain('autoDisable');
     expect(source).toContain("variant={editorMode === 'simple'");
     expect(source).toContain("variant={editorMode === 'advanced'");
     // Count occurrences of autoDisable - should be 2 (only the 2 buttons)
@@ -196,19 +192,15 @@ describe('ModeToggle source verification', () => {
   });
 
   test('mode-toggle.tsx does not have isGenerating prop', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/components/prompt-editor/mode-toggle.tsx').text();
 
     // Verify isGenerating is NOT in the props interface (uses context instead)
-    expect(source).not.toContain("isGenerating: boolean");
-    expect(source).not.toContain("disabled={isGenerating}");
+    expect(source).not.toContain('isGenerating: boolean');
+    expect(source).not.toContain('disabled={isGenerating}');
   });
 
   test('ModeToggleProps does not include isGenerating', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/prompt-editor/mode-toggle.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/components/prompt-editor/mode-toggle.tsx').text();
 
     // Verify the props interface doesn't include isGenerating
     const propsMatch = /interface ModeToggleProps \{[\s\S]*?\}/.exec(source);

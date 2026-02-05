@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 // =============================================================================
 // Line Detection Patterns
@@ -62,16 +62,16 @@ export function PromptOutput({ text }: PromptOutputProps): ReactElement {
         const isHeader = STANDARD_HEADER_PATTERN.test(cleanLine);
         // MAX mode headers signal quality settings - style them prominently in green
         // to match section styling and indicate special mode is active
-        const isMaxModeHeader = MAX_MODE_HEADER_PATTERN.test(cleanLine) || 
-                                SUNO_V5_TAGS_PATTERN.test(cleanLine);
+        const isMaxModeHeader =
+          MAX_MODE_HEADER_PATTERN.test(cleanLine) || SUNO_V5_TAGS_PATTERN.test(cleanLine);
 
         return (
           <div
             key={idx}
             className={cn(
-              isHeader && "text-muted-foreground",
-              isField && "text-foreground font-medium",
-              (isSection || isMaxModeHeader) && !isHeader && "text-primary font-bold tracking-wide"
+              isHeader && 'text-muted-foreground',
+              isField && 'text-foreground font-medium',
+              (isSection || isMaxModeHeader) && !isHeader && 'text-primary font-bold tracking-wide'
             )}
           >
             {line}

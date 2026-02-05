@@ -24,9 +24,7 @@ function extractBetween(readme: string, startMarker: string, endMarker: string):
     throw new Error(`Missing markers: ${startMarker} ... ${endMarker}`);
   }
 
-  return readme
-    .slice(start + startMarker.length, end)
-    .trim();
+  return readme.slice(start + startMarker.length, end).trim();
 }
 
 describe('README genre table', () => {
@@ -89,9 +87,12 @@ describe('replaceCountMarker', () => {
   });
 
   test('handles multiple occurrences of same marker', () => {
-    const input = 'First: <!-- TEST_COUNT -->10<!-- /TEST_COUNT -->, Second: <!-- TEST_COUNT -->10<!-- /TEST_COUNT -->';
+    const input =
+      'First: <!-- TEST_COUNT -->10<!-- /TEST_COUNT -->, Second: <!-- TEST_COUNT -->10<!-- /TEST_COUNT -->';
     const result = replaceCountMarker(input, 'TEST_COUNT', 99);
-    expect(result).toBe('First: <!-- TEST_COUNT -->99<!-- /TEST_COUNT -->, Second: <!-- TEST_COUNT -->99<!-- /TEST_COUNT -->');
+    expect(result).toBe(
+      'First: <!-- TEST_COUNT -->99<!-- /TEST_COUNT -->, Second: <!-- TEST_COUNT -->99<!-- /TEST_COUNT -->'
+    );
   });
 });
 
@@ -117,22 +118,30 @@ describe('validateAllMarkers', () => {
 
   test('passes when all markers present', () => {
     const readme = createValidReadme();
-    expect(() => { validateAllMarkers(readme); }).not.toThrow();
+    expect(() => {
+      validateAllMarkers(readme);
+    }).not.toThrow();
   });
 
   test('throws descriptive error for missing count marker', () => {
     const readme = createValidReadme().replace('<!-- SINGLE_GENRE_COUNT -->', '');
-    expect(() => { validateAllMarkers(readme); }).toThrow('Missing required marker: <!-- SINGLE_GENRE_COUNT -->');
+    expect(() => {
+      validateAllMarkers(readme);
+    }).toThrow('Missing required marker: <!-- SINGLE_GENRE_COUNT -->');
   });
 
   test('throws descriptive error for missing table marker', () => {
     const readme = createValidReadme().replace('<!-- GENRE_TABLE_START -->', '');
-    expect(() => { validateAllMarkers(readme); }).toThrow('Missing required marker: <!-- GENRE_TABLE_START -->');
+    expect(() => {
+      validateAllMarkers(readme);
+    }).toThrow('Missing required marker: <!-- GENRE_TABLE_START -->');
   });
 
   test('throws descriptive error for missing closing tag', () => {
     const readme = createValidReadme().replace('<!-- /MULTI_GENRE_COUNT -->', '');
-    expect(() => { validateAllMarkers(readme); }).toThrow('Missing closing tag for marker: <!-- /MULTI_GENRE_COUNT -->');
+    expect(() => {
+      validateAllMarkers(readme);
+    }).toThrow('Missing closing tag for marker: <!-- /MULTI_GENRE_COUNT -->');
   });
 });
 
@@ -143,7 +152,7 @@ describe('--check mode integration', () => {
   test('returns exit 0 when README is in sync', async () => {
     // First ensure README is in sync by running the sync command
     await $`bun run ${scriptPath}`.quiet();
-    
+
     // Now check should pass
     const result = await $`bun run ${scriptPath} --check`.quiet().nothrow();
     expect(result.exitCode).toBe(0);
@@ -153,7 +162,7 @@ describe('--check mode integration', () => {
   test('returns exit 1 when README is stale', async () => {
     // First sync to get a known good state
     await $`bun run ${scriptPath}`.quiet();
-    
+
     // Read current README and modify a count
     const readme = await readFile(readmePath, 'utf8');
     const modifiedReadme = readme.replace(
@@ -161,7 +170,7 @@ describe('--check mode integration', () => {
       '<!-- SINGLE_GENRE_COUNT -->999<!-- /SINGLE_GENRE_COUNT -->'
     );
     await writeFile(readmePath, modifiedReadme, 'utf8');
-    
+
     try {
       // Check should now fail
       const result = await $`bun run ${scriptPath} --check`.quiet().nothrow();

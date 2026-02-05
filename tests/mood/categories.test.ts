@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import {
-  MOOD_CATEGORIES,
-  MOOD_CATEGORY_KEYS,
-  getMoodCategoryOptions,
-} from '@bun/mood';
+import { MOOD_CATEGORIES, MOOD_CATEGORY_KEYS, getMoodCategoryOptions } from '@bun/mood';
 
 describe('MOOD_CATEGORIES', () => {
   test('should have 20 categories registered', () => {

@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from 'react';
 
 import { createLogger } from '@/lib/logger';
 import { rpcClient } from '@/services/rpc-client';
@@ -19,7 +27,12 @@ export interface SessionContextType {
   loadHistory: (retries?: number) => Promise<void>;
   saveSession: (session: PromptSession) => Promise<void>;
   deleteSession: (id: string) => Promise<void>;
-  createNewSession: (originalInput: string, prompt: string, title?: string, lyrics?: string) => PromptSession;
+  createNewSession: (
+    originalInput: string,
+    prompt: string,
+    title?: string,
+    lyrics?: string
+  ) => PromptSession;
   generateId: () => string;
 }
 
@@ -44,86 +57,81 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
         await new Promise((resolve) => setTimeout(resolve, APP_CONSTANTS.UI.RETRY_DELAY_MS));
         return loadHistory(retries - 1);
       }
-      log.error("loadHistory:failed", error);
+      log.error('loadHistory:failed', error);
     }
   }, []);
 
   const saveSession = useCallback(async (session: PromptSession) => {
     setSessions((prev) => {
-      const filtered = prev.filter(s => s.id !== session.id);
+      const filtered = prev.filter((s) => s.id !== session.id);
       return [session, ...filtered];
     });
     setCurrentSession(session);
     try {
       await rpcClient.saveSession({ session });
     } catch (error: unknown) {
-      log.error("saveSession:failed", error);
+      log.error('saveSession:failed', error);
     }
   }, []);
 
-  const deleteSession = useCallback(async (id: string) => {
-    try {
-      await rpcClient.deleteSession({ id });
-      setSessions((prev) => prev.filter(s => s.id !== id));
-      if (currentSession?.id === id) {
-        setCurrentSession(null);
+  const deleteSession = useCallback(
+    async (id: string) => {
+      try {
+        await rpcClient.deleteSession({ id });
+        setSessions((prev) => prev.filter((s) => s.id !== id));
+        if (currentSession?.id === id) {
+          setCurrentSession(null);
+        }
+      } catch (error: unknown) {
+        log.error('deleteSession:failed', error);
       }
-    } catch (error: unknown) {
-      log.error("deleteSession:failed", error);
-    }
-  }, [currentSession?.id]);
+    },
+    [currentSession?.id]
+  );
 
-  const createNewSession = useCallback((
-    originalInput: string, 
-    prompt: string, 
-    title?: string, 
-    lyrics?: string
-  ): PromptSession => {
-    const now = nowISO();
-    return {
-      id: generateId(),
-      originalInput,
-      currentPrompt: prompt,
-      currentTitle: title,
-      currentLyrics: lyrics,
-      versionHistory: [{
+  const createNewSession = useCallback(
+    (originalInput: string, prompt: string, title?: string, lyrics?: string): PromptSession => {
+      const now = nowISO();
+      return {
         id: generateId(),
-        content: prompt,
-        title,
-        lyrics,
-        timestamp: now,
-      }],
-      createdAt: now,
-      updatedAt: now,
-    };
-  }, []);
+        originalInput,
+        currentPrompt: prompt,
+        currentTitle: title,
+        currentLyrics: lyrics,
+        versionHistory: [
+          {
+            id: generateId(),
+            content: prompt,
+            title,
+            lyrics,
+            timestamp: now,
+          },
+        ],
+        createdAt: now,
+        updatedAt: now,
+      };
+    },
+    []
+  );
 
   useEffect(() => {
     void loadHistory();
   }, [loadHistory]);
 
   // Memoize the context value to prevent unnecessary re-renders of consumers
-  const contextValue = useMemo<SessionContextType>(() => ({
-    sessions,
-    currentSession,
-    setCurrentSession,
-    loadHistory,
-    saveSession,
-    deleteSession,
-    createNewSession,
-    generateId,
-  }), [
-    sessions,
-    currentSession,
-    loadHistory,
-    saveSession,
-    deleteSession,
-    createNewSession,
-  ]);
-
-  return (
-    <SessionContext.Provider value={contextValue}>
-      {children}
-    </SessionContext.Provider>
+  const contextValue = useMemo<SessionContextType>(
+    () => ({
+      sessions,
+      currentSession,
+      setCurrentSession,
+      loadHistory,
+      saveSession,
+      deleteSession,
+      createNewSession,
+      generateId,
+    }),
+    [sessions, currentSession, loadHistory, saveSession, deleteSession, createNewSession]
   );
+
+  return <SessionContext.Provider value={contextValue}>{children}</SessionContext.Provider>;
 };

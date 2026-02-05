@@ -47,10 +47,10 @@ describe('selectRandomN', () => {
   test('selects N unique items from array', () => {
     const items = ['a', 'b', 'c', 'd', 'e'];
     const selected = selectRandomN(items, 3);
-    
+
     expect(selected).toHaveLength(3);
     // All selected items should be from original array
-    selected.forEach(item => {
+    selected.forEach((item) => {
       expect(items).toContain(item);
     });
     // All selected items should be unique
@@ -61,7 +61,9 @@ describe('selectRandomN', () => {
   test('throws InvariantError when count exceeds array length', () => {
     const items = ['a', 'b'];
     expect(() => selectRandomN(items, 5)).toThrow(InvariantError);
-    expect(() => selectRandomN(items, 5)).toThrow('selectRandomN: requested 5 items but array only has 2');
+    expect(() => selectRandomN(items, 5)).toThrow(
+      'selectRandomN: requested 5 items but array only has 2'
+    );
   });
 
   test('returns empty array for count 0', () => {
@@ -116,7 +118,7 @@ describe('createSeededRng', () => {
 
   test('produces values between 0 and 1', () => {
     const rng = createSeededRng(42);
-    
+
     for (let i = 0; i < 100; i++) {
       const value = rng();
       expect(value).toBeGreaterThanOrEqual(0);

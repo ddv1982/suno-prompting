@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 
-import { AppError, ValidationError, AIGenerationError, StorageError, getErrorMessage } from '@shared/errors';
+import {
+  AppError,
+  ValidationError,
+  AIGenerationError,
+  StorageError,
+  getErrorMessage,
+} from '@shared/errors';
 
 describe('Error classes', () => {
   describe('AppError', () => {
@@ -86,7 +92,12 @@ describe('Error classes', () => {
     });
 
     test('supports all operation types', () => {
-      const operations: ('read' | 'write' | 'decrypt' | 'encrypt')[] = ['read', 'write', 'decrypt', 'encrypt'];
+      const operations: ('read' | 'write' | 'decrypt' | 'encrypt')[] = [
+        'read',
+        'write',
+        'decrypt',
+        'encrypt',
+      ];
       for (const op of operations) {
         const error = new StorageError(`${op} failed`, op);
         expect(error.operation).toBe(op);

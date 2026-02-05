@@ -95,10 +95,7 @@ function mapSchemaToBuilderSection(schemaType: SchemaSectionType): SectionType |
  * });
  * // result.text uses 'euphoric' mood and explosive descriptor
  */
-export function buildSection(
-  sectionType: SectionType,
-  context: SectionContext
-): SectionResult {
+export function buildSection(sectionType: SectionType, context: SectionContext): SectionResult {
   const { genre, rng, trackInstruments = [], sectionOverride } = context;
   const template = SECTION_TEMPLATES[sectionType];
 
@@ -115,12 +112,7 @@ export function buildSection(
         rng,
         sectionOverride.dynamics
       )
-    : selectSectionInstruments(
-        genre,
-        template.instrumentCount,
-        trackInstruments,
-        rng
-      );
+    : selectSectionInstruments(genre, template.instrumentCount, trackInstruments, rng);
 
   // Get moods - use override if provided, otherwise genre-derived
   let selectedMoods: string[];
@@ -181,13 +173,7 @@ export function buildSection(
  */
 export function buildAllSections(context: SectionContext): AllSectionsResult {
   const { genre, rng } = context;
-  const sectionOrder: readonly SectionType[] = [
-    'INTRO',
-    'VERSE',
-    'CHORUS',
-    'BRIDGE',
-    'OUTRO',
-  ];
+  const sectionOrder: readonly SectionType[] = ['INTRO', 'VERSE', 'CHORUS', 'BRIDGE', 'OUTRO'];
 
   const sections: SectionResult[] = [];
   const usedInstruments: string[] = [];
@@ -292,9 +278,7 @@ function buildOverridesFromContrast(
  * });
  * // Sections will use contrast-provided moods and dynamics-influenced articulations
  */
-export function buildSectionsWithContrast(
-  context: SectionContextWithContrast
-): AllSectionsResult {
+export function buildSectionsWithContrast(context: SectionContextWithContrast): AllSectionsResult {
   const { genre, rng, trackInstruments, contrast } = context;
 
   // Fallback to existing behavior when no contrast provided
@@ -305,13 +289,7 @@ export function buildSectionsWithContrast(
   // Build overrides map from contrast data
   const overrides = buildOverridesFromContrast(contrast);
 
-  const sectionOrder: readonly SectionType[] = [
-    'INTRO',
-    'VERSE',
-    'CHORUS',
-    'BRIDGE',
-    'OUTRO',
-  ];
+  const sectionOrder: readonly SectionType[] = ['INTRO', 'VERSE', 'CHORUS', 'BRIDGE', 'OUTRO'];
 
   const sections: SectionResult[] = [];
   const usedInstruments: string[] = [];

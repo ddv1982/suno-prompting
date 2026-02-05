@@ -23,7 +23,7 @@ export function normalizeToken(token: string): string {
 export function matchInstrument(token: string): string | null {
   const normalized = normalizeToken(token);
   if (!normalized) return null;
-  
+
   // Direct match
   const direct = ALIAS_TO_CANONICAL.get(normalized);
   if (direct) return direct;
@@ -38,7 +38,7 @@ export function matchInstrument(token: string): string | null {
 
 function extractTokensFromText(text: string): string[] {
   const tokens: string[] = [];
-  
+
   // First try context patterns
   for (const pattern of INSTRUMENT_CONTEXT_PATTERNS) {
     const regex = new RegExp(pattern.source, pattern.flags);
@@ -47,14 +47,14 @@ function extractTokensFromText(text: string): string[] {
       if (match[1]) {
         // Split on common delimiters
         const parts = match[1].split(/\s*(?:,|and|&)\s*/i);
-        tokens.push(...parts.map(p => p.trim()).filter(Boolean));
+        tokens.push(...parts.map((p) => p.trim()).filter(Boolean));
       }
     }
   }
 
   // Also scan for known instruments directly in text
   const words = text.split(/[\s,;.()[\]]+/);
-  
+
   // Try single words and 2-3 word combinations
   for (let i = 0; i < words.length; i++) {
     const word = words[i];

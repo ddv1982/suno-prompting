@@ -27,7 +27,10 @@ describe('rpc-client/errors', () => {
   });
 
   test('mapToRpcError maps explicit validation code to RPC_VALIDATION', () => {
-    const err = mapToRpcError({ code: 'RPC_VALIDATION', message: 'bad', fieldErrors: { name: ['Required'] } }, { method: 'm' });
+    const err = mapToRpcError(
+      { code: 'RPC_VALIDATION', message: 'bad', fieldErrors: { name: ['Required'] } },
+      { method: 'm' }
+    );
     expect(err.code).toBe('RPC_VALIDATION');
   });
 

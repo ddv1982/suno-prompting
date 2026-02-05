@@ -46,10 +46,7 @@ let cachedStatus: CachedStatus | null = null;
  * Make an HTTP GET request to Ollama's /api/tags endpoint using node:http.
  * This avoids Bun's fetch bug where response bodies are empty.
  */
-async function ollamaTagsRequest(
-  endpoint: string,
-  timeoutMs: number
-): Promise<OllamaTagsResponse> {
+async function ollamaTagsRequest(endpoint: string, timeoutMs: number): Promise<OllamaTagsResponse> {
   return new Promise((resolve, reject) => {
     const url = new URL(endpoint);
     const port = url.port ? parseInt(url.port, 10) : 11434;
@@ -123,9 +120,8 @@ export async function checkOllamaAvailable(
 
     // Check if Gemma 3 4B model is available
     const hasGemma =
-      tags.models?.some(
-        (m) => m.name === GEMMA_MODEL || m.name.startsWith(`${GEMMA_MODEL}:`)
-      ) ?? false;
+      tags.models?.some((m) => m.name === GEMMA_MODEL || m.name.startsWith(`${GEMMA_MODEL}:`)) ??
+      false;
 
     cachedStatus = { available: true, hasGemma, checkedAt: now };
     log.info('checkOllamaAvailable:success', {

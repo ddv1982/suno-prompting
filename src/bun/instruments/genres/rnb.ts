@@ -33,5 +33,15 @@ export const RNB_GENRE: GenreDefinition = {
     ['drums', '808'],
   ],
   bpm: { min: 70, max: 100, typical: 88 },
-  moods: ['Smooth', 'Intimate', 'Groovy', 'Sensual', 'Late Night', 'Soulful', 'Romantic', 'Confident', 'Warm'],
+  moods: [
+    'Smooth',
+    'Intimate',
+    'Groovy',
+    'Sensual',
+    'Late Night',
+    'Soulful',
+    'Romantic',
+    'Confident',
+    'Warm',
+  ],
 };

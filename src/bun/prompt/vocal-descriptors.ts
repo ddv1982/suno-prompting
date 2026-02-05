@@ -7,9 +7,7 @@ export const VOCAL_RANGES = {
   neutral: ['Tenor', 'Alto', 'Baritone', 'Mezzo Soprano'] as const,
 };
 
-export type VocalRange = 
-  | typeof VOCAL_RANGES.male[number]
-  | typeof VOCAL_RANGES.female[number];
+export type VocalRange = (typeof VOCAL_RANGES.male)[number] | (typeof VOCAL_RANGES.female)[number];
 
 export const VOCAL_DELIVERIES = [
   'Belting',
@@ -34,7 +32,7 @@ export const VOCAL_DELIVERIES = [
   'Theatrical',
 ] as const;
 
-export type VocalDelivery = typeof VOCAL_DELIVERIES[number];
+export type VocalDelivery = (typeof VOCAL_DELIVERIES)[number];
 
 export const VOCAL_TECHNIQUES = [
   'Stacked Harmonies',
@@ -55,14 +53,17 @@ export const VOCAL_TECHNIQUES = [
   'Scat Fills',
 ] as const;
 
-export type VocalTechnique = typeof VOCAL_TECHNIQUES[number];
+export type VocalTechnique = (typeof VOCAL_TECHNIQUES)[number];
 
 // Genre-specific vocal style suggestions
-export const GENRE_VOCAL_STYLES: Record<string, {
-  ranges: readonly VocalRange[];
-  deliveries: readonly string[];
-  techniques: readonly string[];
-}> = {
+export const GENRE_VOCAL_STYLES: Record<
+  string,
+  {
+    ranges: readonly VocalRange[];
+    deliveries: readonly string[];
+    techniques: readonly string[];
+  }
+> = {
   jazz: {
     ranges: ['Tenor', 'Baritone', 'Alto', 'Mezzo Soprano'],
     deliveries: ['Smooth', 'Crooner Style', 'Laid Back', 'Intimate', 'Melismatic'],
@@ -183,11 +184,11 @@ export function getVocalSuggestionsForGenre(
   rng: () => number = Math.random
 ): { range: string; delivery: string; technique: string } {
   const style = GENRE_VOCAL_STYLES[genre.toLowerCase()] ?? DEFAULT_VOCAL_STYLE;
-  
+
   const rangeIdx = Math.floor(rng() * style.ranges.length);
   const deliveryIdx = Math.floor(rng() * style.deliveries.length);
   const techniqueIdx = Math.floor(rng() * style.techniques.length);
-  
+
   return {
     range: style.ranges[rangeIdx] ?? 'Tenor',
     delivery: style.deliveries[deliveryIdx] ?? 'Smooth',
@@ -196,20 +197,20 @@ export function getVocalSuggestionsForGenre(
 }
 
 // Build vocal descriptor string
-export function buildVocalDescriptor(
-  genre: string,
-  rng: () => number = Math.random
-): string {
+export function buildVocalDescriptor(genre: string, rng: () => number = Math.random): string {
   const { range, delivery, technique } = getVocalSuggestionsForGenre(genre, rng);
   return `${range}, ${delivery} Delivery, ${technique}`;
 }
 
 // Genre-specific backing vocal suggestions
 // These are actual singable sounds that work well as background harmonies
-export const GENRE_BACKING_VOCALS: Record<string, {
-  wordless: readonly string[];
-  echoStyle: string;
-}> = {
+export const GENRE_BACKING_VOCALS: Record<
+  string,
+  {
+    wordless: readonly string[];
+    echoStyle: string;
+  }
+> = {
   pop: {
     wordless: ['(ooh)', '(oh-oh)', '(na na na)', '(hey)', '(woah)'],
     echoStyle: 'repeat the hook word',
@@ -227,7 +228,7 @@ export const GENRE_BACKING_VOCALS: Record<string, {
     echoStyle: 'call and response style',
   },
   hiphop: {
-    wordless: ['(uh)', '(ayy)', '(what)', '(let\'s go)', '(aye)'],
+    wordless: ['(uh)', '(ayy)', '(what)', "(let's go)", '(aye)'],
     echoStyle: 'ad-lib the last word',
   },
   jazz: {

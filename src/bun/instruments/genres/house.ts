@@ -2,7 +2,15 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const HOUSE_GENRE: GenreDefinition = {
   name: 'House',
-  keywords: ['house', 'deep house', 'tech house', 'progressive house', 'chicago house', 'garage', 'uk garage'],
+  keywords: [
+    'house',
+    'deep house',
+    'tech house',
+    'progressive house',
+    'chicago house',
+    'garage',
+    'uk garage',
+  ],
   description: 'Four-on-the-floor dance music with soulful vocals, warm pads, and driving rhythms',
   pools: {
     harmonic: {
@@ -20,7 +28,18 @@ export const HOUSE_GENRE: GenreDefinition = {
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['kick drum', 'hi-hat', '808', 'TR-909', 'handclaps', 'shaker', 'percussion', 'cowbell', 'congas', 'bongos'],
+      instruments: [
+        'kick drum',
+        'hi-hat',
+        '808',
+        'TR-909',
+        'handclaps',
+        'shaker',
+        'percussion',
+        'cowbell',
+        'congas',
+        'bongos',
+      ],
     },
     rare: {
       pick: { min: 0, max: 1 },

@@ -7,7 +7,7 @@ import type { AdvancedSelection } from '@shared/types';
  *
  * Tests cover:
  * - Clear All button disabled via autoDisable context
- * - MoodCategoryCombobox disabled via autoDisable context  
+ * - MoodCategoryCombobox disabled via autoDisable context
  * - GenreMultiSelect disabled via autoDisable context + mutual exclusion
  * - SunoStylesMultiSelect disabled via autoDisable context + mutual exclusion
  * - AdvancedOptionsGrid comboboxes disabled via autoDisable context
@@ -40,11 +40,11 @@ interface AdvancedPanelDisabledState {
 
 /**
  * Compute the disabled state for AdvancedPanel controls based on mutual exclusion logic.
- * 
+ *
  * Note: Generation/LLM availability disabling is handled via GenerationDisabledProvider
  * context with autoDisable props. This function only computes the component-specific
  * disable conditions (mutual exclusivity between genres and suno styles).
- * 
+ *
  * @param contextDisabled - Whether the GenerationDisabledProvider context is disabled
  * @param selection - Current advanced selection state
  */
@@ -140,13 +140,19 @@ describe('AdvancedPanel', () => {
       expect(shouldShowClearAllButton(createDefaultSelection())).toBe(false);
 
       // Has genres - visible
-      expect(shouldShowClearAllButton({ ...createDefaultSelection(), seedGenres: ['jazz'] })).toBe(true);
+      expect(shouldShowClearAllButton({ ...createDefaultSelection(), seedGenres: ['jazz'] })).toBe(
+        true
+      );
 
       // Has suno styles - visible
-      expect(shouldShowClearAllButton({ ...createDefaultSelection(), sunoStyles: ['dream-pop'] })).toBe(true);
+      expect(
+        shouldShowClearAllButton({ ...createDefaultSelection(), sunoStyles: ['dream-pop'] })
+      ).toBe(true);
 
       // Has harmonic style - visible
-      expect(shouldShowClearAllButton({ ...createDefaultSelection(), harmonicStyle: 'minor' })).toBe(true);
+      expect(
+        shouldShowClearAllButton({ ...createDefaultSelection(), harmonicStyle: 'minor' })
+      ).toBe(true);
     });
   });
 

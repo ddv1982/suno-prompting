@@ -187,11 +187,11 @@ export function getTagWeightsForGenre(genre: GenreType): TagCategoryWeights {
  * - Energetic/Intense: Boost dynamic, temporal, and vocal emphasis
  */
 const ENERGY_WEIGHT_MULTIPLIERS: Record<EnergyLevel, Partial<TagCategoryWeights>> = {
-  'ambient': { dynamic: 0.3, temporal: 0.5 },
-  'relaxed': { dynamic: 0.6, temporal: 0.7 },
-  'moderate': {},  // no change
-  'energetic': { dynamic: 1.4, temporal: 1.2 },
-  'intense': { dynamic: 1.8, temporal: 1.5, vocal: 1.2 },
+  ambient: { dynamic: 0.3, temporal: 0.5 },
+  relaxed: { dynamic: 0.6, temporal: 0.7 },
+  moderate: {}, // no change
+  energetic: { dynamic: 1.4, temporal: 1.2 },
+  intense: { dynamic: 1.8, temporal: 1.5, vocal: 1.2 },
 };
 
 /**

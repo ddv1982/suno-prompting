@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const HARDSTYLE_GENRE: GenreDefinition = {
   name: 'Hardstyle',
   keywords: ['hardstyle', 'hard dance', 'hardstyle kick', 'euphoric hardstyle', 'rawstyle'],
-  description: 'Hard-hitting dance music with distorted kicks, euphoric melodies, and intense drops',
+  description:
+    'Hard-hitting dance music with distorted kicks, euphoric melodies, and intense drops',
   pools: {
     kick: {
       pick: { min: 1, max: 1 },

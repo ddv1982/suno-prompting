@@ -148,7 +148,9 @@ function getArcElement(arc: readonly string[], position: ArcPosition): string | 
  * //   ]
  * // }
  */
-export function narrativeArcToContrast(narrativeArc: readonly string[] | undefined): Contrast | undefined {
+export function narrativeArcToContrast(
+  narrativeArc: readonly string[] | undefined
+): Contrast | undefined {
   if (!narrativeArc || narrativeArc.length === 0) {
     return undefined;
   }

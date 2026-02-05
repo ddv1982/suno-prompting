@@ -27,9 +27,18 @@ import { traceDecision } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
 import { stripMaxModeHeader } from '@shared/prompt-utils';
 
-import { DEFAULT_LYRICS_TOPIC, enforceGenreCount, generateLyricsForCreativeBoost, postProcessCreativeBoostResponse } from './helpers';
+import {
+  DEFAULT_LYRICS_TOPIC,
+  enforceGenreCount,
+  generateLyricsForCreativeBoost,
+  postProcessCreativeBoostResponse,
+} from './helpers';
 
-import type { RefineCreativeBoostOptions, RefineDirectModeOptions, CreativeBoostEngineConfig } from './types';
+import type {
+  RefineCreativeBoostOptions,
+  RefineDirectModeOptions,
+  CreativeBoostEngineConfig,
+} from './types';
 import type { GenerationResult } from '@bun/ai/types';
 import type { LanguageModel } from 'ai';
 
@@ -98,7 +107,14 @@ async function generateLyricsForDirectMode(
 ): Promise<string | undefined> {
   const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
   const result = await generateLyricsForCreativeBoost(
-    styleResult, topicForLyrics, feedback, false, true, getModel, useSunoTags, ollamaEndpoint
+    styleResult,
+    topicForLyrics,
+    feedback,
+    false,
+    true,
+    getModel,
+    useSunoTags,
+    ollamaEndpoint
   );
   return result.lyrics;
 }
@@ -188,9 +204,7 @@ async function applyStoryModeToRefinement(
   });
 
   if (storyResult.success) {
-    const finalText = maxMode
-      ? prependMaxHeaders(storyResult.narrative)
-      : storyResult.narrative;
+    const finalText = maxMode ? prependMaxHeaders(storyResult.narrative) : storyResult.narrative;
 
     log.info('refineCreativeBoost:storyMode:success', { narrativeLength: finalText.length });
     return { ...result, text: finalText };
@@ -216,7 +230,7 @@ async function applyStoryModeToRefinement(
 
 /**
  * Direct Mode refinement - uses shared enrichment and optionally generates lyrics.
- * 
+ *
  * Uses buildDirectModePrompt for enriched prompt (DRY - same as generation).
  * Title only regenerated when feedback is provided (preserves original otherwise).
  * Lyrics only generated when feedback is provided and withLyrics is true.
@@ -225,15 +239,34 @@ async function refineDirectMode(
   options: RefineDirectModeOptions,
   config: CreativeBoostEngineConfig
 ): Promise<GenerationResult> {
-  const { currentTitle, currentLyrics, feedback, lyricsTopic, description, sunoStyles, withLyrics, maxMode } = options;
+  const {
+    currentTitle,
+    currentLyrics,
+    feedback,
+    lyricsTopic,
+    description,
+    sunoStyles,
+    withLyrics,
+    maxMode,
+  } = options;
   const hasFeedback = Boolean(feedback?.trim());
 
-  log.info('refineDirectMode:start', { stylesCount: sunoStyles.length, hasFeedback, withLyrics, maxMode });
+  log.info('refineDirectMode:start', {
+    stylesCount: sunoStyles.length,
+    hasFeedback,
+    withLyrics,
+    maxMode,
+  });
 
   const { text: enrichedPrompt } = buildDirectModePrompt(sunoStyles, maxMode);
 
   const title = hasFeedback
-    ? await tryRefineDirectModeTitle(currentTitle, description || lyricsTopic || feedback, sunoStyles, config)
+    ? await tryRefineDirectModeTitle(
+        currentTitle,
+        description || lyricsTopic || feedback,
+        sunoStyles,
+        config
+      )
     : currentTitle;
 
   // Lyrics bootstrap:
@@ -242,7 +275,13 @@ async function refineDirectMode(
   const shouldGenerateLyrics = withLyrics && (!currentLyrics || hasFeedback);
   const lyricsFeedback = hasFeedback ? feedback : '';
   const lyrics = shouldGenerateLyrics
-    ? await tryRefineDirectModeLyrics(enrichedPrompt, lyricsTopic, description, lyricsFeedback, config)
+    ? await tryRefineDirectModeLyrics(
+        enrichedPrompt,
+        lyricsTopic,
+        description,
+        lyricsFeedback,
+        config
+      )
     : currentLyrics;
 
   log.info('refineDirectMode:complete', {
@@ -288,16 +327,19 @@ export async function refineCreativeBoost(
   // Direct Mode: Use shared enrichment and optionally generate lyrics
   // Skip genre count enforcement for Direct Mode (sunoStyles selected)
   if (isDirectMode(sunoStyles)) {
-    return refineDirectMode({
-      currentTitle,
-      currentLyrics,
-      feedback,
-      lyricsTopic,
-      description,
-      sunoStyles,
-      withLyrics,
-      maxMode,
-    }, config);
+    return refineDirectMode(
+      {
+        currentTitle,
+        currentLyrics,
+        feedback,
+        lyricsTopic,
+        description,
+        sunoStyles,
+        withLyrics,
+        maxMode,
+      },
+      config
+    );
   }
 
   const cleanPrompt = stripMaxModeHeader(currentPrompt);
@@ -307,7 +349,13 @@ export async function refineCreativeBoost(
 
   const systemPrompt = buildCreativeBoostRefineSystemPrompt(targetGenreCount);
   const userPrompt = buildCreativeBoostRefineUserPrompt(
-    cleanPrompt, currentTitle, feedback, lyricsTopic, seedGenres, perfCtx.performanceInstruments, perfCtx.guidance
+    cleanPrompt,
+    currentTitle,
+    feedback,
+    lyricsTopic,
+    seedGenres,
+    perfCtx.performanceInstruments,
+    perfCtx.guidance
   );
 
   // Get Ollama endpoint for local LLM mode (bypasses Bun fetch bug)
@@ -325,27 +373,31 @@ export async function refineCreativeBoost(
 
   // Enforce genre count on LLM response when targetGenreCount > 0
   // This post-processes the style to guarantee the exact genre count
-  const enforcedStyle = targetGenreCount && targetGenreCount > 0
-    ? enforceGenreCount(parsed.style, targetGenreCount)
-    : parsed.style;
+  const enforcedStyle =
+    targetGenreCount && targetGenreCount > 0
+      ? enforceGenreCount(parsed.style, targetGenreCount)
+      : parsed.style;
 
-  const result = await postProcessCreativeBoostResponse({ ...parsed, style: enforcedStyle }, {
-    rawStyle: enforcedStyle,
-    maxMode,
-    seedGenres,
-    sunoStyles,
-    lyricsTopic,
-    description,
-    withLyrics,
-    systemPrompt,
-    userPrompt,
-    rawResponse,
-    config,
-    performanceInstruments: perfCtx.performanceInstruments,
-    performanceVocalStyle: perfCtx.performanceVocalStyle,
-    chordProgression: perfCtx.chordProgression,
-    bpmRange: perfCtx.bpmRange,
-  });
+  const result = await postProcessCreativeBoostResponse(
+    { ...parsed, style: enforcedStyle },
+    {
+      rawStyle: enforcedStyle,
+      maxMode,
+      seedGenres,
+      sunoStyles,
+      lyricsTopic,
+      description,
+      withLyrics,
+      systemPrompt,
+      userPrompt,
+      rawResponse,
+      config,
+      performanceInstruments: perfCtx.performanceInstruments,
+      performanceVocalStyle: perfCtx.performanceVocalStyle,
+      chordProgression: perfCtx.chordProgression,
+      bpmRange: perfCtx.bpmRange,
+    }
+  );
 
   // Apply Story Mode transformation if enabled
   return applyStoryModeToRefinement(result, description, maxMode, config, runtime);

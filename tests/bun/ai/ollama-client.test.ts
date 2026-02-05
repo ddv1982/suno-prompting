@@ -39,9 +39,9 @@ interface OllamaGenerationOptions {
  */
 function buildOllamaOptions(options?: OllamaGenerationOptions): Record<string, number> | undefined {
   if (!options) return undefined;
-  
+
   const ollamaOptions: Record<string, number> = {};
-  
+
   if (options.temperature !== undefined) {
     ollamaOptions.temperature = options.temperature;
   }
@@ -51,7 +51,7 @@ function buildOllamaOptions(options?: OllamaGenerationOptions): Record<string, n
   if (options.contextLength !== undefined) {
     ollamaOptions.num_ctx = options.contextLength;
   }
-  
+
   return Object.keys(ollamaOptions).length > 0 ? ollamaOptions : undefined;
 }
 
@@ -66,7 +66,7 @@ function buildRequestBody(
   options?: OllamaGenerationOptions
 ): Record<string, unknown> {
   const ollamaOptions = buildOllamaOptions(options);
-  
+
   return {
     model,
     messages: [
@@ -145,7 +145,7 @@ describe('Ollama Request Body Building', () => {
   describe('buildRequestBody', () => {
     test('includes model, messages, and stream=false', () => {
       const body = buildRequestBody('gemma3:4b', 'system', 'user');
-      
+
       expect(body.model).toBe('gemma3:4b');
       expect(body.stream).toBe(false);
       expect(body.messages).toEqual([
@@ -156,13 +156,13 @@ describe('Ollama Request Body Building', () => {
 
     test('omits options when none provided', () => {
       const body = buildRequestBody('gemma3:4b', 'system', 'user');
-      
+
       expect(body.options).toBeUndefined();
     });
 
     test('omits options when empty object provided', () => {
       const body = buildRequestBody('gemma3:4b', 'system', 'user', {});
-      
+
       expect(body.options).toBeUndefined();
     });
 
@@ -170,7 +170,7 @@ describe('Ollama Request Body Building', () => {
       const body = buildRequestBody('gemma3:4b', 'system', 'user', {
         temperature: 0.8,
       });
-      
+
       expect(body.options).toEqual({ temperature: 0.8 });
     });
 
@@ -180,7 +180,7 @@ describe('Ollama Request Body Building', () => {
         maxTokens: 1500,
         contextLength: 2048,
       });
-      
+
       expect(body.options).toEqual({
         temperature: 0.9,
         num_predict: 1500,
@@ -191,7 +191,7 @@ describe('Ollama Request Body Building', () => {
     test('preserves different model names', () => {
       const body1 = buildRequestBody('llama2:7b', 'sys', 'usr');
       const body2 = buildRequestBody('mistral:latest', 'sys', 'usr');
-      
+
       expect(body1.model).toBe('llama2:7b');
       expect(body2.model).toBe('mistral:latest');
     });
@@ -199,9 +199,9 @@ describe('Ollama Request Body Building', () => {
     test('preserves prompt content exactly', () => {
       const systemPrompt = 'You are a helpful assistant.\nBe concise.';
       const userPrompt = 'What is 2+2?';
-      
+
       const body = buildRequestBody('gemma3:4b', systemPrompt, userPrompt);
-      
+
       expect(body.messages).toEqual([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -239,7 +239,7 @@ describe('Field Mapping', () => {
       contextLength: 12345,
     };
     const result = buildOllamaOptions(input);
-    
+
     expect(result?.temperature).toBe(0.123456789);
     expect(result?.num_predict).toBe(999);
     expect(result?.num_ctx).toBe(12345);
@@ -302,7 +302,7 @@ describe('Partial Options Combinations', () => {
 describe('Backward Compatibility', () => {
   test('request body works without options (original behavior)', () => {
     const body = buildRequestBody('gemma3:4b', 'system', 'user');
-    
+
     // Should have the original structure without options
     expect(body).toEqual({
       model: 'gemma3:4b',
@@ -317,14 +317,14 @@ describe('Backward Compatibility', () => {
   test('undefined options parameter treated same as missing', () => {
     const bodyWithUndefined = buildRequestBody('gemma3:4b', 'sys', 'usr', undefined);
     const bodyWithoutOptions = buildRequestBody('gemma3:4b', 'sys', 'usr');
-    
+
     expect(bodyWithUndefined).toEqual(bodyWithoutOptions);
   });
 
   test('empty options object treated same as missing', () => {
     const bodyWithEmpty = buildRequestBody('gemma3:4b', 'sys', 'usr', {});
     const bodyWithoutOptions = buildRequestBody('gemma3:4b', 'sys', 'usr');
-    
+
     expect(bodyWithEmpty).toEqual(bodyWithoutOptions);
   });
 });
@@ -336,50 +336,50 @@ describe('Backward Compatibility', () => {
 describe('Source File Verification', () => {
   test('OllamaGenerationOptions interface is exported', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('export interface OllamaGenerationOptions');
   });
 
   test('interface has temperature field', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('temperature?: number');
   });
 
   test('interface has maxTokens field', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('maxTokens?: number');
   });
 
   test('interface has contextLength field', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('contextLength?: number');
   });
 
   test('generateWithOllama accepts options parameter', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('options?: OllamaGenerationOptions');
   });
 
   test('options object maps maxTokens to num_predict', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('ollamaOptions.num_predict = options.maxTokens');
   });
 
   test('options object maps contextLength to num_ctx', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
+
     expect(source).toContain('ollamaOptions.num_ctx = options.contextLength');
   });
 
   test('options only included when at least one option provided', async () => {
     const source = await Bun.file('src/bun/ai/ollama-client.ts').text();
-    
-    expect(source).toContain("Object.keys(ollamaOptions).length > 0");
+
+    expect(source).toContain('Object.keys(ollamaOptions).length > 0');
   });
 });
 
@@ -394,12 +394,12 @@ describe('OllamaGenerationOptions Type Safety', () => {
     const opts2: OllamaGenerationOptions = { temperature: 0.5 };
     const opts3: OllamaGenerationOptions = { maxTokens: 1000 };
     const opts4: OllamaGenerationOptions = { contextLength: 4096 };
-    const opts5: OllamaGenerationOptions = { 
-      temperature: 0.7, 
-      maxTokens: 2000, 
-      contextLength: 8192 
+    const opts5: OllamaGenerationOptions = {
+      temperature: 0.7,
+      maxTokens: 2000,
+      contextLength: 8192,
     };
-    
+
     expect(opts1).toBeDefined();
     expect(opts2.temperature).toBe(0.5);
     expect(opts3.maxTokens).toBe(1000);
@@ -413,7 +413,7 @@ describe('OllamaGenerationOptions Type Safety', () => {
       maxTokens: 2000,
       contextLength: 4096,
     };
-    
+
     expect(typeof options.temperature).toBe('number');
     expect(typeof options.maxTokens).toBe('number');
     expect(typeof options.contextLength).toBe('number');
@@ -430,7 +430,7 @@ describe('generateWithOllama Integration', () => {
    * and checking that the OllamaGenerationOptions interface is correctly exported
    * and the function signature matches expectations.
    */
-  
+
   test('OllamaGenerationOptions is exported from ollama-client', async () => {
     // This verifies the type is exported (compile-time check)
     const module = await import('@bun/ai/ollama-client');
@@ -441,7 +441,7 @@ describe('generateWithOllama Integration', () => {
   test('generateWithOllama function accepts options parameter', async () => {
     // Verify function can be called with options (compile check + runtime signature)
     const { generateWithOllama } = await import('@bun/ai/ollama-client');
-    
+
     // The function should accept 6 parameters:
     // (endpoint, systemPrompt, userPrompt, timeoutMs, model, options)
     expect(generateWithOllama.length).toBeLessThanOrEqual(6);
@@ -449,10 +449,10 @@ describe('generateWithOllama Integration', () => {
 
   test('generateWithOllama returns a Promise', async () => {
     const { generateWithOllama } = await import('@bun/ai/ollama-client');
-    
+
     // Verify function is defined and is a function
     expect(typeof generateWithOllama).toBe('function');
-    
+
     // Call with invalid params to verify it returns a Promise
     // It will reject but that proves async behavior
     const result = generateWithOllama(
@@ -463,10 +463,10 @@ describe('generateWithOllama Integration', () => {
       'test-model',
       undefined
     );
-    
+
     // Verify it returns a Promise
     expect(result).toBeInstanceOf(Promise);
-    
+
     // Clean up by catching the expected rejection
     await result.catch(() => {});
   });

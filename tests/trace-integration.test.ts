@@ -1,6 +1,6 @@
 /**
  * F5 & F6: Integration tests for trace instrumentation
- * 
+ *
  * F5: LLM tracing instrumentation (mock AI SDK + Ollama)
  * F6: Deterministic decision tracing
  */
@@ -14,11 +14,15 @@ import {
   normalizeTraceError,
   traceError,
 } from '@bun/trace';
-import { AIGenerationError, OllamaUnavailableError, OllamaTimeoutError, ValidationError } from '@shared/errors';
+import {
+  AIGenerationError,
+  OllamaUnavailableError,
+  OllamaTimeoutError,
+  ValidationError,
+} from '@shared/errors';
 
 import type { TraceCollectorInit } from '@bun/trace';
 import type { TraceDecisionEvent } from '@shared/types/trace';
-
 
 // ========================================================================
 // F5: Integration tests for LLM tracing instrumentation
@@ -61,10 +65,10 @@ describe('TraceCollector', () => {
     test('adds run.start event with correct shape', () => {
       const collector = createTraceCollector(baseInit);
       collector.addRunEvent('run.start', 'Starting generation');
-      
+
       const trace = collector.finalize();
       const event = trace.events.find((e) => e.type === 'run.start');
-      
+
       expect(event).toBeDefined();
       expect(event?.type).toBe('run.start');
       if (event?.type === 'run.start') {
@@ -79,10 +83,10 @@ describe('TraceCollector', () => {
       const collector = createTraceCollector(baseInit);
       collector.addRunEvent('run.start', 'start');
       collector.addRunEvent('run.end', 'Completed successfully');
-      
+
       const trace = collector.finalize();
       const event = trace.events.find((e) => e.type === 'run.end');
-      
+
       expect(event).toBeDefined();
       if (event?.type === 'run.end') {
         expect(event.summary).toBe('Completed successfully');
@@ -93,7 +97,7 @@ describe('TraceCollector', () => {
   describe('addLLMCallEvent - llm.call event shapes', () => {
     test('produces correct shape for successful cloud call', () => {
       const collector = createTraceCollector(baseInit);
-      
+
       collector.addLLMCallEvent({
         label: 'lyrics.generate',
         provider: { id: 'openai', model: 'gpt-4', locality: 'cloud' },
@@ -129,29 +133,29 @@ describe('TraceCollector', () => {
       expect(event).toBeDefined();
       expect(event.type).toBe('llm.call');
       expect(event.label).toBe('lyrics.generate');
-      
+
       // Provider info
       expect(event.provider.id).toBe('openai');
       expect(event.provider.model).toBe('gpt-4');
       expect(event.provider.locality).toBe('cloud');
-      
+
       // Request params
       expect(event.request.temperature).toBe(0.7);
       expect(event.request.maxTokens).toBe(2000);
       expect(event.request.maxRetries).toBe(2);
-      
+
       // Input summary
       expect(event.request.inputSummary.messageCount).toBe(2);
       expect(event.request.inputSummary.totalChars).toBe(500);
       expect(event.request.inputSummary.preview).toContain('lyricist');
-      
+
       // Raw messages (Advanced view)
       expect(event.request.messages).toHaveLength(2);
-      
+
       // Response
       expect(event.response.previewText).toContain('Verse 1');
       expect(event.response.rawText).toContain('city streets');
-      
+
       // Telemetry
       expect(event.telemetry?.latencyMs).toBe(1500);
       expect(event.telemetry?.tokensIn).toBe(150);
@@ -161,7 +165,7 @@ describe('TraceCollector', () => {
 
     test('produces correct shape for local Ollama call', () => {
       const collector = createTraceCollector(baseInit);
-      
+
       collector.addLLMCallEvent({
         label: 'title.generate',
         provider: { id: 'ollama', model: 'gemma3:4b', locality: 'local' },
@@ -190,7 +194,7 @@ describe('TraceCollector', () => {
 
     test('produces correct shape for retry + eventual success', () => {
       const collector = createTraceCollector(baseInit);
-      
+
       collector.addLLMCallEvent({
         label: 'lyrics.generate',
         provider: { id: 'groq', model: 'llama-3.3-70b-versatile', locality: 'cloud' },
@@ -229,7 +233,7 @@ describe('TraceCollector', () => {
 
     test('produces correct shape for failure with error event', () => {
       const collector = createTraceCollector(baseInit);
-      
+
       collector.addLLMCallEvent({
         label: 'failed.call',
         provider: { id: 'anthropic', model: 'claude-3-opus', locality: 'cloud' },
@@ -259,12 +263,12 @@ describe('TraceCollector', () => {
       });
 
       const trace = collector.finalize();
-      
+
       expect(trace.stats.hadErrors).toBe(true);
-      
+
       const llmEvent = trace.events.find((e) => e.type === 'llm.call')!;
       expect(llmEvent.attempts?.[0]?.error?.providerRequestId).toBe('req-abc123');
-      
+
       const errorEvent = trace.events.find((e) => e.type === 'error')!;
       expect(errorEvent.error.type).toBe('ai.generation');
     });
@@ -279,7 +283,7 @@ describe('TraceCollector', () => {
 
       for (const provider of providers) {
         const collector = createTraceCollector(baseInit);
-        
+
         collector.addLLMCallEvent({
           label: `test.${provider.id}`,
           provider,
@@ -307,7 +311,7 @@ describe('TraceCollector', () => {
   describe('finalize', () => {
     test('produces valid TraceRun with correct stats', () => {
       const collector = createTraceCollector(baseInit);
-      
+
       collector.addRunEvent('run.start', 'start');
       collector.addLLMCallEvent({
         label: 'call1',
@@ -338,7 +342,7 @@ describe('TraceCollector', () => {
 
     test('events have sequential IDs and timestamps', () => {
       const collector = createTraceCollector(baseInit);
-      
+
       collector.addRunEvent('run.start', 'start');
       collector.addRunEvent('run.end', 'end');
 
@@ -346,7 +350,7 @@ describe('TraceCollector', () => {
       const events = trace.events;
       const event0 = events[0];
       const event1 = events[1];
-      
+
       expect(event0).toBeDefined();
       expect(event1).toBeDefined();
       expect(event0?.id).toContain('.1');
@@ -469,7 +473,7 @@ describe('traceDecision', () => {
 
   test('adds decision event with required fields', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     traceDecision(collector, {
       domain: 'genre',
       key: 'genre.resolve',
@@ -490,7 +494,7 @@ describe('traceDecision', () => {
 
   test('includes selection metadata for pickRandom', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     traceDecision(collector, {
       domain: 'instruments',
       key: 'instruments.select',
@@ -515,7 +519,7 @@ describe('traceDecision', () => {
 
   test('includes selection metadata for shuffleSlice', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     traceDecision(collector, {
       domain: 'mood',
       key: 'mood.select',
@@ -536,7 +540,7 @@ describe('traceDecision', () => {
 
   test('includes selection metadata for weightedChance', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     traceDecision(collector, {
       domain: 'styleTags',
       key: 'styleTags.applyBoost',
@@ -557,7 +561,7 @@ describe('traceDecision', () => {
 
   test('includes selection metadata for index', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     traceDecision(collector, {
       domain: 'bpm',
       key: 'bpm.fromGenre',
@@ -590,7 +594,7 @@ describe('traceDecision', () => {
 
     for (const domain of domains) {
       const collector = createTraceCollector(baseInit);
-      
+
       traceDecision(collector, {
         domain,
         key: `${domain}.test`,
@@ -607,7 +611,7 @@ describe('traceDecision', () => {
 
   test('does not emit rejected branches', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     // Only the chosen branch is recorded
     traceDecision(collector, {
       domain: 'genre',
@@ -627,7 +631,7 @@ describe('traceDecision', () => {
   test('truncates long branchTaken values', () => {
     const collector = createTraceCollector(baseInit);
     const longBranch = 'x'.repeat(500);
-    
+
     traceDecision(collector, {
       domain: 'genre',
       key: 'genre.resolve',
@@ -645,7 +649,7 @@ describe('traceDecision', () => {
   test('truncates long why values', () => {
     const collector = createTraceCollector(baseInit);
     const longWhy = 'y'.repeat(1000);
-    
+
     traceDecision(collector, {
       domain: 'mood',
       key: 'mood.select',
@@ -662,10 +666,10 @@ describe('traceDecision', () => {
 
   test('truncates candidates preview', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     // More than 10 candidates
     const manyCandidates = Array.from({ length: 20 }, (_, i) => `candidate-${i}`);
-    
+
     traceDecision(collector, {
       domain: 'instruments',
       key: 'instruments.pool',
@@ -686,7 +690,7 @@ describe('traceDecision', () => {
 
   test('redacts secrets in branchTaken and why', () => {
     const collector = createTraceCollector(baseInit);
-    
+
     traceDecision(collector, {
       domain: 'other',
       key: 'debug.test',
@@ -716,10 +720,20 @@ describe('traceDecision', () => {
 
   test('multiple decisions are recorded in order', () => {
     const collector = createTraceCollector(baseInit);
-    
-    traceDecision(collector, { domain: 'genre', key: 'genre.1', branchTaken: 'jazz', why: 'first' });
+
+    traceDecision(collector, {
+      domain: 'genre',
+      key: 'genre.1',
+      branchTaken: 'jazz',
+      why: 'first',
+    });
     traceDecision(collector, { domain: 'mood', key: 'mood.1', branchTaken: 'warm', why: 'second' });
-    traceDecision(collector, { domain: 'instruments', key: 'inst.1', branchTaken: 'piano', why: 'third' });
+    traceDecision(collector, {
+      domain: 'instruments',
+      key: 'inst.1',
+      branchTaken: 'piano',
+      why: 'third',
+    });
 
     const trace = collector.finalize();
     const decisions = trace.events.filter((e): e is TraceDecisionEvent => e.type === 'decision');
@@ -731,7 +745,7 @@ describe('traceDecision', () => {
     expect(d0?.domain).toBe('genre');
     expect(d1?.domain).toBe('mood');
     expect(d2?.domain).toBe('instruments');
-    
+
     // tMs should be non-decreasing
     expect(d1?.tMs).toBeGreaterThanOrEqual(d0?.tMs ?? 0);
     expect(d2?.tMs).toBeGreaterThanOrEqual(d1?.tMs ?? 0);

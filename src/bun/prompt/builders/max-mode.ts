@@ -3,12 +3,19 @@
  * @module prompt/builders/max-mode
  */
 
-import { selectInstrumentsForGenre, extractInstruments, getMultiGenreNuanceGuidance } from '@bun/instruments';
+import {
+  selectInstrumentsForGenre,
+  extractInstruments,
+  getMultiGenreNuanceGuidance,
+} from '@bun/instruments';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
 import { articulateInstrument } from '@bun/prompt/articulations';
 import { buildProgressionDescriptor } from '@bun/prompt/chord-progressions';
 import { buildPerformanceGuidance, parseGenreComponents } from '@bun/prompt/genre-parser';
-import { CONTEXT_INTEGRATION_INSTRUCTIONS, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
+import {
+  CONTEXT_INTEGRATION_INSTRUCTIONS,
+  JSON_OUTPUT_FORMAT_RULES,
+} from '@bun/prompt/shared-instructions';
 import { MAX_MODE_HEADER } from '@bun/prompt/tags';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { selectRandomN } from '@shared/utils/random';
@@ -107,11 +114,7 @@ export function buildMaxModeContextualPrompt(
 
   const parts = buildSongConceptParts(`USER'S SONG CONCEPT:`, description, lyricsTopic);
 
-  parts.push(
-    '',
-    'DETECTED CONTEXT:',
-    `Genre: ${detectedGenre}`,
-  );
+  parts.push('', 'DETECTED CONTEXT:', `Genre: ${detectedGenre}`);
 
   // Add enhanced guidance if genre is detected
   if (selection.genre) {
@@ -121,33 +124,37 @@ export function buildMaxModeContextualPrompt(
 
     const genreDef = GENRE_REGISTRY[selection.genre];
     const guidance = performanceGuidance ?? buildPerformanceGuidance(selection.genre);
-    
+
     // BPM
     if (genreDef?.bpm) {
-      parts.push(`Tempo: ${genreDef.bpm.typical} BPM (range: ${genreDef.bpm.min}-${genreDef.bpm.max})`);
+      parts.push(
+        `Tempo: ${genreDef.bpm.typical} BPM (range: ${genreDef.bpm.min}-${genreDef.bpm.max})`
+      );
     }
-    
+
     // Moods
     if (genreDef?.moods && genreDef.moods.length > 0) {
       const selectedMoods = selectRandomN(genreDef.moods, Math.min(3, genreDef.moods.length));
       parts.push(`Mood suggestions: ${selectedMoods.join(', ')}`);
     }
-    
+
     if (guidance) {
       parts.push(`Vocal style: ${guidance.vocal}`);
       parts.push(`Production: ${guidance.production}`);
     }
-    
+
     // Chord progression
     parts.push(`Chord progression: ${buildProgressionDescriptor(selection.genre)}`);
-    
+
     // Suggested instruments with articulations
     const instruments = selectInstrumentsForGenre(selection.genre, { userInstruments });
-    const articulatedInstruments = instruments.map(i => articulateInstrument(i, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE));
+    const articulatedInstruments = instruments.map((i) =>
+      articulateInstrument(i, Math.random, APP_CONSTANTS.ARTICULATION_CHANCE)
+    );
     if (articulatedInstruments.length > 0) {
       parts.push('');
       parts.push('Suggested instruments:');
-      parts.push(...articulatedInstruments.map(i => `- ${i}`));
+      parts.push(...articulatedInstruments.map((i) => `- ${i}`));
     }
 
     // Add multi-genre nuance guidance for compound genres (2+ components)

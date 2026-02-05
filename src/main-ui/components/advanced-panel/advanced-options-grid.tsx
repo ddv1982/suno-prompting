@@ -1,9 +1,12 @@
-import { AdvancedOption } from "./advanced-option";
+import { AdvancedOption } from './advanced-option';
 
-import type { AdvancedSelection } from "@shared/types";
-import type { ReactElement } from "react";
+import type { AdvancedSelection } from '@shared/types';
+import type { ReactElement } from 'react';
 
-interface Option { value: string; label: string }
+interface Option {
+  value: string;
+  label: string;
+}
 
 interface AdvancedOptionsGridProps {
   selection: AdvancedSelection;
@@ -30,7 +33,9 @@ export function AdvancedOptionsGrid({
         label="Harmonic Style"
         options={harmonicOptions}
         value={selection.harmonicStyle}
-        onValueChange={(val) => { onUpdate({ harmonicStyle: val }); }}
+        onValueChange={(val) => {
+          onUpdate({ harmonicStyle: val });
+        }}
         disabledByMutualExclusion={!!selection.harmonicCombination}
         placeholder="Select mode..."
         searchPlaceholder="Search modes..."
@@ -41,7 +46,9 @@ export function AdvancedOptionsGrid({
         label="Harmonic Combination"
         options={harmonicCombinationOptions}
         value={selection.harmonicCombination}
-        onValueChange={(val) => { onUpdate({ harmonicCombination: val }); }}
+        onValueChange={(val) => {
+          onUpdate({ harmonicCombination: val });
+        }}
         disabledByMutualExclusion={!!selection.harmonicStyle}
         placeholder="Select combination..."
         searchPlaceholder="Search combinations..."
@@ -52,7 +59,9 @@ export function AdvancedOptionsGrid({
         label="Polyrhythm"
         options={polyrhythmOptions}
         value={selection.polyrhythmCombination}
-        onValueChange={(val) => { onUpdate({ polyrhythmCombination: val }); }}
+        onValueChange={(val) => {
+          onUpdate({ polyrhythmCombination: val });
+        }}
         placeholder="Select polyrhythm..."
         searchPlaceholder="Search polyrhythms..."
         emptyText="No polyrhythm found."
@@ -62,7 +71,9 @@ export function AdvancedOptionsGrid({
         label="Time Signature"
         options={timeSignatureOptions}
         value={selection.timeSignature}
-        onValueChange={(val) => { onUpdate({ timeSignature: val }); }}
+        onValueChange={(val) => {
+          onUpdate({ timeSignature: val });
+        }}
         disabledByMutualExclusion={!!selection.timeSignatureJourney}
         placeholder="Select time signature..."
         searchPlaceholder="Search signatures..."
@@ -73,7 +84,9 @@ export function AdvancedOptionsGrid({
         label="Time Signature Journey"
         options={timeJourneyOptions}
         value={selection.timeSignatureJourney}
-        onValueChange={(val) => { onUpdate({ timeSignatureJourney: val }); }}
+        onValueChange={(val) => {
+          onUpdate({ timeSignatureJourney: val });
+        }}
         disabledByMutualExclusion={!!selection.timeSignature}
         placeholder="Select journey..."
         searchPlaceholder="Search journeys..."

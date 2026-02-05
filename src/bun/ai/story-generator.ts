@@ -150,11 +150,7 @@ export interface StoryGenerationResult {
 /**
  * Set optional field on object if value is truthy.
  */
-function setIfTruthy(
-  obj: Record<string, unknown>,
-  key: string,
-  value: unknown
-): void {
+function setIfTruthy(obj: Record<string, unknown>, key: string, value: unknown): void {
   if (value) {
     obj[key] = value;
   }
@@ -208,7 +204,9 @@ function buildStoryUserPrompt(input: StoryGenerationInput): string {
 
   if (input.isDirectMode && input.sunoStyles?.length) {
     parts.push('');
-    parts.push('Important: Incorporate these Suno V5 styles naturally: ' + input.sunoStyles.join(', '));
+    parts.push(
+      'Important: Incorporate these Suno V5 styles naturally: ' + input.sunoStyles.join(', ')
+    );
   }
 
   return parts.join('\n');
@@ -343,7 +341,10 @@ function extractSingleValue(text: string, pattern: RegExp, fallback: string): st
 function extractListValue(text: string, pattern: RegExp): string[] {
   const match = pattern.exec(text);
   if (!match?.[1]) return [];
-  return match[1].split(',').map((item) => item.trim()).filter(Boolean);
+  return match[1]
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 /**
@@ -357,10 +358,9 @@ function extractSubGenres(text: string, moods: string[]): string[] {
   return match[1]
     .split(',')
     .map((p) => p.trim())
-    .filter((p) =>
-      !p.toLowerCase().includes('key') &&
-      p.length > 2 &&
-      !moodsLower.includes(p.toLowerCase())
+    .filter(
+      (p) =>
+        !p.toLowerCase().includes('key') && p.length > 2 && !moodsLower.includes(p.toLowerCase())
     )
     .slice(0, 3);
 }
@@ -428,7 +428,9 @@ export async function generateStoryNarrativeWithTimeout(
   options: Omit<StoryGenerationOptions, 'signal'>
 ): Promise<StoryGenerationResult> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => { controller.abort(); }, STORY_GENERATION_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, STORY_GENERATION_TIMEOUT_MS);
 
   try {
     const result = await generateStoryNarrative({
@@ -487,9 +489,7 @@ export interface TryStoryModeOptions {
  * @param options - Story mode options
  * @returns GenerationResult if Story Mode is enabled and LLM available, null otherwise
  */
-export async function tryStoryMode(
-  options: TryStoryModeOptions
-): Promise<GenerationResult | null> {
+export async function tryStoryMode(options: TryStoryModeOptions): Promise<GenerationResult | null> {
   const { input, title, lyrics, fallbackText, config, trace, tracePrefix, logLabel } = options;
 
   // Story Mode requires LLM

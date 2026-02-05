@@ -53,7 +53,9 @@ describe('GenerationDisabledContext', () => {
 
     test('returns nullable context value type', () => {
       // Contract: the hook returns context value or null
-      type HookReturnType = ReturnType<typeof generationDisabledModule.useGenerationDisabledOptional>;
+      type HookReturnType = ReturnType<
+        typeof generationDisabledModule.useGenerationDisabledOptional
+      >;
       const nullValue: HookReturnType = null;
       const contextValue: HookReturnType = { isDisabled: true };
 
@@ -217,44 +219,34 @@ describe('GenerationDisabledContext integration patterns', () => {
 
 describe('GenerationDisabledContext source verification', () => {
   test('context file contains createContext from react', async () => {
-    const source = await Bun.file(
-      'src/main-ui/context/generation-disabled-context.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/context/generation-disabled-context.tsx').text();
 
     expect(source).toContain('createContext');
     expect(source).toContain("from 'react'");
   });
 
   test('context file contains GenerationDisabledContext definition', async () => {
-    const source = await Bun.file(
-      'src/main-ui/context/generation-disabled-context.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/context/generation-disabled-context.tsx').text();
 
     expect(source).toContain('GenerationDisabledContext');
     expect(source).toContain('createContext<GenerationDisabledContextValue | null>');
   });
 
   test('useGenerationDisabled hook returns false by default', async () => {
-    const source = await Bun.file(
-      'src/main-ui/context/generation-disabled-context.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/context/generation-disabled-context.tsx').text();
 
     // Verify the pattern: context?.isDisabled ?? false
     expect(source).toContain('context?.isDisabled ?? false');
   });
 
   test('useGenerationDisabledOptional hook uses useContext', async () => {
-    const source = await Bun.file(
-      'src/main-ui/context/generation-disabled-context.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/context/generation-disabled-context.tsx').text();
 
     expect(source).toContain('useContext(GenerationDisabledContext)');
   });
 
   test('provider uses Context.Provider with memoized value prop', async () => {
-    const source = await Bun.file(
-      'src/main-ui/context/generation-disabled-context.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/context/generation-disabled-context.tsx').text();
 
     expect(source).toContain('GenerationDisabledContext.Provider');
     expect(source).toContain('useMemo');
@@ -262,9 +254,7 @@ describe('GenerationDisabledContext source verification', () => {
   });
 
   test('provider exports correct types', async () => {
-    const source = await Bun.file(
-      'src/main-ui/context/generation-disabled-context.tsx'
-    ).text();
+    const source = await Bun.file('src/main-ui/context/generation-disabled-context.tsx').text();
 
     expect(source).toContain('export type { GenerationDisabledContextValue');
     expect(source).toContain('GenerationDisabledProviderProps');

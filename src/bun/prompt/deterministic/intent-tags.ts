@@ -25,31 +25,11 @@ import type { Intent } from '@shared/schemas/thematic-context';
  * - `emotional`: Optimized for personal, intimate listening experiences
  */
 const INTENT_PRODUCTION_TAGS: Record<Intent, readonly string[]> = {
-  background: [
-    'subtle',
-    'ambient',
-    'non-intrusive',
-  ],
-  focal: [
-    'detailed',
-    'engaging',
-    'dynamic',
-  ],
-  cinematic: [
-    'dramatic',
-    'evolving',
-    'layered',
-  ],
-  dancefloor: [
-    'punchy',
-    'rhythmic',
-    'driving',
-  ],
-  emotional: [
-    'expressive',
-    'dynamic',
-    'intimate',
-  ],
+  background: ['subtle', 'ambient', 'non-intrusive'],
+  focal: ['detailed', 'engaging', 'dynamic'],
+  cinematic: ['dramatic', 'evolving', 'layered'],
+  dancefloor: ['punchy', 'rhythmic', 'driving'],
+  emotional: ['expressive', 'dynamic', 'intimate'],
 } as const;
 
 /**

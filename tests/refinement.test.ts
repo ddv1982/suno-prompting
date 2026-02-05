@@ -154,7 +154,7 @@ describe('Prompt Builder Refinement', () => {
 describe('Deterministic Refinement (Offline Mode)', () => {
   test('uses deterministic style tag regeneration when offline and no lyrics', async () => {
     const { refinePrompt } = await import('@bun/ai/refinement');
-    
+
     const mockConfig = {
       isUseLocalLLM: () => true,
       isLyricsMode: () => false,
@@ -162,7 +162,9 @@ describe('Deterministic Refinement (Offline Mode)', () => {
       isDebugMode: () => true,
       getUseSunoTags: () => true,
       getOllamaEndpoint: () => 'http://localhost:11434',
-      getModel: () => { throw new Error('Should not call LLM in deterministic mode'); },
+      getModel: () => {
+        throw new Error('Should not call LLM in deterministic mode');
+      },
       postProcess: async (text: string) => text,
     };
 
@@ -184,31 +186,29 @@ BPM: 90`;
     // Verify style tags were regenerated (should be different from "old tags, outdated")
     expect(result.text).toContain('style tags:');
     expect(result.text).not.toContain('old tags, outdated');
-    
+
     // Verify prompt structure is preserved
     expect(result.text).toContain('genre: "jazz"');
     expect(result.text).toContain('mood: "smooth, warm"');
-    
+
     // Verify title is preserved
     expect(result.title).toBe('My Jazz Song');
-    
+
     // Debug tracing is migrated to TraceRun, but trace emission is implemented in later task groups.
   });
 
   test('uses LLM when offline but lyrics mode is enabled', async () => {
     // Mock the Ollama availability check to return unavailable BEFORE importing refinePrompt
-    const mockCheckOllama = mock(() =>
-      Promise.resolve({ available: false, hasGemma: false })
-    );
-    
+    const mockCheckOllama = mock(() => Promise.resolve({ available: false, hasGemma: false }));
+
     await mock.module('@bun/ai/ollama-availability', () => ({
       checkOllamaAvailable: mockCheckOllama,
       invalidateOllamaCache: mock(() => {}),
     }));
-    
+
     // Re-import after mocking to get the mocked version
     const { refinePrompt } = await import('@bun/ai/refinement');
-    
+
     const mockConfig = {
       isUseLocalLLM: () => true,
       isLyricsMode: () => true, // Lyrics mode ON - should use LLM
@@ -240,7 +240,7 @@ instruments: "piano"`;
         mockConfig as any
       )
     ).rejects.toThrow('Ollama');
-    
+
     // Verify that checkOllamaAvailable was called (proves it's NOT using deterministic path)
     expect(mockCheckOllama).toHaveBeenCalled();
   });
@@ -371,16 +371,18 @@ describe('Refinement Type Routing', () => {
    * Create a mock config for testing refinement.
    * All LLM calls are disabled by default to test deterministic behavior.
    */
-  function createMockConfig(overrides: Partial<{
-    isUseLocalLLM: () => boolean;
-    isLyricsMode: () => boolean;
-    isMaxMode: () => boolean;
-    isDebugMode: () => boolean;
-    getUseSunoTags: () => boolean;
-    getOllamaEndpoint: () => string;
-    getModel: () => never;
-    postProcess: (text: string) => Promise<string>;
-  }> = {}) {
+  function createMockConfig(
+    overrides: Partial<{
+      isUseLocalLLM: () => boolean;
+      isLyricsMode: () => boolean;
+      isMaxMode: () => boolean;
+      isDebugMode: () => boolean;
+      getUseSunoTags: () => boolean;
+      getOllamaEndpoint: () => string;
+      getModel: () => never;
+      postProcess: (text: string) => Promise<string>;
+    }> = {}
+  ) {
     return {
       isUseLocalLLM: () => false,
       isLyricsMode: () => false,
@@ -399,7 +401,7 @@ describe('Refinement Type Routing', () => {
   describe('style-only refinement (refinementType: "style")', () => {
     test('does not call LLM for style-only refinement', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       let llmCalled = false;
       const mockConfig = createMockConfig({
         getModel: () => {
@@ -427,7 +429,7 @@ describe('Refinement Type Routing', () => {
 
     test('returns updated prompt for style-only refinement', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig();
       const currentPrompt = `genre: "jazz"
 mood: "smooth, warm"
@@ -453,7 +455,7 @@ instruments: "piano, bass"`;
 
     test('preserves existing lyrics for style-only refinement', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig();
       const existingLyrics = '[VERSE]\nExisting lyrics content';
 
@@ -480,7 +482,7 @@ instruments: "piano, bass"`;
 
     test('throws ValidationError without feedback text', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig({
         isLyricsMode: () => true,
       });
@@ -515,7 +517,7 @@ instruments: "piano, bass"`;
 
     test('throws ValidationError for whitespace-only feedback', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig({
         isLyricsMode: () => true,
       });
@@ -542,7 +544,7 @@ instruments: "piano, bass"`;
       // lyrics refinement will fail without proper LLM setup. We're testing
       // that the routing logic works correctly.
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig({
         isLyricsMode: () => false, // No lyrics mode, so only style is processed
       });
@@ -567,7 +569,7 @@ instruments: "piano, bass"`;
   describe('invalid refinement type', () => {
     test('throws ValidationError for invalid refinement type', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig();
 
       // Act & Assert - Invalid type 'none'
@@ -598,7 +600,7 @@ instruments: "piano, bass"`;
 
     test('throws ValidationError for unknown refinement type', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig();
 
       // Act & Assert - Unknown type
@@ -619,7 +621,7 @@ instruments: "piano, bass"`;
   describe('backwards compatibility', () => {
     test('defaults to combined when refinementType not provided', async () => {
       const { refinePrompt } = await import('@bun/ai/refinement');
-      
+
       const mockConfig = createMockConfig({
         isLyricsMode: () => false,
       });

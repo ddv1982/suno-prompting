@@ -1,22 +1,25 @@
-import { Settings } from "lucide-react";
+import { Settings } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useSettingsModalState } from "@/hooks/use-settings-modal-state";
+} from '@/components/ui/dialog';
+import { useSettingsModalState } from '@/hooks/use-settings-modal-state';
 
-import { ApiKeySection } from "./api-key-section";
-import { FeatureToggles } from "./feature-toggles";
-import { LLMProviderToggle } from "./llm-provider-toggle";
-import { ModelSection } from "./model-section";
-import { OllamaSettings } from "./ollama-settings";
+import { ApiKeySection } from './api-key-section';
+import { FeatureToggles } from './feature-toggles';
+import { LLMProviderToggle } from './llm-provider-toggle';
+import { ModelSection } from './model-section';
+import { OllamaSettings } from './ollama-settings';
 
-interface SettingsModalProps { isOpen: boolean; onClose: () => void }
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.ReactElement {
   const [state, actions] = useSettingsModalState(isOpen);
@@ -51,7 +54,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
 
           <LLMProviderToggle
             useLocalLLM={state.useLocalLLM}
-            hasApiKey={state.apiKeys[state.provider] !== null && state.apiKeys[state.provider] !== ''}
+            hasApiKey={
+              state.apiKeys[state.provider] !== null && state.apiKeys[state.provider] !== ''
+            }
             loading={state.loading}
             onToggle={actions.setUseLocalLLM}
           />
@@ -76,8 +81,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
           <Button variant="outline" onClick={onClose} disabled={state.saving}>
             Cancel
           </Button>
-          <Button onClick={() => actions.handleSave(onClose)} disabled={state.saving || state.loading}>
-            {state.saving ? "Saving..." : "Save Changes"}
+          <Button
+            onClick={() => actions.handleSave(onClose)}
+            disabled={state.saving || state.loading}
+          >
+            {state.saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

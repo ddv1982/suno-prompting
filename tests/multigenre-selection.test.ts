@@ -21,7 +21,7 @@ describe('Multi-genre + foundational selection', () => {
   test('does not collapse Jazz harmonic picks to only felt piano', () => {
     const candidates = new Set(['Rhodes', 'Hammond organ', 'Wurlitzer', 'acoustic guitar']);
 
-    const picks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(seed =>
+    const picks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap((seed) =>
       selectInstrumentsForGenre('jazz', {
         maxTags: 8,
         rng: createSeededRng(seed),
@@ -31,7 +31,7 @@ describe('Multi-genre + foundational selection', () => {
       })
     );
 
-    expect(picks.some(p => candidates.has(p))).toBe(true);
+    expect(picks.some((p) => candidates.has(p))).toBe(true);
   });
 
   test('can disable multigenre injection', () => {

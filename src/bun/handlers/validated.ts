@@ -22,10 +22,7 @@ function extractZodError(error: z.ZodError): { field?: string; message: string }
  * Validates input against a schema and returns the parsed result.
  * Useful for inline validation without the wrapper pattern.
  */
-export function validate<S extends z.ZodType>(
-  schema: S,
-  input: unknown
-): z.infer<S> {
+export function validate<S extends z.ZodType>(schema: S, input: unknown): z.infer<S> {
   try {
     return schema.parse(input);
   } catch (error: unknown) {

@@ -27,7 +27,6 @@ import { injectLockedPhrase } from '@bun/prompt/postprocess';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { traceDecision } from '@bun/trace';
 
-
 import type { GenerateInitialOptions, TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
 
@@ -81,7 +80,13 @@ export async function generateWithoutLyrics(
     // Rebuild with thematic context for merge
     deterministicResult = config.isMaxMode()
       ? buildDeterministicMaxPrompt({ description, genreOverride, rng, trace, thematicContext })
-      : buildDeterministicStandardPrompt({ description, genreOverride, rng, trace, thematicContext });
+      : buildDeterministicStandardPrompt({
+          description,
+          genreOverride,
+          rng,
+          trace,
+          thematicContext,
+        });
   } else {
     traceDecision(trace, {
       domain: 'other',
@@ -105,7 +110,12 @@ export async function generateWithoutLyrics(
   // 5. Generate title - use LLM when available for more creative titles
   let title: string;
   if (config.isLLMAvailable()) {
-    log.info('generateWithoutLyrics:llmTitle', { genre, mood, hasDescription: !!description, useLocalLLM: config.isUseLocalLLM() });
+    log.info('generateWithoutLyrics:llmTitle', {
+      genre,
+      mood,
+      hasDescription: !!description,
+      useLocalLLM: config.isUseLocalLLM(),
+    });
     const titleResult = await generateTitle({
       description: description || `${mood} ${genre} song`,
       genre,

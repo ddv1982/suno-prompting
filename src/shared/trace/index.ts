@@ -1,8 +1,4 @@
-export {
-  TRACE_REDACTION_TOKEN,
-  redactSecretsDeep,
-  redactSecretsInText,
-} from './redact';
+export { TRACE_REDACTION_TOKEN, redactSecretsDeep, redactSecretsInText } from './redact';
 
 export {
   TRACE_TRUNCATION_MARKER,
@@ -13,8 +9,4 @@ export {
   type TruncateResult,
 } from './truncate';
 
-export {
-  TRACE_PERSISTED_BYTES_CAP,
-  byteLengthUtf8,
-  enforceTraceSizeCap,
-} from './size-cap';
+export { TRACE_PERSISTED_BYTES_CAP, byteLengthUtf8, enforceTraceSizeCap } from './size-cap';

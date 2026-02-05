@@ -7,5 +7,5 @@
  * @module components/history-sidebar
  */
 
-export { HistorySidebar, SidebarInset } from "./history-sidebar/index";
-export type { HistorySidebarProps } from "./history-sidebar/index";
+export { HistorySidebar, SidebarInset } from './history-sidebar/index';
+export type { HistorySidebarProps } from './history-sidebar/index';

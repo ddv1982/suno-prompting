@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const NEWAGE_GENRE: GenreDefinition = {
   name: 'New Age',
   keywords: ['new age', 'newage', 'meditation', 'healing', 'spa', 'yoga', 'relaxation', 'wellness'],
-  description: 'Peaceful, meditative music with flowing melodies, natural sounds, and calming textures',
+  description:
+    'Peaceful, meditative music with flowing melodies, natural sounds, and calming textures',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -15,7 +16,15 @@ export const NEWAGE_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['flute', 'shakuhachi', 'singing bowls', 'crystal bowls', 'kalimba', 'bansuri', 'bells'],
+      instruments: [
+        'flute',
+        'shakuhachi',
+        'singing bowls',
+        'crystal bowls',
+        'kalimba',
+        'bansuri',
+        'bells',
+      ],
     },
     movement: {
       pick: { min: 0, max: 1 },
@@ -31,5 +40,14 @@ export const NEWAGE_GENRE: GenreDefinition = {
     ['shakuhachi', 'bansuri'],
   ],
   bpm: { min: 50, max: 80, typical: 65 },
-  moods: ['Peaceful', 'Meditative', 'Serene', 'Healing', 'Tranquil', 'Flowing', 'Ethereal', 'Calming'],
+  moods: [
+    'Peaceful',
+    'Meditative',
+    'Serene',
+    'Healing',
+    'Tranquil',
+    'Flowing',
+    'Ethereal',
+    'Calming',
+  ],
 };

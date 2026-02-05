@@ -1,6 +1,6 @@
 /**
  * Tests for error.ts refactored helper functions
- * 
+ *
  * Tests the ERROR_CODE_MAP lookup and mapErrorTypeByInstance helper
  */
 

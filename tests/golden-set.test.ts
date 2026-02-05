@@ -340,7 +340,8 @@ describe('Golden Set Regression Tests', () => {
           // Check both hyphenated and non-hyphenated forms
           const noHyphens = termLower.replace(/-/g, '');
           const withSpace = termLower.replace(/-/g, ' ');
-          const found = promptLower.includes(termLower) ||
+          const found =
+            promptLower.includes(termLower) ||
             promptLower.includes(noHyphens) ||
             promptLower.includes(withSpace);
           expect(found).toBe(true);
@@ -382,7 +383,8 @@ describe('Golden Set Regression Tests', () => {
           const noHyphens = termLower.replace(/-/g, '');
           const withSpace = termLower.replace(/-/g, ' ');
           const noSpaces = termLower.replace(/ /g, '');
-          const found = promptLower.includes(termLower) ||
+          const found =
+            promptLower.includes(termLower) ||
             promptLower.includes(noHyphens) ||
             promptLower.includes(withSpace) ||
             promptLower.includes(noSpaces);
@@ -519,22 +521,19 @@ describe('Golden Set Regression Tests', () => {
       { alias: 'synth wave', expectedGenre: 'synthwave' },
     ];
 
-    test.each(aliasTests)(
-      '$alias resolves to $expectedGenre',
-      ({ alias, expectedGenre }) => {
-        // Arrange
-        const rng = createSeededRng(42);
+    test.each(aliasTests)('$alias resolves to $expectedGenre', ({ alias, expectedGenre }) => {
+      // Arrange
+      const rng = createSeededRng(42);
 
-        // Act
-        const result = buildDeterministicStandardPrompt({
-          description: `${alias} sound`,
-          rng,
-        });
+      // Act
+      const result = buildDeterministicStandardPrompt({
+        description: `${alias} sound`,
+        rng,
+      });
 
-        // Assert
-        expect(result.genre).toBe(expectedGenre);
-      }
-    );
+      // Assert
+      expect(result.genre).toBe(expectedGenre);
+    });
 
     test('dnb alias is detected as part of multi-genre', () => {
       // Arrange

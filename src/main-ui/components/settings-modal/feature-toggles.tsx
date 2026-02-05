@@ -1,9 +1,9 @@
-import { BookOpen, Bug, FileText, Music, Zap } from "lucide-react";
+import { BookOpen, Bug, FileText, Music, Zap } from 'lucide-react';
 
-import { SectionLabel } from "@/components/ui/section-label";
-import { ToggleRow } from "@/components/ui/toggle-row";
+import { SectionLabel } from '@/components/ui/section-label';
+import { ToggleRow } from '@/components/ui/toggle-row';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface FeatureTogglesProps {
   useSunoTags: boolean;
@@ -35,7 +35,7 @@ export function FeatureToggles({
   return (
     <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
       <SectionLabel>Feature Settings</SectionLabel>
-      
+
       <ToggleRow
         id="settings-suno-tags"
         icon={<Music className="w-3.5 h-3.5" />}
@@ -46,7 +46,7 @@ export function FeatureToggles({
         disabled={loading || maxMode}
         showNaBadge={maxMode}
       />
-      
+
       <ToggleRow
         id="settings-max-mode"
         icon={<Zap className="w-3.5 h-3.5" />}
@@ -56,7 +56,7 @@ export function FeatureToggles({
         onChange={onMaxModeChange}
         disabled={loading}
       />
-      
+
       <ToggleRow
         id="settings-lyrics-mode"
         icon={<FileText className="w-3.5 h-3.5" />}
@@ -66,7 +66,7 @@ export function FeatureToggles({
         onChange={onLyricsModeChange}
         disabled={loading}
       />
-      
+
       <ToggleRow
         id="settings-story-mode"
         icon={<BookOpen className="w-3.5 h-3.5" />}
@@ -76,7 +76,7 @@ export function FeatureToggles({
         onChange={onStoryModeChange}
         disabled={loading}
       />
-      
+
       <ToggleRow
         id="settings-debug-mode"
         icon={<Bug className="w-3.5 h-3.5" />}
@@ -86,14 +86,13 @@ export function FeatureToggles({
         onChange={onDebugModeChange}
         disabled={loading}
       />
-      
+
       <p className="ui-helper pl-6 pt-1">
-        {maxMode 
-          ? "Max Mode: Uses community-discovered prompt format. Best for acoustic, country, rock, and organic genres."
+        {maxMode
+          ? 'Max Mode: Uses community-discovered prompt format. Best for acoustic, country, rock, and organic genres.'
           : useSunoTags
-            ? "Prompts include Suno V5 section and performance tags"
-            : "Toggle settings to customize prompt generation"
-        }
+            ? 'Prompts include Suno V5 section and performance tags'
+            : 'Toggle settings to customize prompt generation'}
       </p>
     </div>
   );

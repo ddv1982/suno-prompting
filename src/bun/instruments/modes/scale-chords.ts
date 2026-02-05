@@ -1,5 +1,18 @@
 export const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
-export const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
+export const NOTES_FLAT = [
+  'C',
+  'Db',
+  'D',
+  'Eb',
+  'E',
+  'F',
+  'Gb',
+  'G',
+  'Ab',
+  'A',
+  'Bb',
+  'B',
+] as const;
 
 export type Note = (typeof NOTES)[number];
 export type NoteFlatVariant = (typeof NOTES_FLAT)[number];
@@ -68,7 +81,7 @@ export function transposeNote(note: string, semitones: number): Note {
 
 export function getScaleNotes(root: string, intervals: number[]): Note[] {
   const rootIndex = getNoteIndex(root);
-  return intervals.map(interval => NOTES[(rootIndex + interval) % 12] ?? 'C');
+  return intervals.map((interval) => NOTES[(rootIndex + interval) % 12] ?? 'C');
 }
 
 export function formatChordName(root: string, quality: ChordQuality): string {
@@ -122,7 +135,7 @@ export function getTriadNotes(root: string, quality: ChordQuality): Note[] {
   };
 
   const pattern = intervals[quality] ?? intervals.maj ?? [0, 4, 7];
-  return pattern.map(i => NOTES[(rootIndex + i) % 12] ?? 'C');
+  return pattern.map((i) => NOTES[(rootIndex + i) % 12] ?? 'C');
 }
 
 export function getSeventhChordNotes(root: string, quality: ChordQuality): Note[] {
@@ -142,7 +155,7 @@ export function getSeventhChordNotes(root: string, quality: ChordQuality): Note[
   };
 
   const pattern = intervals[quality] ?? intervals.maj7 ?? [0, 4, 7, 11];
-  return pattern.map(i => NOTES[(rootIndex + i) % 12] ?? 'C');
+  return pattern.map((i) => NOTES[(rootIndex + i) % 12] ?? 'C');
 }
 
 export function buildScaleChords(

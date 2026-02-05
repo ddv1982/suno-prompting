@@ -67,10 +67,7 @@ export {
 } from './creative-boost';
 
 // Ollama schemas
-export {
-  SetOllamaSettingsSchema,
-  type SetOllamaSettingsInput,
-} from './ollama';
+export { SetOllamaSettingsSchema, type SetOllamaSettingsInput } from './ollama';
 
 // Trace schemas
 export { TraceRunSchema } from './trace';

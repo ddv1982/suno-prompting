@@ -28,7 +28,7 @@ interface FullWidthSubmitButtonProps {
 // Pure logic functions extracted from component
 // ============================================
 
-type ButtonState = 
+type ButtonState =
   | { state: 'generating'; label: string }
   | { state: 'refined'; label: string }
   | { state: 'refine'; label: string }

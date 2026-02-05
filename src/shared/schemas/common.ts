@@ -49,7 +49,7 @@ export const SeedGenresSchema = z
 /**
  * Quick Vibes category values - 16 total preset categories.
  * Used by QuickVibesCategorySchema to ensure type and schema stay in sync.
- * 
+ *
  * Note: Named differently from QUICK_VIBES_CATEGORIES in quick-vibes-categories.ts
  * which is a Record<QuickVibesCategory, QuickVibesCategoryDefinition> for UI labels.
  */

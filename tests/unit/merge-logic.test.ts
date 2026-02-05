@@ -182,8 +182,9 @@ describe('Merge Logic', () => {
       // Recording should contain production descriptors, not scene
       expect(result.text).not.toMatch(/Recording:.*first steps into an alien jungle/i);
       // Scene may be truncated by 10-tag limit, but at minimum themes should appear
-      const hasTheme = result.text.toLowerCase().includes('alien') ||
-                       result.text.toLowerCase().includes('bioluminescent');
+      const hasTheme =
+        result.text.toLowerCase().includes('alien') ||
+        result.text.toLowerCase().includes('bioluminescent');
       expect(hasTheme).toBe(true);
     });
 
@@ -287,8 +288,9 @@ describe('Merge Logic', () => {
       // Recording should contain production descriptors, not scene
       expect(result.text).not.toMatch(/recording:.*vast cosmic void between galaxies/i);
       // Scene may be truncated by 10-tag limit, but default themes should appear
-      const hasTheme = result.text.toLowerCase().includes('alien') ||
-                       result.text.toLowerCase().includes('bioluminescent');
+      const hasTheme =
+        result.text.toLowerCase().includes('alien') ||
+        result.text.toLowerCase().includes('bioluminescent');
       expect(hasTheme).toBe(true);
     });
 

@@ -1,6 +1,12 @@
 import type { ChatMessage } from '@/lib/chat-utils';
 import type { MoodCategory } from '@bun/mood';
-import type { PromptSession, QuickVibesCategory, RefinementType, StyleChanges, TraceRun } from '@shared/types';
+import type {
+  PromptSession,
+  QuickVibesCategory,
+  RefinementType,
+  StyleChanges,
+  TraceRun,
+} from '@shared/types';
 import type { ValidationResult } from '@shared/validation';
 
 /** Active generation actions (excluding 'none') */
@@ -57,7 +63,11 @@ export interface SessionOperationsContextValue {
 
 /** Standard generation context - provides core generation operations */
 export interface StandardGenerationContextValue {
-  handleGenerate: (input: string, refinementType?: RefinementType, styleChanges?: StyleChanges) => Promise<boolean>;
+  handleGenerate: (
+    input: string,
+    refinementType?: RefinementType,
+    styleChanges?: StyleChanges
+  ) => Promise<boolean>;
   handleRemix: () => Promise<void>;
   handleConversionComplete: (
     originalInput: string,
@@ -69,7 +79,8 @@ export interface StandardGenerationContextValue {
 
 /** Full context type for backward compatibility */
 export interface GenerationContextType
-  extends GenerationStateContextValue,
+  extends
+    GenerationStateContextValue,
     SessionOperationsContextValue,
     StandardGenerationContextValue {
   // Remix actions (delegated to useRemixActions hook)

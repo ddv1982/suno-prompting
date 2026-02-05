@@ -3,10 +3,17 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const LATIN_GENRE: GenreDefinition = {
   name: 'Latin',
   keywords: [
-    'latin', 'bossa nova', 'latin jazz',
-    'latin pop', 'salsa', 'tango', 'flamenco', 'afro-cuban',
+    'latin',
+    'bossa nova',
+    'latin jazz',
+    'latin pop',
+    'salsa',
+    'tango',
+    'flamenco',
+    'afro-cuban',
   ],
-  description: 'Rhythmic, groove-driven music with syncopated patterns, warm harmonies, and Latin percussion',
+  description:
+    'Rhythmic, groove-driven music with syncopated patterns, warm harmonies, and Latin percussion',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -20,8 +27,18 @@ export const LATIN_GENRE: GenreDefinition = {
     movement: {
       pick: { min: 2, max: 4 },
       instruments: [
-        'upright bass', 'bass', 'congas', 'bongos', 'timbales', 'claves', 'shaker',
-        'guiro', 'cowbell', 'maracas', 'agogo bells', 'cabasa',
+        'upright bass',
+        'bass',
+        'congas',
+        'bongos',
+        'timbales',
+        'claves',
+        'shaker',
+        'guiro',
+        'cowbell',
+        'maracas',
+        'agogo bells',
+        'cabasa',
       ],
     },
     rare: {
@@ -39,5 +56,15 @@ export const LATIN_GENRE: GenreDefinition = {
     ['guiro', 'cabasa'],
   ],
   bpm: { min: 80, max: 140, typical: 98 },
-  moods: ['Groovy', 'Romantic', 'Sunny', 'Playful', 'Passionate', 'Rhythmic', 'Sensual', 'Laid Back', 'Breezy'],
+  moods: [
+    'Groovy',
+    'Romantic',
+    'Sunny',
+    'Playful',
+    'Passionate',
+    'Rhythmic',
+    'Sensual',
+    'Laid Back',
+    'Breezy',
+  ],
 };

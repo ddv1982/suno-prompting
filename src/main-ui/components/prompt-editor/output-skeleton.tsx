@@ -1,8 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { SectionLabel } from "@/components/ui/section-label";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from '@/components/ui/card';
+import { SectionLabel } from '@/components/ui/section-label';
+import { Skeleton } from '@/components/ui/skeleton';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 /**
  * Skeleton UI component that displays during optimistic generation state.
@@ -10,7 +10,11 @@ import type { ReactElement } from "react";
  */
 export function OutputSkeleton(): ReactElement {
   return (
-    <div className="space-y-[var(--space-5)]" aria-busy="true" aria-label="Loading generated content">
+    <div
+      className="space-y-[var(--space-5)]"
+      aria-busy="true"
+      aria-label="Loading generated content"
+    >
       {/* Title skeleton */}
       <div>
         <SectionLabel>Title</SectionLabel>

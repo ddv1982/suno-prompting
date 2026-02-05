@@ -12,7 +12,9 @@ export class RpcClientError extends Error {
   }
 }
 
-export function unwrapOrThrowResult<T>(result: { ok: true; value: T } | { ok: false; error: RpcError }): T {
+export function unwrapOrThrowResult<T>(
+  result: { ok: true; value: T } | { ok: false; error: RpcError }
+): T {
   if (result.ok) return result.value;
   throw new RpcClientError(result.error, { cause: result.error });
 }

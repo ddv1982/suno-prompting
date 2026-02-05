@@ -365,7 +365,7 @@ describe('realism-tags', () => {
       // Use pop genre with 0.95 probability and RNG that returns 0.8 (< 0.95)
       const rng = createSeededRng(42);
       const result = selectVocalTags('pop', 2, rng);
-      
+
       // Should return tags (may be empty if first RNG call > 0.95)
       expect(Array.isArray(result)).toBe(true);
     });
@@ -395,7 +395,7 @@ describe('realism-tags', () => {
       const rng = () => 0.1;
       const result = selectVocalTags('pop', 2, rng);
       const allVocalTags = flattenTagPool(VOCAL_PERFORMANCE_TAGS);
-      
+
       for (const tag of result) {
         expect(allVocalTags).toContain(tag);
       }
@@ -453,7 +453,7 @@ describe('realism-tags', () => {
       const rng = createSeededRng(42);
       const result = selectSpatialTags(2, rng);
       const allSpatialTags = flattenTagPool(SPATIAL_AUDIO_TAGS);
-      
+
       for (const tag of result) {
         expect(allSpatialTags).toContain(tag);
       }
@@ -494,7 +494,7 @@ describe('realism-tags', () => {
       const rng = createSeededRng(42);
       const result = selectHarmonicTags(2, rng);
       const allHarmonicTags = flattenTagPool(HARMONIC_DESCRIPTORS);
-      
+
       for (const tag of result) {
         expect(allHarmonicTags).toContain(tag);
       }
@@ -535,7 +535,7 @@ describe('realism-tags', () => {
       const rng = createSeededRng(42);
       const result = selectDynamicTags(2, rng);
       const allDynamicTags = flattenTagPool(DYNAMIC_RANGE_TAGS);
-      
+
       for (const tag of result) {
         expect(allDynamicTags).toContain(tag);
       }
@@ -576,7 +576,7 @@ describe('realism-tags', () => {
       const rng = createSeededRng(42);
       const result = selectTemporalTags(2, rng);
       const allTemporalTags = flattenTagPool(TEMPORAL_EFFECT_TAGS);
-      
+
       for (const tag of result) {
         expect(allTemporalTags).toContain(tag);
       }
@@ -617,7 +617,7 @@ describe('realism-tags', () => {
       const rng = createSeededRng(42);
       const result = selectTextureTags(2, rng);
       const allTextureTags = flattenTagPool(TEXTURE_DESCRIPTORS);
-      
+
       for (const tag of result) {
         expect(allTextureTags).toContain(tag);
       }
@@ -649,11 +649,11 @@ describe('realism-tags', () => {
       // This is tested indirectly via deterministic-builder.test.ts
       // We verify selection functions work correctly here
       const rng = createSeededRng(42);
-      
+
       const vocalTags = selectVocalTags('pop', 2, rng);
       const spatialTags = selectSpatialTags(1, createSeededRng(42));
       const harmonicTags = selectHarmonicTags(1, createSeededRng(42));
-      
+
       // Each should return valid tags
       expect(vocalTags.length).toBeGreaterThanOrEqual(0);
       expect(spatialTags.length).toBeGreaterThan(0);
@@ -668,11 +668,26 @@ describe('realism-tags', () => {
   describe('GENRE_RECORDING_CONTEXTS constant', () => {
     it('has all 18 expected genres', () => {
       const expectedGenres = [
-        'pop', 'rock', 'jazz', 'blues', 'soul', 'rnb', 'country', 'folk',
-        'classical', 'orchestral', 'ambient', 'cinematic', 'electronic',
-        'edm', 'house', 'techno', 'metal', 'punk'
+        'pop',
+        'rock',
+        'jazz',
+        'blues',
+        'soul',
+        'rnb',
+        'country',
+        'folk',
+        'classical',
+        'orchestral',
+        'ambient',
+        'cinematic',
+        'electronic',
+        'edm',
+        'house',
+        'techno',
+        'metal',
+        'punk',
       ];
-      
+
       for (const genre of expectedGenres) {
         const contexts = GENRE_RECORDING_CONTEXTS[genre];
         expect(contexts).toBeDefined();
@@ -708,7 +723,7 @@ describe('realism-tags', () => {
       // Check that jazz contexts contain jazz-related terms
       const jazzContexts = GENRE_RECORDING_CONTEXTS.jazz?.join(' ') ?? '';
       expect(jazzContexts).toMatch(/jazz|club|trio|quartet|bebop|blue note/i);
-      
+
       // Check that country contexts contain country-related terms
       const countryContexts = GENRE_RECORDING_CONTEXTS.country?.join(' ') ?? '';
       expect(countryContexts).toMatch(/nashville|honky|barn|country|bluegrass|texas/i);
@@ -730,7 +745,7 @@ describe('realism-tags', () => {
     it('returns genre-specific context for known genre', () => {
       const rng = createSeededRng(42);
       const result = selectRecordingContext('jazz', rng);
-      
+
       // Should be from jazz contexts
       expect(GENRE_RECORDING_CONTEXTS.jazz).toContain(result);
     });
@@ -738,10 +753,10 @@ describe('realism-tags', () => {
     it('returns different genre-specific contexts for different genres', () => {
       const rng = createSeededRng(42);
       const jazzContext = selectRecordingContext('jazz', rng);
-      
+
       const rng2 = createSeededRng(42);
       const rockContext = selectRecordingContext('rock', rng2);
-      
+
       // Both should be from their respective pools
       expect(GENRE_RECORDING_CONTEXTS.jazz).toContain(jazzContext);
       expect(GENRE_RECORDING_CONTEXTS.rock).toContain(rockContext);
@@ -750,11 +765,11 @@ describe('realism-tags', () => {
     it('falls back to generic recording descriptor for unknown genre', () => {
       const rng = createSeededRng(42);
       const result = selectRecordingContext('unknown-genre-xyz', rng);
-      
+
       // Should be a valid string (from fallback)
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
-      
+
       // Should not be in any genre-specific pool
       let foundInGenrePool = false;
       for (const contexts of Object.values(GENRE_RECORDING_CONTEXTS)) {
@@ -769,10 +784,10 @@ describe('realism-tags', () => {
     it('produces deterministic output with same seed for same genre', () => {
       const rng1 = createSeededRng(12345);
       const result1 = selectRecordingContext('jazz', rng1);
-      
+
       const rng2 = createSeededRng(12345);
       const result2 = selectRecordingContext('jazz', rng2);
-      
+
       expect(result1).toBe(result2);
     });
 
@@ -790,10 +805,10 @@ describe('realism-tags', () => {
     it('normalizes genre to lowercase', () => {
       const rng1 = createSeededRng(42);
       const result1 = selectRecordingContext('JAZZ', rng1);
-      
+
       const rng2 = createSeededRng(42);
       const result2 = selectRecordingContext('jazz', rng2);
-      
+
       expect(result1).toBe(result2);
       expect(GENRE_RECORDING_CONTEXTS.jazz).toContain(result1);
     });
@@ -801,25 +816,40 @@ describe('realism-tags', () => {
     it('trims whitespace from genre', () => {
       const rng1 = createSeededRng(42);
       const result1 = selectRecordingContext('  jazz  ', rng1);
-      
+
       const rng2 = createSeededRng(42);
       const result2 = selectRecordingContext('jazz', rng2);
-      
+
       expect(result1).toBe(result2);
       expect(GENRE_RECORDING_CONTEXTS.jazz).toContain(result1);
     });
 
     it('handles all 18 genres without errors', () => {
       const genres = [
-        'pop', 'rock', 'jazz', 'blues', 'soul', 'rnb', 'country', 'folk',
-        'classical', 'orchestral', 'ambient', 'cinematic', 'electronic',
-        'edm', 'house', 'techno', 'metal', 'punk'
+        'pop',
+        'rock',
+        'jazz',
+        'blues',
+        'soul',
+        'rnb',
+        'country',
+        'folk',
+        'classical',
+        'orchestral',
+        'ambient',
+        'cinematic',
+        'electronic',
+        'edm',
+        'house',
+        'techno',
+        'metal',
+        'punk',
       ];
-      
+
       for (const genre of genres) {
         const rng = createSeededRng(42);
         const result = selectRecordingContext(genre, rng);
-        
+
         expect(typeof result).toBe('string');
         expect(result.length).toBeGreaterThan(0);
         expect(GENRE_RECORDING_CONTEXTS[genre]).toContain(result);
@@ -829,14 +859,14 @@ describe('realism-tags', () => {
     it('returns lowercase context string', () => {
       const rng = createSeededRng(42);
       const result = selectRecordingContext('jazz', rng);
-      
+
       expect(result).toBe(result.toLowerCase());
     });
 
     it('handles empty genre string gracefully', () => {
       const rng = createSeededRng(42);
       const result = selectRecordingContext('', rng);
-      
+
       // Should fall back to generic
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
@@ -844,13 +874,13 @@ describe('realism-tags', () => {
 
     it('provides variety across multiple selections for same genre', () => {
       const contexts = new Set<string>();
-      
+
       // Generate 30 contexts for jazz with different seeds
       for (let i = 0; i < 30; i++) {
         const rng = createSeededRng(i * 1000);
         contexts.add(selectRecordingContext('jazz', rng));
       }
-      
+
       // Should get at least 3 different contexts (jazz has 9 contexts)
       expect(contexts.size).toBeGreaterThanOrEqual(3);
     });

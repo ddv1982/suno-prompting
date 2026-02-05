@@ -93,7 +93,8 @@ export async function refineLyricsWithFeedback(
   ollamaEndpoint?: string,
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<{ lyrics: string }> {
-  const { extractGenreFromPrompt, extractMoodFromPrompt } = await import('@bun/prompt/deterministic');
+  const { extractGenreFromPrompt, extractMoodFromPrompt } =
+    await import('@bun/prompt/deterministic');
 
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);

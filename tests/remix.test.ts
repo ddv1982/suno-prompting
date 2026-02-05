@@ -184,7 +184,10 @@ describe('extractGenresFromPrompt (multi)', () => {
 function extractRawGenreValues(prompt: string): string[] {
   const match = /^genre:\s*"?([^"\n]+?)(?:"|$)/im.exec(prompt);
   if (!match?.[1]) return [];
-  return match[1].split(',').map(g => g.trim()).filter(Boolean);
+  return match[1]
+    .split(',')
+    .map((g) => g.trim())
+    .filter(Boolean);
 }
 
 describe('remixGenre with targetGenreCount', () => {
@@ -327,9 +330,9 @@ instruments: "saxophone, guitar"`;
       const results = Array.from({ length: 10 }, () =>
         remixGenre(basePrompt, { targetGenreCount: 1 })
       );
-      const genres = results.map(r => extractGenresFromPrompt(r.text)[0]);
+      const genres = results.map((r) => extractGenresFromPrompt(r.text)[0]);
       // At least one should be different from 'rock'
-      const hasDifferentGenre = genres.some(g => g !== 'rock');
+      const hasDifferentGenre = genres.some((g) => g !== 'rock');
       expect(hasDifferentGenre).toBe(true);
     });
 
@@ -373,9 +376,13 @@ instruments: "guitar, drums"`;
     it('generates 2-3 moods each time', () => {
       // Run multiple times to verify mood count
       const results = Array.from({ length: 20 }, () => remixMoodInPrompt(basePrompt));
-      results.forEach(r => {
+      results.forEach((r) => {
         const moodMatch = /mood:\s*"?([^"\n]+)/i.exec(r.text);
-        const moods = moodMatch?.[1]?.split(',').map(m => m.trim()).filter(Boolean) || [];
+        const moods =
+          moodMatch?.[1]
+            ?.split(',')
+            .map((m) => m.trim())
+            .filter(Boolean) || [];
         expect(moods.length).toBeGreaterThanOrEqual(2);
         expect(moods.length).toBeLessThanOrEqual(3);
       });

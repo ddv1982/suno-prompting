@@ -18,42 +18,18 @@ export const RECORDING_PRODUCTION_QUALITY = {
     'studio-grade production',
     'commercial studio sound',
   ],
-  demo: [
-    'demo tape roughness',
-    'rough mix aesthetic',
-    'unpolished demo vibe',
-  ],
-  raw: [
-    'bootleg live recording character',
-    'raw performance energy',
-    'unedited authenticity',
-  ],
+  demo: ['demo tape roughness', 'rough mix aesthetic', 'unpolished demo vibe'],
+  raw: ['bootleg live recording character', 'raw performance energy', 'unedited authenticity'],
 } as const;
 
 /**
  * Recording environment types (mutually exclusive - pick ONE)
  */
 export const RECORDING_ENVIRONMENT = {
-  studio: [
-    'studio session warmth',
-    'recording studio precision',
-    'controlled studio environment',
-  ],
-  live: [
-    'live venue capture',
-    'concert hall natural acoustics',
-    'live performance energy',
-  ],
-  home: [
-    'intimate bedroom recording',
-    'home studio intimacy',
-    'DIY home production',
-  ],
-  rehearsal: [
-    'rehearsal room authenticity',
-    'jam session energy',
-    'practice space vibe',
-  ],
+  studio: ['studio session warmth', 'recording studio precision', 'controlled studio environment'],
+  live: ['live venue capture', 'concert hall natural acoustics', 'live performance energy'],
+  home: ['intimate bedroom recording', 'home studio intimacy', 'DIY home production'],
+  rehearsal: ['rehearsal room authenticity', 'jam session energy', 'practice space vibe'],
   outdoor: [
     'outdoor field recording ambience',
     'natural environment capture',
@@ -73,15 +49,8 @@ export const RECORDING_TECHNIQUE = {
     'vintage vinyl warmth',
     'direct-to-disc recording',
   ],
-  digital: [
-    'digital production clarity',
-    'modern DAW precision',
-    'digital multitrack recording',
-  ],
-  hybrid: [
-    'hybrid analog-digital chain',
-    'mixed recording techniques',
-  ],
+  digital: ['digital production clarity', 'modern DAW precision', 'digital multitrack recording'],
+  hybrid: ['hybrid analog-digital chain', 'mixed recording techniques'],
 } as const;
 
 /**
@@ -93,24 +62,8 @@ export const RECORDING_CHARACTER = {
     'close-up performance texture',
     'single microphone capture',
   ],
-  spacious: [
-    'atmospheric miking',
-    'room ambience capture',
-    'spacious reverb character',
-  ],
-  vintage: [
-    'vintage recording aesthetic',
-    'retro production character',
-    'classic recording vibe',
-  ],
-  modern: [
-    'contemporary production sound',
-    'modern recording techniques',
-  ],
-  compressed: [
-    'radio broadcast compression',
-    'tight dynamic control',
-  ],
+  spacious: ['atmospheric miking', 'room ambience capture', 'spacious reverb character'],
+  vintage: ['vintage recording aesthetic', 'retro production character', 'classic recording vibe'],
+  modern: ['contemporary production sound', 'modern recording techniques'],
+  compressed: ['radio broadcast compression', 'tight dynamic control'],
 } as const;
-
-

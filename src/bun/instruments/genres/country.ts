@@ -3,10 +3,18 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const COUNTRY_GENRE: GenreDefinition = {
   name: 'Country',
   keywords: [
-    'country', 'country rock', 'country pop', 'americana', 'bluegrass',
-    'country gospel', 'honky tonk', 'outlaw country', 'nashville',
+    'country',
+    'country rock',
+    'country pop',
+    'americana',
+    'bluegrass',
+    'country gospel',
+    'honky tonk',
+    'outlaw country',
+    'nashville',
   ],
-  description: 'Authentic American roots music with twangy guitars, storytelling vocals, and heartland themes',
+  description:
+    'Authentic American roots music with twangy guitars, storytelling vocals, and heartland themes',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -35,5 +43,15 @@ export const COUNTRY_GENRE: GenreDefinition = {
     ['pedal steel', 'lap steel guitar'],
   ],
   bpm: { min: 90, max: 140, typical: 110 },
-  moods: ['Heartfelt', 'Nostalgic', 'Honest', 'Hopeful', 'Uplifting', 'Story Driven', 'Warm', 'Confident', 'Bittersweet'],
+  moods: [
+    'Heartfelt',
+    'Nostalgic',
+    'Honest',
+    'Hopeful',
+    'Uplifting',
+    'Story Driven',
+    'Warm',
+    'Confident',
+    'Bittersweet',
+  ],
 };

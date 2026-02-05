@@ -102,7 +102,7 @@ describe('SUNO_V5_STYLE_DISPLAY_NAMES', () => {
   it('handles J-Pop special case correctly in compound styles', () => {
     const jPopDisplay = SUNO_V5_STYLE_DISPLAY_NAMES['j-pop acid breaks'];
     expect(jPopDisplay).toBe('J-Pop Acid Breaks');
-    
+
     const jPopChillsynth = SUNO_V5_STYLE_DISPLAY_NAMES['j-pop chillsynth'];
     expect(jPopChillsynth).toBe('J-Pop Chillsynth');
   });
@@ -133,7 +133,7 @@ describe('SUNO_V5_STYLE_DISPLAY_NAMES', () => {
     // K-Pop compound
     expect(SUNO_V5_STYLE_DISPLAY_NAMES['afroswing k-pop']).toBe('Afroswing K-Pop');
     expect(SUNO_V5_STYLE_DISPLAY_NAMES['bluegrass k-pop']).toBe('Bluegrass K-Pop');
-    
+
     // G-Funk compound
     expect(SUNO_V5_STYLE_DISPLAY_NAMES['edm g-funk']).toBe('EDM G-Funk');
     expect(SUNO_V5_STYLE_DISPLAY_NAMES['pop g-funk']).toBe('Pop G-Funk');
@@ -198,7 +198,7 @@ describe('isSunoV5Style', () => {
     const maybeStyle = 'jazz';
     if (isSunoV5Style(maybeStyle)) {
       // TypeScript should now know this is SunoV5Style
-      const validStyle: typeof SUNO_V5_STYLES[number] = maybeStyle;
+      const validStyle: (typeof SUNO_V5_STYLES)[number] = maybeStyle;
       expect(validStyle).toBe('jazz');
     }
   });
@@ -230,14 +230,14 @@ describe('edge cases', () => {
   it('no duplicate styles exist', () => {
     const seen = new Set<string>();
     const duplicates: string[] = [];
-    
+
     SUNO_V5_STYLES.forEach((style) => {
       if (seen.has(style)) {
         duplicates.push(style);
       }
       seen.add(style);
     });
-    
+
     expect(duplicates).toEqual([]);
   });
 });

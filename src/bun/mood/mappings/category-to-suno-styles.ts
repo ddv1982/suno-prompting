@@ -7,7 +7,6 @@
  * @module mood/mappings/category-to-suno-styles
  */
 
-
 import { MOOD_CATEGORY_KEYS } from '@bun/mood/categories';
 import { getGenresForCategory } from '@bun/mood/mappings/category-to-genres';
 import { SUNO_V5_STYLES } from '@shared/suno-v5-styles';

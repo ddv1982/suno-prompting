@@ -1,13 +1,13 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { LLMUnavailableNotice } from "@/components/shared/llm-unavailable-notice";
-import { StatusIndicator } from "@/components/ui/status-indicator";
-import { useSettingsContext } from "@/context/settings-context";
-import { APP_CONSTANTS } from "@shared/constants";
+import { LLMUnavailableNotice } from '@/components/shared/llm-unavailable-notice';
+import { StatusIndicator } from '@/components/ui/status-indicator';
+import { useSettingsContext } from '@/context/settings-context';
+import { APP_CONSTANTS } from '@shared/constants';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
-type StatusType = "working" | "ready" | "local";
+type StatusType = 'working' | 'ready' | 'local';
 
 interface EditorStatusFooterProps {
   isGenerating: boolean;
@@ -16,17 +16,17 @@ interface EditorStatusFooterProps {
   currentModel?: string;
 }
 
-export function EditorStatusFooter({ 
-  isGenerating, 
+export function EditorStatusFooter({
+  isGenerating,
   isOptimistic = false,
-  currentModel, 
+  currentModel,
 }: EditorStatusFooterProps): ReactElement {
   const { isLLMAvailable, useLocalLLM } = useSettingsContext();
 
   // Determine status: optimistic or generating shows working, then local/ready
   const status: StatusType = useMemo(() => {
-    if (isOptimistic || isGenerating) return "working";
-    return useLocalLLM ? "local" : "ready";
+    if (isOptimistic || isGenerating) return 'working';
+    return useLocalLLM ? 'local' : 'ready';
   }, [isOptimistic, isGenerating, useLocalLLM]);
 
   // Determine model name to display
@@ -45,9 +45,7 @@ export function EditorStatusFooter({
       </span>
       <div className="flex items-center gap-4">
         <LLMUnavailableNotice showText />
-        {modelDisplay && (
-          <span className="ui-label text-primary/70">{modelDisplay}</span>
-        )}
+        {modelDisplay && <span className="ui-label text-primary/70">{modelDisplay}</span>}
         <StatusIndicator status={status} showLabel={false} />
       </div>
     </div>

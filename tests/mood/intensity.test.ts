@@ -33,7 +33,7 @@ describe('Mood Intensity System', () => {
     test('moderate variant is often the base mood', () => {
       // Many moods should have themselves as the moderate variant
       const baseMoodsAsModerate = Object.entries(MOOD_INTENSITY_MAP).filter(
-        ([mood, variants]) => variants.moderate === mood,
+        ([mood, variants]) => variants.moderate === mood
       );
       expect(baseMoodsAsModerate.length).toBeGreaterThan(0);
     });

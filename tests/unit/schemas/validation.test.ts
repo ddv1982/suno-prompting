@@ -6,7 +6,10 @@
  */
 import { describe, expect, test } from 'bun:test';
 
-import { GenerateCreativeBoostSchema, RefineCreativeBoostSchema } from '@shared/schemas/creative-boost';
+import {
+  GenerateCreativeBoostSchema,
+  RefineCreativeBoostSchema,
+} from '@shared/schemas/creative-boost';
 import { GenerateQuickVibesSchema, RefineQuickVibesSchema } from '@shared/schemas/quick-vibes';
 import {
   CreativeBoostSubmitSchema,
@@ -51,9 +54,11 @@ describe('GenerateQuickVibesSchema', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        const issue = result.error.issues.find(i => i.path.includes('sunoStyles'));
+        const issue = result.error.issues.find((i) => i.path.includes('sunoStyles'));
         expect(issue).toBeDefined();
-        expect(issue?.message).toBe('Cannot use both Category and Suno V5 Styles. Please select only one.');
+        expect(issue?.message).toBe(
+          'Cannot use both Category and Suno V5 Styles. Please select only one.'
+        );
       }
     });
 
@@ -91,7 +96,7 @@ describe('RefineQuickVibesSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('sunoStyles'));
+      const issue = result.error.issues.find((i) => i.path.includes('sunoStyles'));
       expect(issue).toBeDefined();
     }
   });
@@ -195,13 +200,14 @@ describe('GenerateCreativeBoostSchema', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        const issue = result.error.issues.find(i => i.path.includes('sunoStyles'));
+        const issue = result.error.issues.find((i) => i.path.includes('sunoStyles'));
         expect(issue).toBeDefined();
-        expect(issue?.message).toBe('Cannot use both Seed Genres and Suno V5 Styles. Please select only one.');
+        expect(issue?.message).toBe(
+          'Cannot use both Seed Genres and Suno V5 Styles. Please select only one.'
+        );
       }
     });
   });
-
 });
 
 describe('RefineCreativeBoostSchema', () => {
@@ -220,7 +226,7 @@ describe('RefineCreativeBoostSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('sunoStyles'));
+      const issue = result.error.issues.find((i) => i.path.includes('sunoStyles'));
       expect(issue).toBeDefined();
     }
   });
@@ -241,7 +247,7 @@ describe('FullPromptSubmitSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('description'));
+      const issue = result.error.issues.find((i) => i.path.includes('description'));
       expect(issue).toBeDefined();
       expect(issue?.message).toContain('Provide a description');
     }
@@ -301,7 +307,7 @@ describe('FullPromptRefineSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('feedbackText'));
+      const issue = result.error.issues.find((i) => i.path.includes('feedbackText'));
       expect(issue).toBeDefined();
     }
   });
@@ -334,7 +340,7 @@ describe('QuickVibesSubmitSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('category'));
+      const issue = result.error.issues.find((i) => i.path.includes('category'));
       expect(issue).toBeDefined();
     }
   });
@@ -351,7 +357,7 @@ describe('QuickVibesSubmitSchema', () => {
   test('passes with any string category (backward compatible)', () => {
     // Submit schema uses z.string().nullable() for backward compatibility
     const result = QuickVibesSubmitSchema.safeParse({
-      category: 'chill',  // Not a valid enum value, but submit doesn't care
+      category: 'chill', // Not a valid enum value, but submit doesn't care
       customDescription: '',
       sunoStyles: [],
     });
@@ -386,7 +392,7 @@ describe('QuickVibesRefineSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('customDescription'));
+      const issue = result.error.issues.find((i) => i.path.includes('customDescription'));
       expect(issue).toBeDefined();
       expect(issue?.message).toBe('Make changes to refine the prompt');
     }
@@ -424,7 +430,7 @@ describe('CreativeBoostSubmitSchema', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i => i.path.includes('description'));
+      const issue = result.error.issues.find((i) => i.path.includes('description'));
       expect(issue).toBeDefined();
     }
   });
@@ -453,5 +459,3 @@ describe('CreativeBoostSubmitSchema', () => {
     expect(result.success).toBe(true);
   });
 });
-
-

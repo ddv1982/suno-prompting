@@ -1,8 +1,8 @@
-import { Server, Cloud } from "lucide-react";
-import { type ReactElement } from "react";
+import { Server, Cloud } from 'lucide-react';
+import { type ReactElement } from 'react';
 
-import { SectionLabel } from "@/components/ui/section-label";
-import { ToggleRow } from "@/components/ui/toggle-row";
+import { SectionLabel } from '@/components/ui/section-label';
+import { ToggleRow } from '@/components/ui/toggle-row';
 
 interface LLMProviderToggleProps {
   useLocalLLM: boolean;
@@ -17,15 +17,9 @@ export function LLMProviderToggle({
   loading,
   onToggle,
 }: LLMProviderToggleProps): ReactElement {
-  const statusIcon = useLocalLLM ? (
-    <Server className="w-4 h-4" />
-  ) : (
-    <Cloud className="w-4 h-4" />
-  );
+  const statusIcon = useLocalLLM ? <Server className="w-4 h-4" /> : <Cloud className="w-4 h-4" />;
 
-  const helperText = useLocalLLM 
-    ? "(Ollama/Gemma 3 4B)" 
-    : "(Cloud Provider)";
+  const helperText = useLocalLLM ? '(Ollama/Gemma 3 4B)' : '(Cloud Provider)';
 
   return (
     <div className="space-y-3">
@@ -44,13 +38,14 @@ export function LLMProviderToggle({
       <div className="pl-9 space-y-2">
         {useLocalLLM ? (
           <p className="text-sm text-muted-foreground">
-            All AI operations use Ollama (Gemma 3 4B) running locally. No internet required, completely private.
-            {hasApiKey && " Your API key is configured but not being used."}
+            All AI operations use Ollama (Gemma 3 4B) running locally. No internet required,
+            completely private.
+            {hasApiKey && ' Your API key is configured but not being used.'}
           </p>
         ) : (
           <p className="text-sm text-muted-foreground">
             Using cloud AI provider with your API key.
-            {!hasApiKey && " ⚠️ No API key configured - please add one above."}
+            {!hasApiKey && ' ⚠️ No API key configured - please add one above.'}
           </p>
         )}
       </div>

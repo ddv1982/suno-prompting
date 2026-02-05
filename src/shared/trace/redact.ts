@@ -44,12 +44,14 @@ const REDACTION_RULES: readonly RedactionRule[] = [
   {
     name: 'json-apiKey',
     pattern: /("apiKey"\s*:\s*")([^"]+)(")/gi,
-    replace: (_match, prefix: string, _secret: string, suffix: string) => `${prefix}${REPLACEMENT_TEXT}${suffix}`,
+    replace: (_match, prefix: string, _secret: string, suffix: string) =>
+      `${prefix}${REPLACEMENT_TEXT}${suffix}`,
   },
   {
     name: 'json-authorization',
     pattern: /("authorization"\s*:\s*")([^"]+)(")/gi,
-    replace: (_match, prefix: string, _secret: string, suffix: string) => `${prefix}${REPLACEMENT_TEXT}${suffix}`,
+    replace: (_match, prefix: string, _secret: string, suffix: string) =>
+      `${prefix}${REPLACEMENT_TEXT}${suffix}`,
   },
   {
     name: 'x-api-key-header',

@@ -18,7 +18,10 @@ import {
   CULTURAL_REGIONS,
 } from '@bun/instruments/cultural-instruments';
 import { extractEnrichment } from '@bun/keywords';
-import { getEraProductionTags, getEraProductionTagsLimited } from '@bun/prompt/deterministic/era-tags';
+import {
+  getEraProductionTags,
+  getEraProductionTagsLimited,
+} from '@bun/prompt/deterministic/era-tags';
 import { getIntentTags, getIntentTagsLimited } from '@bun/prompt/deterministic/intent-tags';
 import {
   narrativeArcToContrast,
@@ -154,17 +157,13 @@ describe('ThematicContextSchema - Core Enrichment', () => {
 
 describe('EraSchema validation', () => {
   describe('valid era values', () => {
-    test.each([
-      ['50s-60s'],
-      ['70s'],
-      ['80s'],
-      ['90s'],
-      ['2000s'],
-      ['modern'],
-    ] as const)('accepts "%s" as valid era', (era) => {
-      const result = EraSchema.safeParse(era);
-      expect(result.success).toBe(true);
-    });
+    test.each([['50s-60s'], ['70s'], ['80s'], ['90s'], ['2000s'], ['modern']] as const)(
+      'accepts "%s" as valid era',
+      (era) => {
+        const result = EraSchema.safeParse(era);
+        expect(result.success).toBe(true);
+      }
+    );
   });
 
   describe('invalid era values', () => {
@@ -217,15 +216,13 @@ describe('TempoSchema validation', () => {
       expect(result.success).toBe(true);
     });
 
-    test.each([
-      ['steady'],
-      ['gradual-rise'],
-      ['gradual-fall'],
-      ['explosive'],
-    ] as const)('accepts "%s" as valid tempo curve', (curve) => {
-      const result = TempoSchema.safeParse({ adjustment: 10, curve });
-      expect(result.success).toBe(true);
-    });
+    test.each([['steady'], ['gradual-rise'], ['gradual-fall'], ['explosive']] as const)(
+      'accepts "%s" as valid tempo curve',
+      (curve) => {
+        const result = TempoSchema.safeParse({ adjustment: 10, curve });
+        expect(result.success).toBe(true);
+      }
+    );
   });
 
   describe('invalid tempo values', () => {
@@ -257,15 +254,13 @@ describe('TempoSchema validation', () => {
 });
 
 describe('TempoCurveSchema validation', () => {
-  test.each([
-    ['steady'],
-    ['gradual-rise'],
-    ['gradual-fall'],
-    ['explosive'],
-  ] as const)('accepts "%s" as valid curve', (curve) => {
-    const result = TempoCurveSchema.safeParse(curve);
-    expect(result.success).toBe(true);
-  });
+  test.each([['steady'], ['gradual-rise'], ['gradual-fall'], ['explosive']] as const)(
+    'accepts "%s" as valid curve',
+    (curve) => {
+      const result = TempoCurveSchema.safeParse(curve);
+      expect(result.success).toBe(true);
+    }
+  );
 
   test('rejects invalid curve "accelerating"', () => {
     const result = TempoCurveSchema.safeParse('accelerating');
@@ -668,17 +663,33 @@ describe('getIntentTags', () => {
 
   test('background intent includes subtle tag', () => {
     const tags = getIntentTags('background');
-    expect(tags.some(t => t.toLowerCase().includes('subtle') || t.toLowerCase().includes('ambient'))).toBe(true);
+    expect(
+      tags.some((t) => t.toLowerCase().includes('subtle') || t.toLowerCase().includes('ambient'))
+    ).toBe(true);
   });
 
   test('dancefloor intent includes punchy or driving tag', () => {
     const tags = getIntentTags('dancefloor');
-    expect(tags.some(t => t.toLowerCase().includes('punch') || t.toLowerCase().includes('driv') || t.toLowerCase().includes('rhythm'))).toBe(true);
+    expect(
+      tags.some(
+        (t) =>
+          t.toLowerCase().includes('punch') ||
+          t.toLowerCase().includes('driv') ||
+          t.toLowerCase().includes('rhythm')
+      )
+    ).toBe(true);
   });
 
   test('cinematic intent includes dramatic or evolving tag', () => {
     const tags = getIntentTags('cinematic');
-    expect(tags.some(t => t.toLowerCase().includes('dramat') || t.toLowerCase().includes('evolv') || t.toLowerCase().includes('layer'))).toBe(true);
+    expect(
+      tags.some(
+        (t) =>
+          t.toLowerCase().includes('dramat') ||
+          t.toLowerCase().includes('evolv') ||
+          t.toLowerCase().includes('layer')
+      )
+    ).toBe(true);
   });
 });
 
@@ -1322,7 +1333,7 @@ describe('narrativeArcToContrast', () => {
     const contrast = narrativeArcToContrast(arc);
 
     expect(contrast).toBeDefined();
-    
+
     // Middle should use the actual middle element (index 2)
     const chorus = contrast?.sections.find((s) => s.type === 'chorus');
     expect(chorus?.mood).toBe('hope');
@@ -1350,9 +1361,7 @@ describe('mergeContrastWithNarrativeArc', () => {
 
   test('returns existing contrast when no arc', () => {
     const existing = {
-      sections: [
-        { type: 'chorus' as const, mood: 'euphoric', dynamics: 'explosive' as const },
-      ],
+      sections: [{ type: 'chorus' as const, mood: 'euphoric', dynamics: 'explosive' as const }],
     };
     const merged = mergeContrastWithNarrativeArc(existing, undefined);
 
@@ -1361,9 +1370,7 @@ describe('mergeContrastWithNarrativeArc', () => {
 
   test('existing contrast takes precedence over arc', () => {
     const existing = {
-      sections: [
-        { type: 'chorus' as const, mood: 'euphoric', dynamics: 'explosive' as const },
-      ],
+      sections: [{ type: 'chorus' as const, mood: 'euphoric', dynamics: 'explosive' as const }],
     };
     const arc = ['sadness', 'hope', 'joy'];
     const merged = mergeContrastWithNarrativeArc(existing, arc);
@@ -1379,9 +1386,7 @@ describe('mergeContrastWithNarrativeArc', () => {
 
   test('merges all sections when existing has partial coverage', () => {
     const existing = {
-      sections: [
-        { type: 'verse' as const, mood: 'melancholic', dynamics: 'soft' as const },
-      ],
+      sections: [{ type: 'verse' as const, mood: 'melancholic', dynamics: 'soft' as const }],
     };
     const arc = ['tension', 'building', 'release'];
     const merged = mergeContrastWithNarrativeArc(existing, arc);

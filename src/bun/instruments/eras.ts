@@ -95,7 +95,7 @@ export const INSTRUMENT_ERAS: readonly InstrumentEra[] = ['70s', '80s', '90s', '
 export function selectEraInstruments(
   era: InstrumentEra,
   count = 3,
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): string[] {
   const pool = ERA_INSTRUMENTS[era];
   if (pool.length === 0) return [];
@@ -121,7 +121,7 @@ export function getEraInstruments(era: InstrumentEra): readonly string[] {
  */
 export function isEraInstrument(instrument: string, era: InstrumentEra): boolean {
   return ERA_INSTRUMENTS[era].some(
-    (eraInstrument) => eraInstrument.toLowerCase() === instrument.toLowerCase(),
+    (eraInstrument) => eraInstrument.toLowerCase() === instrument.toLowerCase()
   );
 }
 
@@ -134,6 +134,8 @@ export function isEraInstrument(instrument: string, era: InstrumentEra): boolean
 export function getInstrumentEras(instrument: string): InstrumentEra[] {
   const normalizedInstrument = instrument.toLowerCase();
   return INSTRUMENT_ERAS.filter((era) =>
-    ERA_INSTRUMENTS[era].some((eraInstrument) => eraInstrument.toLowerCase() === normalizedInstrument),
+    ERA_INSTRUMENTS[era].some(
+      (eraInstrument) => eraInstrument.toLowerCase() === normalizedInstrument
+    )
   );
 }

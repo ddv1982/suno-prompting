@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const SKA_GENRE: GenreDefinition = {
   name: 'Ska',
   keywords: ['ska', 'ska punk', 'third wave ska', 'two-tone', 'rocksteady'],
-  description: 'Upbeat Jamaican-originated music with offbeat rhythms, brass, and energetic grooves',
+  description:
+    'Upbeat Jamaican-originated music with offbeat rhythms, brass, and energetic grooves',
   pools: {
     brass: {
       pick: { min: 1, max: 2 },

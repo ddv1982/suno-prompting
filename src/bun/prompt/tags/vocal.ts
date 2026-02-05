@@ -10,9 +10,9 @@ import type { VocalCharacter } from '@shared/schemas/thematic-context';
 /**
  * Vocal performance descriptors for vocal-capable genres.
  * Based on Suno V5 community research and official documentation.
- * 
+ *
  * Total tags: 38 across 8 categories
- * 
+ *
  * @example
  * // Access specific category
  * VOCAL_PERFORMANCE_TAGS.breathTexture // ['breathy delivery', 'airy vocals', ...]
@@ -26,7 +26,7 @@ export const VOCAL_PERFORMANCE_TAGS = {
     'smooth vocals',
     'raspy edge',
   ],
-  
+
   /** Vocal power and dynamics (5 tags) */
   vocalPower: [
     'belt technique',
@@ -35,7 +35,7 @@ export const VOCAL_PERFORMANCE_TAGS = {
     'intimate whisper',
     'vocal restraint',
   ],
-  
+
   /** Extended techniques (5 tags) */
   techniques: [
     'falsetto sections',
@@ -44,7 +44,7 @@ export const VOCAL_PERFORMANCE_TAGS = {
     'vibrato',
     'straight-tone delivery',
   ],
-  
+
   /** Vocal character (5 tags) */
   character: [
     'crooner style',
@@ -53,7 +53,7 @@ export const VOCAL_PERFORMANCE_TAGS = {
     'theatrical performance',
     'raw emotion',
   ],
-  
+
   /** Layering and harmony (5 tags) */
   layering: [
     'choir stacking',
@@ -62,15 +62,10 @@ export const VOCAL_PERFORMANCE_TAGS = {
     'octave vocal layers',
     'unison vocal tracking',
   ],
-  
+
   /** Articulation (4 tags) */
-  articulation: [
-    'clear diction',
-    'slurred phrasing',
-    'staccato delivery',
-    'legato phrasing',
-  ],
-  
+  articulation: ['clear diction', 'slurred phrasing', 'staccato delivery', 'legato phrasing'],
+
   /** Mic technique (4 tags) */
   micTechnique: [
     'close-mic intimacy',
@@ -78,7 +73,7 @@ export const VOCAL_PERFORMANCE_TAGS = {
     'proximity effect',
     'off-axis vocal warmth',
   ],
-  
+
   /** Genre-specific styles (5 tags) */
   genreStyles: [
     'soul vocal runs',
@@ -92,13 +87,13 @@ export const VOCAL_PERFORMANCE_TAGS = {
 /**
  * Vocal tag applicability per genre.
  * Controls whether vocal performance tags can be selected.
- * 
+ *
  * Probability values:
  * - 0.9-1.0: Almost always vocal (pop, r&b, soul)
  * - 0.6-0.8: Often vocal (jazz, rock, country)
  * - 0.3-0.5: Sometimes vocal (classical, electronic)
  * - 0.0-0.2: Rarely vocal (ambient, cinematic)
- * 
+ *
  * @example
  * // Check vocal probability for jazz
  * GENRE_VOCAL_PROBABILITY.jazz // 0.70
@@ -107,71 +102,76 @@ export const GENRE_VOCAL_PROBABILITY: Record<string, number> = {
   // Almost always vocal
   pop: 0.95,
   rnb: 0.95,
-  soul: 0.90,
+  soul: 0.9,
   hiphop: 0.95,
-  country: 0.90,
+  country: 0.9,
   gospel: 0.95,
-  
+
   // Often vocal
-  jazz: 0.70,
-  blues: 0.80,
+  jazz: 0.7,
+  blues: 0.8,
   rock: 0.75,
   folk: 0.85,
-  punk: 0.80,
-  metal: 0.60, // Growls/screams count as vocals
-  
+  punk: 0.8,
+  metal: 0.6, // Growls/screams count as vocals
+
   // Sometimes vocal
-  classical: 0.30, // Choral works
-  electronic: 0.40,
-  edm: 0.50,
+  classical: 0.3, // Choral works
+  electronic: 0.4,
+  edm: 0.5,
   reggae: 0.75,
-  latin: 0.80,
-  funk: 0.70,
-  
+  latin: 0.8,
+  funk: 0.7,
+
   // Rarely vocal
   ambient: 0.05,
-  cinematic: 0.10,
-  orchestral: 0.20,
-  
+  cinematic: 0.1,
+  orchestral: 0.2,
+
   // Default for unmapped genres
-  default: 0.50,
+  default: 0.5,
 } as const;
 
 /**
  * Select vocal performance tags based on genre vocal probability.
  * Returns empty array if RNG roll fails the genre's vocal probability check.
- * 
+ *
  * Flattens all VOCAL_PERFORMANCE_TAGS categories, shuffles deterministically,
  * and returns up to `count` tags.
- * 
+ *
  * @param genre - Music genre to check vocal probability
  * @param count - Maximum number of tags to return
  * @param rng - Random number generator function (0.0-1.0) for deterministic selection
  * @returns Array of vocal performance tags, or empty array if probability check fails
- * 
+ *
  * @example
  * // High vocal probability genre (pop = 0.95)
  * selectVocalTags('pop', 2, () => 0.8) // ['breathy delivery', 'belt technique']
- * 
+ *
  * @example
  * // Low vocal probability genre (ambient = 0.05)
  * selectVocalTags('ambient', 2, () => 0.1) // [] (failed probability check)
  */
-export function selectVocalTags(genre: string, count: number, rng: () => number = Math.random): string[] {
+export function selectVocalTags(
+  genre: string,
+  count: number,
+  rng: () => number = Math.random
+): string[] {
   const normalizedGenre = genre.toLowerCase().trim();
-  const probability = GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY.default ?? 0.50;
-  
+  const probability =
+    GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY.default ?? 0.5;
+
   // Check vocal probability with RNG roll
   if (rng() > probability) {
     return [];
   }
-  
+
   // Flatten all vocal performance tags
   const allTags: string[] = [];
   for (const category of Object.values(VOCAL_PERFORMANCE_TAGS)) {
     allTags.push(...category);
   }
-  
+
   return selectRandomN(allTags, Math.min(count, allTags.length), rng);
 }
 
@@ -187,15 +187,15 @@ export function selectVocalTags(genre: string, count: number, rng: () => number 
  */
 function mapVocalStyleToTag(style: string): string | null {
   const MAP: Record<string, string> = {
-    'breathy': 'breathy delivery',
-    'powerful': 'powerful vocals',
-    'raspy': 'raspy edge',
-    'smooth': 'smooth vocals',
-    'ethereal': 'airy vocals',
-    'intimate': 'intimate whisper',
-    'warm': 'smooth vocals',
-    'airy': 'airy vocals',
-    'gritty': 'raspy edge',
+    breathy: 'breathy delivery',
+    powerful: 'powerful vocals',
+    raspy: 'raspy edge',
+    smooth: 'smooth vocals',
+    ethereal: 'airy vocals',
+    intimate: 'intimate whisper',
+    warm: 'smooth vocals',
+    airy: 'airy vocals',
+    gritty: 'raspy edge',
   };
   return MAP[style.toLowerCase()] ?? null;
 }
@@ -208,14 +208,14 @@ function mapVocalStyleToTag(style: string): string | null {
  */
 function mapVocalLayeringToTag(layering: string): string | null {
   const MAP: Record<string, string> = {
-    'harmonies': 'harmony layers',
+    harmonies: 'harmony layers',
     'double-tracked': 'vocal doubles',
-    'choir': 'choir stacking',
-    'layered': 'harmony layers',
-    'solo': 'intimate whisper',
-    'stacked': 'vocal doubles',
-    'octave': 'octave vocal layers',
-    'unison': 'unison vocal tracking',
+    choir: 'choir stacking',
+    layered: 'harmony layers',
+    solo: 'intimate whisper',
+    stacked: 'vocal doubles',
+    octave: 'octave vocal layers',
+    unison: 'unison vocal tracking',
   };
   return MAP[layering.toLowerCase()] ?? null;
 }
@@ -228,14 +228,14 @@ function mapVocalLayeringToTag(layering: string): string | null {
  */
 function mapVocalTechniqueToTag(technique: string): string | null {
   const MAP: Record<string, string> = {
-    'falsetto': 'falsetto sections',
-    'growl': 'raspy edge',
-    'scat': 'jazz scat vocalization',
-    'belt': 'belt technique',
-    'whisper': 'whispered tones',
-    'vibrato': 'vibrato',
-    'runs': 'soul vocal runs',
-    'shout': 'gospel shouts',
+    falsetto: 'falsetto sections',
+    growl: 'raspy edge',
+    scat: 'jazz scat vocalization',
+    belt: 'belt technique',
+    whisper: 'whispered tones',
+    vibrato: 'vibrato',
+    runs: 'soul vocal runs',
+    shout: 'gospel shouts',
   };
   return MAP[technique.toLowerCase()] ?? null;
 }
@@ -314,7 +314,8 @@ export function selectVocalTagsWithCharacter(
   vocalCharacter?: VocalCharacter
 ): string[] {
   const normalizedGenre = genre.toLowerCase().trim();
-  const probability = GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY.default ?? 0.50;
+  const probability =
+    GENRE_VOCAL_PROBABILITY[normalizedGenre] ?? GENRE_VOCAL_PROBABILITY.default ?? 0.5;
 
   // Check vocal probability with RNG roll
   if (rng() > probability) {

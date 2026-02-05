@@ -157,8 +157,8 @@ describe('deterministic-integration', () => {
       expect(result1.genre).toBe(result2.genre);
 
       // BPM is determined by genre, so should match
-      const bpm1 = (/bpm: "([^"]+)"/.exec(result1.text))?.[1];
-      const bpm2 = (/bpm: "([^"]+)"/.exec(result2.text))?.[1];
+      const bpm1 = /bpm: "([^"]+)"/.exec(result1.text)?.[1];
+      const bpm2 = /bpm: "([^"]+)"/.exec(result2.text)?.[1];
       expect(bpm1).toBe(bpm2);
 
       // Metadata should match for core fields
@@ -176,7 +176,7 @@ describe('deterministic-integration', () => {
       // (Genre and BPM may still match since they're based on description)
       const instruments1 = result1.metadata?.instruments;
       const instruments2 = result2.metadata?.instruments;
-      
+
       // At least verify both have instruments
       expect(instruments1?.length).toBeGreaterThan(0);
       expect(instruments2?.length).toBeGreaterThan(0);

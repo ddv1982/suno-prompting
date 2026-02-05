@@ -103,13 +103,11 @@ export function generateQuickVibesTitle(
 export function buildDeterministicQuickVibes(
   category: QuickVibesCategory,
   maxMode: boolean,
-  rngOrOptions: (() => number) | BuildQuickVibesOptions = Math.random,
+  rngOrOptions: (() => number) | BuildQuickVibesOptions = Math.random
 ): { text: string; title: string } {
   // Handle both old function signature (rng only) and new options object
   const options: BuildQuickVibesOptions =
-    typeof rngOrOptions === 'function'
-      ? { maxMode, rng: rngOrOptions }
-      : rngOrOptions;
+    typeof rngOrOptions === 'function' ? { maxMode, rng: rngOrOptions } : rngOrOptions;
 
   const rng = options.rng ?? Math.random;
   const moodCategory = options.moodCategory;
@@ -137,7 +135,7 @@ export function buildDeterministicQuickVibes(
     why: `category="${category}"`,
     selection: {
       method: 'pickRandom',
-      candidates: template.instruments.map(i => i.join(', ')),
+      candidates: template.instruments.map((i) => i.join(', ')),
     },
   });
 
@@ -180,10 +178,7 @@ export function buildDeterministicQuickVibes(
   }
 
   // Standard mode - simpler format
-  const lines = [
-    `${mood} ${genre}`,
-    `Instruments: ${instruments.join(', ')}`,
-  ];
+  const lines = [`${mood} ${genre}`, `Instruments: ${instruments.join(', ')}`];
   return {
     text: lines.join('\n'),
     title,

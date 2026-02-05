@@ -1,6 +1,6 @@
 /**
  * Tests for llm-utils.ts refactored helper functions
- * 
+ *
  * Tests wrapAIError and the split callLLM paths
  */
 
@@ -49,7 +49,7 @@ describe('callLLM', () => {
   describe('without trace (fast path)', () => {
     test('calls cloud provider when no ollamaEndpoint', async () => {
       const { callLLM } = await import('@bun/ai/llm-utils');
-      
+
       const result = await callLLM({
         getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
         systemPrompt: 'system',
@@ -64,7 +64,7 @@ describe('callLLM', () => {
 
     test('calls Ollama when ollamaEndpoint provided', async () => {
       const { callLLM } = await import('@bun/ai/llm-utils');
-      
+
       const result = await callLLM({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
@@ -131,7 +131,9 @@ describe('callLLM', () => {
     test('records LLM call event on success', async () => {
       // Mock generateText to call onFinish callback (required for traced path)
       mockGenerateText.mockImplementation(async (options: unknown) => {
-        const opts = options as { onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void };
+        const opts = options as {
+          onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void;
+        };
         if (opts.onFinish) {
           opts.onFinish({
             response: { modelId: 'gpt-4' },
@@ -149,7 +151,7 @@ describe('callLLM', () => {
 
       const { callLLM } = await import('@bun/ai/llm-utils');
       const { createTraceCollector } = await import('@bun/trace');
-      
+
       const trace = createTraceCollector({
         runId: 'test-run',
         action: 'generate.full',
@@ -167,9 +169,9 @@ describe('callLLM', () => {
       });
 
       expect(result).toBe('generated response');
-      
+
       const traceData = trace.finalize();
-      const llmEvent = traceData.events.find(e => e.type === 'llm.call');
+      const llmEvent = traceData.events.find((e) => e.type === 'llm.call');
       expect(llmEvent).toBeDefined();
     });
 
@@ -177,7 +179,7 @@ describe('callLLM', () => {
       mockGenerateText.mockRejectedValue(new AIGenerationError('test failure'));
       const { callLLM } = await import('@bun/ai/llm-utils');
       const { createTraceCollector } = await import('@bun/trace');
-      
+
       const trace = createTraceCollector({
         runId: 'test-run',
         action: 'generate.full',
@@ -228,11 +230,7 @@ describe('generateDirectModeTitle', () => {
     mockGenerateText.mockRejectedValue(new Error('failed'));
     const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
 
-    const title = await generateDirectModeTitle(
-      'my description',
-      ['rock'],
-      () => ({}) as any
-    );
+    const title = await generateDirectModeTitle('my description', ['rock'], () => ({}) as any);
 
     expect(title).toBe('Untitled');
   });
@@ -242,7 +240,7 @@ describe('generateDirectModeTitle', () => {
 
     // Test dark mood inference
     await generateDirectModeTitle('desc', ['dark metal'], () => ({}) as any);
-    
+
     // The mood should be inferred as 'dark' based on the styles
     expect(mockGenerateText).toHaveBeenCalled();
   });
@@ -258,7 +256,7 @@ describe('ollamaOptions threading', () => {
   describe('without trace (fast path)', () => {
     test('passes ollamaOptions to generateWithOllama', async () => {
       const { callLLM } = await import('@bun/ai/llm-utils');
-      
+
       const ollamaOptions = {
         temperature: 0.8,
         maxTokens: 2500,
@@ -275,7 +273,7 @@ describe('ollamaOptions threading', () => {
       });
 
       expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
-      
+
       // Verify the last argument is the ollamaOptions
       const calls = mockGenerateWithOllama.mock.calls as unknown[][];
       const lastCall = calls[0];
@@ -298,7 +296,7 @@ describe('ollamaOptions threading', () => {
       });
 
       expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
-      
+
       const calls = mockGenerateWithOllama.mock.calls as unknown[][];
       const lastCall = calls[0];
       // Should be called with undefined for options
@@ -307,7 +305,7 @@ describe('ollamaOptions threading', () => {
 
     test('passes partial ollamaOptions correctly', async () => {
       const { callLLM } = await import('@bun/ai/llm-utils');
-      
+
       const ollamaOptions = {
         temperature: 0.5,
         // maxTokens and contextLength intentionally omitted
@@ -323,7 +321,7 @@ describe('ollamaOptions threading', () => {
       });
 
       expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
-      
+
       const calls = mockGenerateWithOllama.mock.calls as unknown[][];
       const lastCall = calls[0];
       expect(lastCall?.[5]).toEqual({ temperature: 0.5 });
@@ -334,7 +332,7 @@ describe('ollamaOptions threading', () => {
     test('passes ollamaOptions through traced path', async () => {
       const { callLLM } = await import('@bun/ai/llm-utils');
       const { createTraceCollector } = await import('@bun/trace');
-      
+
       const trace = createTraceCollector({
         runId: 'test-run-options',
         action: 'generate.full',
@@ -359,7 +357,7 @@ describe('ollamaOptions threading', () => {
       });
 
       expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
-      
+
       const calls = mockGenerateWithOllama.mock.calls as unknown[][];
       const lastCall = calls[0];
       expect(lastCall?.[5]).toEqual(ollamaOptions);
@@ -368,7 +366,7 @@ describe('ollamaOptions threading', () => {
     test('traced path works without ollamaOptions (backward compatible)', async () => {
       const { callLLM } = await import('@bun/ai/llm-utils');
       const { createTraceCollector } = await import('@bun/trace');
-      
+
       const trace = createTraceCollector({
         runId: 'test-run-no-options',
         action: 'generate.full',
@@ -387,7 +385,7 @@ describe('ollamaOptions threading', () => {
       });
 
       expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
-      
+
       const calls = mockGenerateWithOllama.mock.calls as unknown[][];
       const lastCall = calls[0];
       expect(lastCall?.[5]).toBeUndefined();
@@ -429,11 +427,15 @@ describe('onFinish callback behavior', () => {
 
   test('onFinish callback is invoked during cloud generation without trace', async () => {
     let onFinishCalled = false;
-    let capturedOnFinish: ((params: { response: unknown; usage: unknown; finishReason: string }) => void) | undefined;
+    let capturedOnFinish:
+      | ((params: { response: unknown; usage: unknown; finishReason: string }) => void)
+      | undefined;
 
     // Mock generateText to capture the onFinish callback
     mockGenerateText.mockImplementation(async (options: unknown) => {
-      const opts = options as { onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void };
+      const opts = options as {
+        onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void;
+      };
       capturedOnFinish = opts.onFinish;
       // Simulate the AI SDK calling onFinish
       if (opts.onFinish) {
@@ -468,7 +470,9 @@ describe('onFinish callback behavior', () => {
   test('trace telemetry contains correct token counts from onFinish', async () => {
     // Mock generateText to call onFinish with specific token counts
     mockGenerateText.mockImplementation(async (options: unknown) => {
-      const opts = options as { onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void };
+      const opts = options as {
+        onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void;
+      };
       if (opts.onFinish) {
         opts.onFinish({
           response: { modelId: 'gpt-4-turbo' },
@@ -504,7 +508,7 @@ describe('onFinish callback behavior', () => {
     });
 
     const traceData = trace.finalize();
-    const llmEvent = traceData.events.find(e => e.type === 'llm.call') as {
+    const llmEvent = traceData.events.find((e) => e.type === 'llm.call') as {
       type: string;
       telemetry?: { tokensIn?: number; tokensOut?: number; finishReason?: string };
     };
@@ -517,7 +521,9 @@ describe('onFinish callback behavior', () => {
 
   test('graceful behavior when trace is undefined', async () => {
     mockGenerateText.mockImplementation(async (options: unknown) => {
-      const opts = options as { onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void };
+      const opts = options as {
+        onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void;
+      };
       // onFinish should still be called even without trace
       if (opts.onFinish) {
         opts.onFinish({
@@ -555,7 +561,9 @@ describe('onFinish callback behavior', () => {
     const resultTokens = { inputTokens: 100, outputTokens: 50 };
 
     mockGenerateText.mockImplementation(async (options: unknown) => {
-      const opts = options as { onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void };
+      const opts = options as {
+        onFinish?: (params: { response: unknown; usage: unknown; finishReason: string }) => void;
+      };
       if (opts.onFinish) {
         opts.onFinish({
           response: { modelId: 'callback-model' },
@@ -591,7 +599,7 @@ describe('onFinish callback behavior', () => {
     });
 
     const traceData = trace.finalize();
-    const llmEvent = traceData.events.find(e => e.type === 'llm.call') as {
+    const llmEvent = traceData.events.find((e) => e.type === 'llm.call') as {
       type: string;
       telemetry?: { tokensIn?: number; tokensOut?: number; finishReason?: string };
     };

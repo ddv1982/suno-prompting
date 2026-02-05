@@ -2,12 +2,28 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const TRANCE_GENRE: GenreDefinition = {
   name: 'Trance',
-  keywords: ['trance', 'psytrance', 'progressive trance', 'uplifting trance', 'vocal trance', 'goa', 'eurodance'],
-  description: 'Euphoric electronic music with hypnotic builds, soaring melodies, and transcendent energy',
+  keywords: [
+    'trance',
+    'psytrance',
+    'progressive trance',
+    'uplifting trance',
+    'vocal trance',
+    'goa',
+    'eurodance',
+  ],
+  description:
+    'Euphoric electronic music with hypnotic builds, soaring melodies, and transcendent energy',
   pools: {
     pad: {
       pick: { min: 1, max: 2 },
-      instruments: ['supersaw', 'arpeggiator', 'synth pad', 'analog synth', 'pluck synth', 'gated pad'],
+      instruments: [
+        'supersaw',
+        'arpeggiator',
+        'synth pad',
+        'analog synth',
+        'pluck synth',
+        'gated pad',
+      ],
     },
     harmonic: {
       pick: { min: 0, max: 1 },
@@ -36,5 +52,14 @@ export const TRANCE_GENRE: GenreDefinition = {
     ['choir', 'wordless choir'],
   ],
   bpm: { min: 130, max: 150, typical: 138 },
-  moods: ['Euphoric', 'Hypnotic', 'Uplifting', 'Energetic', 'Transcendent', 'Epic', 'Driving', 'Emotional'],
+  moods: [
+    'Euphoric',
+    'Hypnotic',
+    'Uplifting',
+    'Energetic',
+    'Transcendent',
+    'Epic',
+    'Driving',
+    'Emotional',
+  ],
 };

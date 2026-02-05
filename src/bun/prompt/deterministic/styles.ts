@@ -62,7 +62,13 @@ import { adjustWeightsForEnergyLevel, getTagWeightsForGenre } from './weights';
 import type { StyleTagsResult, TagCategoryWeights } from './types';
 import type { GenreType } from '@bun/instruments/genres';
 import type { TraceCollector } from '@bun/trace';
-import type { Era, EnergyLevel, SpatialHint, ThematicContext, VocalCharacter } from '@shared/schemas/thematic-context';
+import type {
+  Era,
+  EnergyLevel,
+  SpatialHint,
+  ThematicContext,
+  VocalCharacter,
+} from '@shared/schemas/thematic-context';
 
 /**
  * Maximum tag counts per category for deterministic selection.
@@ -141,7 +147,17 @@ interface CollectWeightedTagsOptions {
  * @param options - Options for tag collection
  */
 function collectWeightedTags(options: CollectWeightedTagsOptions): void {
-  const { weights, primaryGenre, addUnique, rng, thematicContext, vocalCharacter, energyLevel, description, trace } = options;
+  const {
+    weights,
+    primaryGenre,
+    addUnique,
+    rng,
+    thematicContext,
+    vocalCharacter,
+    energyLevel,
+    description,
+    trace,
+  } = options;
 
   // Apply energy level adjustment to weights
   const adjustedWeights = adjustWeightsForEnergyLevel(weights, energyLevel);
@@ -188,7 +204,13 @@ function collectWeightedTags(options: CollectWeightedTagsOptions): void {
   if (vocalCharacter) {
     applyWeightedSelection(
       adjustedWeights.vocal,
-      () => selectVocalTagsWithCharacter(primaryGenre, TAG_CATEGORY_MAX_COUNTS.vocal, rng, vocalCharacter),
+      () =>
+        selectVocalTagsWithCharacter(
+          primaryGenre,
+          TAG_CATEGORY_MAX_COUNTS.vocal,
+          rng,
+          vocalCharacter
+        ),
       addUnique,
       rng
     );
@@ -199,24 +221,49 @@ function collectWeightedTags(options: CollectWeightedTagsOptions): void {
       why: `Using vocalCharacter for vocal tag selection: style=${vocalCharacter.style ?? 'none'}, layering=${vocalCharacter.layering ?? 'none'}, technique=${vocalCharacter.technique ?? 'none'}`,
     });
   } else {
-    applyWeightedSelection(adjustedWeights.vocal, () => selectVocalTags(primaryGenre, TAG_CATEGORY_MAX_COUNTS.vocal, rng), addUnique, rng);
+    applyWeightedSelection(
+      adjustedWeights.vocal,
+      () => selectVocalTags(primaryGenre, TAG_CATEGORY_MAX_COUNTS.vocal, rng),
+      addUnique,
+      rng
+    );
   }
 
-  applyWeightedSelection(adjustedWeights.spatial, () => selectSpatialTags(TAG_CATEGORY_MAX_COUNTS.spatial, rng), addUnique, rng);
-  applyWeightedSelection(adjustedHarmonicWeight, () => selectHarmonicTags(TAG_CATEGORY_MAX_COUNTS.harmonic, rng), addUnique, rng);
-  applyWeightedSelection(adjustedDynamicWeight, () => selectDynamicTags(TAG_CATEGORY_MAX_COUNTS.dynamic, rng), addUnique, rng);
-  applyWeightedSelection(adjustedWeights.temporal, () => selectTemporalTags(TAG_CATEGORY_MAX_COUNTS.temporal, rng), addUnique, rng);
+  applyWeightedSelection(
+    adjustedWeights.spatial,
+    () => selectSpatialTags(TAG_CATEGORY_MAX_COUNTS.spatial, rng),
+    addUnique,
+    rng
+  );
+  applyWeightedSelection(
+    adjustedHarmonicWeight,
+    () => selectHarmonicTags(TAG_CATEGORY_MAX_COUNTS.harmonic, rng),
+    addUnique,
+    rng
+  );
+  applyWeightedSelection(
+    adjustedDynamicWeight,
+    () => selectDynamicTags(TAG_CATEGORY_MAX_COUNTS.dynamic, rng),
+    addUnique,
+    rng
+  );
+  applyWeightedSelection(
+    adjustedWeights.temporal,
+    () => selectTemporalTags(TAG_CATEGORY_MAX_COUNTS.temporal, rng),
+    addUnique,
+    rng
+  );
 }
 
 /**
  * Apply weighted tag selection with probability threshold.
  * Reduces code duplication and cyclomatic complexity.
- * 
+ *
  * @param probability - Selection probability (0.0-1.0)
  * @param selector - Function to select tags
  * @param addUnique - Function to add tags to collection
  * @param rng - Random number generator
- * 
+ *
  * @example
  * applyWeightedSelection(
  *   0.6,
@@ -232,7 +279,7 @@ function applyWeightedSelection(
   rng: () => number
 ): void {
   if (rng() >= probability) return;
-  
+
   const tags = selector();
   for (const tag of tags) {
     addUnique(tag);
@@ -385,7 +432,10 @@ function appendThematicThemes(
       key: 'deterministic.styleTags.thematicContext',
       branchTaken: 'thematic-appended',
       why: `Appended ${themesToAppend.length} themes${scene ? ' + scene phrase' : ''} from LLM context`,
-      selection: { method: 'shuffleSlice', candidates: scene ? [...themesToAppend, scene] : themesToAppend },
+      selection: {
+        method: 'shuffleSlice',
+        candidates: scene ? [...themesToAppend, scene] : themesToAppend,
+      },
     });
     return;
   }
@@ -588,9 +638,7 @@ function appendMusicalReferenceTags(
   if (signatures.length === 0) return;
 
   // Filter signatures to ensure no artist names slip through
-  const validatedSignatures = signatures
-    .filter(isValidProductionSignature)
-    .slice(0, 2); // Limit to 2 signatures
+  const validatedSignatures = signatures.filter(isValidProductionSignature).slice(0, 2); // Limit to 2 signatures
 
   // Track any filtered signatures for debugging
   const filteredCount = Math.min(signatures.length, 2) - validatedSignatures.length;
@@ -603,7 +651,10 @@ function appendMusicalReferenceTags(
     traceDecision(trace, {
       domain: 'styleTags',
       key: 'deterministic.styleTags.enrichedContext',
-      branchTaken: validatedSignatures.length > 0 ? 'musical-reference-appended' : 'musical-reference-filtered',
+      branchTaken:
+        validatedSignatures.length > 0
+          ? 'musical-reference-appended'
+          : 'musical-reference-filtered',
       why: `Appended ${validatedSignatures.length} musical reference signature tags${filteredCount > 0 ? ` (filtered ${filteredCount} potential artist names)` : ''}`,
       selection: { method: 'index', candidates: [...validatedSignatures] },
     });
@@ -691,7 +742,10 @@ function appendCulturalContextTags(
   // Add cultural instruments (up to 2)
   // First check if context provides instruments, otherwise lookup from database
   let instruments: string[] = [];
-  if (thematicContext.culturalContext.instruments && thematicContext.culturalContext.instruments.length > 0) {
+  if (
+    thematicContext.culturalContext.instruments &&
+    thematicContext.culturalContext.instruments.length > 0
+  ) {
     // Use provided instruments (already extracted by LLM)
     instruments = thematicContext.culturalContext.instruments.slice(0, 2);
   } else {
@@ -732,11 +786,7 @@ function appendCulturalContextTags(
 /**
  * Apply tag limit and trace dropped tags.
  */
-function applyTagLimit(
-  allTags: string[],
-  limit: number,
-  trace?: TraceCollector
-): string[] {
+function applyTagLimit(allTags: string[], limit: number, trace?: TraceCollector): string[] {
   if (allTags.length <= limit) return allTags;
 
   const droppedTags = allTags.slice(limit);
@@ -818,7 +868,7 @@ export function selectMoodsForCreativity(
 /**
  * Assemble style tags from mood pool, realism/electronic tags, and production.
  * Supports multi-genre blending when multiple components are provided.
- * 
+ *
  * **New in v2:**
  * - Increased tag count from 6 to 8-10
  * - Added 6 new weighted tag categories (vocal, spatial, harmonic, dynamic, temporal, texture)
@@ -843,7 +893,7 @@ export function selectMoodsForCreativity(
 /**
  * Apply weighted tag selection with probability threshold.
  * Exported for testing purposes.
- * 
+ *
  * @internal
  */
 export { applyWeightedSelection };
@@ -922,19 +972,21 @@ function buildThematicTraceParts(thematicContext: ThematicContext): string[] {
   // Vocal and spatial fields
   if (thematicContext.vocalCharacter) parts.push('+vocalCharacter');
   if (thematicContext.energyLevel) parts.push(`+energy=${thematicContext.energyLevel}`);
-  if (thematicContext.spatialHint?.space) parts.push(`+spatial=${thematicContext.spatialHint.space}`);
+  if (thematicContext.spatialHint?.space)
+    parts.push(`+spatial=${thematicContext.spatialHint.space}`);
   return parts;
 }
 
 /**
  * Build trace message for style tag assembly.
  */
-function buildStyleTagTraceMessage(
-  options: ResolvedStyleTagOptions,
-  finalTags: string[]
-): string {
+function buildStyleTagTraceMessage(options: ResolvedStyleTagOptions, finalTags: string[]): string {
   const { components, thematicContext, primaryGenre } = options;
-  const baseParts = [`primary=${primaryGenre}`, `components=${components.join(' ')}`, `tags=${finalTags.length}`];
+  const baseParts = [
+    `primary=${primaryGenre}`,
+    `components=${components.join(' ')}`,
+    `tags=${finalTags.length}`,
+  ];
   const thematicParts = thematicContext ? buildThematicTraceParts(thematicContext) : [];
   return [...baseParts, ...thematicParts].join(' ');
 }
@@ -956,7 +1008,14 @@ export function assembleStyleTags(
   trace?: TraceCollector
 ): StyleTagsResult {
   const resolved = resolveStyleTagOptions(componentsOrOptions, rng, trace);
-  const { components, rng: actualRng, trace: actualTrace, thematicContext, description, primaryGenre } = resolved;
+  const {
+    components,
+    rng: actualRng,
+    trace: actualTrace,
+    thematicContext,
+    description,
+    primaryGenre,
+  } = resolved;
 
   const allTags: string[] = [];
   const seenTags = new Set<string>();
@@ -993,7 +1052,13 @@ export function assembleStyleTags(
   addUnique(selectRecordingContext(primaryGenre, actualRng));
 
   // Priority 3: Mood tags (description-aware + genre-based)
-  const collectedMoodTags = collectMoodTags(components, addUnique, actualRng, description, actualTrace);
+  const collectedMoodTags = collectMoodTags(
+    components,
+    addUnique,
+    actualRng,
+    description,
+    actualTrace
+  );
 
   // Priority 4: Thematic context (themes + scene) - user's unique intent
   // Falls back to keyword extraction if no LLM context but description provided

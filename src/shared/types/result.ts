@@ -117,10 +117,7 @@ export function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
  * Maps the value of a successful Result.
  * Note: Fallback values are not preserved through map transformations.
  */
-export function map<T, U, E>(
-  result: Result<T, E>,
-  fn: (value: T) => U
-): Result<U, E> {
+export function map<T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> {
   if (result.ok) {
     return Ok(fn(result.value));
   }
@@ -131,10 +128,7 @@ export function map<T, U, E>(
 /**
  * Maps the error of a failed Result.
  */
-export function mapErr<T, E, F>(
-  result: Result<T, E>,
-  fn: (error: E) => F
-): Result<T, F> {
+export function mapErr<T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> {
   if (!result.ok) {
     return Err(fn(result.error));
   }

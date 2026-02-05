@@ -31,7 +31,6 @@ import { InvariantError } from '@shared/errors';
 import { stripMaxModeHeader } from '@shared/prompt-utils';
 import { createSeededRng, selectRandom } from '@shared/utils/random';
 
-
 import type { QuickVibesEngineConfig } from './engine';
 import type { RefineQuickVibesOptions } from './types';
 import type { TraceRuntime } from '@bun/ai/generation/types';
@@ -65,7 +64,9 @@ async function applyStoryModeToRefinement(
     why: 'Story Mode enabled, attempting narrative generation for refinement',
   });
 
-  const storyInput = extractStructuredDataForStory(result.text, null, { description: customDescription });
+  const storyInput = extractStructuredDataForStory(result.text, null, {
+    description: customDescription,
+  });
 
   const storyResult = await generateStoryNarrativeWithTimeout({
     input: storyInput,
@@ -103,7 +104,7 @@ function hashFeedback(feedback: string): number {
   let hash = 0;
   for (let i = 0; i < feedback.length; i++) {
     const char = feedback.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash) || 1; // Ensure non-zero
@@ -133,10 +134,7 @@ function buildDeterministicQuickVibesFromTemplate(
   }
 
   // Standard mode - simpler format
-  const lines = [
-    `${mood} ${genre}`,
-    `Instruments: ${instruments.join(', ')}`,
-  ];
+  const lines = [`${mood} ${genre}`, `Instruments: ${instruments.join(', ')}`];
   return { text: lines.join('\n'), title };
 }
 
@@ -206,10 +204,19 @@ export async function refineQuickVibes(
 
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
-    log.info('refineQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!description, maxMode: config.isMaxMode() });
+    log.info('refineQuickVibes:directMode', {
+      stylesCount: sunoStyles.length,
+      hasDescription: !!description,
+      maxMode: config.isMaxMode(),
+    });
     const titleSource = (description?.trim() || feedback.trim() || '').trim();
     return generateDirectModeResult(
-      { sunoStyles, description: titleSource, maxMode: config.isMaxMode(), debugLabel: 'DIRECT_MODE_REFINE: Styles preserved, prompt enriched.' },
+      {
+        sunoStyles,
+        description: titleSource,
+        maxMode: config.isMaxMode(),
+        debugLabel: 'DIRECT_MODE_REFINE: Styles preserved, prompt enriched.',
+      },
       config,
       { trace: runtime?.trace }
     );

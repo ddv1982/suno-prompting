@@ -89,7 +89,11 @@ describe('Compound Moods', () => {
         results.push(selectCompoundMood('jazz'));
       }
       // Should include some jazz-appropriate moods
-      const jazzMoods: CompoundMood[] = ['bittersweet nostalgia', 'raw elegance', 'wistful optimism'];
+      const jazzMoods: CompoundMood[] = [
+        'bittersweet nostalgia',
+        'raw elegance',
+        'wistful optimism',
+      ];
       const hasJazzMood = results.some((r) => jazzMoods.includes(r));
       expect(hasJazzMood).toBe(true);
     });

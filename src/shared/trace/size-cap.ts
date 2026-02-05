@@ -2,7 +2,6 @@ import { truncateTextWithMarker } from './truncate';
 
 import type { TraceEvent, TraceLLMCallEvent, TraceRun } from '@shared/types/trace';
 
-
 export const TRACE_PERSISTED_BYTES_CAP = 64 * 1024;
 
 export function byteLengthUtf8(input: string): number {
@@ -54,7 +53,11 @@ function computePersistedBytesFixedPoint(trace: TraceRun): number {
   return persistedBytes;
 }
 
-function finalizeTrace(trace: TraceRun, truncatedForCap: boolean, hadErrorsBaseline: boolean): TraceRun {
+function finalizeTrace(
+  trace: TraceRun,
+  truncatedForCap: boolean,
+  hadErrorsBaseline: boolean
+): TraceRun {
   const counts = computeCounts(trace.events);
 
   const base: TraceRun = {
@@ -99,13 +102,16 @@ function mapEvents(trace: TraceRun, map: (event: TraceEvent) => TraceEvent | nul
   return { ...trace, events: nextEvents };
 }
 
-function compactTextFields(trace: TraceRun, limits: {
-  readonly previewChars: number;
-  readonly decisionWhyChars: number;
-  readonly decisionBranchChars: number;
-  readonly runSummaryChars: number;
-  readonly labelChars: number;
-}): TraceRun {
+function compactTextFields(
+  trace: TraceRun,
+  limits: {
+    readonly previewChars: number;
+    readonly decisionWhyChars: number;
+    readonly decisionBranchChars: number;
+    readonly runSummaryChars: number;
+    readonly labelChars: number;
+  }
+): TraceRun {
   return mapEvents(trace, (event) => {
     if (event.type === 'llm.call') {
       return {
@@ -115,7 +121,8 @@ function compactTextFields(trace: TraceRun, limits: {
           ...event.request,
           inputSummary: {
             ...event.request.inputSummary,
-            preview: truncateTextWithMarker(event.request.inputSummary.preview, limits.previewChars).text,
+            preview: truncateTextWithMarker(event.request.inputSummary.preview, limits.previewChars)
+              .text,
           },
         },
         response: {
@@ -157,7 +164,11 @@ function compactTextFields(trace: TraceRun, limits: {
 function dropDecisionSelectionDetails(trace: TraceRun): TraceRun {
   return mapEvents(trace, (event) => {
     if (event.type !== 'decision' || !event.selection) return event;
-    const { candidatesPreview: _candidatesPreview, rolls: _rolls, ...selectionRest } = event.selection;
+    const {
+      candidatesPreview: _candidatesPreview,
+      rolls: _rolls,
+      ...selectionRest
+    } = event.selection;
     return {
       ...event,
       selection: selectionRest,
@@ -202,7 +213,10 @@ function pruneDecisionsIfNeeded(trace: TraceRun, maxDecisionsToKeep: number): Tr
   });
 }
 
-export function enforceTraceSizeCap(trace: TraceRun, capBytes: number = TRACE_PERSISTED_BYTES_CAP): TraceRun {
+export function enforceTraceSizeCap(
+  trace: TraceRun,
+  capBytes: number = TRACE_PERSISTED_BYTES_CAP
+): TraceRun {
   const cap = Math.max(1, Math.floor(capBytes));
 
   const hadErrorsBaseline = trace.events.some((e) => e.type === 'error');
@@ -214,7 +228,9 @@ export function enforceTraceSizeCap(trace: TraceRun, capBytes: number = TRACE_PE
   // 1) Drop advanced-only fields first.
   truncatedForCap = true;
   next = finalizeTrace(
-    mapEvents(next, (event) => (event.type === 'llm.call' ? dropAdvancedFieldsFromLLMCallEvent(event) : event)),
+    mapEvents(next, (event) =>
+      event.type === 'llm.call' ? dropAdvancedFieldsFromLLMCallEvent(event) : event
+    ),
     truncatedForCap,
     hadErrorsBaseline
   );

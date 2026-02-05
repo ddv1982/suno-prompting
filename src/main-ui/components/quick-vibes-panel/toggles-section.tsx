@@ -1,10 +1,10 @@
-import { BookOpen, Zap } from "lucide-react";
+import { BookOpen, Zap } from 'lucide-react';
 
-import { LLMUnavailableNotice } from "@/components/shared";
-import { ToggleRow } from "@/components/ui/toggle-row";
-import { getMaxModeHelperText, getStoryModeHelperText } from "@shared/constants";
+import { LLMUnavailableNotice } from '@/components/shared';
+import { ToggleRow } from '@/components/ui/toggle-row';
+import { getMaxModeHelperText, getStoryModeHelperText } from '@shared/constants';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface TogglesSectionProps {
   maxMode: boolean;

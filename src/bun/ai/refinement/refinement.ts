@@ -395,11 +395,18 @@ async function refinePromptDirectMode(
 ): Promise<GenerationResult> {
   const { sunoStyles, feedback, lyricsTopic, currentLyrics } = options;
 
-  log.info('refinePrompt:directMode', { stylesCount: sunoStyles.length, maxMode: config.isMaxMode() });
-
-  const { text: enrichedPrompt } = buildDirectModePromptWithRuntime(sunoStyles, config.isMaxMode(), {
-    trace: runtime?.trace,
+  log.info('refinePrompt:directMode', {
+    stylesCount: sunoStyles.length,
+    maxMode: config.isMaxMode(),
   });
+
+  const { text: enrichedPrompt } = buildDirectModePromptWithRuntime(
+    sunoStyles,
+    config.isMaxMode(),
+    {
+      trace: runtime?.trace,
+    }
+  );
   const shouldBootstrapLyrics = config.isLyricsMode() && !currentLyrics;
 
   const seedInput = getLyricsSeedInput(lyricsTopic, feedback);
@@ -436,7 +443,9 @@ type StyleChanges = RefinePromptOptions['styleChanges'];
 
 type DirectModeResult = GenerationResult | null;
 
-function resolveRefinementType(refinementType: RefinePromptOptions['refinementType']): NormalizedRefinementType {
+function resolveRefinementType(
+  refinementType: RefinePromptOptions['refinementType']
+): NormalizedRefinementType {
   return refinementType ?? 'combined';
 }
 

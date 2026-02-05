@@ -21,11 +21,11 @@ interface UseCopyToClipboardResult {
 
 /**
  * Hook for copying text to clipboard with automatic feedback state.
- * 
+ *
  * @example
  * ```tsx
  * const { copied, copy } = useCopyToClipboard();
- * 
+ *
  * return (
  *   <Button onClick={() => copy(text)}>
  *     {copied ? 'Copied!' : 'Copy'}
@@ -39,13 +39,16 @@ export function useCopyToClipboard(
   const { feedbackDuration = APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS } = options;
   const [copied, setCopied] = useState(false);
 
-  const copy = useCallback(async (text: string): Promise<void> => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, feedbackDuration);
-  }, [feedbackDuration]);
+  const copy = useCallback(
+    async (text: string): Promise<void> => {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, feedbackDuration);
+    },
+    [feedbackDuration]
+  );
 
   return { copied, copy };
 }

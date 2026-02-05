@@ -38,7 +38,14 @@ export const CLASSICAL_GENRE: GenreDefinition = {
     movement: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.4,
-      instruments: ['timpani', 'orchestral bass drum', 'suspended cymbal', 'crash cymbal', 'tam tam', 'slapstick'],
+      instruments: [
+        'timpani',
+        'orchestral bass drum',
+        'suspended cymbal',
+        'crash cymbal',
+        'tam tam',
+        'slapstick',
+      ],
     },
     rare: {
       pick: { min: 0, max: 1 },
@@ -53,5 +60,15 @@ export const CLASSICAL_GENRE: GenreDefinition = {
     ['cello', 'viola'],
   ],
   bpm: { min: 60, max: 140, typical: 90 },
-  moods: ['Majestic', 'Elegant', 'Dramatic', 'Tender', 'Noble', 'Triumphant', 'Melancholic', 'Regal', 'Soaring'],
+  moods: [
+    'Majestic',
+    'Elegant',
+    'Dramatic',
+    'Tender',
+    'Noble',
+    'Triumphant',
+    'Melancholic',
+    'Regal',
+    'Soaring',
+  ],
 };

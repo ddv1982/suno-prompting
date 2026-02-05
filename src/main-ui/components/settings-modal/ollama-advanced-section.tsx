@@ -1,7 +1,7 @@
-import { SectionLabel } from "@/components/ui/section-label";
-import { Slider } from "@/components/ui/slider";
+import { SectionLabel } from '@/components/ui/section-label';
+import { Slider } from '@/components/ui/slider';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface OllamaAdvancedSectionProps {
   temperature: number;
@@ -23,7 +23,7 @@ export function OllamaAdvancedSection({
   return (
     <div className="space-y-4">
       <SectionLabel>Advanced Settings</SectionLabel>
-      
+
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Temperature</label>
@@ -34,7 +34,9 @@ export function OllamaAdvancedSection({
           max={1}
           step={0.1}
           value={[temperature]}
-          onValueChange={(value) => { onTemperatureChange(value[0] ?? 0.7); }}
+          onValueChange={(value) => {
+            onTemperatureChange(value[0] ?? 0.7);
+          }}
         />
         <p className="text-xs text-muted-foreground">
           Higher values make output more random (0.0-1.0)
@@ -51,11 +53,11 @@ export function OllamaAdvancedSection({
           max={4000}
           step={100}
           value={[maxTokens]}
-          onValueChange={(value) => { onMaxTokensChange(value[0] ?? 2000); }}
+          onValueChange={(value) => {
+            onMaxTokensChange(value[0] ?? 2000);
+          }}
         />
-        <p className="text-xs text-muted-foreground">
-          Maximum length of generated response
-        </p>
+        <p className="text-xs text-muted-foreground">Maximum length of generated response</p>
       </div>
 
       <div className="space-y-2">
@@ -68,11 +70,11 @@ export function OllamaAdvancedSection({
           max={8192}
           step={1024}
           value={[contextLength]}
-          onValueChange={(value) => { onContextLengthChange(value[0] ?? 4096); }}
+          onValueChange={(value) => {
+            onContextLengthChange(value[0] ?? 4096);
+          }}
         />
-        <p className="text-xs text-muted-foreground">
-          Amount of context the model can consider
-        </p>
+        <p className="text-xs text-muted-foreground">Amount of context the model can consider</p>
       </div>
     </div>
   );

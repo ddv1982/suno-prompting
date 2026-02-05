@@ -107,11 +107,9 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'an electronic dance track' },
-        config,
-        { rng: createSeededRng(12345) }
-      );
+      const result = await generateInitial({ description: 'an electronic dance track' }, config, {
+        rng: createSeededRng(12345),
+      });
 
       // Standard format verification
       expect(result.text).toContain('Genre:');
@@ -133,11 +131,9 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'a jazz ballad' },
-        config,
-        { rng: createSeededRng(12345) }
-      );
+      const result = await generateInitial({ description: 'a jazz ballad' }, config, {
+        rng: createSeededRng(12345),
+      });
 
       // MAX format verification
       expect(result.text).toContain('[Is_MAX_MODE: MAX]');
@@ -177,11 +173,9 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'a smooth jazz session' },
-        config,
-        { rng: createSeededRng(12345) }
-      );
+      const result = await generateInitial({ description: 'a smooth jazz session' }, config, {
+        rng: createSeededRng(12345),
+      });
 
       // Narrative should not contain structured section markers
       expect(result.text).not.toContain('[INTRO]');
@@ -229,11 +223,9 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'a rock anthem' },
-        config,
-        { rng: createSeededRng(12345) }
-      );
+      const result = await generateInitial({ description: 'a rock anthem' }, config, {
+        rng: createSeededRng(12345),
+      });
 
       // Should fall back to structured format
       expect(result.text).toContain('Genre:');
@@ -252,11 +244,9 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => false, // LLM unavailable
       });
 
-      const result = await generateInitial(
-        { description: 'a funk groove' },
-        config,
-        { rng: createSeededRng(12345) }
-      );
+      const result = await generateInitial({ description: 'a funk groove' }, config, {
+        rng: createSeededRng(12345),
+      });
 
       // Should use deterministic format since LLM unavailable
       expect(result.text).toContain('Genre:');
@@ -316,7 +306,9 @@ describe('Story Mode Generation Integration', () => {
 
       // Should have narrative content after headers
       const lines = result.text.split('\n');
-      const narrativeStartIndex = lines.findIndex((line, i) => i > 0 && line.length > 0 && !line.startsWith('['));
+      const narrativeStartIndex = lines.findIndex(
+        (line, i) => i > 0 && line.length > 0 && !line.startsWith('[')
+      );
       expect(narrativeStartIndex).toBeGreaterThan(0);
     });
   });
@@ -330,17 +322,13 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => false, // Pure deterministic
       });
 
-      const result1 = await generateInitial(
-        { description: 'a blues song' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result1 = await generateInitial({ description: 'a blues song' }, config, {
+        rng: createSeededRng(seed),
+      });
 
-      const result2 = await generateInitial(
-        { description: 'a blues song' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result2 = await generateInitial({ description: 'a blues song' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       expect(result1.text).toBe(result2.text);
     });
@@ -371,11 +359,9 @@ describe('Story Mode Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'any music' },
-        config,
-        { rng: createSeededRng(12345) }
-      );
+      const result = await generateInitial({ description: 'any music' }, config, {
+        rng: createSeededRng(12345),
+      });
 
       expect(result.title).toBeDefined();
       expect((result.title ?? '').length).toBeGreaterThan(0);
@@ -501,9 +487,19 @@ describe('Story Mode + Lyrics Mode interaction', () => {
     mockGenerateText.mockImplementation(async () => {
       callCount++;
       if (callCount === 1) {
-        return { text: 'Fallback Title', response: { modelId: 'gpt-4' }, finishReason: 'stop', usage: { inputTokens: 50, outputTokens: 10 } };
+        return {
+          text: 'Fallback Title',
+          response: { modelId: 'gpt-4' },
+          finishReason: 'stop',
+          usage: { inputTokens: 50, outputTokens: 10 },
+        };
       } else if (callCount === 2) {
-        return { text: '[VERSE]\nFallback lyrics', response: { modelId: 'gpt-4' }, finishReason: 'stop', usage: { inputTokens: 100, outputTokens: 50 } };
+        return {
+          text: '[VERSE]\nFallback lyrics',
+          response: { modelId: 'gpt-4' },
+          finishReason: 'stop',
+          usage: { inputTokens: 100, outputTokens: 50 },
+        };
       } else {
         // Story generation fails
         throw new Error('API rate limit exceeded');

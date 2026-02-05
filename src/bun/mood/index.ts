@@ -48,11 +48,7 @@ export type {
 } from './types';
 
 // Category registry
-export {
-  MOOD_CATEGORIES,
-  MOOD_CATEGORY_KEYS,
-  getMoodCategoryOptions,
-} from './categories';
+export { MOOD_CATEGORIES, MOOD_CATEGORY_KEYS, getMoodCategoryOptions } from './categories';
 
 // Mappings
 export {

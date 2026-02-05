@@ -1,26 +1,18 @@
-import { useOllamaSettings } from "@/hooks/use-ollama-settings";
+import { useOllamaSettings } from '@/hooks/use-ollama-settings';
 
-import { OllamaAdvancedSection } from "./ollama-advanced-section";
-import { OllamaEndpointSection } from "./ollama-endpoint-section";
-import { OllamaModelSection } from "./ollama-model-section";
+import { OllamaAdvancedSection } from './ollama-advanced-section';
+import { OllamaEndpointSection } from './ollama-endpoint-section';
+import { OllamaModelSection } from './ollama-model-section';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 export function OllamaSettings(): ReactElement {
-  const {
-    settings,
-    updateEndpoint,
-    updateTemperature,
-    updateMaxTokens,
-    updateContextLength,
-  } = useOllamaSettings();
+  const { settings, updateEndpoint, updateTemperature, updateMaxTokens, updateContextLength } =
+    useOllamaSettings();
 
   return (
     <div className="space-y-6">
-      <OllamaEndpointSection
-        endpoint={settings.endpoint}
-        onChange={updateEndpoint}
-      />
+      <OllamaEndpointSection endpoint={settings.endpoint} onChange={updateEndpoint} />
 
       <OllamaModelSection />
 

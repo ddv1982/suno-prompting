@@ -294,9 +294,7 @@ describe('Multi-Genre Detection', () => {
     });
 
     test('limits to 4 genres max', () => {
-      const genres = detectAllGenres(
-        'ambient jazz metal house rock electronic pop classical'
-      );
+      const genres = detectAllGenres('ambient jazz metal house rock electronic pop classical');
       expect(genres.length).toBeLessThanOrEqual(4);
     });
 
