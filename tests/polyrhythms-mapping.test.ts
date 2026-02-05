@@ -149,10 +149,7 @@ describe('getBlendedPolyrhythm', () => {
     const result = getBlendedPolyrhythm('afrobeat latin');
 
     expect(result).not.toBeNull();
-    const combinedPool = [
-      ...GENRE_POLYRHYTHMS.afrobeat!,
-      ...GENRE_POLYRHYTHMS.latin!,
-    ];
+    const combinedPool = [...GENRE_POLYRHYTHMS.afrobeat!, ...GENRE_POLYRHYTHMS.latin!];
     expect(combinedPool).toContain(result!);
   });
 
@@ -173,10 +170,7 @@ describe('getBlendedPolyrhythm', () => {
     const result = getBlendedPolyrhythm('afrobeat, jazz');
 
     expect(result).not.toBeNull();
-    const combinedPool = [
-      ...GENRE_POLYRHYTHMS.afrobeat!,
-      ...GENRE_POLYRHYTHMS.jazz!,
-    ];
+    const combinedPool = [...GENRE_POLYRHYTHMS.afrobeat!, ...GENRE_POLYRHYTHMS.jazz!];
     expect(combinedPool).toContain(result!);
   });
 

@@ -31,26 +31,23 @@ export function injectLockedPhrase(prompt: string, lockedPhrase: string): string
   if (!lockedPhrase) return prompt;
 
   // Try quoted format first: instruments: "piano, guitar"
-  const quotedMatch = /^(instruments:\s*")([^"]*)/mi.exec(prompt);
+  const quotedMatch = /^(instruments:\s*")([^"]*)/im.exec(prompt);
   if (quotedMatch) {
     const existingValue = (quotedMatch[2] ?? '').trim();
     const separator = existingValue ? ', ' : '';
-    return prompt.replace(
-      /^(instruments:\s*")([^"]*)/mi,
-      `$1$2${separator}${lockedPhrase}`
-    );
+    return prompt.replace(/^(instruments:\s*")([^"]*)/im, `$1$2${separator}${lockedPhrase}`);
   }
 
   // Try unquoted format: instruments: piano, guitar OR Instruments: piano, guitar
   // Use [^\S\n]* for horizontal whitespace only (not newlines), and * to handle empty content
-  const unquotedMatch = /^(instruments:[^\S\n]*)([^"\n]*)$/mi.exec(prompt);
+  const unquotedMatch = /^(instruments:[^\S\n]*)([^"\n]*)$/im.exec(prompt);
   if (unquotedMatch) {
     const existingValue = (unquotedMatch[2] ?? '').trim();
     // If no existing value, ensure space after colon; if existing, add comma separator
-    const prefix = existingValue ? '' : ((unquotedMatch[1] ?? '').endsWith(' ') ? '' : ' ');
+    const prefix = existingValue ? '' : (unquotedMatch[1] ?? '').endsWith(' ') ? '' : ' ';
     const separator = existingValue ? ', ' : '';
     return prompt.replace(
-      /^(instruments:[^\S\n]*)([^"\n]*)$/mi,
+      /^(instruments:[^\S\n]*)([^"\n]*)$/im,
       `$1$2${separator}${prefix}${lockedPhrase}`
     );
   }
@@ -93,9 +90,7 @@ export async function enforceLengthLimit(
     return text;
   }
   const condensed = await condense(text);
-  return condensed.length <= maxChars
-    ? condensed
-    : truncateToLimit(condensed, maxChars);
+  return condensed.length <= maxChars ? condensed : truncateToLimit(condensed, maxChars);
 }
 
 /**

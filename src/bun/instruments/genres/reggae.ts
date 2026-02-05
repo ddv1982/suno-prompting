@@ -2,7 +2,16 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const REGGAE_GENRE: GenreDefinition = {
   name: 'Reggae',
-  keywords: ['reggae', 'roots reggae', 'dancehall', 'ska', 'rocksteady', 'jamaican', 'dub music', 'dub reggae'],
+  keywords: [
+    'reggae',
+    'roots reggae',
+    'dancehall',
+    'ska',
+    'rocksteady',
+    'jamaican',
+    'dub music',
+    'dub reggae',
+  ],
   description: 'Jamaican music with offbeat rhythms, heavy bass, and dub production textures',
   pools: {
     harmonic: {

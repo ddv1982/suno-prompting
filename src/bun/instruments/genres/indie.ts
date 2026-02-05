@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const INDIE_GENRE: GenreDefinition = {
   name: 'Indie',
   keywords: ['indie', 'indie rock', 'indie pop', 'alt rock', 'alternative pop', 'bedroom indie'],
-  description: 'Independent-spirited rock and pop with authentic instrumentation and emotional depth',
+  description:
+    'Independent-spirited rock and pop with authentic instrumentation and emotional depth',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -31,5 +32,14 @@ export const INDIE_GENRE: GenreDefinition = {
     ['felt piano', 'grand piano'],
   ],
   bpm: { min: 100, max: 140, typical: 120 },
-  moods: ['Authentic', 'Emotional', 'Melancholic', 'Uplifting', 'Nostalgic', 'Heartfelt', 'Introspective', 'Energetic'],
+  moods: [
+    'Authentic',
+    'Emotional',
+    'Melancholic',
+    'Uplifting',
+    'Nostalgic',
+    'Heartfelt',
+    'Introspective',
+    'Energetic',
+  ],
 };

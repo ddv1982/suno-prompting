@@ -33,8 +33,12 @@ function formatBytes(bytes: number): string {
 }
 
 export function DebugDrawerBody({ debugTrace }: DebugDrawerBodyProps): ReactElement {
-  const { copied: copiedJson, copy: copyJson } = useCopyToClipboard({ feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS });
-  const { copied: copiedText, copy: copyText } = useCopyToClipboard({ feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS });
+  const { copied: copiedJson, copy: copyJson } = useCopyToClipboard({
+    feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS,
+  });
+  const { copied: copiedText, copy: copyText } = useCopyToClipboard({
+    feedbackDuration: APP_CONSTANTS.UI.COPY_FEEDBACK_SHORT_DURATION_MS,
+  });
 
   const sortedEvents = useMemo(
     () => [...debugTrace.events].sort((a, b) => a.tMs - b.tMs),
@@ -97,7 +101,9 @@ export function DebugDrawerBody({ debugTrace }: DebugDrawerBodyProps): ReactElem
           role="alert"
         >
           <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
-          <span>Trace was compacted to fit the 64KB size cap. Some advanced details may be unavailable.</span>
+          <span>
+            Trace was compacted to fit the 64KB size cap. Some advanced details may be unavailable.
+          </span>
         </div>
       )}
 

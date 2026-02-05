@@ -12,14 +12,14 @@ describe('parseVocalStyleDescriptorToTags', () => {
   });
 
   test('accepts an explicit "Vocal style:" prefix', () => {
-    expect(parseVocalStyleDescriptorToTags('Vocal style: Alto, Breathy Delivery, Shouted Hooks')).toEqual([
-      'alto vocals',
-      'breathy vocals',
-      'shouted hooks',
-    ]);
+    expect(
+      parseVocalStyleDescriptorToTags('Vocal style: Alto, Breathy Delivery, Shouted Hooks')
+    ).toEqual(['alto vocals', 'breathy vocals', 'shouted hooks']);
   });
 
   test('drops unknown range and delivery values', () => {
-    expect(parseVocalStyleDescriptorToTags('Contralto, Spooky Delivery, Shouted Hooks')).toEqual(['shouted hooks']);
+    expect(parseVocalStyleDescriptorToTags('Contralto, Spooky Delivery, Shouted Hooks')).toEqual([
+      'shouted hooks',
+    ]);
   });
 });

@@ -58,7 +58,11 @@ describe('parseGenreComponents', () => {
   });
 
   test('extracts components from compound genre strings', () => {
-    expect(parseGenreComponents('ambient symphonic rock')).toEqual(['ambient', 'symphonic', 'rock']);
+    expect(parseGenreComponents('ambient symphonic rock')).toEqual([
+      'ambient',
+      'symphonic',
+      'rock',
+    ]);
     expect(parseGenreComponents('jazz rock')).toEqual(['jazz', 'rock']);
     expect(parseGenreComponents('electronic pop')).toEqual(['electronic', 'pop']);
   });
@@ -70,7 +74,11 @@ describe('parseGenreComponents', () => {
 
   test('handles "and" separator', () => {
     expect(parseGenreComponents('rock and jazz')).toEqual(['rock', 'jazz']);
-    expect(parseGenreComponents('ambient and symphonic and rock')).toEqual(['ambient', 'symphonic', 'rock']);
+    expect(parseGenreComponents('ambient and symphonic and rock')).toEqual([
+      'ambient',
+      'symphonic',
+      'rock',
+    ]);
   });
 
   test('handles "&" separator', () => {
@@ -85,7 +93,11 @@ describe('parseGenreComponents', () => {
   });
 
   test('is case insensitive', () => {
-    expect(parseGenreComponents('AMBIENT Symphonic ROCK')).toEqual(['ambient', 'symphonic', 'rock']);
+    expect(parseGenreComponents('AMBIENT Symphonic ROCK')).toEqual([
+      'ambient',
+      'symphonic',
+      'rock',
+    ]);
   });
 
   test('handles mixed separators', () => {
@@ -316,7 +328,7 @@ describe('buildMultiGenreGuidance', () => {
 
   test('returns complete object for single genre', () => {
     const result = buildMultiGenreGuidance('jazz', rng);
-    
+
     expect(result).not.toBeNull();
     expect(result!.vocal).toBeTruthy();
     expect(result!.production).toBeTruthy();
@@ -328,7 +340,7 @@ describe('buildMultiGenreGuidance', () => {
 
   test('returns complete object for multi-genre string', () => {
     const result = buildMultiGenreGuidance('jazz rock', rng);
-    
+
     expect(result).not.toBeNull();
     expect(result!.vocal).toBeTruthy();
     expect(result!.production).toBeTruthy();
@@ -380,10 +392,14 @@ describe('buildMultiGenreGuidance', () => {
     // Jazz includes: dorian, mixolydian, lydian_dominant, melodic_minor
     // Rock includes: mixolydian, aeolian, ionian, dorian
     const jazzRockModes = [
-      'dorian', 'mixolydian', 'lydian_dominant', 'melodic_minor',
-      'aeolian', 'ionian',
+      'dorian',
+      'mixolydian',
+      'lydian_dominant',
+      'melodic_minor',
+      'aeolian',
+      'ionian',
     ];
-    
+
     // Run multiple times to test randomness
     const results = new Set<string>();
     for (let i = 0; i < 20; i++) {
@@ -392,7 +408,7 @@ describe('buildMultiGenreGuidance', () => {
         results.add(result.harmonicStyle);
       }
     }
-    
+
     // All returned modes should be from the combined pool
     for (const mode of results) {
       expect(jazzRockModes).toContain(mode);
@@ -404,12 +420,12 @@ describe('integration: Multi-genre guidance flow', () => {
   test('complete guidance flow for compound genres', () => {
     const rng = createSeededRng(42);
     const genreString = 'ambient symphonic rock';
-    
+
     // Get multi-genre guidance
     const guidance = buildMultiGenreGuidance(genreString, rng);
-    
+
     expect(guidance).not.toBeNull();
-    
+
     // Verify all expected properties exist
     expect(guidance).toHaveProperty('vocal');
     expect(guidance).toHaveProperty('production');
@@ -418,26 +434,26 @@ describe('integration: Multi-genre guidance flow', () => {
     expect(guidance).toHaveProperty('harmonicStyle');
     expect(guidance).toHaveProperty('timeSignature');
     expect(guidance).toHaveProperty('polyrhythm');
-    
+
     // BPM range should be formatted correctly
     expect(guidance!.bpmRange).toMatch(/between \d+ and \d+/);
-    
+
     // Harmonic style should be a valid mode
     expect(typeof guidance!.harmonicStyle).toBe('string');
-    
+
     // Time signature should be a valid type
     expect(typeof guidance!.timeSignature).toBe('string');
     expect(guidance!.timeSignature!.startsWith('time_')).toBe(true);
   });
-  
+
   test('single genre still works (backward compatibility)', () => {
     const rng = createSeededRng(42);
-    
+
     // Single genres should still work
     const jazz = buildMultiGenreGuidance('jazz', rng);
     expect(jazz).not.toBeNull();
     expect(jazz!.bpmRange).toBeTruthy();
-    
+
     const rock = buildMultiGenreGuidance('rock', rng);
     expect(rock).not.toBeNull();
     expect(rock!.bpmRange).toBeTruthy();

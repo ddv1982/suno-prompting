@@ -18,10 +18,7 @@ import {
   selectMoodForLevel,
   getSunoStylesForMoodCategory,
 } from '@bun/prompt/creative-boost';
-import {
-  enrichFromGenres,
-  enrichSunoStyles,
-} from '@bun/prompt/enrichment';
+import { enrichFromGenres, enrichSunoStyles } from '@bun/prompt/enrichment';
 
 import type { GenreType } from '@bun/instruments';
 
@@ -42,8 +39,6 @@ function containsMoodFromCategory(text: string, category: MoodCategory): boolean
   const textLower = text.toLowerCase();
   return categoryMoods.some((mood) => textLower.includes(mood.toLowerCase()));
 }
-
-
 
 /**
  * Create a deterministic RNG for testing.
@@ -155,7 +150,7 @@ describe('getSunoStylesForMoodCategory', () => {
     // uses filterSunoStylesByMoodCategory which looks up from registry, not allStyles
     // So we need to test with a mood category that has empty mapping
     // Actually, the function returns filtered from mood mapping OR falls back to allStyles
-    
+
     // For this test, let's verify that when the mood mapping returns styles,
     // those are returned (not allStyles)
     const grooveStyles = filterSunoStylesByMoodCategory('groove');
@@ -209,8 +204,8 @@ describe('Creative Boost Advanced mode enrichment with mood category', () => {
     // Check that at least one mood is from the calm category
     const hasCalmMood = result.moods.some((mood) =>
       MOOD_CATEGORIES[moodCategory].moods.some(
-        (catMood) => catMood.toLowerCase() === mood.toLowerCase(),
-      ),
+        (catMood) => catMood.toLowerCase() === mood.toLowerCase()
+      )
     );
     expect(hasCalmMood).toBe(true);
   });
@@ -242,8 +237,8 @@ describe('Creative Boost Advanced mode enrichment with mood category', () => {
     // Check that at least one mood is from the groove category
     const hasGrooveMood = result.enrichment.moods.some((mood) =>
       MOOD_CATEGORIES[moodCategory].moods.some(
-        (catMood) => catMood.toLowerCase() === mood.toLowerCase(),
-      ),
+        (catMood) => catMood.toLowerCase() === mood.toLowerCase()
+      )
     );
     expect(hasGrooveMood).toBe(true);
   });
@@ -273,8 +268,8 @@ describe('Creative Boost Advanced mode enrichment with mood category', () => {
     expect(result.moods.length).toBeGreaterThan(0);
     const hasAtmosphericMood = result.moods.some((mood) =>
       MOOD_CATEGORIES[moodCategory].moods.some(
-        (catMood) => catMood.toLowerCase() === mood.toLowerCase(),
-      ),
+        (catMood) => catMood.toLowerCase() === mood.toLowerCase()
+      )
     );
     expect(hasAtmosphericMood).toBe(true);
   });

@@ -12,7 +12,8 @@ describe('Generation Flow with Optimistic UI Integration', () => {
       const source = await Bun.file('src/main-ui/components/prompt-editor.tsx').text();
 
       // Verify destructuring includes optimistic state
-      expect(source).toContain('isOptimistic, showSkeleton');
+      expect(source).toContain('isOptimistic');
+      expect(source).toContain('showSkeleton');
 
       // Verify props are passed to OutputPanel
       expect(source).toContain('showSkeleton={showSkeleton}');
@@ -25,10 +26,8 @@ describe('Generation Flow with Optimistic UI Integration', () => {
       const source = await Bun.file('src/main-ui/components/prompt-editor-container.tsx').text();
 
       // Verify extraction from context
-      expect(source).toContain('isOptimistic, showSkeleton');
-
-      // Verify it's included in generation state
-      expect(source).toContain('isOptimistic, showSkeleton,');
+      expect(source).toContain('isOptimistic');
+      expect(source).toContain('showSkeleton');
     });
 
     test('GenerationState type includes optimistic properties', async () => {
@@ -50,13 +49,15 @@ describe('Generation Flow with Optimistic UI Integration', () => {
     });
 
     test('EditorStatusFooter has isOptimistic prop', async () => {
-      const source = await Bun.file('src/main-ui/components/prompt-editor/editor-status-footer.tsx').text();
+      const source = await Bun.file(
+        'src/main-ui/components/prompt-editor/editor-status-footer.tsx'
+      ).text();
 
       // Verify prop is defined
       expect(source).toContain('isOptimistic?: boolean');
 
       // Verify status logic uses optimistic
-      expect(source).toContain('if (isOptimistic || isGenerating) return "working"');
+      expect(source).toContain("if (isOptimistic || isGenerating) return 'working'");
     });
   });
 
@@ -84,7 +85,9 @@ describe('Generation Flow with Optimistic UI Integration', () => {
 
   describe('OutputSkeleton component', () => {
     test('OutputSkeleton file exists and exports component', async () => {
-      const source = await Bun.file('src/main-ui/components/prompt-editor/output-skeleton.tsx').text();
+      const source = await Bun.file(
+        'src/main-ui/components/prompt-editor/output-skeleton.tsx'
+      ).text();
 
       // Verify component is exported
       expect(source).toContain('export function OutputSkeleton()');
@@ -107,7 +110,9 @@ describe('Generation Flow with Optimistic UI Integration', () => {
       expect(hookSource).toContain('showSkeleton: false');
 
       // Context connects hook to provider
-      const contextSource = await Bun.file('src/main-ui/context/generation/generation-state-context.tsx').text();
+      const contextSource = await Bun.file(
+        'src/main-ui/context/generation/generation-state-context.tsx'
+      ).text();
       expect(contextSource).toContain('useOptimisticGeneration');
 
       // Types define the contract
@@ -115,7 +120,9 @@ describe('Generation Flow with Optimistic UI Integration', () => {
       expect(typesSource).toContain('isOptimistic: boolean');
 
       // Container extracts from context
-      const containerSource = await Bun.file('src/main-ui/components/prompt-editor-container.tsx').text();
+      const containerSource = await Bun.file(
+        'src/main-ui/components/prompt-editor-container.tsx'
+      ).text();
       expect(containerSource).toContain('isOptimistic');
 
       // Editor passes to children

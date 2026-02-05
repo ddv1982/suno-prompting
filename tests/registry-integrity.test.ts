@@ -38,7 +38,7 @@ describe('Genre pool integrity', () => {
   test('no genre pool contains duplicates after canonical normalization', () => {
     for (const genre of Object.values(GENRE_REGISTRY)) {
       for (const pool of Object.values(genre.pools)) {
-        const canonicals = pool.instruments.map(i => toCanonical(i));
+        const canonicals = pool.instruments.map((i) => toCanonical(i));
 
         // Existing tests cover validity, but keep this assert here to make failures clearer.
         expect(canonicals.every(Boolean)).toBe(true);

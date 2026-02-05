@@ -1,11 +1,11 @@
 /**
  * Global Test Setup for Bun Test Runner
- * 
+ *
  * This file is preloaded before all tests run via bunfig.toml.
  * It sets up global mocks that need to be available across all test files.
- * 
+ *
  * Loaded via: [test] preload = ["./tests/setup.ts"]
- * 
+ *
  * Note: This uses Object.defineProperty to ensure the mock is immutable
  * and works correctly across all test files in Bun's test runner.
  */
@@ -58,7 +58,8 @@ void mock.module('ai', () => ({
 
 const thematicModuleUrl = new URL('../src/bun/ai/thematic-context', import.meta.url);
 const thematicModule = await import(thematicModuleUrl.href);
-const realExtractThematicContext = thematicModule.extractThematicContext as ExtractThematicContextFn;
+const realExtractThematicContext =
+  thematicModule.extractThematicContext as ExtractThematicContextFn;
 const realClearThematicCache = thematicModule.clearThematicCache as () => void;
 
 type ThematicMockGlobals = typeof globalThis & {

@@ -56,15 +56,29 @@ export async function generateDirectMode(
 
   if (config.isLyricsMode()) {
     // Lyrics mode: generate both title and lyrics via LLM
-    const result = await generateDirectModeTitleAndLyrics(description, lyricsTopic, sunoStyles, genre, mood, config, runtime);
+    const result = await generateDirectModeTitleAndLyrics(
+      description,
+      lyricsTopic,
+      sunoStyles,
+      genre,
+      mood,
+      config,
+      runtime
+    );
     title = result.title;
     lyrics = result.lyrics;
   } else if (config.isLLMAvailable()) {
     // No lyrics but LLM available: generate title via LLM
-    title = await generateDirectModeTitle(description || '', sunoStyles, config.getModel, config.getOllamaEndpointIfLocal(), {
-      trace: runtime?.trace,
-      traceLabel: 'title.generate',
-    });
+    title = await generateDirectModeTitle(
+      description || '',
+      sunoStyles,
+      config.getModel,
+      config.getOllamaEndpointIfLocal(),
+      {
+        trace: runtime?.trace,
+        traceLabel: 'title.generate',
+      }
+    );
     lyrics = undefined;
   } else {
     // No lyrics and no LLM: use deterministic title
@@ -120,10 +134,20 @@ async function generateDirectModeTitleAndLyrics(
       trace: runtime?.trace,
       traceLabel: 'title.generate',
     }),
-    generateLyrics(topic, genre, mood, config.isMaxMode(), config.getModel, config.getUseSunoTags(), undefined, ollamaEndpoint, {
-      trace: runtime?.trace,
-      traceLabel: 'lyrics.generate',
-    }),
+    generateLyrics(
+      topic,
+      genre,
+      mood,
+      config.isMaxMode(),
+      config.getModel,
+      config.getUseSunoTags(),
+      undefined,
+      ollamaEndpoint,
+      {
+        trace: runtime?.trace,
+        traceLabel: 'lyrics.generate',
+      }
+    ),
   ]);
 
   return { title, lyrics: cleanLyrics(lyricsResult.lyrics) ?? '' };

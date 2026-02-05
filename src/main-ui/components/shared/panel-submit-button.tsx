@@ -6,16 +6,16 @@
  * @module components/shared/panel-submit-button
  */
 
-import { Check, Loader2, RefreshCw } from "lucide-react";
+import { Check, Loader2, RefreshCw } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { useSettingsContext } from "@/context/settings-context";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { useSettingsContext } from '@/context/settings-context';
+import { cn } from '@/lib/utils';
 
-import { LLMUnavailableNotice } from "./llm-unavailable-notice";
+import { LLMUnavailableNotice } from './llm-unavailable-notice';
 
-import type { PanelSubmitButtonProps } from "./types";
-import type { ReactElement } from "react";
+import type { PanelSubmitButtonProps } from './types';
+import type { ReactElement } from 'react';
 
 /**
  * Unified submit button for panel components.
@@ -29,11 +29,11 @@ export function PanelSubmitButton({
   refined = false,
   onSubmit,
   defaultIcon,
-  defaultLabel = "GENERATE",
+  defaultLabel = 'GENERATE',
   directModeIcon,
-  directModeLabel = "USE SELECTED STYLES",
-  refineLabel = "REFINE",
-  refineDirectModeLabel = "REFINE TITLE & LYRICS",
+  directModeLabel = 'USE SELECTED STYLES',
+  refineLabel = 'REFINE',
+  refineDirectModeLabel = 'REFINE TITLE & LYRICS',
 }: PanelSubmitButtonProps): ReactElement {
   const { isLLMAvailable } = useSettingsContext();
 
@@ -42,7 +42,7 @@ export function PanelSubmitButton({
       return (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          {isRefineMode ? "REFINING..." : "GENERATING..."}
+          {isRefineMode ? 'REFINING...' : 'GENERATING...'}
         </>
       );
     }
@@ -88,8 +88,9 @@ export function PanelSubmitButton({
         onClick={onSubmit}
         disabled={!canSubmit || isGenerating || !isLLMAvailable}
         className={cn(
-          "w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2",
-          refined && "bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400"
+          'w-full h-11 font-semibold text-[length:var(--text-footnote)] shadow-panel gap-2',
+          refined &&
+            'bg-emerald-500/20 text-emerald-500 border-emerald-500/50 hover:bg-emerald-500/30 hover:text-emerald-400'
         )}
       >
         {getContent()}

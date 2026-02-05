@@ -1,9 +1,9 @@
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { useAutoDisable } from "@/hooks/use-auto-disable";
-import { cn } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { useAutoDisable } from '@/hooks/use-auto-disable';
+import { cn } from '@/lib/utils';
 
-import type { ReactNode, ReactElement } from "react";
+import type { ReactNode, ReactElement } from 'react';
 
 interface ToggleRowProps {
   id: string;
@@ -43,8 +43,8 @@ export function ToggleRow({
     <label
       htmlFor={id}
       className={cn(
-        "flex items-center gap-3 py-2",
-        isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        'flex items-center gap-3 py-2',
+        isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
       )}
     >
       <span className="w-3.5 h-3.5 text-muted-foreground flex items-center justify-center">

@@ -127,10 +127,17 @@ import { MULTI_GENRE_COMBINATIONS } from '@bun/instruments/genres/combinations';
 import { toTitleCase } from '@shared/text-utils';
 
 export const GENRE_COMBINATION_DISPLAY_NAMES: Record<string, string> = Object.fromEntries(
-  MULTI_GENRE_COMBINATIONS.map(combo => [combo, toTitleCase(combo)])
+  MULTI_GENRE_COMBINATIONS.map((combo) => [combo, toTitleCase(combo)])
 );
 
-export type LabelCategory = 'harmonic' | 'combination' | 'polyrhythm' | 'time' | 'journey' | 'genre' | 'genreCombination';
+export type LabelCategory =
+  | 'harmonic'
+  | 'combination'
+  | 'polyrhythm'
+  | 'time'
+  | 'journey'
+  | 'genre'
+  | 'genreCombination';
 
 export function getConciseLabel(category: LabelCategory, key: string): string {
   switch (category) {
@@ -237,7 +244,10 @@ export function formatGenreLabel(genreKey: string): string {
   if (comboLabel) {
     return comboLabel;
   }
-  return genreKey.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return genreKey
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 /**

@@ -7,5 +7,5 @@
  * @module components/prompt-editor/debug-drawer
  */
 
-export { DebugDrawerBody } from "./debug-drawer/index";
-export type { DebugDrawerBodyProps } from "./debug-drawer/index";
+export { DebugDrawerBody } from './debug-drawer/index';
+export type { DebugDrawerBodyProps } from './debug-drawer/index';

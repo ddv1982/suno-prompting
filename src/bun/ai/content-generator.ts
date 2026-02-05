@@ -1,7 +1,12 @@
 import { callLLM } from '@bun/ai/llm-utils';
 import { GENRE_REGISTRY } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
-import { buildLyricsSystemPrompt, buildLyricsUserPrompt, buildTitleSystemPrompt, buildTitleUserPrompt } from '@bun/prompt/lyrics-builder';
+import {
+  buildLyricsSystemPrompt,
+  buildLyricsUserPrompt,
+  buildTitleSystemPrompt,
+  buildTitleUserPrompt,
+} from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
 
@@ -217,13 +222,21 @@ Which genre fits best? Return only the genre key.`;
     log.warn('detectGenreFromTopic:invalid_genre', { lyricsTopic, returned: genre });
     return {
       genre: DEFAULT_GENRE,
-      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_GENRE} (fallback from invalid: ${genre})` },
+      debugInfo: {
+        systemPrompt,
+        userPrompt,
+        detectedGenre: `${DEFAULT_GENRE} (fallback from invalid: ${genre})`,
+      },
     };
   } catch (error: unknown) {
     log.warn('detectGenreFromTopic:failed', { error: getErrorMessage(error) });
     return {
       genre: DEFAULT_GENRE,
-      debugInfo: { systemPrompt, userPrompt, detectedGenre: `${DEFAULT_GENRE} (fallback from error)` },
+      debugInfo: {
+        systemPrompt,
+        userPrompt,
+        detectedGenre: `${DEFAULT_GENRE} (fallback from error)`,
+      },
     };
   }
 }

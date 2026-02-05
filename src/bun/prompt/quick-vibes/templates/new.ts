@@ -32,7 +32,16 @@ export const WORKOUT_ENERGY_TEMPLATE: QuickVibesTemplate = {
     ['supersaw', 'punchy kick', 'snare'],
     ['wobble bass', 'aggressive synth', 'impacts'],
   ],
-  moods: ['powerful', 'intense', 'driving', 'energetic', 'pumping', 'fierce', 'aggressive', 'unstoppable'],
+  moods: [
+    'powerful',
+    'intense',
+    'driving',
+    'energetic',
+    'pumping',
+    'fierce',
+    'aggressive',
+    'unstoppable',
+  ],
   titleWords: {
     adjectives: ['Beast', 'Power', 'Fire', 'Iron', 'Heavy', 'Strong', 'Max', 'Savage'],
     nouns: ['Mode', 'Grind', 'Pump', 'Gains', 'Force', 'Energy', 'Fury', 'Drive'],
@@ -90,7 +99,14 @@ export const SUNSET_GOLDEN_TEMPLATE: QuickVibesTemplate = {
   titleWords: {
     adjectives: ['Golden', 'Warm', 'Amber', 'Fading', 'Soft', 'Gentle', 'Hazy', 'Glowing'],
     nouns: ['Sunset', 'Hour', 'Glow', 'Horizon', 'Sky', 'Light', 'Dusk', 'Coast'],
-    contexts: ['by the Sea', 'on the Roof', 'Driving Home', 'Beach', 'Summer Evening', 'Last Light'],
+    contexts: [
+      'by the Sea',
+      'on the Roof',
+      'Driving Home',
+      'Beach',
+      'Summer Evening',
+      'Last Light',
+    ],
   },
 };
 
@@ -113,7 +129,16 @@ export const DINNER_PARTY_TEMPLATE: QuickVibesTemplate = {
     ['jazz guitar', 'stand-up bass', 'shaker'],
     ['grand piano', 'cello', 'gentle drums'],
   ],
-  moods: ['elegant', 'sophisticated', 'warm', 'intimate', 'refined', 'smooth', 'classy', 'inviting'],
+  moods: [
+    'elegant',
+    'sophisticated',
+    'warm',
+    'intimate',
+    'refined',
+    'smooth',
+    'classy',
+    'inviting',
+  ],
   titleWords: {
     adjectives: ['Elegant', 'Smooth', 'Fine', 'Warm', 'Classy', 'Subtle', 'Refined', 'Chic'],
     nouns: ['Evening', 'Soirée', 'Gathering', 'Night', 'Mood', 'Ambiance', 'Dinner', 'Affair'],
@@ -140,11 +165,27 @@ export const ROAD_TRIP_TEMPLATE: QuickVibesTemplate = {
     ['power chords', 'bass guitar', 'crashing cymbals'],
     ['12-string guitar', 'pedal steel', 'snare'],
   ],
-  moods: ['adventurous', 'free', 'uplifting', 'energetic', 'open', 'wild', 'exhilarating', 'carefree'],
+  moods: [
+    'adventurous',
+    'free',
+    'uplifting',
+    'energetic',
+    'open',
+    'wild',
+    'exhilarating',
+    'carefree',
+  ],
   titleWords: {
     adjectives: ['Open', 'Endless', 'Wild', 'Free', 'Rolling', 'Dusty', 'Winding', 'Long'],
     nouns: ['Road', 'Highway', 'Miles', 'Journey', 'Wheels', 'Wind', 'Horizon', 'Route'],
-    contexts: ['to Nowhere', 'at Dawn', 'Cross Country', 'Windows Down', 'Coast to Coast', 'Headed West'],
+    contexts: [
+      'to Nowhere',
+      'at Dawn',
+      'Cross Country',
+      'Windows Down',
+      'Coast to Coast',
+      'Headed West',
+    ],
   },
 };
 
@@ -167,7 +208,16 @@ export const GAMING_FOCUS_TEMPLATE: QuickVibesTemplate = {
     ['retro synth', 'battle drums', 'horn section'],
     ['glitchy synth', 'orchestral stabs', 'electronic drums'],
   ],
-  moods: ['intense', 'immersive', 'epic', 'focused', 'dramatic', 'powerful', 'heroic', 'adrenaline'],
+  moods: [
+    'intense',
+    'immersive',
+    'epic',
+    'focused',
+    'dramatic',
+    'powerful',
+    'heroic',
+    'adrenaline',
+  ],
   titleWords: {
     adjectives: ['Epic', 'Final', 'Ultimate', 'Pixel', 'Digital', 'Cyber', 'Legendary', 'Elite'],
     nouns: ['Boss', 'Level', 'Quest', 'Battle', 'Arena', 'Victory', 'Champion', 'Mission'],
@@ -248,7 +298,16 @@ export const CREATIVE_FLOW_TEMPLATE: QuickVibesTemplate = {
     ['vibraphone', 'ambient synth', 'subtle drums'],
     ['prepared piano', 'textures', 'glitchy percussion'],
   ],
-  moods: ['focused', 'inspired', 'flowing', 'contemplative', 'creative', 'open', 'imaginative', 'expansive'],
+  moods: [
+    'focused',
+    'inspired',
+    'flowing',
+    'contemplative',
+    'creative',
+    'open',
+    'imaginative',
+    'expansive',
+  ],
   titleWords: {
     adjectives: ['Clear', 'Open', 'Free', 'Fluid', 'Deep', 'Bright', 'Wide', 'Fresh'],
     nouns: ['Flow', 'Ideas', 'Canvas', 'Mind', 'Vision', 'Spark', 'Space', 'Process'],
@@ -257,16 +316,7 @@ export const CREATIVE_FLOW_TEMPLATE: QuickVibesTemplate = {
 };
 
 export const PARTY_NIGHT_TEMPLATE: QuickVibesTemplate = {
-  genres: [
-    'house',
-    'disco',
-    'pop',
-    'funk',
-    'dance pop',
-    'nu-disco',
-    'electro house',
-    'dance',
-  ],
+  genres: ['house', 'disco', 'pop', 'funk', 'dance pop', 'nu-disco', 'electro house', 'dance'],
   instruments: [
     ['four on the floor kick', 'bass', 'synth'],
     ['disco strings', 'claps', 'funky guitar'],

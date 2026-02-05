@@ -32,7 +32,7 @@ describe('cleanTitle', () => {
   });
 
   test('preserves internal quotes', () => {
-    expect(cleanTitle('"It\'s a "Song""')).toBe("It's a \"Song\"");
+    expect(cleanTitle('"It\'s a "Song""')).toBe('It\'s a "Song"');
   });
 });
 
@@ -57,4 +57,3 @@ describe('cleanLyrics', () => {
     expect(cleanLyrics('[VERSE]\n  Line 1\n  Line 2')).toBe('[VERSE]\n  Line 1\n  Line 2');
   });
 });
-

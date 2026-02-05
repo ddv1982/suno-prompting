@@ -164,9 +164,10 @@ function resolveMoodsWithOverrides(
         categoryMoods.length > 0
           ? `moodCategory=${moodCategory} selected=${categoryMoods.length}`
           : `moodCategory=${moodCategory} returned empty; using genre-derived moods`,
-      selection: categoryMoods.length > 0
-        ? { method: 'shuffleSlice', candidates: categoryMoods }
-        : undefined,
+      selection:
+        categoryMoods.length > 0
+          ? { method: 'shuffleSlice', candidates: categoryMoods }
+          : undefined,
     });
     return moods;
   }
@@ -236,9 +237,18 @@ function resolveMoodsWithOverrides(
  * ```
  */
 export function buildDeterministicStandardPrompt(
-  options: DeterministicOptions,
+  options: DeterministicOptions
 ): DeterministicResult {
-  const { description, genreOverride, moodCategory, creativityLevel = 50, seed, rng: providedRng, trace, thematicContext } = options;
+  const {
+    description,
+    genreOverride,
+    moodCategory,
+    creativityLevel = 50,
+    seed,
+    rng: providedRng,
+    trace,
+    thematicContext,
+  } = options;
 
   // Determine RNG: use provided rng, or create seeded rng from seed, or default to Math.random
   const rng = providedRng ?? (seed !== undefined ? createSeededRng(seed) : Math.random);
@@ -268,7 +278,7 @@ export function buildDeterministicStandardPrompt(
     description,
     genreOverride,
     rng,
-    trace,
+    trace
   );
 
   // 2. Assemble instruments - blends from all genre components
@@ -286,7 +296,13 @@ export function buildDeterministicStandardPrompt(
   // 3b. Resolve moods based on thematic context, category, creativity, or genre defaults
   // Thematic context moods REPLACE genre moods entirely
   const moods = resolveMoodsWithOverrides(
-    styleResult, primaryGenre, moodCategory, creativityLevel, rng, trace, thematicContext
+    styleResult,
+    primaryGenre,
+    moodCategory,
+    creativityLevel,
+    rng,
+    trace,
+    thematicContext
   );
 
   // 4. Get BPM range - uses blended range for multi-genre
@@ -295,9 +311,7 @@ export function buildDeterministicStandardPrompt(
   const bpmRange = calculateBpmWithAdjustment(baseBpmRange, thematicContext?.tempo, trace);
 
   // 5. Get genre display name - capitalize each component for display
-  const genreDisplayName = components
-    .map((g) => GENRE_REGISTRY[g]?.name ?? g)
-    .join(' ');
+  const genreDisplayName = components.map((g) => GENRE_REGISTRY[g]?.name ?? g).join(' ');
 
   // 6. Select key and mode
   const keyMode = selectKeyAndModeWithTrace(rng, trace);
@@ -316,7 +330,7 @@ export function buildDeterministicStandardPrompt(
 
   // 9. Articulate instruments for display in header
   const articulatedForDisplay = instrumentsResult.instruments.map((i) =>
-    articulateInstrument(i, rng),
+    articulateInstrument(i, rng)
   );
 
   // 10. Get recording context (production/studio descriptors)

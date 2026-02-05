@@ -22,11 +22,7 @@ import {
 import { MOOD_POOL } from '@bun/instruments/datasets';
 import { getRandomProgressionForGenre } from '@bun/prompt/chord-progressions';
 import { selectInstrumentsForMultiGenre } from '@bun/prompt/genre-parser';
-import {
-  replaceFieldLine,
-  replaceStyleTagsLine,
-  replaceRecordingLine,
-} from '@bun/prompt/remix';
+import { replaceFieldLine, replaceStyleTagsLine, replaceRecordingLine } from '@bun/prompt/remix';
 import {
   selectVocalTags,
   selectTextureTags,
@@ -62,10 +58,10 @@ function selectSingleGenre(
   rng: () => number = defaultRng
 ): string | null {
   if (isMultiGenre(currentGenre)) {
-    const available = MULTI_GENRE_COMBINATIONS.filter(g => g !== currentGenre);
+    const available = MULTI_GENRE_COMBINATIONS.filter((g) => g !== currentGenre);
     return randomFrom(available, currentGenre, rng);
   }
-  const available = allSingleGenres.filter(g => g !== currentGenre);
+  const available = allSingleGenres.filter((g) => g !== currentGenre);
   if (available.length === 0) return null;
   return randomFrom(available, 'ambient', rng);
 }
@@ -77,7 +73,7 @@ function selectMultipleGenres(
   allOptions: string[],
   rng: () => number = defaultRng
 ): string {
-  const available = allOptions.filter(g => !currentGenres.includes(g.toLowerCase()));
+  const available = allOptions.filter((g) => !currentGenres.includes(g.toLowerCase()));
   return selectRandomN(available, Math.min(count, available.length), rng).join(', ');
 }
 
@@ -87,7 +83,7 @@ function extractCurrentGenres(currentPrompt: string): string[] {
   const fullGenreValue = genreMatch?.[1]?.trim() || '';
   return fullGenreValue
     .split(',')
-    .map(g => g.trim().toLowerCase())
+    .map((g) => g.trim().toLowerCase())
     .filter(Boolean);
 }
 
@@ -135,9 +131,7 @@ export function extractGenreFromPrompt(prompt: string): GenreType {
   const match = /^genre:\s*"?([^"\n,]+)/im.exec(prompt);
   const extracted = match?.[1]?.trim().toLowerCase();
   if (!extracted) return DEFAULT_GENRE as GenreType;
-  return extracted in GENRE_REGISTRY
-    ? (extracted as GenreType)
-    : (DEFAULT_GENRE as GenreType);
+  return extracted in GENRE_REGISTRY ? (extracted as GenreType) : (DEFAULT_GENRE as GenreType);
 }
 
 /**
@@ -156,7 +150,7 @@ export function extractGenresFromPrompt(prompt: string): GenreType[] {
 
   const genres = match[1]
     .split(',')
-    .map(g => g.trim().toLowerCase())
+    .map((g) => g.trim().toLowerCase())
     .filter((g): g is GenreType => g in GENRE_REGISTRY);
 
   return genres.length > 0 ? genres : [DEFAULT_GENRE as GenreType];
@@ -170,9 +164,7 @@ export function extractGenresFromPrompt(prompt: string): GenreType[] {
  * that works across all genres without biasing the output.
  */
 export function extractMoodFromPrompt(prompt: string): string {
-  const match =
-    /^mood:\s*"?([^"\n]+)/im.exec(prompt) ??
-    /^Mood:\s*([^\n]+)/im.exec(prompt);
+  const match = /^mood:\s*"?([^"\n]+)/im.exec(prompt) ?? /^Mood:\s*([^\n]+)/im.exec(prompt);
   return match?.[1]?.trim() ?? 'emotional';
 }
 
@@ -245,8 +237,7 @@ export function remixInstruments(
   const progression = getRandomProgressionForGenre(primaryGenre, rng);
   const harmonyTag = `${progression.name} (${progression.pattern}) harmony`;
 
-  const { range, delivery, technique } =
-    getVocalSuggestionsForGenre(primaryGenre, rng);
+  const { range, delivery, technique } = getVocalSuggestionsForGenre(primaryGenre, rng);
   const vocalTags = [
     `${range.toLowerCase()} vocals`,
     `${delivery.toLowerCase()} delivery`,
@@ -314,7 +305,13 @@ export function remixGenre(
   const allSingleGenres = Object.keys(GENRE_REGISTRY) as GenreType[];
   const allGenreOptions = [...allSingleGenres, ...MULTI_GENRE_COMBINATIONS];
 
-  const newGenreValue = selectNewGenreValue(currentGenres, targetCount, allSingleGenres, allGenreOptions, rng);
+  const newGenreValue = selectNewGenreValue(
+    currentGenres,
+    targetCount,
+    allSingleGenres,
+    allGenreOptions,
+    rng
+  );
   if (newGenreValue === null) {
     return { text: currentPrompt };
   }

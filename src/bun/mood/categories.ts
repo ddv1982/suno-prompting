@@ -12,11 +12,7 @@
  * Approved: 2026-01-12
  */
 
-import type {
-  MoodCategory,
-  MoodCategoryOption,
-  MoodCategoryRegistry,
-} from './types';
+import type { MoodCategory, MoodCategoryOption, MoodCategoryRegistry } from './types';
 
 /**
  * Mood category definitions.
@@ -157,26 +153,12 @@ export const MOOD_CATEGORIES: MoodCategoryRegistry = {
   },
   seasonal: {
     name: 'Seasonal',
-    moods: [
-      'autumnal',
-      'wintry',
-      'summery',
-      'springlike',
-      'nocturnal',
-      'late-night',
-    ] as const,
+    moods: ['autumnal', 'wintry', 'summery', 'springlike', 'nocturnal', 'late-night'] as const,
     compatibleGenres: [],
   },
   social: {
     name: 'Social',
-    moods: [
-      'celebratory',
-      'joyful',
-      'boisterous',
-      'rowdy',
-      'raucous',
-      'festive',
-    ] as const,
+    moods: ['celebratory', 'joyful', 'boisterous', 'rowdy', 'raucous', 'festive'] as const,
     compatibleGenres: [],
   },
   sophisticated: {

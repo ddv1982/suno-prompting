@@ -88,7 +88,7 @@ describe('buildDeterministicQuickVibes', () => {
     let rngIndex = 0;
     const seededRng = () => {
       const values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
-      return values[(rngIndex++) % values.length]!;
+      return values[rngIndex++ % values.length]!;
     };
 
     rngIndex = 0;
@@ -127,7 +127,9 @@ describe('generateQuickVibesTitle', () => {
     const titleWithoutContext = generateQuickVibesTitle(template, () => RNG_WITHOUT_CONTEXT);
 
     // Title with context should have more words
-    expect(titleWithContext.split(' ').length).toBeGreaterThan(titleWithoutContext.split(' ').length);
+    expect(titleWithContext.split(' ').length).toBeGreaterThan(
+      titleWithoutContext.split(' ').length
+    );
   });
 });
 
@@ -157,7 +159,7 @@ describe('trace instrumentation', () => {
     });
 
     expect(events).toHaveLength(4);
-    expect(events.map(e => e.key)).toEqual([
+    expect(events.map((e) => e.key)).toEqual([
       'quickVibes.genre.select',
       'quickVibes.instruments.select',
       'quickVibes.mood.select',
@@ -180,7 +182,7 @@ describe('trace instrumentation', () => {
       trace: mockTrace,
     });
 
-    const genreEvent = events.find(e => e.key === 'quickVibes.genre.select');
+    const genreEvent = events.find((e) => e.key === 'quickVibes.genre.select');
     expect(genreEvent?.selection?.method).toBe('pickRandom');
     expect(genreEvent?.selection?.candidatesCount).toBeGreaterThan(0);
   });

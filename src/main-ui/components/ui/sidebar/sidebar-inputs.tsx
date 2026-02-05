@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import * as React from "react"
+import * as React from 'react';
 
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
-import type { ReactElement } from "react"
+import type { ReactElement } from 'react';
 
 const SidebarInput = React.forwardRef<
   React.ComponentRef<typeof Input>,
@@ -17,14 +17,14 @@ const SidebarInput = React.forwardRef<
       ref={ref}
       data-sidebar="input"
       className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-[3px] focus-visible:ring-sidebar-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        'h-8 w-full bg-background shadow-none focus-visible:ring-[3px] focus-visible:ring-sidebar-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         className
       )}
       {...props}
     />
-  )
-})
-SidebarInput.displayName = "SidebarInput"
+  );
+});
+SidebarInput.displayName = 'SidebarInput';
 
 const SidebarSeparator = React.forwardRef<
   React.ComponentRef<typeof Separator>,
@@ -34,11 +34,11 @@ const SidebarSeparator = React.forwardRef<
     <Separator
       ref={ref}
       data-sidebar="separator"
-      className={cn("mx-2 w-auto bg-sidebar-border", className)}
+      className={cn('mx-2 w-auto bg-sidebar-border', className)}
       {...props}
     />
-  )
-})
-SidebarSeparator.displayName = "SidebarSeparator"
+  );
+});
+SidebarSeparator.displayName = 'SidebarSeparator';
 
-export { SidebarInput, SidebarSeparator }
+export { SidebarInput, SidebarSeparator };

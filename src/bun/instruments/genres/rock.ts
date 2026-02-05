@@ -2,12 +2,26 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const ROCK_GENRE: GenreDefinition = {
   name: 'Rock',
-  keywords: ['rock', 'alternative', 'indie rock', 'hard rock', 'grunge', 'classic rock', 'heartland rock'],
+  keywords: [
+    'rock',
+    'alternative',
+    'indie rock',
+    'hard rock',
+    'grunge',
+    'classic rock',
+    'heartland rock',
+  ],
   description: 'Guitar-driven music with strong rhythms and powerful energy',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['distorted guitar', 'Fender Stratocaster', 'guitar', 'acoustic guitar', 'Telecaster'],
+      instruments: [
+        'distorted guitar',
+        'Fender Stratocaster',
+        'guitar',
+        'acoustic guitar',
+        'Telecaster',
+      ],
     },
     color: {
       pick: { min: 0, max: 1 },
@@ -31,5 +45,15 @@ export const ROCK_GENRE: GenreDefinition = {
     ['distorted guitar', 'guitar'],
   ],
   bpm: { min: 100, max: 160, typical: 120 },
-  moods: ['Driving', 'Powerful', 'Energetic', 'Rebellious', 'Raw', 'Intense', 'Confident', 'Gritty', 'Anthemic'],
+  moods: [
+    'Driving',
+    'Powerful',
+    'Energetic',
+    'Rebellious',
+    'Raw',
+    'Intense',
+    'Confident',
+    'Gritty',
+    'Anthemic',
+  ],
 };

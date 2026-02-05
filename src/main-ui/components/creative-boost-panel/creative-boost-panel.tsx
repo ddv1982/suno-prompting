@@ -1,19 +1,19 @@
-import { type ReactElement } from "react";
+import { type ReactElement } from 'react';
 
-import { CreativitySlider } from "@/components/creativity-slider";
-import { useRefinedFeedback } from "@/hooks/use-refined-feedback";
-import { CreativeBoostSubmitSchema } from "@shared/schemas/submit-validation";
+import { CreativitySlider } from '@/components/creativity-slider';
+import { useRefinedFeedback } from '@/hooks/use-refined-feedback';
+import { CreativeBoostSubmitSchema } from '@shared/schemas/submit-validation';
 
-import { CreativeBoostModeToggle } from "./creative-boost-mode-toggle";
-import { DescriptionInput } from "./description-input";
-import { LyricsTopicInput } from "./lyrics-topic-input";
-import { ModeSpecificInputs } from "./mode-specific-inputs";
-import { SubmitButton } from "./submit-button";
-import { TogglesSection } from "./toggles-section";
-import { useCreativeBoostHandlers } from "./use-creative-boost-handlers";
+import { CreativeBoostModeToggle } from './creative-boost-mode-toggle';
+import { DescriptionInput } from './description-input';
+import { LyricsTopicInput } from './lyrics-topic-input';
+import { ModeSpecificInputs } from './mode-specific-inputs';
+import { SubmitButton } from './submit-button';
+import { TogglesSection } from './toggles-section';
+import { useCreativeBoostHandlers } from './use-creative-boost-handlers';
 
-import type { MoodCategory } from "@bun/mood";
-import type { CreativeBoostInput, CreativeBoostMode } from "@shared/types";
+import type { MoodCategory } from '@bun/mood';
+import type { CreativeBoostInput, CreativeBoostMode } from '@shared/types';
 
 interface CreativeBoostPanelProps {
   input: CreativeBoostInput;
@@ -25,7 +25,9 @@ interface CreativeBoostPanelProps {
   hasCurrentPrompt: boolean;
   creativeBoostMode: CreativeBoostMode;
   onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
-  onInputChange: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
+  onInputChange: (
+    input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)
+  ) => void;
   onMaxModeChange: (mode: boolean) => void;
   onStoryModeChange: (mode: boolean) => void;
   onLyricsModeChange: (mode: boolean) => void;
@@ -33,9 +35,23 @@ interface CreativeBoostPanelProps {
   onRefine: (feedback: string) => Promise<boolean>;
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function CreativeBoostPanel({
-  input, maxMode, storyMode, lyricsMode, isLLMAvailable, isGenerating, hasCurrentPrompt, creativeBoostMode,
-  onCreativeBoostModeChange, onInputChange, onMaxModeChange, onStoryModeChange, onLyricsModeChange, onGenerate, onRefine,
+  input,
+  maxMode,
+  storyMode,
+  lyricsMode,
+  isLLMAvailable,
+  isGenerating,
+  hasCurrentPrompt,
+  creativeBoostMode,
+  onCreativeBoostModeChange,
+  onInputChange,
+  onMaxModeChange,
+  onStoryModeChange,
+  onLyricsModeChange,
+  onGenerate,
+  onRefine,
 }: CreativeBoostPanelProps): ReactElement {
   const isRefineMode = hasCurrentPrompt;
   const isDirectMode = input.sunoStyles.length > 0;
@@ -52,83 +68,98 @@ export function CreativeBoostPanel({
     seedGenres: input.seedGenres,
   }).success;
 
-  const { handleCreativityChange, handleGenresChange, handleSunoStylesChange, handleDescriptionChange, handleLyricsTopicChange, handleLyricsToggleChange, handleKeyDown, handleSubmit } = useCreativeBoostHandlers({ input, isGenerating, isRefineMode, onInputChange, onLyricsModeChange, onGenerate, onRefine: handleRefine });
+  const {
+    handleCreativityChange,
+    handleGenresChange,
+    handleSunoStylesChange,
+    handleDescriptionChange,
+    handleLyricsTopicChange,
+    handleLyricsToggleChange,
+    handleKeyDown,
+    handleSubmit,
+  } = useCreativeBoostHandlers({
+    input,
+    isGenerating,
+    isRefineMode,
+    onInputChange,
+    onLyricsModeChange,
+    onGenerate,
+    onRefine: handleRefine,
+  });
 
   const handleMoodCategoryChange = (category: MoodCategory | null): void => {
-    onInputChange(prev => ({ ...prev, moodCategory: category }));
+    onInputChange((prev) => ({ ...prev, moodCategory: category }));
   };
 
   return (
     <div className="space-y-[var(--space-5)]">
-        <CreativeBoostModeToggle
-          mode={creativeBoostMode}
-          isDirectMode={isDirectMode}
-          onModeChange={onCreativeBoostModeChange}
-        />
+      <CreativeBoostModeToggle
+        mode={creativeBoostMode}
+        isDirectMode={isDirectMode}
+        onModeChange={onCreativeBoostModeChange}
+      />
 
-        <CreativitySlider
-          value={input.creativityLevel}
-          onChange={handleCreativityChange}
-          disabled={isDirectMode}
-        />
-        {isDirectMode && (
-          <p className="ui-helper -mt-3">
-            Creativity slider disabled when using Suno V5 Styles
-          </p>
-        )}
+      <CreativitySlider
+        value={input.creativityLevel}
+        onChange={handleCreativityChange}
+        disabled={isDirectMode}
+      />
+      {isDirectMode && (
+        <p className="ui-helper -mt-3">Creativity slider disabled when using Suno V5 Styles</p>
+      )}
 
-        <ModeSpecificInputs
-          input={input}
-          isSimpleMode={isSimpleMode}
-          isDirectMode={isDirectMode}
-          storyMode={storyMode}
-          onMoodCategoryChange={handleMoodCategoryChange}
-          onGenresChange={handleGenresChange}
-          onSunoStylesChange={handleSunoStylesChange}
-        />
+      <ModeSpecificInputs
+        input={input}
+        isSimpleMode={isSimpleMode}
+        isDirectMode={isDirectMode}
+        storyMode={storyMode}
+        onMoodCategoryChange={handleMoodCategoryChange}
+        onGenresChange={handleGenresChange}
+        onSunoStylesChange={handleSunoStylesChange}
+      />
 
-        <DescriptionInput
-          value={input.description}
-          isRefineMode={isRefineMode}
-          isDirectMode={isDirectMode}
-          storyMode={storyMode}
-          onChange={handleDescriptionChange}
+      <DescriptionInput
+        value={input.description}
+        isRefineMode={isRefineMode}
+        isDirectMode={isDirectMode}
+        storyMode={storyMode}
+        onChange={handleDescriptionChange}
+        onKeyDown={handleKeyDown}
+      />
+
+      {isSimpleMode && (
+        <p className="ui-helper">
+          AI will automatically select genres and vocal style based on your description
+        </p>
+      )}
+
+      {lyricsMode && (
+        <LyricsTopicInput
+          value={input.lyricsTopic}
+          onChange={handleLyricsTopicChange}
           onKeyDown={handleKeyDown}
         />
+      )}
 
-        {isSimpleMode && (
-          <p className="ui-helper">
-            AI will automatically select genres and vocal style based on your description
-          </p>
-        )}
+      <TogglesSection
+        maxMode={maxMode}
+        storyMode={storyMode}
+        lyricsMode={lyricsMode}
+        isLLMAvailable={isLLMAvailable}
+        isDirectMode={isDirectMode}
+        onMaxModeChange={onMaxModeChange}
+        onStoryModeChange={onStoryModeChange}
+        onLyricsModeChange={handleLyricsToggleChange}
+      />
 
-        {lyricsMode && (
-          <LyricsTopicInput
-            value={input.lyricsTopic}
-            onChange={handleLyricsTopicChange}
-            onKeyDown={handleKeyDown}
-          />
-        )}
-
-        <TogglesSection
-          maxMode={maxMode}
-          storyMode={storyMode}
-          lyricsMode={lyricsMode}
-          isLLMAvailable={isLLMAvailable}
-          isDirectMode={isDirectMode}
-          onMaxModeChange={onMaxModeChange}
-          onStoryModeChange={onStoryModeChange}
-          onLyricsModeChange={handleLyricsToggleChange}
-        />
-
-        <SubmitButton
-          isGenerating={isGenerating}
-          isRefineMode={isRefineMode}
-          isDirectMode={isDirectMode}
-          canSubmit={canSubmit}
-          refined={refined}
-          onSubmit={handleSubmit}
-        />
+      <SubmitButton
+        isGenerating={isGenerating}
+        isRefineMode={isRefineMode}
+        isDirectMode={isDirectMode}
+        canSubmit={canSubmit}
+        refined={refined}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }

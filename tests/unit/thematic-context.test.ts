@@ -484,7 +484,8 @@ describe('extractThematicContext', () => {
     });
 
     test('handles JSON with markdown code fence (should now work)', async () => {
-      const responseWithMarkdown = '```json\n{"themes":["a","b","c"],"moods":["x","y"],"scene":"short scene here"}\n```';
+      const responseWithMarkdown =
+        '```json\n{"themes":["a","b","c"],"moods":["x","y"],"scene":"short scene here"}\n```';
 
       mockGenerateText.mockResolvedValueOnce({ text: responseWithMarkdown });
 

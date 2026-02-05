@@ -19,18 +19,19 @@ export function GenerationStateProvider({ children }: { children: ReactNode }): 
   const state = useGenerationState();
   const optimistic = useOptimisticGeneration();
 
-  const value = useMemo<GenerationStateContextValue>(() => ({
-    ...state,
-    isOptimistic: optimistic.isOptimistic,
-    showSkeleton: optimistic.showSkeleton,
-    startOptimistic: optimistic.startOptimistic,
-    completeOptimistic: optimistic.completeOptimistic,
-    errorOptimistic: optimistic.errorOptimistic,
-  }), [state, optimistic]);
+  const value = useMemo<GenerationStateContextValue>(
+    () => ({
+      ...state,
+      isOptimistic: optimistic.isOptimistic,
+      showSkeleton: optimistic.showSkeleton,
+      startOptimistic: optimistic.startOptimistic,
+      completeOptimistic: optimistic.completeOptimistic,
+      errorOptimistic: optimistic.errorOptimistic,
+    }),
+    [state, optimistic]
+  );
 
   return (
-    <GenerationStateContext.Provider value={value}>
-      {children}
-    </GenerationStateContext.Provider>
+    <GenerationStateContext.Provider value={value}>{children}</GenerationStateContext.Provider>
   );
 }

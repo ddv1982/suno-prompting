@@ -106,7 +106,10 @@ function buildFallbackThematicContext(
   // Build enrichment summary for tracing
   const enrichmentParts: string[] = [];
   if (extraction.era) enrichmentParts.push(`era=${extraction.era}`);
-  if (extraction.tempo) enrichmentParts.push(`tempo=${extraction.tempo.adjustment > 0 ? '+' : ''}${extraction.tempo.adjustment}`);
+  if (extraction.tempo)
+    enrichmentParts.push(
+      `tempo=${extraction.tempo.adjustment > 0 ? '+' : ''}${extraction.tempo.adjustment}`
+    );
   if (extraction.intent) enrichmentParts.push(`intent=${extraction.intent}`);
 
   traceDecision(trace, {
@@ -116,7 +119,11 @@ function buildFallbackThematicContext(
     why: `Using keyword-based fallback: ${enrichmentParts.join(', ') || 'no keywords matched'}`,
   });
 
-  log.info('buildFallbackThematicContext:result', { themes, era: extraction.era, intent: extraction.intent });
+  log.info('buildFallbackThematicContext:result', {
+    themes,
+    era: extraction.era,
+    intent: extraction.intent,
+  });
 
   // Note: intent extraction is included in enrichment results
   return {
@@ -132,15 +139,21 @@ function buildFallbackThematicContext(
 function getOptionalFieldValues(ctx: ThematicContext): string[] {
   type FieldExtractor = () => string | undefined;
   const extractors: FieldExtractor[] = [
-    () => ctx.era ? `era=${ctx.era}` : undefined,
-    () => ctx.intent ? `intent=${ctx.intent}` : undefined,
-    () => ctx.spatialHint?.space ? `spatial=${ctx.spatialHint.space}` : undefined,
-    () => ctx.energyLevel ? `energy=${ctx.energyLevel}` : undefined,
-    () => ctx.vocalCharacter?.style ? `vocal=${ctx.vocalCharacter.style}` : undefined,
-    () => ctx.narrativeArc?.length ? `arc=${ctx.narrativeArc.length.toString()}pts` : undefined,
-    () => ctx.musicalReference?.style?.length ? `refStyle=${ctx.musicalReference.style.join(',')}` : undefined,
-    () => ctx.culturalContext?.region ? `culture=${ctx.culturalContext.region}` : undefined,
-    () => ctx.tempo?.adjustment ? `tempo=${ctx.tempo.adjustment > 0 ? '+' : ''}${ctx.tempo.adjustment.toString()}` : undefined,
+    () => (ctx.era ? `era=${ctx.era}` : undefined),
+    () => (ctx.intent ? `intent=${ctx.intent}` : undefined),
+    () => (ctx.spatialHint?.space ? `spatial=${ctx.spatialHint.space}` : undefined),
+    () => (ctx.energyLevel ? `energy=${ctx.energyLevel}` : undefined),
+    () => (ctx.vocalCharacter?.style ? `vocal=${ctx.vocalCharacter.style}` : undefined),
+    () => (ctx.narrativeArc?.length ? `arc=${ctx.narrativeArc.length.toString()}pts` : undefined),
+    () =>
+      ctx.musicalReference?.style?.length
+        ? `refStyle=${ctx.musicalReference.style.join(',')}`
+        : undefined,
+    () => (ctx.culturalContext?.region ? `culture=${ctx.culturalContext.region}` : undefined),
+    () =>
+      ctx.tempo?.adjustment
+        ? `tempo=${ctx.tempo.adjustment > 0 ? '+' : ''}${ctx.tempo.adjustment.toString()}`
+        : undefined,
   ];
   return extractors.map((fn) => fn()).filter((v): v is string => Boolean(v));
 }
@@ -160,7 +173,10 @@ function buildThematicSummary(ctx: ThematicContext): string {
 /**
  * Handle successful LLM extraction result.
  */
-function handleLLMSuccess(thematicContext: ThematicContext, trace?: TraceCollector): ThematicContext {
+function handleLLMSuccess(
+  thematicContext: ThematicContext,
+  trace?: TraceCollector
+): ThematicContext {
   const summary = buildThematicSummary(thematicContext);
   traceDecision(trace, {
     domain: 'other',
@@ -176,7 +192,9 @@ function handleLLMSuccess(thematicContext: ThematicContext, trace?: TraceCollect
  * Handle LLM returning null - attempt keyword fallback.
  */
 function handleLLMNull(description: string, trace?: TraceCollector): ThematicContext | null {
-  log.info('extractThematicContextIfAvailable:llmNull', { reason: 'LLM returned null, trying keyword fallback' });
+  log.info('extractThematicContextIfAvailable:llmNull', {
+    reason: 'LLM returned null, trying keyword fallback',
+  });
 
   if (hasKeywords(description)) {
     return buildFallbackThematicContext(description, trace);
@@ -203,7 +221,9 @@ function handleLLMError(
   const isAbort = error instanceof Error && error.name === 'AbortError';
 
   if (isAbort) {
-    log.info('extractThematicContextIfAvailable:timeout', { timeoutMs: THEMATIC_EXTRACTION_TIMEOUT_MS });
+    log.info('extractThematicContextIfAvailable:timeout', {
+      timeoutMs: THEMATIC_EXTRACTION_TIMEOUT_MS,
+    });
   } else {
     log.warn('extractThematicContextIfAvailable:failed', { error: message });
   }
@@ -283,7 +303,9 @@ export async function extractThematicContextIfAvailable(
 
   // Use AbortController for proper timeout cancellation
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => { controller.abort(); }, THEMATIC_EXTRACTION_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, THEMATIC_EXTRACTION_TIMEOUT_MS);
 
   try {
     const thematicContext = await extractThematicContext({

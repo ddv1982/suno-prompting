@@ -4,7 +4,11 @@
  * but the prompt is enriched with instruments, moods, and production.
  */
 
-import { enrichSunoStyles, buildMaxModeEnrichedLines, buildStandardModeEnrichedLines } from '@bun/prompt/enrichment';
+import {
+  enrichSunoStyles,
+  buildMaxModeEnrichedLines,
+  buildStandardModeEnrichedLines,
+} from '@bun/prompt/enrichment';
 
 import { generateDirectModeTitle } from './llm-utils';
 
@@ -24,21 +28,21 @@ export interface DirectModeTraceRuntime {
 /**
  * Build enriched prompt for Direct Mode (styles preserved as-is).
  * Shared by Full Prompt, Creative Boost, and Quick Vibes.
- * 
+ *
  * @returns Enriched prompt text and enrichment metadata
  */
 export function buildDirectModePrompt(
   sunoStyles: string[],
   maxMode: boolean
-): { 
-  text: string; 
+): {
+  text: string;
   enriched: ReturnType<typeof enrichSunoStyles>;
 } {
   const enriched = enrichSunoStyles(sunoStyles);
   const lines = maxMode
     ? buildMaxModeEnrichedLines(sunoStyles, enriched.enrichment)
     : buildStandardModeEnrichedLines(sunoStyles, enriched.enrichment);
-  
+
   return {
     text: lines.join('\n'),
     enriched,
@@ -51,7 +55,7 @@ export function buildDirectModePrompt(
 export function buildDirectModePromptWithRuntime(
   sunoStyles: string[],
   maxMode: boolean,
-  runtime?: DirectModeTraceRuntime,
+  runtime?: DirectModeTraceRuntime
 ): {
   text: string;
   enriched: ReturnType<typeof enrichSunoStyles>;
@@ -88,10 +92,16 @@ export async function generateDirectModeResult(
   runtime?: DirectModeTraceRuntime
 ): Promise<GenerationResult> {
   const { sunoStyles, description, maxMode } = options;
-  const title = await generateDirectModeTitle(description || '', sunoStyles, config.getModel, config.getOllamaEndpoint?.(), {
-    trace: runtime?.trace,
-    traceLabel: 'title.generate',
-  });
+  const title = await generateDirectModeTitle(
+    description || '',
+    sunoStyles,
+    config.getModel,
+    config.getOllamaEndpoint?.(),
+    {
+      trace: runtime?.trace,
+      traceLabel: 'title.generate',
+    }
+  );
 
   const { text } = buildDirectModePromptWithRuntime(sunoStyles, maxMode ?? false, runtime);
 
@@ -124,14 +134,24 @@ export async function generateDirectModeWithLyrics(
 ): Promise<GenerationResult> {
   const { sunoStyles, description, lyricsTopic, maxMode, withLyrics, generateLyrics } = options;
 
-  const { text: enrichedPrompt } = buildDirectModePromptWithRuntime(sunoStyles, maxMode ?? false, runtime);
+  const { text: enrichedPrompt } = buildDirectModePromptWithRuntime(
+    sunoStyles,
+    maxMode ?? false,
+    runtime
+  );
 
   // Generate title
   const titleContext = description?.trim() || lyricsTopic?.trim() || '';
-  const title = await generateDirectModeTitle(titleContext, sunoStyles, config.getModel, config.getOllamaEndpoint?.(), {
-    trace: runtime?.trace,
-    traceLabel: 'title.generate',
-  });
+  const title = await generateDirectModeTitle(
+    titleContext,
+    sunoStyles,
+    config.getModel,
+    config.getOllamaEndpoint?.(),
+    {
+      trace: runtime?.trace,
+      traceLabel: 'title.generate',
+    }
+  );
 
   // Generate lyrics if requested (pass enriched prompt for context)
   const lyricsResult = withLyrics

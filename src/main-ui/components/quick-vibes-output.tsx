@@ -1,14 +1,14 @@
-import { OutputSection } from "@/components/prompt-editor/output-section";
-import { PromptOutput } from "@/components/prompt-output";
-import { RemixButtonGroup } from "@/components/remix-button-group";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { SectionLabel } from "@/components/ui/section-label";
-import { APP_CONSTANTS } from "@shared/constants";
-import { stripMaxModeHeader } from "@shared/prompt-utils";
+import { OutputSection } from '@/components/prompt-editor/output-section';
+import { PromptOutput } from '@/components/prompt-output';
+import { RemixButtonGroup } from '@/components/remix-button-group';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { SectionLabel } from '@/components/ui/section-label';
+import { APP_CONSTANTS } from '@shared/constants';
+import { stripMaxModeHeader } from '@shared/prompt-utils';
 
-import type { GeneratingAction } from "@/context/app-context";
-import type { ReactElement } from "react";
+import type { GeneratingAction } from '@/context/app-context';
+import type { ReactElement } from 'react';
 
 interface QuickVibesOutputProps {
   prompt: string;
@@ -50,16 +50,21 @@ export function QuickVibesOutput({
   return (
     <div className="space-y-[var(--space-5)]">
       {title && <OutputSection label="Title" content={title} />}
-      
+
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <SectionLabel>Quick Vibes Prompt</SectionLabel>
-          <Badge variant={isOverLimit ? "destructive" : "secondary"} className="text-tiny font-mono tabular-nums h-5">
+          <Badge
+            variant={isOverLimit ? 'destructive' : 'secondary'}
+            className="text-tiny font-mono tabular-nums h-5"
+          >
             {charCount} / {APP_CONSTANTS.QUICK_VIBES_MAX_CHARS}
           </Badge>
         </div>
         <Card className="relative group border bg-surface overflow-hidden">
-          <CardContent className="p-6"><PromptOutput text={prompt} /></CardContent>
+          <CardContent className="p-6">
+            <PromptOutput text={prompt} />
+          </CardContent>
           <RemixButtonGroup
             generatingAction={generatingAction}
             storyMode={storyMode}

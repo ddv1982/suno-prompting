@@ -103,7 +103,9 @@ export function shuffle<T>(items: readonly T[], rng: Rng = Math.random): T[] {
  */
 export function selectRandomN<T>(items: readonly T[], count: number, rng: Rng = Math.random): T[] {
   if (count > items.length) {
-    throw new InvariantError(`selectRandomN: requested ${count} items but array only has ${items.length}`);
+    throw new InvariantError(
+      `selectRandomN: requested ${count} items but array only has ${items.length}`
+    );
   }
   if (count <= 0) {
     return [];

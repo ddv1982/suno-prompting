@@ -186,7 +186,11 @@ export const MOOD_INTENSITY_MAP: Record<string, IntensityVariants> = {
   complex: { mild: 'nuanced', moderate: 'complex', intense: 'labyrinthine' },
   cerebral: { mild: 'thoughtful', moderate: 'cerebral', intense: 'intellectually dense' },
   glitchy: { mild: 'stuttering', moderate: 'glitchy', intense: 'fractured' },
-  'avant-garde': { mild: 'unconventional', moderate: 'avant-garde', intense: 'radically experimental' },
+  'avant-garde': {
+    mild: 'unconventional',
+    moderate: 'avant-garde',
+    intense: 'radically experimental',
+  },
 
   // Folk/Traditional category
   lively: { mild: 'animated', moderate: 'lively', intense: 'vivacious' },

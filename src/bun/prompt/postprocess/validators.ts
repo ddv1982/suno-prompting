@@ -30,7 +30,7 @@ export const LEAKED_META_SUBSTRINGS = [
  */
 export function hasLeakedMeta(text: string): boolean {
   const lower = text.toLowerCase();
-  return LEAKED_META_SUBSTRINGS.some(s => lower.includes(s));
+  return LEAKED_META_SUBSTRINGS.some((s) => lower.includes(s));
 }
 
 /**
@@ -41,9 +41,9 @@ export function hasLeakedMeta(text: string): boolean {
  */
 export function stripLeakedMetaLines(text: string): string {
   const lines = text.split('\n');
-  const filtered = lines.filter(line => {
+  const filtered = lines.filter((line) => {
     const lower = line.toLowerCase();
-    return !LEAKED_META_SUBSTRINGS.some(s => lower.includes(s));
+    return !LEAKED_META_SUBSTRINGS.some((s) => lower.includes(s));
   });
   return filtered.join('\n').trim();
 }
@@ -75,7 +75,7 @@ export function dedupDeterministic(text: string): string {
   const lines = text.split('\n');
   const seen = new Set<string>();
   return lines
-    .filter(line => {
+    .filter((line) => {
       const trimmed = line.trim();
       // Keep empty lines for formatting
       if (!trimmed) return true;

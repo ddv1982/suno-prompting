@@ -3,7 +3,10 @@
  * @module prompt/builders/standard
  */
 
-import { CONTEXT_INTEGRATION_INSTRUCTIONS, JSON_OUTPUT_FORMAT_RULES } from '@bun/prompt/shared-instructions';
+import {
+  CONTEXT_INTEGRATION_INSTRUCTIONS,
+  JSON_OUTPUT_FORMAT_RULES,
+} from '@bun/prompt/shared-instructions';
 
 import { buildContextualGuidance, buildSongConceptParts } from './shared';
 
@@ -50,7 +53,8 @@ STRICT CONSTRAINTS:
 ${JSON_OUTPUT_FORMAT_RULES}`;
   }
 
-  const songStructure = useSunoTags ? `
+  const songStructure = useSunoTags
+    ? `
 OUTPUT FORMAT (follow this structure exactly):
 
 Line 1 (MANDATORY): [Mood, Genre/Style, Key: key/mode]
@@ -71,7 +75,8 @@ RULES:
 2. Write sections as natural flowing phrases, not word lists
 3. Only use instruments from SUGGESTED INSTRUMENTS in technical guidance
 4. Backing vocals in (): wordless (ooh, ahh) or lyric echo (repeat key word from line)
-5. Reflect chord progression feel and production style in section descriptions` : '';
+5. Reflect chord progression feel and production style in section descriptions`
+    : '';
 
   return `You are a creative music prompt writer for Suno V5. Transform user descriptions into evocative, inspiring music prompts.
 

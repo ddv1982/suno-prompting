@@ -11,7 +11,6 @@ import { createLogger } from '@bun/logger';
 import { detectGenreKeywordsOnly } from '@bun/prompt/deterministic';
 import { traceDecision } from '@bun/trace';
 
-
 import type { TraceCollector } from '@bun/trace';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
 
@@ -94,12 +93,20 @@ export function logGenreResolution(
   useOffline: boolean
 ): void {
   if (descriptionGenre) {
-    const truncatedDescription = description.length > MAX_LOG_DESCRIPTION_LENGTH
-      ? `${description.slice(0, MAX_LOG_DESCRIPTION_LENGTH)}...`
-      : description;
-    log.info('generateWithLyrics:genreFromDescription', { description: truncatedDescription, detectedGenre: descriptionGenre });
+    const truncatedDescription =
+      description.length > MAX_LOG_DESCRIPTION_LENGTH
+        ? `${description.slice(0, MAX_LOG_DESCRIPTION_LENGTH)}...`
+        : description;
+    log.info('generateWithLyrics:genreFromDescription', {
+      description: truncatedDescription,
+      detectedGenre: descriptionGenre,
+    });
   } else if (topicGenre) {
-    log.info('generateWithLyrics:genreFromTopic', { lyricsTopic, detectedGenre: topicGenre, offline: useOffline });
+    log.info('generateWithLyrics:genreFromTopic', {
+      lyricsTopic,
+      detectedGenre: topicGenre,
+      offline: useOffline,
+    });
   }
 }
 

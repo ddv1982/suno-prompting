@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const HYPERPOP_GENRE: GenreDefinition = {
   name: 'Hyperpop',
   keywords: ['hyperpop', 'hyper pop', 'pc music', 'bubblegum bass', 'glitchpop', 'digicore'],
-  description: 'Maximalist, chaotic pop with pitch-shifted vocals, glitchy production, and aggressive synths',
+  description:
+    'Maximalist, chaotic pop with pitch-shifted vocals, glitchy production, and aggressive synths',
   pools: {
     pad: {
       pick: { min: 1, max: 2 },
@@ -30,5 +31,14 @@ export const HYPERPOP_GENRE: GenreDefinition = {
     ['trap hi hats', 'hi-hat'],
   ],
   bpm: { min: 130, max: 180, typical: 150 },
-  moods: ['Chaotic', 'Euphoric', 'Intense', 'Glitchy', 'Sweet', 'Aggressive', 'Maximalist', 'Energetic'],
+  moods: [
+    'Chaotic',
+    'Euphoric',
+    'Intense',
+    'Glitchy',
+    'Sweet',
+    'Aggressive',
+    'Maximalist',
+    'Energetic',
+  ],
 };

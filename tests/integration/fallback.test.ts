@@ -23,18 +23,18 @@ import type { ThematicContext } from '@shared/schemas/thematic-context';
  */
 
 // Mock thematic context to track calls
-const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(() => Promise.resolve(null));
+const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(() =>
+  Promise.resolve(null)
+);
 
 // Mock Ollama availability
-const mockCheckOllamaAvailable = mock(() =>
-  Promise.resolve({ available: false, hasGemma: false })
-);
+const mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: false, hasGemma: false }));
 
 let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
-    getModel: () => ({} as unknown),
+    getModel: () => ({}) as unknown,
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
@@ -81,10 +81,7 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Should not throw
-      const result = await generateInitial(
-        { description: 'a jazz song with piano' },
-        config
-      );
+      const result = await generateInitial({ description: 'a jazz song with piano' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -98,10 +95,7 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => false,
       });
 
-      await generateInitial(
-        { description: 'a rock song' },
-        config
-      );
+      await generateInitial({ description: 'a rock song' }, config);
 
       // Extraction should not be called when LLM unavailable
       expect(mockExtractThematicContext).not.toHaveBeenCalled();
@@ -112,14 +106,13 @@ describe('Fallback Integration Tests', () => {
       const config = createMockConfig({
         isLyricsMode: () => false,
         isLLMAvailable: () => false,
-        getModel: () => { throw new Error('No API key configured'); },
+        getModel: () => {
+          throw new Error('No API key configured');
+        },
       });
 
       // Should not throw - falls back to deterministic
-      const result = await generateInitial(
-        { description: 'an electronic song' },
-        config
-      );
+      const result = await generateInitial({ description: 'an electronic song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -135,10 +128,7 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Should not throw
-      const result = await generateInitial(
-        { description: 'a classical song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a classical song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.title).toBeDefined();
@@ -155,18 +145,14 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Generate first time
-      const result1 = await generateInitial(
-        { description: 'a pop song' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result1 = await generateInitial({ description: 'a pop song' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       // Generate second time with same seed
-      const result2 = await generateInitial(
-        { description: 'a pop song' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result2 = await generateInitial({ description: 'a pop song' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       // Results should be identical
       expect(result1.text).toBe(result2.text);
@@ -194,11 +180,9 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => true,
       });
 
-      const hybridResult = await generateInitial(
-        { description: 'a blues song' },
-        configHybrid,
-        { rng: createSeededRng(seed) }
-      );
+      const hybridResult = await generateInitial({ description: 'a blues song' }, configHybrid, {
+        rng: createSeededRng(seed),
+      });
 
       // When extraction returns null, output should match pure deterministic
       expect(fallbackResult.text).toBe(hybridResult.text);
@@ -213,10 +197,7 @@ describe('Fallback Integration Tests', () => {
       });
 
       const startTime = performance.now();
-      await generateInitial(
-        { description: 'a fast generation test' },
-        config
-      );
+      await generateInitial({ description: 'a fast generation test' }, config);
       const endTime = performance.now();
 
       // Should complete within 100ms (target is ~40ms)
@@ -234,22 +215,19 @@ describe('Fallback Integration Tests', () => {
       // Run 5 generations and measure time
       for (let i = 0; i < 5; i++) {
         const startTime = performance.now();
-        await generateInitial(
-          { description: `test song ${i}` },
-          config
-        );
+        await generateInitial({ description: `test song ${i}` }, config);
         const endTime = performance.now();
         times.push(endTime - startTime);
       }
 
       // All should be under 100ms
-      times.forEach(time => {
+      times.forEach((time) => {
         expect(time).toBeLessThan(100);
       });
 
       // Variance should be reasonable (no outliers)
       const average = times.reduce((a, b) => a + b, 0) / times.length;
-      const maxDeviation = Math.max(...times.map(t => Math.abs(t - average)));
+      const maxDeviation = Math.max(...times.map((t) => Math.abs(t - average)));
       expect(maxDeviation).toBeLessThan(50);
     });
   });
@@ -262,10 +240,7 @@ describe('Fallback Integration Tests', () => {
         isMaxMode: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'a jazz song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a jazz song' }, config);
 
       // Standard mode format verification
       expect(result.text).toContain('Genre:');
@@ -282,10 +257,7 @@ describe('Fallback Integration Tests', () => {
         isMaxMode: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'an electronic song' },
-        config
-      );
+      const result = await generateInitial({ description: 'an electronic song' }, config);
 
       // Max mode format verification
       expect(result.text).toContain('MAX_MODE');
@@ -306,10 +278,7 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Should not throw - falls back to deterministic
-      const result = await generateInitial(
-        { description: 'a rock song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a rock song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -324,10 +293,7 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'a country song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a country song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.title).toBeDefined();
@@ -377,11 +343,9 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'a funk song with bass' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result = await generateInitial({ description: 'a funk song with bass' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       // Should produce valid structured output
       expect(result.text).toContain('Genre:');
@@ -401,15 +365,15 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'an electronic ambient track' },
-        config
-      );
+      const result = await generateInitial({ description: 'an electronic ambient track' }, config);
 
       // Extract style tags from output
       const styleTagsMatch = /Style Tags:\s*([^\n]+)/i.exec(result.text);
       if (styleTagsMatch?.[1]) {
-        const tags = styleTagsMatch[1].split(',').map(t => t.trim()).filter(t => t.length > 0);
+        const tags = styleTagsMatch[1]
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0);
         expect(tags.length).toBeLessThanOrEqual(APP_CONSTANTS.STYLE_TAG_LIMIT);
         expect(tags.length).toBeLessThanOrEqual(15);
       }
@@ -425,10 +389,7 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Should not throw
-      const result = await generateInitial(
-        { description: 'a simple rock song' },
-        config
-      );
+      const result = await generateInitial({ description: 'a simple rock song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -452,10 +413,7 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Should not throw
-      const result = await generateInitial(
-        { description: 'test with empty context' },
-        config
-      );
+      const result = await generateInitial({ description: 'test with empty context' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -475,10 +433,7 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'minimal context test' },
-        config
-      );
+      const result = await generateInitial({ description: 'minimal context test' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text).toContain('Genre:');
@@ -527,10 +482,7 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'ambient space track' },
-        config
-      );
+      const result = await generateInitial({ description: 'ambient space track' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -544,10 +496,7 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'a pop ballad' },
-        config
-      );
+      const result = await generateInitial({ description: 'a pop ballad' }, config);
 
       // Verify structure - all expected fields present
       expect(result.text).toBeDefined();
@@ -577,17 +526,13 @@ describe('Fallback Integration Tests', () => {
       });
 
       // Generate twice with same seed - should be identical
-      const result1 = await generateInitial(
-        { description: 'baseline consistency test' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result1 = await generateInitial({ description: 'baseline consistency test' }, config, {
+        rng: createSeededRng(seed),
+      });
 
-      const result2 = await generateInitial(
-        { description: 'baseline consistency test' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result2 = await generateInitial({ description: 'baseline consistency test' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       expect(result1.text).toBe(result2.text);
       expect(result1.title).toBe(result2.title);
@@ -599,10 +544,7 @@ describe('Fallback Integration Tests', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'a jazz ballad' },
-        config
-      );
+      const result = await generateInitial({ description: 'a jazz ballad' }, config);
 
       // Verify structure matches expected output format
       expect(result).toHaveProperty('text');

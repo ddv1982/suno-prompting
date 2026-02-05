@@ -11,7 +11,6 @@ import {
   detectPolyrhythmCombination,
   getPolyrhythmCombinationGuidance,
   getGenreInstruments,
-
   getAmbientInstruments,
   GENRE_REGISTRY,
   extractInstruments,
@@ -191,7 +190,7 @@ describe('getGenreInstruments', () => {
 
   test('respects maxTags option', () => {
     const guidance = getGenreInstruments('ambient', { maxTags: 2 });
-    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    const lines = guidance.split('\n').filter((l) => l.startsWith('- '));
     expect(lines.length).toBeLessThanOrEqual(2);
   });
 });
@@ -200,8 +199,8 @@ describe('getAmbientInstruments', () => {
   function parseBullets(guidance: string): string[] {
     return guidance
       .split('\n')
-      .filter(l => l.startsWith('- '))
-      .map(l => l.slice(2));
+      .filter((l) => l.startsWith('- '))
+      .map((l) => l.slice(2));
   }
 
   test('includes genre header and description', () => {
@@ -219,7 +218,7 @@ describe('getAmbientInstruments', () => {
 
     const ambientPools = GENRE_REGISTRY.ambient.pools;
     const whitelist = [
-      ...Object.values(ambientPools).flatMap(p => [...p.instruments]),
+      ...Object.values(ambientPools).flatMap((p) => [...p.instruments]),
       ...MULTIGENRE_INSTRUMENTS,
       ...FOUNDATIONAL_INSTRUMENTS,
       ...ORCHESTRAL_COLOR_INSTRUMENTS,
@@ -227,7 +226,7 @@ describe('getAmbientInstruments', () => {
     // Tags may have articulations prepended (e.g., "Arpeggiated Rhodes")
     // Check if the tag contains any whitelisted instrument
     for (const tag of tags) {
-      const hasValidInstrument = whitelist.some(inst => tag.includes(inst));
+      const hasValidInstrument = whitelist.some((inst) => tag.includes(inst));
       expect(hasValidInstrument).toBe(true);
     }
   });
@@ -262,7 +261,7 @@ describe('getAmbientInstruments', () => {
     for (let i = 0; i < 50; i++) {
       const guidance = getAmbientInstruments().toLowerCase();
       // Check for "- bells" as bullet to avoid matching "glass bells"
-      const hasBells = guidance.includes('- bells') || (/^bells$/m.exec(guidance)) !== null;
+      const hasBells = guidance.includes('- bells') || /^bells$/m.exec(guidance) !== null;
       const hasBowls = guidance.includes('singing bowls');
       expect(hasBells && hasBowls).toBe(false);
     }
@@ -275,13 +274,13 @@ describe('getAmbientInstruments', () => {
 
     // Check if tag contains any of the instruments (handles articulations like "Arpeggiated synth pad")
     const containsInstrument = (tag: string, instruments: readonly string[]) =>
-      instruments.some(inst => tag.includes(inst));
+      instruments.some((inst) => tag.includes(inst));
 
     for (let i = 0; i < 30; i++) {
       const guidance = getAmbientInstruments();
       const tags = parseBullets(guidance);
-      expect(tags.some(t => containsInstrument(t, padsInstruments))).toBe(true);
-      expect(tags.some(t => containsInstrument(t, textureInstruments))).toBe(true);
+      expect(tags.some((t) => containsInstrument(t, padsInstruments))).toBe(true);
+      expect(tags.some((t) => containsInstrument(t, textureInstruments))).toBe(true);
     }
   });
 
@@ -294,21 +293,21 @@ describe('getAmbientInstruments', () => {
 
   test('fills remaining slots after user instruments', () => {
     const guidance = getAmbientInstruments({ userInstruments: ['cello'] });
-    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    const lines = guidance.split('\n').filter((l) => l.startsWith('- '));
     expect(lines.length).toBeGreaterThan(1);
     expect(lines.length).toBeLessThanOrEqual(5);
   });
 
   test('respects maxTags option', () => {
     const guidance = getAmbientInstruments({ maxTags: 2 });
-    const lines = guidance.split('\n').filter(l => l.startsWith('- '));
+    const lines = guidance.split('\n').filter((l) => l.startsWith('- '));
     expect(lines.length).toBeLessThanOrEqual(2);
   });
 });
 
 describe('instrument registry', () => {
   test('registry has entries for all categories', () => {
-    const categories = new Set(INSTRUMENT_REGISTRY.map(e => e.category));
+    const categories = new Set(INSTRUMENT_REGISTRY.map((e) => e.category));
     expect(categories.has('harmonic')).toBe(true);
     expect(categories.has('pad')).toBe(true);
     expect(categories.has('color')).toBe(true);
@@ -424,7 +423,7 @@ describe('extractInstruments', () => {
 
   test('deduplicates instruments', () => {
     const result = extractInstruments('Piano with piano and more piano');
-    const pianoCount = result.found.filter(i => i === 'felt piano').length;
+    const pianoCount = result.found.filter((i) => i === 'felt piano').length;
     expect(pianoCount).toBe(1);
   });
 
@@ -627,4 +626,3 @@ describe('getPolyrhythmCombinationGuidance', () => {
     expect(guidance).toContain('drums');
   });
 });
-

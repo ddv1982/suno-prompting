@@ -9,5 +9,3 @@
 
 export { refinePrompt } from './refinement/index';
 export type { RefinePromptOptions } from './refinement/index';
-
-

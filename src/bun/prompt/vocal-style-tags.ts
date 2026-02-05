@@ -6,19 +6,21 @@ import {
   VOCAL_TECHNIQUES,
 } from '@bun/prompt/vocal-descriptors';
 
-const RANGE_SET = new Set<string>([
-  ...VOCAL_RANGES.male,
-  ...VOCAL_RANGES.female,
-  ...VOCAL_RANGES.neutral,
-].map((r) => r.toLowerCase()));
+const RANGE_SET = new Set<string>(
+  [...VOCAL_RANGES.male, ...VOCAL_RANGES.female, ...VOCAL_RANGES.neutral].map((r) =>
+    r.toLowerCase()
+  )
+);
 
 const TECHNIQUE_SET = new Set<string>(VOCAL_TECHNIQUES.map((t) => t.toLowerCase()));
 
-const DELIVERY_SET = new Set<string>([
-  ...VOCAL_DELIVERIES,
-  ...Object.values(GENRE_VOCAL_STYLES).flatMap((s) => s.deliveries),
-  ...DEFAULT_VOCAL_STYLE.deliveries,
-].map((d) => d.toLowerCase()));
+const DELIVERY_SET = new Set<string>(
+  [
+    ...VOCAL_DELIVERIES,
+    ...Object.values(GENRE_VOCAL_STYLES).flatMap((s) => s.deliveries),
+    ...DEFAULT_VOCAL_STYLE.deliveries,
+  ].map((d) => d.toLowerCase())
+);
 
 function normalizeSpaces(input: string): string {
   return input.trim().replace(/\s+/g, ' ');

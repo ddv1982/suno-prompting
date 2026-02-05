@@ -22,7 +22,7 @@ recording: "studio session"`;
   test('injects chord progression into instruments field', () => {
     const fixedRng = () => 0; // Always pick first progression
     const result = injectChordProgression(samplePrompt, 'jazz', fixedRng);
-    
+
     expect(result).toContain('harmony');
     expect(result).toContain('instruments: "Rhodes, tenor sax, upright bass,');
   });
@@ -30,7 +30,7 @@ recording: "studio session"`;
   test('does not inject if progression already exists', () => {
     const promptWithProgression = `instruments: "Rhodes, The 2-5-1 (ii-V-I) harmony"`;
     const result = injectChordProgression(promptWithProgression, 'jazz');
-    
+
     expect(result).toBe(promptWithProgression);
   });
 
@@ -38,22 +38,26 @@ recording: "studio session"`;
     const emptyInstruments = `genre: "jazz"\ninstruments: ""\nstyle tags: "warm"`;
     const fixedRng = () => 0;
     const result = injectChordProgression(emptyInstruments, 'jazz', fixedRng);
-    
+
     expect(result).toContain('harmony');
   });
 
   test('returns unchanged prompt if no instruments field', () => {
     const noInstruments = `genre: "jazz"\nstyle tags: "warm"`;
     const result = injectChordProgression(noInstruments, 'jazz');
-    
+
     expect(result).toBe(noInstruments);
   });
 
   test('uses genre-appropriate progression', () => {
     const fixedRng = () => 0;
     const jazzResult = injectChordProgression(samplePrompt, 'jazz', fixedRng);
-    const rockResult = injectChordProgression(samplePrompt.replace('Jazz', 'Rock'), 'rock', fixedRng);
-    
+    const rockResult = injectChordProgression(
+      samplePrompt.replace('Jazz', 'Rock'),
+      'rock',
+      fixedRng
+    );
+
     // Jazz should get jazz progressions (2-5-1 is common)
     // Rock should get rock progressions
     expect(jazzResult).not.toBe(rockResult);
@@ -66,7 +70,7 @@ recording: "studio session"`;
       'instruments: "piano, The Bossa Nova (Imaj7-ii7-V7-Imaj7) harmony"',
       'instruments: "piano, The 2-5-1 (ii-V-I) harmony"',
     ];
-    
+
     for (const pattern of patterns) {
       const result = injectChordProgression(pattern, 'jazz');
       // Should not add another harmony tag
@@ -92,7 +96,7 @@ describe('getProgressionsForGenre', () => {
 describe('getRandomProgressionForGenre', () => {
   test('returns a progression object with required fields', () => {
     const progression = getRandomProgressionForGenre('jazz');
-    
+
     expect(progression.name).toBeDefined();
     expect(progression.pattern).toBeDefined();
     expect(progression.description).toBeDefined();
@@ -104,7 +108,7 @@ describe('getRandomProgressionForGenre', () => {
     const fixedRng = () => 0;
     const result1 = getRandomProgressionForGenre('jazz', fixedRng);
     const result2 = getRandomProgressionForGenre('jazz', fixedRng);
-    
+
     expect(result1.name).toBe(result2.name);
   });
 });
@@ -113,7 +117,7 @@ describe('buildProgressionShort', () => {
   test('returns name and pattern format', () => {
     const fixedRng = () => 0;
     const result = buildProgressionShort('jazz', fixedRng);
-    
+
     expect(result).toMatch(/^.+\s\(.+\)$/);
     expect(result).not.toContain('harmony');
   });

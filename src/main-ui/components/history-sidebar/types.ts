@@ -4,7 +4,7 @@
  * @module components/history-sidebar/types
  */
 
-import type { PromptSession } from "@shared/types";
+import type { PromptSession } from '@shared/types';
 
 /**
  * Props for the main HistorySidebar component.

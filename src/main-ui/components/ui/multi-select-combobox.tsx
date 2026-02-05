@@ -1,15 +1,22 @@
-import { X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { FormLabel } from "@/components/ui/form-label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useAutoDisable } from "@/hooks/use-auto-disable";
-import { cn } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { FormLabel } from '@/components/ui/form-label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAutoDisable } from '@/hooks/use-auto-disable';
+import { cn } from '@/lib/utils';
 
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode } from 'react';
 
 interface MultiSelectComboboxProps<T> {
   selected: string[];
@@ -27,7 +34,7 @@ interface MultiSelectComboboxProps<T> {
   searchPlaceholder?: string;
   emptyText?: string;
   helperText?: string;
-  badgeText?: "optional" | "disabled";
+  badgeText?: 'optional' | 'disabled';
 }
 
 interface SelectedBadgesProps {
@@ -37,7 +44,12 @@ interface SelectedBadgesProps {
   isDisabled: boolean;
 }
 
-function SelectedBadges({ selected, getDisplayLabel, onRemove, isDisabled }: SelectedBadgesProps): ReactElement | null {
+function SelectedBadges({
+  selected,
+  getDisplayLabel,
+  onRemove,
+  isDisabled,
+}: SelectedBadgesProps): ReactElement | null {
   if (selected.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-2">
@@ -46,7 +58,9 @@ function SelectedBadges({ selected, getDisplayLabel, onRemove, isDisabled }: Sel
           {getDisplayLabel(value)}
           <button
             type="button"
-            onClick={() => { onRemove(value); }}
+            onClick={() => {
+              onRemove(value);
+            }}
             disabled={isDisabled}
             className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 disabled:opacity-50"
             aria-label={`Remove ${getDisplayLabel(value)}`}
@@ -60,13 +74,28 @@ function SelectedBadges({ selected, getDisplayLabel, onRemove, isDisabled }: Sel
 }
 
 export function MultiSelectCombobox<T>({
-  selected, onChange, options, getOptionValue, getOptionLabel, renderOptionExtra,
-  maxSelections = 4, disabled, autoDisable = true, label, icon,
-  searchPlaceholder = "Type to search...", emptyText = "No results found.", helperText, badgeText = "optional",
+  selected,
+  onChange,
+  options,
+  getOptionValue,
+  getOptionLabel,
+  renderOptionExtra,
+  maxSelections = 4,
+  disabled,
+  autoDisable = true,
+  label,
+  icon,
+  searchPlaceholder = 'Type to search...',
+  emptyText = 'No results found.',
+  helperText,
+  badgeText = 'optional',
 }: MultiSelectComboboxProps<T>): ReactElement {
   const isDisabled = useAutoDisable(disabled, autoDisable);
   const [open, setOpen] = useState(false);
-  const availableOptions = useMemo(() => options.filter((opt) => !selected.includes(getOptionValue(opt))), [options, selected, getOptionValue]);
+  const availableOptions = useMemo(
+    () => options.filter((opt) => !selected.includes(getOptionValue(opt))),
+    [options, selected, getOptionValue]
+  );
 
   const handleSelect = (value: string): void => {
     if (selected.includes(value)) onChange(selected.filter((v) => v !== value));
@@ -84,15 +113,25 @@ export function MultiSelectCombobox<T>({
 
   return (
     <div className="space-y-2">
-      <FormLabel icon={icon} badge={badgeText}>{label}</FormLabel>
+      <FormLabel icon={icon} badge={badgeText}>
+        {label}
+      </FormLabel>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline" role="combobox" aria-expanded={open} aria-label={`Select ${label.toLowerCase()}`}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            aria-label={`Select ${label.toLowerCase()}`}
             disabled={isDisabled || isMaxed}
-            className={cn("h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal", "text-muted-foreground")}
+            className={cn(
+              'h-[var(--height-control-sm)] w-full justify-between text-[length:var(--text-footnote)] font-normal',
+              'text-muted-foreground'
+            )}
           >
-            <span className="truncate">{isMaxed ? `Maximum ${label.toLowerCase()} selected` : searchPlaceholder}</span>
+            <span className="truncate">
+              {isMaxed ? `Maximum ${label.toLowerCase()} selected` : searchPlaceholder}
+            </span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
@@ -104,7 +143,14 @@ export function MultiSelectCombobox<T>({
                 {availableOptions.map((option) => {
                   const value = getOptionValue(option);
                   return (
-                    <CommandItem key={value} value={getOptionLabel(option)} onSelect={() => { handleSelect(value); }} className="cursor-pointer">
+                    <CommandItem
+                      key={value}
+                      value={getOptionLabel(option)}
+                      onSelect={() => {
+                        handleSelect(value);
+                      }}
+                      className="cursor-pointer"
+                    >
                       <span>{getOptionLabel(option)}</span>
                       {renderOptionExtra?.(option)}
                     </CommandItem>
@@ -115,7 +161,14 @@ export function MultiSelectCombobox<T>({
           </Command>
         </PopoverContent>
       </Popover>
-      <SelectedBadges selected={selected} getDisplayLabel={getDisplayLabel} onRemove={(v) => { onChange(selected.filter((s) => s !== v)); }} isDisabled={isDisabled} />
+      <SelectedBadges
+        selected={selected}
+        getDisplayLabel={getDisplayLabel}
+        onRemove={(v) => {
+          onChange(selected.filter((s) => s !== v));
+        }}
+        isDisabled={isDisabled}
+      />
       <p className="ui-helper">{displayHelperText}</p>
     </div>
   );

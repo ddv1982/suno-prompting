@@ -1,10 +1,10 @@
-import { Sparkles } from "lucide-react";
-import { useMemo } from "react";
+import { Sparkles } from 'lucide-react';
+import { useMemo } from 'react';
 
-import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
-import { SUNO_V5_STYLES, SUNO_V5_STYLE_DISPLAY_NAMES } from "@shared/suno-v5-styles";
+import { MultiSelectCombobox } from '@/components/ui/multi-select-combobox';
+import { SUNO_V5_STYLES, SUNO_V5_STYLE_DISPLAY_NAMES } from '@shared/suno-v5-styles';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface SunoStylesMultiSelectProps {
   selected: string[];
@@ -13,10 +13,13 @@ interface SunoStylesMultiSelectProps {
   disabled?: boolean;
   autoDisable?: boolean;
   helperText?: string;
-  badgeText?: "optional" | "disabled";
+  badgeText?: 'optional' | 'disabled';
 }
 
-interface StyleOption { value: string; label: string }
+interface StyleOption {
+  value: string;
+  label: string;
+}
 
 export function SunoStylesMultiSelect({
   selected,
@@ -25,7 +28,7 @@ export function SunoStylesMultiSelect({
   disabled,
   autoDisable = true,
   helperText,
-  badgeText = "optional",
+  badgeText = 'optional',
 }: SunoStylesMultiSelectProps): ReactElement {
   const allStyles = useMemo<StyleOption[]>(
     () =>

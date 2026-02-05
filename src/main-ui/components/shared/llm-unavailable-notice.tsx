@@ -7,12 +7,12 @@
  * @module components/shared/llm-unavailable-notice
  */
 
-import { Info } from "lucide-react";
+import { Info } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useSettingsContext } from "@/context/settings-context";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSettingsContext } from '@/context/settings-context';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface LLMUnavailableNoticeProps {
   /** Show "Configure AI in Settings" text alongside the icon */

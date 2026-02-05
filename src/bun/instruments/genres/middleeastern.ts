@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const MIDDLEEASTERN_GENRE: GenreDefinition = {
   name: 'Middle Eastern',
   keywords: ['middle eastern', 'arabic', 'oriental', 'persian', 'turkish', 'maqam'],
-  description: 'Traditional Middle Eastern music with modal melodies, intricate rhythms, and exotic instruments',
+  description:
+    'Traditional Middle Eastern music with modal melodies, intricate rhythms, and exotic instruments',
   pools: {
     melody: {
       pick: { min: 1, max: 2 },

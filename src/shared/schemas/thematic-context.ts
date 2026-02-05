@@ -40,11 +40,11 @@ export const VocalCharacterSchema = z.object({
  * Higher energy levels boost dynamic/temporal weights; lower levels reduce them.
  */
 export const EnergyLevelSchema = z.enum([
-  'ambient',     // Very low energy, atmospheric
-  'relaxed',     // Low energy, gentle
-  'moderate',    // Medium energy, balanced
-  'energetic',   // High energy, driving
-  'intense',     // Very high energy, powerful
+  'ambient', // Very low energy, atmospheric
+  'relaxed', // Low energy, gentle
+  'moderate', // Medium energy, balanced
+  'energetic', // High energy, driving
+  'intense', // Very high energy, powerful
 ]);
 
 /**
@@ -123,13 +123,7 @@ export const ContrastSchema = z.object({
 /**
  * Listening intent classification for optimizing output.
  */
-export const IntentSchema = z.enum([
-  'background',
-  'focal',
-  'cinematic',
-  'dancefloor',
-  'emotional',
-]);
+export const IntentSchema = z.enum(['background', 'focal', 'cinematic', 'dancefloor', 'emotional']);
 
 /**
  * Musical reference schema for style characteristics extraction (NO artist names).

@@ -9,7 +9,7 @@ export function useScrollReveal(): void {
     const handleScroll = (e: Event): void => {
       const target = e.target as HTMLElement;
       if (!target.classList) return;
-      
+
       target.classList.add('is-scrolling');
 
       clearTimeout(scrollTimeout);

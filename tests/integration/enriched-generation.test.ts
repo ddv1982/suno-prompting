@@ -145,20 +145,18 @@ const MOCK_CONTEXT_WITH_REFERENCE: ThematicContext = {
 };
 
 // Mock the thematic context extraction module
-const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(
-  () => Promise.resolve(MOCK_FULLY_ENRICHED_CONTEXT)
+const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>(() =>
+  Promise.resolve(MOCK_FULLY_ENRICHED_CONTEXT)
 );
 
 // Mock Ollama availability
-const mockCheckOllamaAvailable = mock(() =>
-  Promise.resolve({ available: true, hasGemma: true })
-);
+const mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: true, hasGemma: true }));
 
 let generateInitial: typeof import('@bun/ai/generation').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
-    getModel: () => ({} as unknown),
+    getModel: () => ({}) as unknown,
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
@@ -255,17 +253,15 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: '80s synthwave track' },
-        config
-      );
+      const result = await generateInitial({ description: '80s synthwave track' }, config);
 
       // 80s era should produce tags like "gated reverb", "synth pads"
       // At least one era-related production characteristic should appear
-      const hasEraInfluence = result.text.toLowerCase().includes('synth') ||
-                              result.text.toLowerCase().includes('pad') ||
-                              result.text.toLowerCase().includes('reverb') ||
-                              result.text.toLowerCase().includes('retro');
+      const hasEraInfluence =
+        result.text.toLowerCase().includes('synth') ||
+        result.text.toLowerCase().includes('pad') ||
+        result.text.toLowerCase().includes('reverb') ||
+        result.text.toLowerCase().includes('retro');
       expect(hasEraInfluence).toBe(true);
     });
 
@@ -277,10 +273,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'dance floor track' },
-        config
-      );
+      const result = await generateInitial({ description: 'dance floor track' }, config);
 
       // Dancefloor intent should influence output
       expect(result.text).toBeDefined();
@@ -333,10 +326,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'retro synth track' },
-        config
-      );
+      const result = await generateInitial({ description: 'retro synth track' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -350,16 +340,14 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'peaceful morning song' },
-        config
-      );
+      const result = await generateInitial({ description: 'peaceful morning song' }, config);
 
       expect(result.text).toBeDefined();
       // Themes should appear in output
-      const hasTheme = result.text.toLowerCase().includes('love') ||
-                       result.text.toLowerCase().includes('hope') ||
-                       result.text.toLowerCase().includes('journey');
+      const hasTheme =
+        result.text.toLowerCase().includes('love') ||
+        result.text.toLowerCase().includes('hope') ||
+        result.text.toLowerCase().includes('journey');
       expect(hasTheme).toBe(true);
     });
 
@@ -378,10 +366,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'stadium rock anthem' },
-        config
-      );
+      const result = await generateInitial({ description: 'stadium rock anthem' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -395,10 +380,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'a jazz song with piano' },
-        config
-      );
+      const result = await generateInitial({ description: 'a jazz song with piano' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -412,11 +394,9 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'electronic ambient track' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result = await generateInitial({ description: 'electronic ambient track' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       // Verify structure is correct even in fallback mode
       expect(result.text).toBeDefined();
@@ -453,10 +433,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => false,
       });
 
-      await generateInitial(
-        { description: 'test song' },
-        config
-      );
+      await generateInitial({ description: 'test song' }, config);
 
       expect(mockExtractThematicContext).not.toHaveBeenCalled();
     });
@@ -471,10 +448,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'progressive rock space music' },
-        config
-      );
+      const result = await generateInitial({ description: 'progressive rock space music' }, config);
 
       assertNoArtistNames(result.text);
       if (result.title) {
@@ -490,10 +464,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'Brazilian carnival' },
-        config
-      );
+      const result = await generateInitial({ description: 'Brazilian carnival' }, config);
 
       assertNoArtistNames(result.text);
     });
@@ -504,10 +475,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => false,
       });
 
-      const result = await generateInitial(
-        { description: 'rock song' },
-        config
-      );
+      const result = await generateInitial({ description: 'rock song' }, config);
 
       assertNoArtistNames(result.text);
     });
@@ -520,10 +488,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'space rock epic' },
-        config
-      );
+      const result = await generateInitial({ description: 'space rock epic' }, config);
 
       // Signature tags should be production/style descriptors
       // like "synthesizer solos", "long instrumental sections"
@@ -541,10 +506,7 @@ describe('Enriched Generation Integration', () => {
 
       const startTime = performance.now();
 
-      await generateInitial(
-        { description: 'test performance timing' },
-        config
-      );
+      await generateInitial({ description: 'test performance timing' }, config);
 
       const endTime = performance.now();
       const duration = endTime - startTime;
@@ -562,10 +524,7 @@ describe('Enriched Generation Integration', () => {
 
       const startTime = performance.now();
 
-      await generateInitial(
-        { description: 'fast fallback test' },
-        config
-      );
+      await generateInitial({ description: 'fast fallback test' }, config);
 
       const endTime = performance.now();
       const duration = endTime - startTime;
@@ -588,10 +547,7 @@ describe('Enriched Generation Integration', () => {
 
       const startTime = performance.now();
 
-      const result = await generateInitial(
-        { description: 'test with slow extraction' },
-        config
-      );
+      const result = await generateInitial({ description: 'test with slow extraction' }, config);
 
       const endTime = performance.now();
       const duration = endTime - startTime;
@@ -617,10 +573,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'ambient space music' },
-        config
-      );
+      const result = await generateInitial({ description: 'ambient space music' }, config);
 
       expect(result.text).toBeDefined();
     });
@@ -639,10 +592,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'world fusion music' },
-        config
-      );
+      const result = await generateInitial({ description: 'world fusion music' }, config);
 
       expect(result.text).toBeDefined();
     });
@@ -655,10 +605,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'test with null extraction' },
-        config
-      );
+      const result = await generateInitial({ description: 'test with null extraction' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -676,10 +623,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'test with timeout' },
-        config
-      );
+      const result = await generateInitial({ description: 'test with timeout' }, config);
 
       expect(result.text).toBeDefined();
     });
@@ -694,10 +638,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'simple pop song' },
-        config
-      );
+      const result = await generateInitial({ description: 'simple pop song' }, config);
 
       // Should have standard output structure
       expect(result.text).toBeDefined();
@@ -715,17 +656,13 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result1 = await generateInitial(
-        { description: 'deterministic test' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result1 = await generateInitial({ description: 'deterministic test' }, config, {
+        rng: createSeededRng(seed),
+      });
 
-      const result2 = await generateInitial(
-        { description: 'deterministic test' },
-        config,
-        { rng: createSeededRng(seed) }
-      );
+      const result2 = await generateInitial({ description: 'deterministic test' }, config, {
+        rng: createSeededRng(seed),
+      });
 
       expect(result1.text).toBe(result2.text);
     });
@@ -768,15 +705,15 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'full enrichment test' },
-        config
-      );
+      const result = await generateInitial({ description: 'full enrichment test' }, config);
 
       // Extract style tags from output
       const styleTagsMatch = /Style Tags:\s*([^\n]+)/i.exec(result.text);
       if (styleTagsMatch?.[1]) {
-        const tags = styleTagsMatch[1].split(',').map(t => t.trim()).filter(t => t.length > 0);
+        const tags = styleTagsMatch[1]
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0);
         expect(tags.length).toBeLessThanOrEqual(APP_CONSTANTS.STYLE_TAG_LIMIT);
       }
     });
@@ -791,10 +728,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'soulful gospel song' },
-        config
-      );
+      const result = await generateInitial({ description: 'soulful gospel song' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -811,10 +745,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'ambient meditation music' },
-        config
-      );
+      const result = await generateInitial({ description: 'ambient meditation music' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -831,10 +762,7 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'cathedral ambient music' },
-        config
-      );
+      const result = await generateInitial({ description: 'cathedral ambient music' }, config);
 
       expect(result.text).toBeDefined();
       expect(result.text.length).toBeGreaterThan(0);
@@ -882,15 +810,15 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'epic cinematic score' },
-        config
-      );
+      const result = await generateInitial({ description: 'epic cinematic score' }, config);
 
       // Parse style tags
       const styleTagsMatch = /Style Tags:\s*([^\n]+)/i.exec(result.text);
       if (styleTagsMatch?.[1]) {
-        const tags = styleTagsMatch[1].split(',').map(t => t.trim()).filter(t => t.length > 0);
+        const tags = styleTagsMatch[1]
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0);
         expect(tags.length).toBeLessThanOrEqual(15);
       }
     });
@@ -903,19 +831,17 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result = await generateInitial(
-        { description: 'test high priority tags' },
-        config
-      );
+      const result = await generateInitial({ description: 'test high priority tags' }, config);
 
       // Recording field should be present
       expect(result.text.toLowerCase()).toContain('recording');
 
       // Production-related terms should appear somewhere
-      const hasProduction = result.text.toLowerCase().includes('reverb') ||
-                            result.text.toLowerCase().includes('stereo') ||
-                            result.text.toLowerCase().includes('room') ||
-                            result.text.toLowerCase().includes('hall');
+      const hasProduction =
+        result.text.toLowerCase().includes('reverb') ||
+        result.text.toLowerCase().includes('stereo') ||
+        result.text.toLowerCase().includes('room') ||
+        result.text.toLowerCase().includes('hall');
       expect(hasProduction).toBe(true);
     });
   });
@@ -953,17 +879,13 @@ describe('Enriched Generation Integration', () => {
         isLLMAvailable: () => true,
       });
 
-      const result1 = await generateInitial(
-        { description: 'different seed test' },
-        config,
-        { rng: createSeededRng(11111) }
-      );
+      const result1 = await generateInitial({ description: 'different seed test' }, config, {
+        rng: createSeededRng(11111),
+      });
 
-      const result2 = await generateInitial(
-        { description: 'different seed test' },
-        config,
-        { rng: createSeededRng(99999) }
-      );
+      const result2 = await generateInitial({ description: 'different seed test' }, config, {
+        rng: createSeededRng(99999),
+      });
 
       // Outputs should differ with different seeds
       expect(result1.text).not.toBe(result2.text);

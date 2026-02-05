@@ -949,8 +949,9 @@ import { toTitleCase } from '@shared/text-utils';
  * Display names for Suno V5 styles.
  * Maps lowercase style keys to title-case display names.
  */
-export const SUNO_V5_STYLE_DISPLAY_NAMES: Record<string, string> =
-  Object.fromEntries(SUNO_V5_STYLES.map((style) => [style, toTitleCase(style)]));
+export const SUNO_V5_STYLE_DISPLAY_NAMES: Record<string, string> = Object.fromEntries(
+  SUNO_V5_STYLES.map((style) => [style, toTitleCase(style)])
+);
 
 /**
  * Set for O(1) style lookup validation.

@@ -34,12 +34,12 @@ export interface QuickVibesInput {
 // Creative Boost input state
 // Note: maxMode and lyricsMode are handled by global SettingsContext (same as Quick Vibes)
 export interface CreativeBoostInput {
-  creativityLevel: CreativitySliderValue;  // 5 discrete positions: 0, 25, 50, 75, 100
-  seedGenres: string[];                    // 0-4 genre keys (from registry or combinations)
+  creativityLevel: CreativitySliderValue; // 5 discrete positions: 0, 25, 50, 75, 100
+  seedGenres: string[]; // 0-4 genre keys (from registry or combinations)
   /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
   sunoStyles: string[];
-  description: string;                     // Optional text description
-  lyricsTopic: string;                     // Topic for lyrics (when lyrics enabled)
+  description: string; // Optional text description
+  lyricsTopic: string; // Topic for lyrics (when lyrics enabled)
   /** Optional mood category to influence prompt generation */
   moodCategory: MoodCategory | null;
 }
@@ -65,7 +65,7 @@ export interface AdvancedSelection {
   polyrhythmCombination: string | null;
   timeSignature: string | null;
   timeSignatureJourney: string | null;
-  seedGenres: string[];  // 0-4 genres or genre combinations
+  seedGenres: string[]; // 0-4 genres or genre combinations
   /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
   sunoStyles: string[];
 }

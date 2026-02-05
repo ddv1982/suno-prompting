@@ -12,8 +12,12 @@ import {
   truncateTextWithMarker,
 } from '@shared/trace';
 
-import type { TraceRun, TraceLLMCallEvent, TraceDecisionEvent, TraceErrorEvent } from '@shared/types/trace';
-
+import type {
+  TraceRun,
+  TraceLLMCallEvent,
+  TraceDecisionEvent,
+  TraceErrorEvent,
+} from '@shared/types/trace';
 
 function makeBaseTrace(): TraceRun {
   return {
@@ -413,14 +417,16 @@ describe('enforceTraceSizeCap', () => {
     test('final trace is always <= 64KB', () => {
       const huge = 'x'.repeat(120_000);
       const trace = makeBaseTrace();
-      trace.events.push(makeLLMCallEvent({
-        request: {
-          maxRetries: 0,
-          inputSummary: { messageCount: 1, totalChars: huge.length, preview: huge },
-          messages: [{ role: 'user', content: huge }],
-        },
-        response: { previewText: huge, rawText: huge },
-      }));
+      trace.events.push(
+        makeLLMCallEvent({
+          request: {
+            maxRetries: 0,
+            inputSummary: { messageCount: 1, totalChars: huge.length, preview: huge },
+            messages: [{ role: 'user', content: huge }],
+          },
+          response: { previewText: huge, rawText: huge },
+        })
+      );
 
       const capped = enforceTraceSizeCap(trace);
       expect(capped.stats.persistedBytes).toBeLessThanOrEqual(TRACE_PERSISTED_BYTES_CAP);
@@ -431,15 +437,17 @@ describe('enforceTraceSizeCap', () => {
     test('drops Advanced-only fields first (messages, rawText)', () => {
       const huge = 'x'.repeat(120_000);
       const trace = makeBaseTrace();
-      trace.events.push(makeLLMCallEvent({
-        id: 'e2',
-        request: {
-          maxRetries: 0,
-          inputSummary: { messageCount: 1, totalChars: huge.length, preview: 'preview' },
-          messages: [{ role: 'user', content: huge }],
-        },
-        response: { previewText: 'ok', rawText: huge },
-      }));
+      trace.events.push(
+        makeLLMCallEvent({
+          id: 'e2',
+          request: {
+            maxRetries: 0,
+            inputSummary: { messageCount: 1, totalChars: huge.length, preview: 'preview' },
+            messages: [{ role: 'user', content: huge }],
+          },
+          response: { previewText: 'ok', rawText: huge },
+        })
+      );
 
       const capped = enforceTraceSizeCap(trace);
       expect(capped.stats.truncatedForCap).toBe(true);
@@ -454,14 +462,16 @@ describe('enforceTraceSizeCap', () => {
 
       // Add many LLM calls with large previews
       for (let i = 0; i < 40; i += 1) {
-        trace.events.push(makeLLMCallEvent({
-          id: `l${i}`,
-          tMs: 1000 + i,
-          request: {
-            inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
-          },
-          response: { previewText: 'r'.repeat(5000) },
-        }));
+        trace.events.push(
+          makeLLMCallEvent({
+            id: `l${i}`,
+            tMs: 1000 + i,
+            request: {
+              inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
+            },
+            response: { previewText: 'r'.repeat(5000) },
+          })
+        );
       }
 
       trace.events.push({
@@ -480,14 +490,16 @@ describe('enforceTraceSizeCap', () => {
       const trace = makeBaseTrace();
 
       for (let i = 0; i < 40; i += 1) {
-        trace.events.push(makeLLMCallEvent({
-          id: `l${i}`,
-          tMs: 1000 + i,
-          request: {
-            inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
-          },
-          response: { previewText: 'r'.repeat(5000) },
-        }));
+        trace.events.push(
+          makeLLMCallEvent({
+            id: `l${i}`,
+            tMs: 1000 + i,
+            request: {
+              inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
+            },
+            response: { previewText: 'r'.repeat(5000) },
+          })
+        );
       }
 
       const capped = enforceTraceSizeCap(trace);
@@ -500,20 +512,24 @@ describe('enforceTraceSizeCap', () => {
     test('compacts decision why fields when needed', () => {
       const trace = makeBaseTrace();
 
-      trace.events.push(makeDecisionEvent({
-        id: 'd1',
-        why: 'y'.repeat(10_000),
-      }));
+      trace.events.push(
+        makeDecisionEvent({
+          id: 'd1',
+          why: 'y'.repeat(10_000),
+        })
+      );
 
       for (let i = 0; i < 40; i += 1) {
-        trace.events.push(makeLLMCallEvent({
-          id: `l${i}`,
-          tMs: 1000 + i,
-          request: {
-            inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
-          },
-          response: { previewText: 'r'.repeat(5000) },
-        }));
+        trace.events.push(
+          makeLLMCallEvent({
+            id: `l${i}`,
+            tMs: 1000 + i,
+            request: {
+              inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
+            },
+            response: { previewText: 'r'.repeat(5000) },
+          })
+        );
       }
 
       const capped = enforceTraceSizeCap(trace);
@@ -530,15 +546,17 @@ describe('enforceTraceSizeCap', () => {
       const trace = makeBaseTrace();
 
       for (let i = 0; i < 5; i += 1) {
-        trace.events.push(makeLLMCallEvent({
-          id: `llm-${i}`,
-          label: `call-${i}`,
-          request: {
-            inputSummary: { messageCount: 1, totalChars: huge.length, preview: huge },
-            messages: [{ role: 'user', content: huge }],
-          },
-          response: { previewText: huge, rawText: huge },
-        }));
+        trace.events.push(
+          makeLLMCallEvent({
+            id: `llm-${i}`,
+            label: `call-${i}`,
+            request: {
+              inputSummary: { messageCount: 1, totalChars: huge.length, preview: huge },
+              messages: [{ role: 'user', content: huge }],
+            },
+            response: { previewText: huge, rawText: huge },
+          })
+        );
       }
 
       const capped = enforceTraceSizeCap(trace);
@@ -551,24 +569,28 @@ describe('enforceTraceSizeCap', () => {
       const trace = makeBaseTrace();
 
       for (let i = 0; i < 10; i += 1) {
-        trace.events.push(makeDecisionEvent({
-          id: `dec-${i}`,
-          domain: 'genre',
-          key: `decision.${i}`,
-          branchTaken: `branch-${i}`,
-          why: 'reason '.repeat(100),
-        }));
+        trace.events.push(
+          makeDecisionEvent({
+            id: `dec-${i}`,
+            domain: 'genre',
+            key: `decision.${i}`,
+            branchTaken: `branch-${i}`,
+            why: 'reason '.repeat(100),
+          })
+        );
       }
 
       // Add lots of LLM calls to force compaction
       for (let i = 0; i < 40; i += 1) {
-        trace.events.push(makeLLMCallEvent({
-          id: `l${i}`,
-          request: {
-            inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
-          },
-          response: { previewText: 'r'.repeat(5000) },
-        }));
+        trace.events.push(
+          makeLLMCallEvent({
+            id: `l${i}`,
+            request: {
+              inputSummary: { messageCount: 1, totalChars: 5, preview: 'p'.repeat(5000) },
+            },
+            response: { previewText: 'r'.repeat(5000) },
+          })
+        );
       }
 
       const capped = enforceTraceSizeCap(trace);
@@ -596,14 +618,16 @@ describe('enforceTraceSizeCap', () => {
     test('sets truncatedForCap=true when any compaction occurs', () => {
       const huge = 'x'.repeat(120_000);
       const trace = makeBaseTrace();
-      trace.events.push(makeLLMCallEvent({
-        request: {
-          maxRetries: 0,
-          inputSummary: { messageCount: 1, totalChars: huge.length, preview: 'preview' },
-          messages: [{ role: 'user', content: huge }],
-        },
-        response: { previewText: 'ok', rawText: huge },
-      }));
+      trace.events.push(
+        makeLLMCallEvent({
+          request: {
+            maxRetries: 0,
+            inputSummary: { messageCount: 1, totalChars: huge.length, preview: 'preview' },
+            messages: [{ role: 'user', content: huge }],
+          },
+          response: { previewText: 'ok', rawText: huge },
+        })
+      );
 
       const capped = enforceTraceSizeCap(trace);
       expect(capped.stats.truncatedForCap).toBe(true);
@@ -699,13 +723,15 @@ describe('generateTraceSummaryText', () => {
 
   test('summary handles traces with errors', () => {
     const trace = makeBaseTrace();
-    trace.events.push(makeErrorEvent({
-      id: 'err-1',
-      error: {
-        type: 'ai.generation',
-        message: 'Model timeout after 30s',
-      },
-    }));
+    trace.events.push(
+      makeErrorEvent({
+        id: 'err-1',
+        error: {
+          type: 'ai.generation',
+          message: 'Model timeout after 30s',
+        },
+      })
+    );
 
     const capped = enforceTraceSizeCap(trace);
     expect(capped.stats.hadErrors).toBe(true);
@@ -713,15 +739,17 @@ describe('generateTraceSummaryText', () => {
 
   test('summary handles traces with telemetry', () => {
     const trace = makeBaseTrace();
-    trace.events.push(makeLLMCallEvent({
-      id: 'llm-1',
-      telemetry: {
-        latencyMs: 1500,
-        tokensIn: 100,
-        tokensOut: 250,
-        finishReason: 'stop',
-      },
-    }));
+    trace.events.push(
+      makeLLMCallEvent({
+        id: 'llm-1',
+        telemetry: {
+          latencyMs: 1500,
+          tokensIn: 100,
+          tokensOut: 250,
+          finishReason: 'stop',
+        },
+      })
+    );
 
     const llm = trace.events.find((e) => e.type === 'llm.call')!;
     expect(llm.telemetry?.latencyMs).toBe(1500);
@@ -732,24 +760,26 @@ describe('generateTraceSummaryText', () => {
 
   test('summary handles traces with attempts/retries', () => {
     const trace = makeBaseTrace();
-    trace.events.push(makeLLMCallEvent({
-      id: 'llm-1',
-      attempts: [
-        {
-          attempt: 1,
-          startedAt: '2026-01-12T00:00:01.000Z',
-          endedAt: '2026-01-12T00:00:02.000Z',
-          latencyMs: 1000,
-          error: { type: 'ai.generation', message: 'Rate limited' },
-        },
-        {
-          attempt: 2,
-          startedAt: '2026-01-12T00:00:03.000Z',
-          endedAt: '2026-01-12T00:00:04.000Z',
-          latencyMs: 1000,
-        },
-      ],
-    }));
+    trace.events.push(
+      makeLLMCallEvent({
+        id: 'llm-1',
+        attempts: [
+          {
+            attempt: 1,
+            startedAt: '2026-01-12T00:00:01.000Z',
+            endedAt: '2026-01-12T00:00:02.000Z',
+            latencyMs: 1000,
+            error: { type: 'ai.generation', message: 'Rate limited' },
+          },
+          {
+            attempt: 2,
+            startedAt: '2026-01-12T00:00:03.000Z',
+            endedAt: '2026-01-12T00:00:04.000Z',
+            latencyMs: 1000,
+          },
+        ],
+      })
+    );
 
     const llm = trace.events.find((e) => e.type === 'llm.call')!;
     const attempts = llm.attempts;
@@ -759,15 +789,17 @@ describe('generateTraceSummaryText', () => {
 
   test('summary handles decision events with selection metadata', () => {
     const trace = makeBaseTrace();
-    trace.events.push(makeDecisionEvent({
-      id: 'dec-1',
-      selection: {
-        method: 'pickRandom',
-        chosenIndex: 3,
-        candidatesCount: 10,
-        candidatesPreview: ['jazz', 'rock', 'pop', 'blues'],
-      },
-    }));
+    trace.events.push(
+      makeDecisionEvent({
+        id: 'dec-1',
+        selection: {
+          method: 'pickRandom',
+          chosenIndex: 3,
+          candidatesCount: 10,
+          candidatesPreview: ['jazz', 'rock', 'pop', 'blues'],
+        },
+      })
+    );
 
     const decision = trace.events.find((e) => e.type === 'decision')!;
     expect(decision.selection?.method).toBe('pickRandom');
@@ -824,13 +856,15 @@ describe('generateTraceSummaryText', () => {
     for (let i = 0; i < domains.length; i += 1) {
       const domain = domains[i];
       if (!domain) continue;
-      trace.events.push(makeDecisionEvent({
-        id: `dec-${i}`,
-        domain,
-        key: `${domain}.key`,
-        branchTaken: `${domain} branch`,
-        why: `because of ${domain}`,
-      }));
+      trace.events.push(
+        makeDecisionEvent({
+          id: `dec-${i}`,
+          domain,
+          key: `${domain}.key`,
+          branchTaken: `${domain} branch`,
+          why: `because of ${domain}`,
+        })
+      );
     }
 
     const decisionEvents = trace.events.filter((e) => e.type === 'decision');

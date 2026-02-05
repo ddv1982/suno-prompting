@@ -88,7 +88,13 @@ export function buildPreFormattedMaxOutput(context: PreFormatContext): PreFormat
 
   // 4. Instruments with vocal style injected
   const guidance = performanceGuidance ?? buildPerformanceGuidance(genre, rng);
-  const instrumentsList = buildInstrumentsList(genre, userInstruments, chordProgression, guidance, rng);
+  const instrumentsList = buildInstrumentsList(
+    genre,
+    userInstruments,
+    chordProgression,
+    guidance,
+    rng
+  );
 
   // Inject vocal style
   const vocalStyle = guidance?.vocal;
@@ -119,13 +125,18 @@ export function buildPreFormattedStandardOutput(
   const bpm = bpmRange ? formatBpmRange(bpmRange) : DEFAULT_BPM_RANGE;
 
   // 3. Mood: first 3 detected moods, or fallback
-  const mood =
-    detectedMoods.length > 0 ? detectedMoods.slice(0, 3).join(', ') : DEFAULT_MOOD;
+  const mood = detectedMoods.length > 0 ? detectedMoods.slice(0, 3).join(', ') : DEFAULT_MOOD;
 
   // 4. Instruments with vocal style and chord progression
   const guidance = performanceGuidance ?? buildPerformanceGuidance(genre, rng);
   const chordProgression = buildProgressionDescriptor(genre, rng);
-  const instrumentsList = buildInstrumentsList(genre, userInstruments, chordProgression, guidance, rng);
+  const instrumentsList = buildInstrumentsList(
+    genre,
+    userInstruments,
+    chordProgression,
+    guidance,
+    rng
+  );
 
   // Inject vocal style
   const vocalStyle = guidance?.vocal;

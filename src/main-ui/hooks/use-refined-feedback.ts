@@ -31,16 +31,21 @@ export function useRefinedFeedback(
 
   const triggerRefinedFeedback = useCallback((): void => {
     setRefined(true);
-    timeoutRef.current = setTimeout(() => { setRefined(false); }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
+    timeoutRef.current = setTimeout(() => {
+      setRefined(false);
+    }, APP_CONSTANTS.UI.COPY_FEEDBACK_DURATION_MS);
   }, []);
 
-  const handleRefine = useCallback(async (feedback: string): Promise<void> => {
-    if (!onRefine) return;
-    const success = await onRefine(feedback);
-    if (success) {
-      triggerRefinedFeedback();
-    }
-  }, [onRefine, triggerRefinedFeedback]);
+  const handleRefine = useCallback(
+    async (feedback: string): Promise<void> => {
+      if (!onRefine) return;
+      const success = await onRefine(feedback);
+      if (success) {
+        triggerRefinedFeedback();
+      }
+    },
+    [onRefine, triggerRefinedFeedback]
+  );
 
   return { refined, handleRefine, triggerRefinedFeedback };
 }

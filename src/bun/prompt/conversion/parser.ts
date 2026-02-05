@@ -34,18 +34,65 @@ const GENRE_KEYWORDS: Record<string, string[]> = {
 
 /** Mood keywords for detection */
 const MOOD_KEYWORDS: string[] = [
-  'warm', 'cold', 'dark', 'bright', 'melancholic', 'uplifting', 'energetic',
-  'calm', 'intense', 'playful', 'serious', 'nostalgic', 'dreamy', 'aggressive',
-  'peaceful', 'chaotic', 'romantic', 'mysterious', 'triumphant', 'somber',
-  'groovy', 'mellow', 'haunting', 'euphoric', 'introspective', 'rebellious',
+  'warm',
+  'cold',
+  'dark',
+  'bright',
+  'melancholic',
+  'uplifting',
+  'energetic',
+  'calm',
+  'intense',
+  'playful',
+  'serious',
+  'nostalgic',
+  'dreamy',
+  'aggressive',
+  'peaceful',
+  'chaotic',
+  'romantic',
+  'mysterious',
+  'triumphant',
+  'somber',
+  'groovy',
+  'mellow',
+  'haunting',
+  'euphoric',
+  'introspective',
+  'rebellious',
 ];
 
 /** Instrument keywords for detection */
 const INSTRUMENT_KEYWORDS: string[] = [
-  'piano', 'guitar', 'bass', 'drums', 'violin', 'cello', 'saxophone', 'trumpet',
-  'synthesizer', 'synth', 'organ', 'rhodes', 'wurlitzer', 'flute', 'clarinet',
-  'harp', 'strings', 'brass', 'woodwinds', 'percussion', 'vocals', 'voice',
-  'pad', 'keys', 'horns', 'bells', 'vibes', 'marimba', 'accordion',
+  'piano',
+  'guitar',
+  'bass',
+  'drums',
+  'violin',
+  'cello',
+  'saxophone',
+  'trumpet',
+  'synthesizer',
+  'synth',
+  'organ',
+  'rhodes',
+  'wurlitzer',
+  'flute',
+  'clarinet',
+  'harp',
+  'strings',
+  'brass',
+  'woodwinds',
+  'percussion',
+  'vocals',
+  'voice',
+  'pad',
+  'keys',
+  'horns',
+  'bells',
+  'vibes',
+  'marimba',
+  'accordion',
 ];
 
 // =============================================================================
@@ -57,7 +104,10 @@ const INSTRUMENT_KEYWORDS: string[] = [
  */
 export function parseCommaSeparated(match: RegExpMatchArray | null): string[] {
   if (!match?.[1]) return [];
-  return match[1].split(',').map(v => v.trim()).filter(Boolean);
+  return match[1]
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 /**
@@ -172,7 +222,7 @@ function extractFields(lines: string[]): ExtractedFields {
 function findDescription(lines: string[], processedIndices: Set<number>): string {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line || processedIndices.has(i) || (/^\[[\w\s]+\]/.exec(line))) continue;
+    if (!line || processedIndices.has(i) || /^\[[\w\s]+\]/.exec(line)) continue;
     return line;
   }
   return '';
@@ -183,8 +233,9 @@ function findDescription(lines: string[], processedIndices: Set<number>): string
  * Extracts all standard mode fields including Style Tags, Recording, and BPM.
  */
 export function parseNonMaxPrompt(text: string): ParsedMaxPrompt {
-  const lines = text.split('\n').map(l => l.trim());
-  const { genre, moods, instruments, styleTags, recording, bpm, processedIndices } = extractFields(lines);
+  const lines = text.split('\n').map((l) => l.trim());
+  const { genre, moods, instruments, styleTags, recording, bpm, processedIndices } =
+    extractFields(lines);
   const description = findDescription(lines, processedIndices);
   const sections = extractSections(text);
 
@@ -200,16 +251,16 @@ export function parseNonMaxPrompt(text: string): ParsedMaxPrompt {
  */
 export function parseStyleDescription(text: string): ParsedStyleDescription {
   const lowerText = text.toLowerCase();
-  
+
   // Detect genre
   let detectedGenre: string | null = null;
   for (const [genre, keywords] of Object.entries(GENRE_KEYWORDS)) {
-    if (keywords.some(kw => lowerText.includes(kw))) {
+    if (keywords.some((kw) => lowerText.includes(kw))) {
       detectedGenre = genre;
       break;
     }
   }
-  
+
   // Detect moods
   const detectedMoods: string[] = [];
   for (const mood of MOOD_KEYWORDS) {
@@ -217,7 +268,7 @@ export function parseStyleDescription(text: string): ParsedStyleDescription {
       detectedMoods.push(mood);
     }
   }
-  
+
   // Detect instruments
   const detectedInstruments: string[] = [];
   for (const instrument of INSTRUMENT_KEYWORDS) {
@@ -225,7 +276,7 @@ export function parseStyleDescription(text: string): ParsedStyleDescription {
       detectedInstruments.push(instrument);
     }
   }
-  
+
   return {
     description: text,
     detectedGenre,

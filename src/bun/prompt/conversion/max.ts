@@ -14,7 +14,12 @@ import { cleanJsonResponse } from '@shared/prompt-utils';
 
 import { parseNonMaxPrompt } from './parser';
 
-import type { ParsedMaxPrompt, AIEnhancementResult, MaxFormatFields, MaxConversionResult } from './types';
+import type {
+  ParsedMaxPrompt,
+  AIEnhancementResult,
+  MaxFormatFields,
+  MaxConversionResult,
+} from './types';
 import type { ConversionOptions } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
@@ -22,9 +27,9 @@ import type { LanguageModel } from 'ai';
 export { isMaxFormat } from '@shared/max-format';
 
 // Re-export shared utilities for backwards compatibility with existing consumers
-export { 
-  DEFAULT_BPM, 
-  DEFAULT_GENRE, 
+export {
+  DEFAULT_BPM,
+  DEFAULT_GENRE,
   DEFAULT_INSTRUMENTS_FALLBACK,
   GENRE_ALIASES,
   normalizeGenre,
@@ -34,7 +39,7 @@ export {
 } from '@bun/prompt/conversion-utils';
 
 // Re-export types for backwards compatibility
-export type { 
+export type {
   SectionContent,
   ParsedMaxPrompt as ParsedPrompt,
   AIEnhancementResult,
@@ -185,10 +190,10 @@ function hasCompleteStandardModeFields(parsed: ParsedMaxPrompt): boolean {
 /**
  * Convert a non-max format prompt to Max Mode format
  * Returns unchanged if already in max format
- * 
+ *
  * When converting from standard mode format (with Style Tags, Recording, BPM),
  * preserves those existing fields instead of regenerating them via LLM.
- * 
+ *
  * Genre priority:
  * 1. sunoStyles (if provided) - inject directly as-is, comma-separated (no transformation)
  * 2. seedGenres (if provided) - format using display names
@@ -199,8 +204,16 @@ export async function convertToMaxFormat(
   getModel: () => LanguageModel,
   options: ConversionOptions = {}
 ): Promise<MaxConversionResult> {
-  const { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint } = options;
-  
+  const {
+    seedGenres,
+    sunoStyles,
+    performanceInstruments,
+    performanceVocalStyle,
+    chordProgression,
+    bpmRange,
+    ollamaEndpoint,
+  } = options;
+
   // Check if already in max format
   if (isMaxFormat(text)) {
     return { convertedPrompt: text, wasConverted: false };
@@ -233,14 +246,22 @@ export async function convertToMaxFormat(
   }
 
   // Build instruments string with articulations (genre-aware defaults)
-  const baseInstruments = enhanceInstruments(parsed.instruments, genre.forLookup, undefined, performanceInstruments);
+  const baseInstruments = enhanceInstruments(
+    parsed.instruments,
+    genre.forLookup,
+    undefined,
+    performanceInstruments
+  );
 
   // Append chord progression harmony if provided
   const instrumentsWithProgression = chordProgression
     ? `${baseInstruments}, ${chordProgression} harmony`
     : baseInstruments;
 
-  const instruments = injectVocalStyleIntoInstrumentsCsv(instrumentsWithProgression, performanceVocalStyle);
+  const instruments = injectVocalStyleIntoInstrumentsCsv(
+    instrumentsWithProgression,
+    performanceVocalStyle
+  );
 
   // Assemble final prompt with formatted genre labels
   const convertedPrompt = buildMaxFormatPrompt({
@@ -251,8 +272,8 @@ export async function convertToMaxFormat(
     recording,
   });
 
-  return { 
-    convertedPrompt, 
+  return {
+    convertedPrompt,
     wasConverted: true,
   };
 }

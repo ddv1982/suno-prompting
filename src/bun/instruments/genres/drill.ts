@@ -26,9 +26,7 @@ export const DRILL_GENRE: GenreDefinition = {
   },
   poolOrder: ['harmonic', 'pad', 'movement', 'rare'],
   maxTags: 4,
-  exclusionRules: [
-    ['drill hi hats', 'hi-hat'],
-  ],
+  exclusionRules: [['drill hi hats', 'hi-hat']],
   bpm: { min: 140, max: 150, typical: 145 },
   moods: ['Dark', 'Aggressive', 'Menacing', 'Hard', 'Street', 'Intense', 'Gritty', 'Bouncy'],
 };

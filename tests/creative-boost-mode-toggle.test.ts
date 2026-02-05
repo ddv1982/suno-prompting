@@ -1,21 +1,21 @@
 /**
  * CreativeBoostModeToggle Component Tests
- * 
+ *
  * Tests for the Creative Boost Simple/Advanced mode toggle component.
  * Note: Full render tests would require React Testing Library.
  * These tests verify component exports, structure, and behavioral patterns.
  */
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from 'bun:test';
 
-import type { CreativeBoostMode } from "@shared/types";
+import type { CreativeBoostMode } from '@shared/types';
 
 // Helper function to get button variant based on mode
-function getSimpleButtonVariant(mode: CreativeBoostMode): "default" | "outline" {
-  return mode === "simple" ? "default" : "outline";
+function getSimpleButtonVariant(mode: CreativeBoostMode): 'default' | 'outline' {
+  return mode === 'simple' ? 'default' : 'outline';
 }
 
-function getAdvancedButtonVariant(mode: CreativeBoostMode): "default" | "outline" {
-  return mode === "advanced" ? "default" : "outline";
+function getAdvancedButtonVariant(mode: CreativeBoostMode): 'default' | 'outline' {
+  return mode === 'advanced' ? 'default' : 'outline';
 }
 
 function isSimpleDisabled(isDirectMode: boolean, isGenerating: boolean): boolean {
@@ -27,7 +27,7 @@ function isAdvancedDisabled(isGenerating: boolean): boolean {
 }
 
 function shouldShowHelperText(mode: CreativeBoostMode, isDirectMode: boolean): boolean {
-  return mode === "simple" && !isDirectMode;
+  return mode === 'simple' && !isDirectMode;
 }
 
 function shouldShowWarningText(isDirectMode: boolean): boolean {
@@ -39,37 +39,35 @@ function isDirectModeActive(sunoStyles: string[]): boolean {
 }
 
 function isSimpleModeActive(mode: CreativeBoostMode): boolean {
-  return mode === "simple";
+  return mode === 'simple';
 }
 
 // ============================================================================
 // Task 5.1: Toggle Component Unit Tests
 // ============================================================================
 
-describe("CreativeBoostModeToggle", () => {
-  describe("exports", () => {
-    test("exports CreativeBoostModeToggle component", async () => {
-      const { CreativeBoostModeToggle } = await import(
-        "@/components/creative-boost-panel/creative-boost-mode-toggle"
-      );
+describe('CreativeBoostModeToggle', () => {
+  describe('exports', () => {
+    test('exports CreativeBoostModeToggle component', async () => {
+      const { CreativeBoostModeToggle } =
+        await import('@/components/creative-boost-panel/creative-boost-mode-toggle');
       expect(CreativeBoostModeToggle).toBeDefined();
-      expect(typeof CreativeBoostModeToggle).toBe("function");
+      expect(typeof CreativeBoostModeToggle).toBe('function');
     });
 
-    test("exports from barrel file", async () => {
+    test('exports from barrel file', async () => {
       // Note: Barrel import may fail in some test environments due to
       // transitive import of CreativeBoostPanel which uses electrobun browser APIs.
       // This is validated by the direct import test above.
-      const { CreativeBoostModeToggle } = await import(
-        "@/components/creative-boost-panel/creative-boost-mode-toggle"
-      );
+      const { CreativeBoostModeToggle } =
+        await import('@/components/creative-boost-panel/creative-boost-mode-toggle');
       expect(CreativeBoostModeToggle).toBeDefined();
-      expect(typeof CreativeBoostModeToggle).toBe("function");
+      expect(typeof CreativeBoostModeToggle).toBe('function');
     });
   });
 
-  describe("component prop types", () => {
-    test("accepts required props interface", () => {
+  describe('component prop types', () => {
+    test('accepts required props interface', () => {
       // Type-level verification that the props shape is correct
       // Note: isGenerating was removed - disabled state now uses autoDisable via context
       interface ExpectedProps {
@@ -77,226 +75,226 @@ describe("CreativeBoostModeToggle", () => {
         isDirectMode: boolean;
         onModeChange: (mode: CreativeBoostMode) => void;
       }
-      
+
       // Compile-time check - validates the type structure
       const _typeCheck: ExpectedProps = {
-        mode: "simple",
+        mode: 'simple',
         isDirectMode: false,
         onModeChange: (): void => {},
       };
-      
-      expect(_typeCheck.mode).toBe("simple");
+
+      expect(_typeCheck.mode).toBe('simple');
       expect(_typeCheck.isDirectMode).toBe(false);
-      expect(typeof _typeCheck.onModeChange).toBe("function");
+      expect(typeof _typeCheck.onModeChange).toBe('function');
     });
 
     test("mode accepts 'simple' value", () => {
-      const mode: CreativeBoostMode = "simple";
-      expect(mode).toBe("simple");
+      const mode: CreativeBoostMode = 'simple';
+      expect(mode).toBe('simple');
     });
 
     test("mode accepts 'advanced' value", () => {
-      const mode: CreativeBoostMode = "advanced";
-      expect(mode).toBe("advanced");
+      const mode: CreativeBoostMode = 'advanced';
+      expect(mode).toBe('advanced');
     });
   });
 
-  describe("button variant pattern", () => {
+  describe('button variant pattern', () => {
     /**
      * Tests verify the button variant selection pattern:
      * - Simple button: 'default' when mode='simple', 'outline' otherwise
      * - Advanced button: 'default' when mode='advanced', 'outline' otherwise
      */
-    
+
     test("Simple button has 'default' variant when mode='simple'", () => {
-      const variant = getSimpleButtonVariant("simple");
-      expect(variant).toBe("default");
+      const variant = getSimpleButtonVariant('simple');
+      expect(variant).toBe('default');
     });
 
     test("Simple button has 'outline' variant when mode='advanced'", () => {
-      const variant = getSimpleButtonVariant("advanced");
-      expect(variant).toBe("outline");
+      const variant = getSimpleButtonVariant('advanced');
+      expect(variant).toBe('outline');
     });
 
     test("Advanced button has 'default' variant when mode='advanced'", () => {
-      const variant = getAdvancedButtonVariant("advanced");
-      expect(variant).toBe("default");
+      const variant = getAdvancedButtonVariant('advanced');
+      expect(variant).toBe('default');
     });
 
     test("Advanced button has 'outline' variant when mode='simple'", () => {
-      const variant = getAdvancedButtonVariant("simple");
-      expect(variant).toBe("outline");
+      const variant = getAdvancedButtonVariant('simple');
+      expect(variant).toBe('outline');
     });
   });
 
-  describe("click handler pattern", () => {
+  describe('click handler pattern', () => {
     /**
      * Tests verify the click behavior:
      * - Clicking Simple triggers onModeChange('simple')
      * - Clicking Advanced triggers onModeChange('advanced')
      */
-    
+
     test("clicking Advanced triggers onModeChange('advanced')", () => {
-      let capturedMode = "";
+      let capturedMode = '';
       const onModeChange = (mode: CreativeBoostMode): void => {
         capturedMode = mode;
       };
-      
+
       // Simulate Advanced button click
-      onModeChange("advanced");
-      
-      expect(capturedMode).toBe("advanced");
+      onModeChange('advanced');
+
+      expect(capturedMode).toBe('advanced');
     });
 
     test("clicking Simple triggers onModeChange('simple')", () => {
-      let capturedMode = "";
+      let capturedMode = '';
       const onModeChange = (mode: CreativeBoostMode): void => {
         capturedMode = mode;
       };
-      
+
       // Simulate Simple button click
-      onModeChange("simple");
-      
-      expect(capturedMode).toBe("simple");
+      onModeChange('simple');
+
+      expect(capturedMode).toBe('simple');
     });
   });
 
-  describe("disabled state pattern", () => {
+  describe('disabled state pattern', () => {
     /**
      * Tests verify the disabled state logic:
      * - Buttons use autoDisable prop which reads from GenerationDisabledProvider context
      * - Simple button can be disabled when isDirectMode=true (via disabled prop, not autoDisable)
      * - The old isGenerating prop was removed; disabled state now comes from context
-     * 
+     *
      * Note: The actual disabled behavior depends on the context provider value.
      * These tests verify the helper functions that previously modeled the logic.
      */
-    
-    test("both buttons use autoDisable for context-based disabling", async () => {
-      const { CreativeBoostModeToggle } = await import(
-        "@/components/creative-boost-panel/creative-boost-mode-toggle"
-      );
+
+    test('both buttons use autoDisable for context-based disabling', async () => {
+      const { CreativeBoostModeToggle } =
+        await import('@/components/creative-boost-panel/creative-boost-mode-toggle');
       const componentString = CreativeBoostModeToggle.toString();
       // Verify both buttons use autoDisable prop instead of disabled={isGenerating}
-      expect(componentString).toContain("autoDisable");
+      expect(componentString).toContain('autoDisable');
     });
 
-    test("Simple button disabled when isDirectMode=true", () => {
+    test('Simple button disabled when isDirectMode=true', () => {
       const isDirectMode = true;
-      
+
       // isDirectMode still disables Simple button via explicit disabled prop
       expect(isSimpleDisabled(isDirectMode, false)).toBe(true);
     });
 
-    test("neither button disabled in normal state", () => {
+    test('neither button disabled in normal state', () => {
       const isDirectMode = false;
-      
+
       // Without context disabled, buttons should be enabled
       expect(isSimpleDisabled(isDirectMode, false)).toBe(false);
     });
 
-    test("Advanced button stays enabled in Direct Mode", () => {
+    test('Advanced button stays enabled in Direct Mode', () => {
       // Advanced button only disabled via autoDisable context, not isDirectMode
       expect(isAdvancedDisabled(false)).toBe(false);
     });
   });
 
-  describe("helper text visibility pattern", () => {
+  describe('helper text visibility pattern', () => {
     /**
      * Tests verify helper text visibility:
      * - Helper text appears in Simple mode (not Direct mode)
      * - Warning text appears when isDirectMode=true
      */
-    
+
     test("helper text shown when mode='simple' and not Direct Mode", () => {
-      expect(shouldShowHelperText("simple", false)).toBe(true);
+      expect(shouldShowHelperText('simple', false)).toBe(true);
     });
 
     test("helper text hidden when mode='advanced'", () => {
-      expect(shouldShowHelperText("advanced", false)).toBe(false);
+      expect(shouldShowHelperText('advanced', false)).toBe(false);
     });
 
-    test("helper text hidden when isDirectMode=true", () => {
-      expect(shouldShowHelperText("simple", true)).toBe(false);
+    test('helper text hidden when isDirectMode=true', () => {
+      expect(shouldShowHelperText('simple', true)).toBe(false);
     });
 
-    test("warning text shown when isDirectMode=true", () => {
+    test('warning text shown when isDirectMode=true', () => {
       expect(shouldShowWarningText(true)).toBe(true);
     });
 
-    test("warning text hidden when isDirectMode=false", () => {
+    test('warning text hidden when isDirectMode=false', () => {
       expect(shouldShowWarningText(false)).toBe(false);
     });
   });
 
-  describe("Direct Mode edge cases", () => {
+  describe('Direct Mode edge cases', () => {
     /**
      * Direct Mode is when Suno V5 styles are selected.
      * These tests verify the edge case behavior.
      */
-    
-    test("isDirectMode calculated from sunoStyles length", () => {
-      const sunoStyles = ["dream-pop", "shoegaze"];
+
+    test('isDirectMode calculated from sunoStyles length', () => {
+      const sunoStyles = ['dream-pop', 'shoegaze'];
       expect(isDirectModeActive(sunoStyles)).toBe(true);
     });
 
-    test("isDirectMode false when no sunoStyles", () => {
+    test('isDirectMode false when no sunoStyles', () => {
       const sunoStyles: string[] = [];
       expect(isDirectModeActive(sunoStyles)).toBe(false);
     });
 
-    test("removing all Suno V5 styles should re-enable Simple button", () => {
+    test('removing all Suno V5 styles should re-enable Simple button', () => {
       // Before: Suno V5 styles selected
-      let sunoStyles: string[] = ["dream-pop"];
+      let sunoStyles: string[] = ['dream-pop'];
       expect(isSimpleDisabled(isDirectModeActive(sunoStyles), false)).toBe(true);
-      
+
       // After: All Suno V5 styles removed
       sunoStyles = [];
       expect(isSimpleDisabled(isDirectModeActive(sunoStyles), false)).toBe(false);
     });
   });
 
-  describe("integration with CreativeBoostPanel", () => {
+  describe('integration with CreativeBoostPanel', () => {
     /**
      * Tests verify the integration pattern between toggle and panel.
      */
-    
-    test("panel exports CreativeBoostModeToggle", async () => {
+
+    test('panel exports CreativeBoostModeToggle', async () => {
       // Import directly to avoid electrobun browser API issues from barrel imports
-      const { CreativeBoostModeToggle } = await import("@/components/creative-boost-panel/creative-boost-mode-toggle");
+      const { CreativeBoostModeToggle } =
+        await import('@/components/creative-boost-panel/creative-boost-mode-toggle');
       expect(CreativeBoostModeToggle).toBeDefined();
     });
 
-    test("panel exports CreativeBoostPanel", async () => {
+    test('panel exports CreativeBoostPanel', async () => {
       // CreativeBoostPanel uses electrobun browser APIs (via storage.ts) that require window
       // Just verify the module can be statically analyzed
       expect(true).toBe(true);
     });
 
-    test("conditional rendering pattern for Simple mode", () => {
-      const isSimpleMode = isSimpleModeActive("simple");
-      
+    test('conditional rendering pattern for Simple mode', () => {
+      const isSimpleMode = isSimpleModeActive('simple');
+
       // In Simple mode: hide advanced-only components
       const showDirectModeIndicator = !isSimpleMode;
       const showGenreMultiSelect = !isSimpleMode;
       const showSunoStylesMultiSelect = !isSimpleMode;
       const showSimpleModeHelperText = isSimpleMode;
-      
+
       expect(showDirectModeIndicator).toBe(false);
       expect(showGenreMultiSelect).toBe(false);
       expect(showSunoStylesMultiSelect).toBe(false);
       expect(showSimpleModeHelperText).toBe(true);
     });
 
-    test("conditional rendering pattern for Advanced mode", () => {
-      const isSimpleMode = isSimpleModeActive("advanced");
-      
+    test('conditional rendering pattern for Advanced mode', () => {
+      const isSimpleMode = isSimpleModeActive('advanced');
+
       // In Advanced mode: show all components
       const showDirectModeIndicator = !isSimpleMode;
       const showGenreMultiSelect = !isSimpleMode;
       const showSunoStylesMultiSelect = !isSimpleMode;
       const showSimpleModeHelperText = isSimpleMode;
-      
+
       expect(showDirectModeIndicator).toBe(true);
       expect(showGenreMultiSelect).toBe(true);
       expect(showSunoStylesMultiSelect).toBe(true);
@@ -305,26 +303,26 @@ describe("CreativeBoostModeToggle", () => {
   });
 });
 
-describe("CreativeBoostMode type", () => {
-  test("CreativeBoostMode is exported from shared types", async () => {
-    const types = await import("@shared/types");
+describe('CreativeBoostMode type', () => {
+  test('CreativeBoostMode is exported from shared types', async () => {
+    const types = await import('@shared/types');
     // Verify EMPTY_CREATIVE_BOOST_INPUT exists and has expected shape
     expect(types.EMPTY_CREATIVE_BOOST_INPUT).toBeDefined();
     expect(types.EMPTY_CREATIVE_BOOST_INPUT.creativityLevel).toBeDefined();
   });
 
-  test("CreativeBoostMode only accepts valid values", () => {
+  test('CreativeBoostMode only accepts valid values', () => {
     // These should compile without errors
-    const simple: CreativeBoostMode = "simple";
-    const advanced: CreativeBoostMode = "advanced";
-    
-    expect(simple).toBe("simple");
-    expect(advanced).toBe("advanced");
-    
+    const simple: CreativeBoostMode = 'simple';
+    const advanced: CreativeBoostMode = 'advanced';
+
+    expect(simple).toBe('simple');
+    expect(advanced).toBe('advanced');
+
     // Runtime validation pattern
-    const validModes = new Set<string>(["simple", "advanced"]);
+    const validModes = new Set<string>(['simple', 'advanced']);
     expect(validModes.has(simple)).toBe(true);
     expect(validModes.has(advanced)).toBe(true);
-    expect(validModes.has("invalid")).toBe(false);
+    expect(validModes.has('invalid')).toBe(false);
   });
 });

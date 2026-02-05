@@ -61,7 +61,12 @@ export function DecisionCard({ event }: DecisionCardProps): ReactElement {
   const { domain, key, branchTaken, why, selection } = event;
 
   return (
-    <div className={cn('rounded-lg border border-l-4 bg-card/50 p-3 space-y-2', getDomainColor(domain))}>
+    <div
+      className={cn(
+        'rounded-lg border border-l-4 bg-card/50 p-3 space-y-2',
+        getDomainColor(domain)
+      )}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">

@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const EMO_GENRE: GenreDefinition = {
   name: 'Emo',
   keywords: ['emo', 'emo rock', 'emotional hardcore', 'midwest emo', 'screamo'],
-  description: 'Emotionally expressive rock with confessional lyrics, dynamic shifts, and raw performances',
+  description:
+    'Emotionally expressive rock with confessional lyrics, dynamic shifts, and raw performances',
   pools: {
     guitar: {
       pick: { min: 1, max: 2 },

@@ -1,25 +1,25 @@
-import { X } from "lucide-react";
+import { X } from 'lucide-react';
 
-import { GenreMultiSelect } from "@/components/genre-multi-select";
-import { MoodCategoryCombobox } from "@/components/mood-category-combobox";
-import { SunoStylesMultiSelect } from "@/components/suno-styles-multi-select";
-import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/section-label";
+import { GenreMultiSelect } from '@/components/genre-multi-select';
+import { MoodCategoryCombobox } from '@/components/mood-category-combobox';
+import { SunoStylesMultiSelect } from '@/components/suno-styles-multi-select';
+import { Button } from '@/components/ui/button';
+import { SectionLabel } from '@/components/ui/section-label';
 import {
   HARMONIC_DISPLAY_NAMES,
   COMBINATION_DISPLAY_NAMES,
   POLYRHYTHM_DISPLAY_NAMES,
   TIME_SIGNATURE_DISPLAY_NAMES,
   TIME_JOURNEY_DISPLAY_NAMES,
-} from "@shared/labels";
-import { hasAdvancedSelection } from "@shared/music-phrase";
+} from '@shared/labels';
+import { hasAdvancedSelection } from '@shared/music-phrase';
 
-import { AdvancedOptionsGrid } from "./advanced-options-grid";
-import { PhrasePreview } from "./phrase-preview";
+import { AdvancedOptionsGrid } from './advanced-options-grid';
+import { PhrasePreview } from './phrase-preview';
 
-import type { MoodCategory } from "@bun/mood";
-import type { AdvancedSelection } from "@shared/types";
-import type { ReactElement } from "react";
+import type { MoodCategory } from '@bun/mood';
+import type { AdvancedSelection } from '@shared/types';
+import type { ReactElement } from 'react';
 
 interface AdvancedPanelProps {
   selection: AdvancedSelection;
@@ -55,10 +55,10 @@ const TIME_JOURNEY_OPTIONS = Object.entries(TIME_JOURNEY_DISPLAY_NAMES)
   .map(([value, label]) => ({ value, label }))
   .sort((a, b) => a.label.localeCompare(b.label));
 
-export function AdvancedPanel({ 
-  selection, 
-  onUpdate, 
-  onClear, 
+export function AdvancedPanel({
+  selection,
+  onUpdate,
+  onClear,
   computedPhrase,
   moodCategory,
   onMoodCategoryChange,
@@ -67,19 +67,19 @@ export function AdvancedPanel({
   const hasAnySelection = hasAdvancedSelection(selection);
   const isDirectMode = selection.sunoStyles.length > 0;
   const hasGenres = selection.seedGenres.length > 0;
-  
+
   // Pre-calculate helper text and badge text for cleaner JSX
   const genresDisabled = isDirectMode;
-  const genresHelperText = genresDisabled ? "Disabled when Suno styles are selected" : undefined;
-  const genresBadgeText = genresDisabled ? "disabled" : "optional";
-  
+  const genresHelperText = genresDisabled ? 'Disabled when Suno styles are selected' : undefined;
+  const genresBadgeText = genresDisabled ? 'disabled' : 'optional';
+
   const stylesDisabled = hasGenres;
-  const stylesHelperText = stylesDisabled 
-    ? "Disabled when Seed Genres are selected" 
-    : isDirectMode 
-      ? "Selected styles will be used exactly as-is" 
+  const stylesHelperText = stylesDisabled
+    ? 'Disabled when Seed Genres are selected'
+    : isDirectMode
+      ? 'Selected styles will be used exactly as-is'
       : undefined;
-  const stylesBadgeText = stylesDisabled ? "disabled" : "optional";
+  const stylesBadgeText = stylesDisabled ? 'disabled' : 'optional';
 
   return (
     <div className="space-y-[var(--space-5)] p-[var(--space-panel)] panel">
@@ -119,7 +119,9 @@ export function AdvancedPanel({
       {/* Genre Multi-Select - spans full width */}
       <GenreMultiSelect
         selected={selection.seedGenres}
-        onChange={(genres) => { onUpdate({ seedGenres: genres }); }}
+        onChange={(genres) => {
+          onUpdate({ seedGenres: genres });
+        }}
         maxSelections={4}
         disabled={genresDisabled}
         helperText={genresHelperText}
@@ -129,7 +131,9 @@ export function AdvancedPanel({
       {/* Suno V5 Styles Multi-Select - spans full width */}
       <SunoStylesMultiSelect
         selected={selection.sunoStyles}
-        onChange={(styles) => { onUpdate({ sunoStyles: styles }); }}
+        onChange={(styles) => {
+          onUpdate({ sunoStyles: styles });
+        }}
         maxSelections={4}
         disabled={stylesDisabled}
         helperText={stylesHelperText}

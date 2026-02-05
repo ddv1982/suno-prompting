@@ -11,11 +11,7 @@
  */
 
 import { generateDirectMode } from './direct-mode-generation';
-import {
-  generateWithoutLyrics,
-  generateWithLyrics,
-  generateWithOfflineLyrics,
-} from './paths';
+import { generateWithoutLyrics, generateWithLyrics, generateWithOfflineLyrics } from './paths';
 
 import type { GenerateInitialOptions, TraceRuntime } from './types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';

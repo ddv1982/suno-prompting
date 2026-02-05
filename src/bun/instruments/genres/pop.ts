@@ -7,11 +7,27 @@ export const POP_GENRE: GenreDefinition = {
   pools: {
     harmonic: {
       pick: { min: 1, max: 1 },
-      instruments: ['felt piano', 'Fender Stratocaster', 'guitar', 'acoustic guitar', 'grand piano'],
+      instruments: [
+        'felt piano',
+        'Fender Stratocaster',
+        'guitar',
+        'acoustic guitar',
+        'grand piano',
+      ],
     },
     pad: {
       pick: { min: 1, max: 1 },
-      instruments: ['synth pad', 'synth', 'analog synth', 'digital synth', 'arpeggiator', 'synth piano', 'supersaw', 'pluck synth', 'synth choir'],
+      instruments: [
+        'synth pad',
+        'synth',
+        'analog synth',
+        'digital synth',
+        'arpeggiator',
+        'synth piano',
+        'supersaw',
+        'pluck synth',
+        'synth choir',
+      ],
     },
     movement: {
       pick: { min: 1, max: 2 },
@@ -25,9 +41,17 @@ export const POP_GENRE: GenreDefinition = {
   },
   poolOrder: ['harmonic', 'pad', 'movement', 'rare'],
   maxTags: 4,
-  exclusionRules: [
-    ['808', 'drums'],
-  ],
+  exclusionRules: [['808', 'drums']],
   bpm: { min: 100, max: 130, typical: 118 },
-  moods: ['Energetic', 'Uplifting', 'Catchy', 'Bright', 'Fun', 'Confident', 'Romantic', 'Playful', 'Anthemic'],
+  moods: [
+    'Energetic',
+    'Uplifting',
+    'Catchy',
+    'Bright',
+    'Fun',
+    'Confident',
+    'Romantic',
+    'Playful',
+    'Anthemic',
+  ],
 };

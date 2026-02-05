@@ -1,10 +1,10 @@
-import { BookOpen, Music2, Settings2, Zap } from "lucide-react";
+import { BookOpen, Music2, Settings2, Zap } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { ToggleRow } from "@/components/ui/toggle-row";
+import { Button } from '@/components/ui/button';
+import { ToggleRow } from '@/components/ui/toggle-row';
 
-import type { EditorMode } from "@shared/types";
-import type { ReactElement } from "react";
+import type { EditorMode } from '@shared/types';
+import type { ReactElement } from 'react';
 
 interface ModeToggleProps {
   editorMode: EditorMode;
@@ -27,7 +27,7 @@ export function ModeToggle({
   onLyricsModeChange,
   onStoryModeChange,
 }: ModeToggleProps): ReactElement {
-  const iconClass = "w-3.5 h-3.5 text-muted-foreground";
+  const iconClass = 'w-3.5 h-3.5 text-muted-foreground';
 
   const handleStoryModeChange = (checked: boolean): void => {
     onStoryModeChange(checked);
@@ -39,7 +39,9 @@ export function ModeToggle({
         <Button
           variant={editorMode === 'simple' ? 'default' : 'outline'}
           size="xs"
-          onClick={(): void => { onEditorModeChange('simple'); }}
+          onClick={(): void => {
+            onEditorModeChange('simple');
+          }}
           autoDisable
           className="font-semibold"
         >
@@ -48,7 +50,9 @@ export function ModeToggle({
         <Button
           variant={editorMode === 'advanced' ? 'default' : 'outline'}
           size="xs"
-          onClick={(): void => { onEditorModeChange('advanced'); }}
+          onClick={(): void => {
+            onEditorModeChange('advanced');
+          }}
           autoDisable
           className="font-semibold"
         >

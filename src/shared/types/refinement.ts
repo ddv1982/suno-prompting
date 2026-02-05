@@ -15,7 +15,7 @@ export type RefinementType = 'none' | 'style' | 'lyrics' | 'combined';
 /**
  * Style changes detected between original and current selection.
  * Used to pass changed style fields to the refinement handler.
- * 
+ *
  * Type is inferred from StyleChangesSchema in @shared/schemas/generation.ts
  * to ensure Zod schema is the single source of truth.
  */

@@ -22,12 +22,8 @@ let convertToNonMaxFormat: typeof import('@bun/prompt/conversion').convertToNonM
 beforeEach(async () => {
   setAiGenerateTextMock(mockGenerateText);
 
-  ({
-    parseStyleDescription,
-    inferBpm,
-    buildNonMaxFormatPrompt,
-    convertToNonMaxFormat,
-  } = await import('@bun/prompt/conversion'));
+  ({ parseStyleDescription, inferBpm, buildNonMaxFormatPrompt, convertToNonMaxFormat } =
+    await import('@bun/prompt/conversion'));
 });
 
 afterEach(() => {
@@ -211,17 +207,14 @@ describe('buildNonMaxFormatPrompt', () => {
 // ============================================================================
 
 describe('convertToNonMaxFormat', () => {
-  const mockGetModel = () => ({} as any);
+  const mockGetModel = () => ({}) as any;
 
   beforeEach(() => {
     mockGenerateText.mockClear();
   });
 
   it('returns wasConverted as true', async () => {
-    const result = await convertToNonMaxFormat(
-      'warm jazz with rhodes piano',
-      mockGetModel
-    );
+    const result = await convertToNonMaxFormat('warm jazz with rhodes piano', mockGetModel);
     expect(result.wasConverted).toBe(true);
   });
 
@@ -245,7 +238,10 @@ describe('convertToNonMaxFormat', () => {
     const result = await convertToNonMaxFormat(
       'ambient metal with baritone guitar and crystalline synth pads.',
       mockGetModel,
-      { seedGenres: ['ambient metal'], performanceVocalStyle: 'Alto, Breathy Delivery, Shouted Hooks' }
+      {
+        seedGenres: ['ambient metal'],
+        performanceVocalStyle: 'Alto, Breathy Delivery, Shouted Hooks',
+      }
     );
 
     const lower = result.convertedPrompt.toLowerCase();
@@ -256,23 +252,19 @@ describe('convertToNonMaxFormat', () => {
   });
 
   it('caps instruments list while preserving injected vocal style tags', async () => {
-    const result = await convertToNonMaxFormat(
-      'ambient metal with many layers.',
-      mockGetModel,
-      {
-        seedGenres: ['ambient metal'],
-        performanceInstruments: [
-          'baritone guitar',
-          'ambient pad',
-          'crystalline synth pads',
-          'sub bass',
-          'granular textures',
-          'cinematic drums',
-          'reverse guitar swells',
-        ],
-        performanceVocalStyle: 'Alto, Breathy Delivery, Shouted Hooks',
-      }
-    );
+    const result = await convertToNonMaxFormat('ambient metal with many layers.', mockGetModel, {
+      seedGenres: ['ambient metal'],
+      performanceInstruments: [
+        'baritone guitar',
+        'ambient pad',
+        'crystalline synth pads',
+        'sub bass',
+        'granular textures',
+        'cinematic drums',
+        'reverse guitar swells',
+      ],
+      performanceVocalStyle: 'Alto, Breathy Delivery, Shouted Hooks',
+    });
 
     const instrumentsLine = result.convertedPrompt
       .split('\n')
@@ -293,18 +285,12 @@ describe('convertToNonMaxFormat', () => {
   });
 
   it('detects genre from style description', async () => {
-    const result = await convertToNonMaxFormat(
-      'smooth jazz vibes with warm tones',
-      mockGetModel
-    );
+    const result = await convertToNonMaxFormat('smooth jazz vibes with warm tones', mockGetModel);
     expect(result.convertedPrompt).toContain('Genre: jazz');
   });
 
   it('uses default genre when none detected', async () => {
-    const result = await convertToNonMaxFormat(
-      'unique experimental sounds',
-      mockGetModel
-    );
+    const result = await convertToNonMaxFormat('unique experimental sounds', mockGetModel);
     expect(result.convertedPrompt).toContain('Genre: pop');
   });
 
@@ -314,10 +300,7 @@ describe('convertToNonMaxFormat', () => {
   });
 
   it('does not include MAX_MODE header', async () => {
-    const result = await convertToNonMaxFormat(
-      'jazz with rhodes piano',
-      mockGetModel
-    );
+    const result = await convertToNonMaxFormat('jazz with rhodes piano', mockGetModel);
     expect(result.convertedPrompt).not.toContain('[Is_MAX_MODE:');
     expect(result.convertedPrompt).not.toContain('MAX](MAX)');
   });
@@ -328,7 +311,7 @@ describe('convertToNonMaxFormat', () => {
 // ============================================================================
 
 describe('convertToNonMaxFormat with sunoStyles', () => {
-  const mockGetModel = () => ({} as any);
+  const mockGetModel = () => ({}) as any;
 
   beforeEach(() => {
     mockGenerateText.mockClear();
@@ -343,11 +326,10 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
   });
 
   it('prioritizes sunoStyles over seedGenres', async () => {
-    const result = await convertToNonMaxFormat(
-      'A cool track',
-      mockGetModel,
-      { seedGenres: ['jazz'], sunoStyles: ['cumbia metal'] }
-    );
+    const result = await convertToNonMaxFormat('A cool track', mockGetModel, {
+      seedGenres: ['jazz'],
+      sunoStyles: ['cumbia metal'],
+    });
 
     expect(result.wasConverted).toBe(true);
     expect(result.convertedPrompt).toContain('Genre: cumbia metal');
@@ -356,7 +338,7 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
 
   it('prioritizes sunoStyles over detected genre', async () => {
     const result = await convertToNonMaxFormat(
-      'smooth jazz vibes with warm tones',  // Would detect "jazz"
+      'smooth jazz vibes with warm tones', // Would detect "jazz"
       mockGetModel,
       { sunoStyles: ['dark goa trance'] }
     );
@@ -367,34 +349,30 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
   });
 
   it('injects multiple sunoStyles comma-separated', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something cool',
-      mockGetModel,
-      { sunoStyles: ['jazz', 'cumbia metal', 'dark goa trance'] }
-    );
+    const result = await convertToNonMaxFormat('Something cool', mockGetModel, {
+      sunoStyles: ['jazz', 'cumbia metal', 'dark goa trance'],
+    });
 
     expect(result.wasConverted).toBe(true);
     expect(result.convertedPrompt).toContain('Genre: jazz, cumbia metal, dark goa trance');
   });
 
   it('injects sunoStyles exactly as-is without transformation', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something',
-      mockGetModel,
-      { sunoStyles: ['acoustic chicago blues algorave', 'k-pop', '16-bit celtic'] }
-    );
+    const result = await convertToNonMaxFormat('Something', mockGetModel, {
+      sunoStyles: ['acoustic chicago blues algorave', 'k-pop', '16-bit celtic'],
+    });
 
     expect(result.wasConverted).toBe(true);
     // Must be exactly as-is (lowercase, no title-case transformation)
-    expect(result.convertedPrompt).toContain('Genre: acoustic chicago blues algorave, k-pop, 16-bit celtic');
+    expect(result.convertedPrompt).toContain(
+      'Genre: acoustic chicago blues algorave, k-pop, 16-bit celtic'
+    );
   });
 
   it('falls back to seedGenres when sunoStyles is empty', async () => {
-    const result = await convertToNonMaxFormat(
-      'A track',
-      mockGetModel,
-      { seedGenres: ['jazz', 'rock'] }
-    );
+    const result = await convertToNonMaxFormat('A track', mockGetModel, {
+      seedGenres: ['jazz', 'rock'],
+    });
 
     expect(result.wasConverted).toBe(true);
     // seedGenres get formatted with display names (title case)
@@ -403,7 +381,7 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
 
   it('falls back to detected genre when both sunoStyles and seedGenres are empty', async () => {
     const result = await convertToNonMaxFormat(
-      'electronic vibes with synth',  // Should detect "electronic"
+      'electronic vibes with synth', // Should detect "electronic"
       mockGetModel,
       {}
     );
@@ -414,7 +392,7 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
 
   it('falls back to detected genre when options is undefined', async () => {
     const result = await convertToNonMaxFormat(
-      'ambient soundscape ethereal',  // Should detect "ambient"
+      'ambient soundscape ethereal', // Should detect "ambient"
       mockGetModel
     );
 
@@ -423,11 +401,9 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
   });
 
   it('handles single sunoStyle correctly', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something',
-      mockGetModel,
-      { sunoStyles: ['lo-fi afro-cuban jazz'] }
-    );
+    const result = await convertToNonMaxFormat('Something', mockGetModel, {
+      sunoStyles: ['lo-fi afro-cuban jazz'],
+    });
 
     expect(result.wasConverted).toBe(true);
     expect(result.convertedPrompt).toContain('Genre: lo-fi afro-cuban jazz');
@@ -435,11 +411,9 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
 
   it('maintains backward compatibility when sunoStyles not provided', async () => {
     // Call with only seedGenres
-    const result = await convertToNonMaxFormat(
-      'Something neutral',
-      mockGetModel,
-      { seedGenres: ['metal'] }
-    );
+    const result = await convertToNonMaxFormat('Something neutral', mockGetModel, {
+      seedGenres: ['metal'],
+    });
 
     expect(result.wasConverted).toBe(true);
     // Should use seedGenres with display name formatting
@@ -447,11 +421,9 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
   });
 
   it('uses first word of first sunoStyle for BPM lookup', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something',
-      mockGetModel,
-      { sunoStyles: ['jazz fusion vibes'] }
-    );
+    const result = await convertToNonMaxFormat('Something', mockGetModel, {
+      sunoStyles: ['jazz fusion vibes'],
+    });
 
     expect(result.wasConverted).toBe(true);
     // Jazz has typical BPM of 110
@@ -459,11 +431,9 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
   });
 
   it('uses default BPM when sunoStyle genre is not recognized', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something',
-      mockGetModel,
-      { sunoStyles: ['urdu shoegaze'] }
-    );
+    const result = await convertToNonMaxFormat('Something', mockGetModel, {
+      sunoStyles: ['urdu shoegaze'],
+    });
 
     expect(result.wasConverted).toBe(true);
     // Should fall back to default BPM of 90
@@ -471,22 +441,18 @@ describe('convertToNonMaxFormat with sunoStyles', () => {
   });
 
   it('handles sunoStyles with special characters', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something',
-      mockGetModel,
-      { sunoStyles: ['afro trap r&b', 'hawaiian r&b'] }
-    );
+    const result = await convertToNonMaxFormat('Something', mockGetModel, {
+      sunoStyles: ['afro trap r&b', 'hawaiian r&b'],
+    });
 
     expect(result.wasConverted).toBe(true);
     expect(result.convertedPrompt).toContain('Genre: afro trap r&b, hawaiian r&b');
   });
 
   it('sunoStyles appear in header line as well', async () => {
-    const result = await convertToNonMaxFormat(
-      'Something',
-      mockGetModel,
-      { sunoStyles: ['cumbia metal'] }
-    );
+    const result = await convertToNonMaxFormat('Something', mockGetModel, {
+      sunoStyles: ['cumbia metal'],
+    });
 
     expect(result.wasConverted).toBe(true);
     // Header line format: [mood, genre]

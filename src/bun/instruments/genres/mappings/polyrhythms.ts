@@ -13,7 +13,6 @@ import type { GenreType } from '@bun/instruments/genres';
 import type { PolyrhythmType } from '@bun/instruments/rhythms';
 import type { Rng } from '@bun/instruments/services/random';
 
-
 /**
  * Mapping of genres to their characteristic polyrhythms.
  * Only genres with strong polyrhythmic traditions are included.
@@ -99,12 +98,14 @@ export function getBlendedPolyrhythm(
   if (components.length === 0) return null;
 
   // Use null as default to skip genres without mappings
-  return collectAndPickFromGenres(
-    components,
-    GENRE_POLYRHYTHMS as Record<string, readonly PolyrhythmType[]>,
-    null,
-    rng
-  ) ?? null;
+  return (
+    collectAndPickFromGenres(
+      components,
+      GENRE_POLYRHYTHMS as Record<string, readonly PolyrhythmType[]>,
+      null,
+      rng
+    ) ?? null
+  );
 }
 
 /**

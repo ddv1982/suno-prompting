@@ -37,15 +37,20 @@ import {
 } from '@bun/prompt/vocal-descriptors';
 import { createSeededRng } from '@shared/utils/random';
 
-const {
-  POP_PROGRESSIONS,
-  DARK_PROGRESSIONS,
-  JAZZ_PROGRESSIONS,
-} = chordTestHelpers;
+const { POP_PROGRESSIONS, DARK_PROGRESSIONS, JAZZ_PROGRESSIONS } = chordTestHelpers;
 
 // Test categories
 const ARTICULATION_CATEGORIES: InstrumentCategory[] = [
-  'guitar', 'piano', 'bass', 'drums', 'strings', 'brass', 'woodwind', 'synth', 'organ', 'percussion'
+  'guitar',
+  'piano',
+  'bass',
+  'drums',
+  'strings',
+  'brass',
+  'woodwind',
+  'synth',
+  'organ',
+  'percussion',
 ];
 
 describe('Articulations', () => {
@@ -176,7 +181,18 @@ describe('Vocal Descriptors', () => {
   });
 
   describe('GENRE_VOCAL_STYLES', () => {
-    const EXPECTED_GENRES = ['jazz', 'pop', 'rock', 'electronic', 'rnb', 'soul', 'country', 'folk', 'metal', 'punk'];
+    const EXPECTED_GENRES = [
+      'jazz',
+      'pop',
+      'rock',
+      'electronic',
+      'rnb',
+      'soul',
+      'country',
+      'folk',
+      'metal',
+      'punk',
+    ];
 
     it('has styles for major genres', () => {
       for (const genre of EXPECTED_GENRES) {
@@ -244,7 +260,21 @@ describe('Vocal Descriptors', () => {
   });
 
   describe('GENRE_BACKING_VOCALS', () => {
-    const EXPECTED_GENRES = ['pop', 'rock', 'rnb', 'soul', 'hiphop', 'jazz', 'country', 'folk', 'metal', 'punk', 'latin', 'ambient', 'lofi'];
+    const EXPECTED_GENRES = [
+      'pop',
+      'rock',
+      'rnb',
+      'soul',
+      'hiphop',
+      'jazz',
+      'country',
+      'folk',
+      'metal',
+      'punk',
+      'latin',
+      'ambient',
+      'lofi',
+    ];
 
     it('has backing vocals for major genres', () => {
       for (const genre of EXPECTED_GENRES) {
@@ -330,7 +360,16 @@ describe('Production Elements', () => {
   });
 
   describe('GENRE_PRODUCTION_STYLES', () => {
-    const EXPECTED_GENRES = ['jazz', 'pop', 'rock', 'electronic', 'ambient', 'lofi', 'metal', 'classical'];
+    const EXPECTED_GENRES = [
+      'jazz',
+      'pop',
+      'rock',
+      'electronic',
+      'ambient',
+      'lofi',
+      'metal',
+      'classical',
+    ];
 
     it('has styles for major genres', () => {
       for (const genre of EXPECTED_GENRES) {
@@ -445,7 +484,16 @@ describe('Chord Progressions', () => {
   });
 
   describe('GENRE_PROGRESSIONS mapping', () => {
-    const EXPECTED_GENRES = ['jazz', 'pop', 'rock', 'blues', 'electronic', 'metal', 'ambient', 'lofi'];
+    const EXPECTED_GENRES = [
+      'jazz',
+      'pop',
+      'rock',
+      'blues',
+      'electronic',
+      'metal',
+      'ambient',
+      'lofi',
+    ];
 
     it('has mappings for major genres', () => {
       for (const genre of EXPECTED_GENRES) {

@@ -11,7 +11,13 @@ export const IDM_GENRE: GenreDefinition = {
     },
     texture: {
       pick: { min: 1, max: 2 },
-      instruments: ['granular synth', 'modular synth', 'ambient pad', 'prepared piano', 'bitcrushed synth'],
+      instruments: [
+        'granular synth',
+        'modular synth',
+        'ambient pad',
+        'prepared piano',
+        'bitcrushed synth',
+      ],
     },
     bass: {
       pick: { min: 0, max: 1 },
@@ -31,5 +37,13 @@ export const IDM_GENRE: GenreDefinition = {
     ['sub-bass', 'synth bass'],
   ],
   bpm: { min: 100, max: 160, typical: 130 },
-  moods: ['Experimental', 'Complex', 'Cerebral', 'Abstract', 'Glitchy', 'Introspective', 'Avant-garde'],
+  moods: [
+    'Experimental',
+    'Complex',
+    'Cerebral',
+    'Abstract',
+    'Glitchy',
+    'Introspective',
+    'Avant-garde',
+  ],
 };

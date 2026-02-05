@@ -140,7 +140,14 @@ describe('selectMoodForLevel', () => {
 
   it('returns mood appropriate for high level', () => {
     const mood = selectMoodForLevel('high', () => RNG_MID);
-    const highMoods = ['apocalyptic', 'surreal', 'dystopian', 'psychedelic', 'otherworldly', 'feral'];
+    const highMoods = [
+      'apocalyptic',
+      'surreal',
+      'dystopian',
+      'psychedelic',
+      'otherworldly',
+      'feral',
+    ];
     expect(highMoods).toContain(mood);
   });
 
@@ -313,7 +320,14 @@ describe('selectMoodForLevel with genre', () => {
 
     it('uses generic pools when no genre provided', () => {
       const mood = selectMoodForLevel('high', RNG_MID, undefined, undefined);
-      const highMoods = ['apocalyptic', 'surreal', 'dystopian', 'psychedelic', 'otherworldly', 'feral'];
+      const highMoods = [
+        'apocalyptic',
+        'surreal',
+        'dystopian',
+        'psychedelic',
+        'otherworldly',
+        'feral',
+      ];
       expect(highMoods).toContain(mood);
     });
 

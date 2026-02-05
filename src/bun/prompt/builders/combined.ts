@@ -20,15 +20,15 @@ export interface RefinementContext {
  * Combined system prompt for generating style prompt + title in one call
  */
 export function buildCombinedSystemPrompt(
-  maxChars: number, 
-  useSunoTags: boolean, 
+  maxChars: number,
+  useSunoTags: boolean,
   maxMode: boolean,
   refinement?: RefinementContext
 ): string {
-  const basePrompt = maxMode 
+  const basePrompt = maxMode
     ? buildMaxModeSystemPrompt(maxChars)
     : buildSystemPrompt(maxChars, useSunoTags);
-  
+
   if (refinement) {
     return `${basePrompt}
 
@@ -56,7 +56,7 @@ REFINEMENT RULES:
 
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
   }
-  
+
   return `${basePrompt}
 
 ADDITIONAL OUTPUT REQUIREMENT:
@@ -75,39 +75,44 @@ IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.
  * Combined system prompt for generating style prompt + title + lyrics in one call
  */
 export function buildCombinedWithLyricsSystemPrompt(
-  maxChars: number, 
-  useSunoTags: boolean, 
+  maxChars: number,
+  useSunoTags: boolean,
   maxMode: boolean,
   refinement?: RefinementContext
 ): string {
-  const basePrompt = maxMode 
+  const basePrompt = maxMode
     ? buildMaxModeSystemPrompt(maxChars)
     : buildSystemPrompt(maxChars, useSunoTags);
 
-  const lyricsFormat = maxMode 
+  const lyricsFormat = maxMode
     ? `The lyrics MUST start with: ///*****///
 Then section tags on subsequent lines.`
     : '';
 
   if (refinement) {
     const existingLyrics = refinement.currentLyrics?.trim();
-    const lyricsSection = existingLyrics && existingLyrics.length > 0
-      ? `CURRENT LYRICS:\n${existingLyrics}`
-      : `CURRENT LYRICS: None - generate fresh lyrics based on the refined prompt and title`;
-    
-    const lyricsTopicSection = refinement.lyricsTopic 
+    const lyricsSection =
+      existingLyrics && existingLyrics.length > 0
+        ? `CURRENT LYRICS:\n${existingLyrics}`
+        : `CURRENT LYRICS: None - generate fresh lyrics based on the refined prompt and title`;
+
+    const lyricsTopicSection = refinement.lyricsTopic
       ? `\nLYRICS TOPIC (use this as the core subject for lyrics, NOT the musical style):\n${refinement.lyricsTopic}`
       : '';
-    
-    const freshLyricsRequirements = !(existingLyrics && existingLyrics.length > 0) ? `
+
+    const freshLyricsRequirements = !(existingLyrics && existingLyrics.length > 0)
+      ? `
 LYRICS REQUIREMENTS FOR NEW LYRICS:
 - Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
 - Each section should have 2-4 lines
 - Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
 - Lyrics should be evocative, poetic, and emotionally resonant
-- Match the genre's typical lyrical style` : '';
+- Match the genre's typical lyrical style`
+      : '';
 
-    const additionalInstructions = [lyricsFormat, freshLyricsRequirements].filter(Boolean).join('\n');
+    const additionalInstructions = [lyricsFormat, freshLyricsRequirements]
+      .filter(Boolean)
+      .join('\n');
 
     return `${basePrompt}
 
@@ -141,7 +146,7 @@ REFINEMENT RULES:
 
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
   }
-  
+
   return `${basePrompt}
 
 ADDITIONAL OUTPUT REQUIREMENT:

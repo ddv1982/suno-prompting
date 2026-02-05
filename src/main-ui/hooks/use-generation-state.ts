@@ -6,15 +6,15 @@ import { type TraceRun } from '@shared/types';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 /** Active generation actions (excluding 'none') */
-export type ActiveGeneratingAction = 
-  | 'generate' 
-  | 'remix' 
-  | 'remixInstruments' 
-  | 'remixGenre' 
-  | 'remixMood' 
-  | 'remixStyleTags' 
-  | 'remixRecording' 
-  | 'remixTitle' 
+export type ActiveGeneratingAction =
+  | 'generate'
+  | 'remix'
+  | 'remixInstruments'
+  | 'remixGenre'
+  | 'remixMood'
+  | 'remixStyleTags'
+  | 'remixRecording'
+  | 'remixTitle'
   | 'remixLyrics'
   | 'quickVibes'
   | 'creativeBoost';
@@ -62,15 +62,15 @@ export function useGenerationState(): GenerationStateResult {
 
   const addErrorMessage = useCallback((error: unknown, context: string): void => {
     const message = getErrorMessage(error, `Failed to ${context}`);
-    setChatMessages(prev => [...prev, { role: "ai", content: `Error: ${message}.` }]);
+    setChatMessages((prev) => [...prev, { role: 'ai', content: `Error: ${message}.` }]);
   }, []);
 
   const addSuccessMessage = useCallback((message: string): void => {
-    setChatMessages(prev => [...prev, { role: "ai", content: message }]);
+    setChatMessages((prev) => [...prev, { role: 'ai', content: message }]);
   }, []);
 
   const addUserMessage = useCallback((content: string): void => {
-    setChatMessages(prev => [...prev, { role: "user", content }]);
+    setChatMessages((prev) => [...prev, { role: 'user', content }]);
   }, []);
 
   return {

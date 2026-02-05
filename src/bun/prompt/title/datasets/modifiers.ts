@@ -20,7 +20,7 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'The {emotion} of {time}',
     '{nature} and {emotion}',
     'Between {time} and {nature}',
-    '{emotion}\'s {action}',
+    "{emotion}'s {action}",
     '{action} Through {nature}',
   ],
   blues: [
@@ -43,7 +43,7 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     'When {nature} {action}s',
     '{emotion} Never Dies',
     'The {action} {emotion}',
-    '{nature}\'s {emotion}',
+    "{nature}'s {emotion}",
     // Extended patterns
     '{single}',
     '{question}',
@@ -102,7 +102,7 @@ export const GENRE_TITLE_PATTERNS: Record<string, readonly string[]> = {
     // New patterns
     '{emotion} in the {abstract}',
     'Whispers of {nature}',
-    '{time}\'s {emotion}',
+    "{time}'s {emotion}",
     'The {action} {abstract}',
     // Extended patterns
     '{single}',
@@ -278,9 +278,9 @@ export const DEFAULT_PATTERNS: readonly string[] = [
   'The {emotion} {action}',
   '{time} in {abstract}',
   // Possessive patterns
-  '{nature}\'s {emotion}',
-  '{time}\'s {action}',
-  '{emotion}\'s {nature}',
+  "{nature}'s {emotion}",
+  "{time}'s {action}",
+  "{emotion}'s {nature}",
   // Additional patterns
   'When {nature} {action}s',
   '{emotion} and {nature}',

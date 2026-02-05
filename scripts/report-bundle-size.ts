@@ -72,7 +72,5 @@ entries.sort((a, b) => a.filePath.localeCompare(b.filePath));
 console.log('Bundle size report:');
 for (const entry of entries) {
   const relPath = relative(process.cwd(), entry.filePath);
-  console.log(
-    `- ${relPath}: ${formatBytes(entry.bytes)} (gzip ${formatBytes(entry.gzipBytes)})`
-  );
+  console.log(`- ${relPath}: ${formatBytes(entry.bytes)} (gzip ${formatBytes(entry.gzipBytes)})`);
 }

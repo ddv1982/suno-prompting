@@ -35,7 +35,7 @@ import type { MoodCategory } from '@bun/mood/types';
 export function selectMoodsForCategory(
   category: MoodCategory,
   count: number,
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): string[] {
   const definition = MOOD_CATEGORIES[category];
   if (!definition) return [];
@@ -57,7 +57,7 @@ export function selectMoodsForCategory(
  */
 export function selectGenreForMoodCategory(
   category: MoodCategory,
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): GenreType | null {
   const genres = getGenresForCategory(category);
   if (genres.length === 0) return null;
@@ -81,7 +81,7 @@ export function selectGenreForMoodCategory(
 export function selectGenresForMoodCategory(
   category: MoodCategory,
   count: number,
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): GenreType[] {
   const genres = getGenresForCategory(category);
   if (genres.length === 0) return [];

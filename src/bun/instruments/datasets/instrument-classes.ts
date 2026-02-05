@@ -106,10 +106,12 @@ export const MULTIGENRE_FORCE_EXCLUDE = [
   'clarinet',
 ] as const;
 
-const FOUNDATIONAL_SET = new Set<string>(FOUNDATIONAL_INSTRUMENTS.map(i => i.toLowerCase()));
-const ORCHESTRAL_COLOR_SET = new Set<string>(ORCHESTRAL_COLOR_INSTRUMENTS.map(i => i.toLowerCase()));
+const FOUNDATIONAL_SET = new Set<string>(FOUNDATIONAL_INSTRUMENTS.map((i) => i.toLowerCase()));
+const ORCHESTRAL_COLOR_SET = new Set<string>(
+  ORCHESTRAL_COLOR_INSTRUMENTS.map((i) => i.toLowerCase())
+);
 const MULTIGENRE_FORCE_EXCLUDE_SET = new Set<string>(
-  MULTIGENRE_FORCE_EXCLUDE.map(i => i.toLowerCase())
+  MULTIGENRE_FORCE_EXCLUDE.map((i) => i.toLowerCase())
 );
 
 export function isFoundationalInstrument(instrument: string): boolean {
@@ -178,7 +180,7 @@ export function computeMultiGenreInstruments(threshold = 3): string[] {
 const MULTIGENRE_THRESHOLD = 3 as const;
 export const MULTIGENRE_INSTRUMENTS = computeMultiGenreInstruments(MULTIGENRE_THRESHOLD);
 
-const MULTIGENRE_SET = new Set<string>(MULTIGENRE_INSTRUMENTS.map(i => i.toLowerCase()));
+const MULTIGENRE_SET = new Set<string>(MULTIGENRE_INSTRUMENTS.map((i) => i.toLowerCase()));
 
 export function isMultiGenreInstrument(instrument: string): boolean {
   return MULTIGENRE_SET.has(instrument.toLowerCase());

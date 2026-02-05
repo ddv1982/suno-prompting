@@ -3,10 +3,15 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const SYMPHONIC_GENRE: GenreDefinition = {
   name: 'Symphonic',
   keywords: [
-    'symphonic', 'symphonic metal', 'symphonic rock',
-    'orchestral metal', 'orchestral rock', 'epic metal',
+    'symphonic',
+    'symphonic metal',
+    'symphonic rock',
+    'orchestral metal',
+    'orchestral rock',
+    'epic metal',
   ],
-  description: 'Powerful blend of rock/metal with full orchestral arrangements, choirs, and dramatic compositions',
+  description:
+    'Powerful blend of rock/metal with full orchestral arrangements, choirs, and dramatic compositions',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -14,7 +19,18 @@ export const SYMPHONIC_GENRE: GenreDefinition = {
     },
     orchestral: {
       pick: { min: 1, max: 2 },
-      instruments: ['choir', 'french horn', 'low brass', 'tuba', 'trombone', 'violin', 'cello', 'orchestra', 'euphonium', 'string tremolo'],
+      instruments: [
+        'choir',
+        'french horn',
+        'low brass',
+        'tuba',
+        'trombone',
+        'violin',
+        'cello',
+        'orchestra',
+        'euphonium',
+        'string tremolo',
+      ],
     },
     movement: {
       pick: { min: 2, max: 2 },
@@ -23,7 +39,17 @@ export const SYMPHONIC_GENRE: GenreDefinition = {
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.3,
-      instruments: ['harp', 'celesta', 'braams', 'wordless choir', 'solo soprano', 'tam tam', 'crash cymbal', 'tubular bells', 'xylophone'],
+      instruments: [
+        'harp',
+        'celesta',
+        'braams',
+        'wordless choir',
+        'solo soprano',
+        'tam tam',
+        'crash cymbal',
+        'tubular bells',
+        'xylophone',
+      ],
     },
   },
   poolOrder: ['harmonic', 'orchestral', 'movement', 'rare'],
@@ -34,5 +60,15 @@ export const SYMPHONIC_GENRE: GenreDefinition = {
     ['french horn', 'low brass'],
   ],
   bpm: { min: 100, max: 160, typical: 130 },
-  moods: ['Epic', 'Powerful', 'Majestic', 'Dramatic', 'Soaring', 'Triumphant', 'Intense', 'Grand', 'Dark'],
+  moods: [
+    'Epic',
+    'Powerful',
+    'Majestic',
+    'Dramatic',
+    'Soaring',
+    'Triumphant',
+    'Intense',
+    'Grand',
+    'Dark',
+  ],
 };

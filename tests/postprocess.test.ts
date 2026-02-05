@@ -162,7 +162,7 @@ describe('postprocess', () => {
       expect(stripMetaDeterministic(text)).toBe('Actual content');
     });
 
-    it('removes Here is/Here\'s lines', () => {
+    it("removes Here is/Here's lines", () => {
       const text = 'Here is the prompt:\nActual content';
       expect(stripMetaDeterministic(text)).toBe('Actual content');
     });
@@ -245,34 +245,44 @@ describe('postprocess', () => {
 
     it('calls condenseWithDedup when many repeated words', async () => {
       let dedupCalled = false;
-      const text = 'piano piano piano piano guitar guitar guitar guitar drums drums drums drums bass bass bass bass';
-      await postProcessPrompt(text, createMockDeps({
-        condenseWithDedup: async (t) => {
-          dedupCalled = true;
-          return t;
-        },
-      }));
+      const text =
+        'piano piano piano piano guitar guitar guitar guitar drums drums drums drums bass bass bass bass';
+      await postProcessPrompt(
+        text,
+        createMockDeps({
+          condenseWithDedup: async (t) => {
+            dedupCalled = true;
+            return t;
+          },
+        })
+      );
       expect(dedupCalled).toBe(true);
     });
 
     it('calls condense when over maxChars', async () => {
       let condenseCalled = false;
       const text = 'a'.repeat(1500);
-      await postProcessPrompt(text, createMockDeps({
-        maxChars: 1000,
-        condense: async (t) => {
-          condenseCalled = true;
-          return t.slice(0, 500);
-        },
-      }));
+      await postProcessPrompt(
+        text,
+        createMockDeps({
+          maxChars: 1000,
+          condense: async (t) => {
+            condenseCalled = true;
+            return t.slice(0, 500);
+          },
+        })
+      );
       expect(condenseCalled).toBe(true);
     });
 
     it('returns original text if result too short', async () => {
       const text = 'Short';
-      const result = await postProcessPrompt(text, createMockDeps({
-        minChars: 100,
-      }));
+      const result = await postProcessPrompt(
+        text,
+        createMockDeps({
+          minChars: 100,
+        })
+      );
       expect(result).toBe('Short');
     });
 

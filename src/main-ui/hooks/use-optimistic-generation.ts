@@ -8,7 +8,7 @@ interface OptimisticGenerationState {
   readonly showSkeleton: boolean;
 }
 
-type OptimisticAction = 
+type OptimisticAction =
   | { type: 'start'; action: GeneratingAction }
   | { type: 'complete' }
   | { type: 'error' };
@@ -60,10 +60,7 @@ interface UseOptimisticGenerationReturn extends OptimisticGenerationState {
  * ```
  */
 export function useOptimisticGeneration(): UseOptimisticGenerationReturn {
-  const [optimisticState, addOptimistic] = useOptimistic(
-    INITIAL_STATE,
-    optimisticReducer
-  );
+  const [optimisticState, addOptimistic] = useOptimistic(INITIAL_STATE, optimisticReducer);
   const [, startTransition] = useTransition();
 
   const startOptimistic = (action: GeneratingAction): void => {

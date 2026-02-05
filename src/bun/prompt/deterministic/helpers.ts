@@ -77,11 +77,7 @@ export function joinRecordingDescriptors(
     ? rngOrOptions
     : { rng: rngOrOptions, count, trace };
 
-  const {
-    rng: optionsRng = Math.random,
-    count: optionsCount = 2,
-    trace: optionsTrace,
-  } = options;
+  const { rng: optionsRng = Math.random, count: optionsCount = 2, trace: optionsTrace } = options;
 
   // Use provided values based on calling convention
   const actualRng = isOptions ? optionsRng : (rngOrOptions as () => number);
@@ -120,10 +116,7 @@ export function getBpmRangeForGenre(genreString: string): string {
   return DEFAULT_BPM_RANGE;
 }
 
-export function getBpmRangeForGenreWithTrace(
-  genreString: string,
-  trace?: TraceCollector
-): string {
+export function getBpmRangeForGenreWithTrace(genreString: string, trace?: TraceCollector): string {
   const range = getBlendedBpmRange(genreString);
   if (range) {
     const formatted = formatBpmRange(range);

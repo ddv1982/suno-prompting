@@ -18,17 +18,17 @@ import type { KeywordRegistry, KeywordMapping } from '@bun/keywords/types';
 const TEST_KEYWORDS = ['jazz', 'blues', 'rock', 'pop', 'electronic'] as const;
 
 const TEST_REGISTRY: KeywordRegistry<string> = {
-  'vintage': '70s',
-  'retro': '80s',
-  'modern': 'modern',
-  'neon': '80s',
-  'synth': '80s',
+  vintage: '70s',
+  retro: '80s',
+  modern: 'modern',
+  neon: '80s',
+  synth: '80s',
 };
 
 const TEST_MAPPING: KeywordMapping = {
-  'love': ['Heart', 'Dream', 'Soul'],
-  'night': ['Midnight', 'Moon', 'Stars'],
-  'rain': ['Storm', 'Water', 'Tears'],
+  love: ['Heart', 'Dream', 'Soul'],
+  night: ['Midnight', 'Moon', 'Stars'],
+  rain: ['Storm', 'Water', 'Tears'],
 };
 
 // =============================================================================
@@ -192,9 +192,9 @@ describe('matchRegistry', () => {
 
   test('handles typed registry values', () => {
     const numericRegistry: KeywordRegistry<number> = {
-      'slow': 60,
-      'medium': 120,
-      'fast': 180,
+      slow: 60,
+      medium: 120,
+      fast: 180,
     };
     expect(matchRegistry('slow ballad', numericRegistry)).toBe(60);
     expect(matchRegistry('fast tempo', numericRegistry)).toBe(180);
@@ -225,8 +225,8 @@ describe('matchMapping', () => {
 
   test('deduplicates output words', () => {
     const mappingWithDupes: KeywordMapping = {
-      'sad': ['Tears', 'Shadow'],
-      'cry': ['Tears', 'Sorrow'],
+      sad: ['Tears', 'Shadow'],
+      cry: ['Tears', 'Sorrow'],
     };
     const result = matchMapping('sad cry', mappingWithDupes);
     const tearsCount = result.filter((w) => w === 'Tears').length;

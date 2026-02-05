@@ -206,7 +206,10 @@ describe('deterministic-builder', () => {
     it('includes genre-appropriate tags', () => {
       const rng = createSeededRng(42);
       const jazzResult = assembleStyleTags({ components: ['jazz'], rng });
-      const electronicResult = assembleStyleTags({ components: ['electronic'], rng: createSeededRng(42) });
+      const electronicResult = assembleStyleTags({
+        components: ['electronic'],
+        rng: createSeededRng(42),
+      });
 
       // Jazz and electronic should have different style tags (different sources)
       expect(jazzResult.tags).toBeDefined();
@@ -251,72 +254,79 @@ describe('deterministic-builder', () => {
         'jazz quartet intimacy',
         'smoky club atmosphere',
       ];
-      
+
       let foundCount = 0;
       const totalRuns = 10;
-      
+
       for (let seed = 0; seed < totalRuns; seed++) {
         const result = assembleStyleTags(['jazz'], createSeededRng(seed));
-        const hasRecordingContext = result.tags.some(tag => 
-          jazzContexts.includes(tag)
-        );
+        const hasRecordingContext = result.tags.some((tag) => jazzContexts.includes(tag));
         if (hasRecordingContext) {
           foundCount++;
         }
       }
-      
+
       // At least 2 out of 10 runs should have jazz-specific context
       expect(foundCount).toBeGreaterThanOrEqual(2);
     });
 
     it('uses genre-specific contexts for known genres', () => {
       const genres: [string, string[]][] = [
-        ['jazz', [
-          'intimate jazz club',
-          'small jazz ensemble',
-          'live jazz session',
-          'acoustic jazz space',
-          'trio recording',
-          'blue note studio vibe',
-          'bebop era recording',
-          'jazz quartet intimacy',
-          'smoky club atmosphere',
-        ]],
-        ['rock', [
-          'live room tracking',
-          'vintage rock studio',
-          'analog rock recording',
-          'garage band setup',
-          'stadium rock production',
-          'rehearsal room energy',
-          'basement rock session',
-          'classic rock studio',
-          'power trio setup',
-        ]],
-        ['pop', [
-          'modern pop studio',
-          'professional vocal booth',
-          'digital pop production',
-          'radio-ready mix',
-          'contemporary pop sound',
-          'multitrack pop recording',
-          'polished pop production',
-          'commercial studio sound',
-        ]],
+        [
+          'jazz',
+          [
+            'intimate jazz club',
+            'small jazz ensemble',
+            'live jazz session',
+            'acoustic jazz space',
+            'trio recording',
+            'blue note studio vibe',
+            'bebop era recording',
+            'jazz quartet intimacy',
+            'smoky club atmosphere',
+          ],
+        ],
+        [
+          'rock',
+          [
+            'live room tracking',
+            'vintage rock studio',
+            'analog rock recording',
+            'garage band setup',
+            'stadium rock production',
+            'rehearsal room energy',
+            'basement rock session',
+            'classic rock studio',
+            'power trio setup',
+          ],
+        ],
+        [
+          'pop',
+          [
+            'modern pop studio',
+            'professional vocal booth',
+            'digital pop production',
+            'radio-ready mix',
+            'contemporary pop sound',
+            'multitrack pop recording',
+            'polished pop production',
+            'commercial studio sound',
+          ],
+        ],
       ];
-      
+
       for (const [genre, contexts] of genres) {
         let foundCount = 0;
         const totalRuns = 20;
-        
+
         for (let seed = 0; seed < totalRuns; seed++) {
           const result = assembleStyleTags([genre as any], createSeededRng(seed));
-          const hasGenreContext = result.tags.some(tag => contexts.includes(tag));
+          const hasGenreContext = result.tags.some((tag) => contexts.includes(tag));
           if (hasGenreContext) {
             foundCount++;
           }
         }
-        
+
         // At least 3 out of 20 runs should have genre-specific context (15% minimum)
         expect(foundCount).toBeGreaterThanOrEqual(3);
       }
@@ -640,8 +650,8 @@ describe('deterministic-builder', () => {
         expect(result1.genre).toBe('jazz');
 
         // BPM ranges should match (based on genre)
-        const bpm1 = (/bpm: "([^"]+)"/.exec(result1.text))?.[1];
-        const bpm2 = (/bpm: "([^"]+)"/.exec(result2.text))?.[1];
+        const bpm1 = /bpm: "([^"]+)"/.exec(result1.text)?.[1];
+        const bpm2 = /bpm: "([^"]+)"/.exec(result2.text)?.[1];
         expect(bpm1).toBe(bpm2);
       });
 
@@ -1041,7 +1051,9 @@ describe('deterministic-builder', () => {
 
         // Each section tag should be followed by content
         const lines = result.text.split('\n');
-        const sectionLines = lines.filter((line) => /^\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO)\]/.test(line));
+        const sectionLines = lines.filter((line) =>
+          /^\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO)\]/.test(line)
+        );
 
         for (const line of sectionLines) {
           // Should have content after the tag
@@ -1108,7 +1120,8 @@ describe('deterministic-builder', () => {
         const differs =
           result1.text !== result2.text ||
           result1.metadata?.recordingContext !== result2.metadata?.recordingContext ||
-          JSON.stringify(result1.metadata?.instruments) !== JSON.stringify(result2.metadata?.instruments);
+          JSON.stringify(result1.metadata?.instruments) !==
+            JSON.stringify(result2.metadata?.instruments);
         expect(differs).toBe(true);
       });
 
@@ -1137,7 +1150,11 @@ describe('deterministic-builder', () => {
 
         // Act
         const resultWithSeedOnly = buildDeterministicStandardPrompt({ description, seed });
-        const resultWithRng = buildDeterministicStandardPrompt({ description, seed, rng: customRng });
+        const resultWithRng = buildDeterministicStandardPrompt({
+          description,
+          seed,
+          rng: customRng,
+        });
 
         // Assert - rng should take priority, so results should differ
         // Note: They might coincidentally match in rare cases, but very unlikely
@@ -1175,7 +1192,8 @@ describe('deterministic-builder', () => {
         const differs =
           result1.text !== result2.text ||
           result1.metadata?.recordingContext !== result2.metadata?.recordingContext ||
-          JSON.stringify(result1.metadata?.instruments) !== JSON.stringify(result2.metadata?.instruments);
+          JSON.stringify(result1.metadata?.instruments) !==
+            JSON.stringify(result2.metadata?.instruments);
         expect(differs).toBe(true);
       });
 
@@ -1262,13 +1280,11 @@ describe('Compound Mood Integration', () => {
       // Assert - check that at least one compound mood appears in the Mood field
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       if (moodMatch?.[1]) {
         const moodLine = moodMatch[1].toLowerCase();
         // At least one compound mood should be present (they contain spaces)
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          moodLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => moodLine.includes(mood));
         expect(hasCompoundMood).toBe(true);
       }
     });
@@ -1287,13 +1303,11 @@ describe('Compound Mood Integration', () => {
       // Assert - check that simple moods are used (no compound moods)
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       if (moodMatch?.[1]) {
         const moodLine = moodMatch[1].toLowerCase();
         // None of the compound moods should be present
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          moodLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => moodLine.includes(mood));
         expect(hasCompoundMood).toBe(false);
       }
     });
@@ -1312,13 +1326,11 @@ describe('Compound Mood Integration', () => {
       // Assert - extract mood field and verify compound mood is valid
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       if (moodMatch?.[1]) {
         const moodLine = moodMatch[1].toLowerCase();
         // Find which compound mood was used
-        const usedCompoundMood = VALID_COMPOUND_MOODS.find(mood => 
-          moodLine.includes(mood)
-        );
+        const usedCompoundMood = VALID_COMPOUND_MOODS.find((mood) => moodLine.includes(mood));
         // Should find a valid compound mood
         expect(usedCompoundMood).toBeDefined();
         // And that compound mood should be in our valid list
@@ -1342,12 +1354,10 @@ describe('Compound Mood Integration', () => {
       // Assert - check that compound mood appears in style tags
       const styleTagsMatch = /style tags:\s*"([^"]+)"/.exec(result.text);
       expect(styleTagsMatch).toBeTruthy();
-      
+
       if (styleTagsMatch?.[1]) {
         const styleTagsLine = styleTagsMatch[1].toLowerCase();
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          styleTagsLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => styleTagsLine.includes(mood));
         expect(hasCompoundMood).toBe(true);
       }
     });
@@ -1366,12 +1376,10 @@ describe('Compound Mood Integration', () => {
       // Assert - check that no compound mood appears in style tags
       const styleTagsMatch = /style tags:\s*"([^"]+)"/.exec(result.text);
       expect(styleTagsMatch).toBeTruthy();
-      
+
       if (styleTagsMatch?.[1]) {
         const styleTagsLine = styleTagsMatch[1].toLowerCase();
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          styleTagsLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => styleTagsLine.includes(mood));
         expect(hasCompoundMood).toBe(false);
       }
     });
@@ -1389,12 +1397,10 @@ describe('Compound Mood Integration', () => {
       // Assert - should use simple moods
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       if (moodMatch?.[1]) {
         const moodLine = moodMatch[1].toLowerCase();
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          moodLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => moodLine.includes(mood));
         expect(hasCompoundMood).toBe(false);
       }
     });
@@ -1413,12 +1419,10 @@ describe('Compound Mood Integration', () => {
       // Assert - should use simple moods
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       if (moodMatch?.[1]) {
         const moodLine = moodMatch[1].toLowerCase();
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          moodLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => moodLine.includes(mood));
         expect(hasCompoundMood).toBe(false);
       }
     });
@@ -1437,12 +1441,10 @@ describe('Compound Mood Integration', () => {
       // Assert - should use compound moods
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       if (moodMatch?.[1]) {
         const moodLine = moodMatch[1].toLowerCase();
-        const hasCompoundMood = VALID_COMPOUND_MOODS.some(mood => 
-          moodLine.includes(mood)
-        );
+        const hasCompoundMood = VALID_COMPOUND_MOODS.some((mood) => moodLine.includes(mood));
         expect(hasCompoundMood).toBe(true);
       }
     });
@@ -1463,7 +1465,7 @@ describe('Compound Mood Integration', () => {
       // Compound moods should NOT be present because moodCategory overrides
       const moodMatch = /Mood:\s*([^\n]+)/.exec(result.text);
       expect(moodMatch).toBeTruthy();
-      
+
       // The mood should be from the calm category, not a compound mood
       // (Note: This test verifies the priority logic works)
     });
@@ -1481,8 +1483,8 @@ describe('applyWeightedSelection helper', () => {
   function seedRng(seed: number): () => number {
     let state = seed;
     return () => {
-      state = (state * 1664525 + 1013904223) % 2**32;
-      return state / 2**32;
+      state = (state * 1664525 + 1013904223) % 2 ** 32;
+      return state / 2 ** 32;
     };
   }
 
@@ -1491,57 +1493,57 @@ describe('applyWeightedSelection helper', () => {
     const addUnique = (tag: string) => tags.push(tag);
     const selector = () => ['tag1', 'tag2'];
     const rng = seedRng(42);
-    
+
     // First call: rng() = 0.2946 < 0.5 (passes)
     applyWeightedSelection(0.5, selector, addUnique, rng);
-    
+
     expect(tags).toEqual(['tag1', 'tag2']);
   });
-  
+
   it('should skip selection when RNG fails probability threshold', () => {
     const tags: string[] = [];
     const addUnique = (tag: string) => tags.push(tag);
     const selector = () => ['tag1', 'tag2'];
     const rng = seedRng(999);
-    
+
     // First call: rng() > 0.5 (fails threshold)
     applyWeightedSelection(0.5, selector, addUnique, rng);
-    
+
     expect(tags).toEqual([]);
   });
-  
+
   it('should not call selector when probability fails', () => {
     let selectorCalled = false;
-    const selector = () => { 
-      selectorCalled = true; 
-      return ['tag1']; 
+    const selector = () => {
+      selectorCalled = true;
+      return ['tag1'];
     };
     const addUnique = () => {};
     const rng = seedRng(999); // Will fail 0.5 threshold
-    
+
     applyWeightedSelection(0.5, selector, addUnique, rng);
-    
+
     expect(selectorCalled).toBe(false);
   });
-  
+
   it('should handle empty tag array from selector', () => {
     const tags: string[] = [];
     const addUnique = (tag: string) => tags.push(tag);
     const selector = () => []; // Empty result
     const rng = seedRng(42);
-    
+
     applyWeightedSelection(0.5, selector, addUnique, rng);
-    
+
     expect(tags).toEqual([]);
   });
-  
+
   it('should work with different probability thresholds', () => {
     const tags: string[] = [];
     const addUnique = (tag: string) => tags.push(tag);
     const selector = () => ['vocal1'];
     const rng = seedRng(50);
-    
-    // rng() = 0.5349 
+
+    // rng() = 0.5349
     // Should pass 0.6 threshold: 0.5349 < 0.6 ✓
     applyWeightedSelection(0.6, selector, addUnique, rng);
     expect(tags.length).toBeGreaterThan(0);

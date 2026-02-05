@@ -159,12 +159,12 @@ describe('production-elements', () => {
 
   describe('production combination variety', () => {
     it('calculates to 30,600 total combinations (15 × 17 × 10 × 12)', () => {
-      const totalCombinations = 
-        REVERB_TYPES.length * 
-        RECORDING_TEXTURES.length * 
-        STEREO_IMAGING.length * 
+      const totalCombinations =
+        REVERB_TYPES.length *
+        RECORDING_TEXTURES.length *
+        STEREO_IMAGING.length *
         DYNAMIC_DESCRIPTORS.length;
-      
+
       expect(totalCombinations).toBe(30600);
     });
 
@@ -193,7 +193,7 @@ describe('production-elements', () => {
     it('returns ProductionDescriptor with all 4 dimensions', () => {
       const rng = createSeededRng(42);
       const result = buildProductionDescriptorMulti(rng);
-      
+
       expect(result).toBeDefined();
       expect(result.reverb).toBeDefined();
       expect(result.texture).toBeDefined();
@@ -204,12 +204,12 @@ describe('production-elements', () => {
     it('all 4 dimensions are non-empty strings', () => {
       const rng = createSeededRng(12345);
       const result = buildProductionDescriptorMulti(rng);
-      
+
       expect(typeof result.reverb).toBe('string');
       expect(typeof result.texture).toBe('string');
       expect(typeof result.stereo).toBe('string');
       expect(typeof result.dynamic).toBe('string');
-      
+
       expect(result.reverb.length).toBeGreaterThan(0);
       expect(result.texture.length).toBeGreaterThan(0);
       expect(result.stereo.length).toBeGreaterThan(0);
@@ -219,7 +219,7 @@ describe('production-elements', () => {
     it('all tags are lowercase', () => {
       const rng = createSeededRng(999);
       const result = buildProductionDescriptorMulti(rng);
-      
+
       expect(result.reverb).toBe(result.reverb.toLowerCase());
       expect(result.texture).toBe(result.texture.toLowerCase());
       expect(result.stereo).toBe(result.stereo.toLowerCase());
@@ -229,65 +229,65 @@ describe('production-elements', () => {
     it('produces deterministic output with same seed', () => {
       const rng1 = createSeededRng(777);
       const rng2 = createSeededRng(777);
-      
+
       const result1 = buildProductionDescriptorMulti(rng1);
       const result2 = buildProductionDescriptorMulti(rng2);
-      
+
       expect(result1).toEqual(result2);
     });
 
     it('produces different output with different seeds', () => {
       const rng1 = createSeededRng(111);
       const rng2 = createSeededRng(999);
-      
+
       const result1 = buildProductionDescriptorMulti(rng1);
       const result2 = buildProductionDescriptorMulti(rng2);
-      
+
       // At least one dimension should differ
-      const hasDifference = 
+      const hasDifference =
         result1.reverb !== result2.reverb ||
         result1.texture !== result2.texture ||
         result1.stereo !== result2.stereo ||
         result1.dynamic !== result2.dynamic;
-      
+
       expect(hasDifference).toBe(true);
     });
 
     it('reverb comes from REVERB_TYPES pool', () => {
       const rng = createSeededRng(42);
       const result = buildProductionDescriptorMulti(rng);
-      
-      const reverbsLowercase = REVERB_TYPES.map(r => r.toLowerCase());
+
+      const reverbsLowercase = REVERB_TYPES.map((r) => r.toLowerCase());
       expect(reverbsLowercase).toContain(result.reverb);
     });
 
     it('texture comes from RECORDING_TEXTURES pool', () => {
       const rng = createSeededRng(42);
       const result = buildProductionDescriptorMulti(rng);
-      
-      const texturesLowercase = RECORDING_TEXTURES.map(t => t.toLowerCase());
+
+      const texturesLowercase = RECORDING_TEXTURES.map((t) => t.toLowerCase());
       expect(texturesLowercase).toContain(result.texture);
     });
 
     it('stereo comes from STEREO_IMAGING pool', () => {
       const rng = createSeededRng(42);
       const result = buildProductionDescriptorMulti(rng);
-      
-      const stereoLowercase = STEREO_IMAGING.map(s => s.toLowerCase());
+
+      const stereoLowercase = STEREO_IMAGING.map((s) => s.toLowerCase());
       expect(stereoLowercase).toContain(result.stereo);
     });
 
     it('dynamic comes from DYNAMIC_DESCRIPTORS pool', () => {
       const rng = createSeededRng(42);
       const result = buildProductionDescriptorMulti(rng);
-      
-      const dynamicLowercase = DYNAMIC_DESCRIPTORS.map(d => d.toLowerCase());
+
+      const dynamicLowercase = DYNAMIC_DESCRIPTORS.map((d) => d.toLowerCase());
       expect(dynamicLowercase).toContain(result.dynamic);
     });
 
     it('generates diverse output across multiple calls', () => {
       const results = new Set<string>();
-      
+
       // Generate 100 different descriptors
       for (let i = 0; i < 100; i++) {
         const rng = createSeededRng(i);
@@ -295,14 +295,14 @@ describe('production-elements', () => {
         const serialized = JSON.stringify(result);
         results.add(serialized);
       }
-      
+
       // Should have at least 90 unique combinations out of 100
       expect(results.size).toBeGreaterThanOrEqual(90);
     });
 
     it('works with default Math.random RNG', () => {
       const result = buildProductionDescriptorMulti();
-      
+
       expect(result.reverb).toBeDefined();
       expect(result.texture).toBeDefined();
       expect(result.stereo).toBeDefined();
@@ -316,10 +316,27 @@ describe('production-elements', () => {
 
   describe('GENRE_PRODUCTION_STYLES', () => {
     const EXPECTED_GENRES = [
-      'jazz', 'pop', 'rock', 'electronic', 'ambient', 'classical', 
-      'lofi', 'blues', 'rnb', 'soul', 'country', 'folk', 
-      'metal', 'punk', 'synthwave', 'cinematic', 'trap', 'latin',
-      'retro', 'videogame', 'symphonic'
+      'jazz',
+      'pop',
+      'rock',
+      'electronic',
+      'ambient',
+      'classical',
+      'lofi',
+      'blues',
+      'rnb',
+      'soul',
+      'country',
+      'folk',
+      'metal',
+      'punk',
+      'synthwave',
+      'cinematic',
+      'trap',
+      'latin',
+      'retro',
+      'videogame',
+      'symphonic',
     ];
 
     it('has styles for all major genres', () => {
@@ -396,7 +413,7 @@ describe('production-elements', () => {
     it('returns valid suggestions for known genre', () => {
       const rng = createSeededRng(42);
       const result = getProductionSuggestionsForGenre('jazz', rng);
-      
+
       expect(result.reverb).toBeDefined();
       expect(result.texture).toBeDefined();
       expect(result.dynamic).toBeDefined();
@@ -405,11 +422,11 @@ describe('production-elements', () => {
     it('returns default suggestions for unknown genre', () => {
       const rng = createSeededRng(42);
       const result = getProductionSuggestionsForGenre('unknown_xyz', rng);
-      
+
       expect(result.reverb).toBeDefined();
       expect(result.texture).toBeDefined();
       expect(result.dynamic).toBeDefined();
-      
+
       // Should come from DEFAULT_PRODUCTION_STYLE
       expect(DEFAULT_PRODUCTION_STYLE.reverbs).toContain(result.reverb);
     });
@@ -417,17 +434,17 @@ describe('production-elements', () => {
     it('is deterministic with seeded RNG', () => {
       const rng1 = createSeededRng(123);
       const rng2 = createSeededRng(123);
-      
+
       const result1 = getProductionSuggestionsForGenre('rock', rng1);
       const result2 = getProductionSuggestionsForGenre('rock', rng2);
-      
+
       expect(result1).toEqual(result2);
     });
 
     it('suggestions come from genre-specific pools', () => {
       const rng = createSeededRng(42);
       const result = getProductionSuggestionsForGenre('jazz', rng);
-      
+
       const jazzStyle = GENRE_PRODUCTION_STYLES.jazz;
       expect(jazzStyle!.reverbs).toContain(result.reverb);
       expect(jazzStyle!.textures).toContain(result.texture);
@@ -436,7 +453,7 @@ describe('production-elements', () => {
 
     it('generates variety across multiple calls for same genre', () => {
       const results = new Set<string>();
-      
+
       // Generate 50 different suggestions for jazz
       for (let i = 0; i < 50; i++) {
         const rng = createSeededRng(i);
@@ -444,7 +461,7 @@ describe('production-elements', () => {
         const serialized = JSON.stringify(result);
         results.add(serialized);
       }
-      
+
       // Jazz has 4 reverbs × 4 textures × 3 dynamics = 48 combinations
       // Should have at least 20 unique combinations (realistic given genre-specific pools)
       expect(results.size).toBeGreaterThanOrEqual(20);
@@ -453,16 +470,16 @@ describe('production-elements', () => {
     it('is case insensitive for genre lookup', () => {
       const rng1 = createSeededRng(42);
       const rng2 = createSeededRng(42);
-      
+
       const lower = getProductionSuggestionsForGenre('jazz', rng1);
       const upper = getProductionSuggestionsForGenre('JAZZ', rng2);
-      
+
       expect(lower).toEqual(upper);
     });
 
     it('works with default Math.random RNG', () => {
       const result = getProductionSuggestionsForGenre('pop');
-      
+
       expect(result.reverb).toBeDefined();
       expect(result.texture).toBeDefined();
       expect(result.dynamic).toBeDefined();
@@ -478,7 +495,7 @@ describe('production-elements', () => {
       // RNG always returns 0.0 (first item)
       const rng1 = () => 0.0;
       const result1 = buildProductionDescriptorMulti(rng1);
-      
+
       expect(result1.reverb).toBe(REVERB_TYPES[0]?.toLowerCase());
       expect(result1.texture).toBe(RECORDING_TEXTURES[0]?.toLowerCase());
       expect(result1.stereo).toBe(STEREO_IMAGING[0]?.toLowerCase());
@@ -489,13 +506,13 @@ describe('production-elements', () => {
       // RNG always returns 0.99 (last item)
       const rng = () => 0.99;
       const result = buildProductionDescriptorMulti(rng);
-      
+
       // Should select last items from each pool
       const lastReverb = REVERB_TYPES[REVERB_TYPES.length - 1]?.toLowerCase() ?? '';
       const lastTexture = RECORDING_TEXTURES[RECORDING_TEXTURES.length - 1]?.toLowerCase() ?? '';
       const lastStereo = STEREO_IMAGING[STEREO_IMAGING.length - 1]?.toLowerCase() ?? '';
       const lastDynamic = DYNAMIC_DESCRIPTORS[DYNAMIC_DESCRIPTORS.length - 1]?.toLowerCase() ?? '';
-      
+
       expect(result.reverb).toBe(lastReverb);
       expect(result.texture).toBe(lastTexture);
       expect(result.stereo).toBe(lastStereo);
@@ -505,7 +522,7 @@ describe('production-elements', () => {
     it('getProductionSuggestionsForGenre handles empty genre string', () => {
       const rng = createSeededRng(42);
       const result = getProductionSuggestionsForGenre('', rng);
-      
+
       // Should use default style
       expect(DEFAULT_PRODUCTION_STYLE.reverbs).toContain(result.reverb);
     });
@@ -513,7 +530,7 @@ describe('production-elements', () => {
     it('getProductionSuggestionsForGenre handles whitespace genre', () => {
       const rng = createSeededRng(42);
       const result = getProductionSuggestionsForGenre('   ', rng);
-      
+
       // Should use default style
       expect(result.reverb).toBeDefined();
     });
@@ -523,7 +540,7 @@ describe('production-elements', () => {
       const textureSet = new Set(RECORDING_TEXTURES);
       const stereoSet = new Set(STEREO_IMAGING);
       const dynamicSet = new Set(DYNAMIC_DESCRIPTORS);
-      
+
       expect(reverbSet.size).toBe(REVERB_TYPES.length);
       expect(textureSet.size).toBe(RECORDING_TEXTURES.length);
       expect(stereoSet.size).toBe(STEREO_IMAGING.length);
@@ -538,7 +555,7 @@ describe('production-elements', () => {
   describe('integration scenarios', () => {
     it('multi-dimensional production enables variety explosion', () => {
       const uniqueDescriptors = new Set<string>();
-      
+
       // Generate 1000 descriptors
       for (let i = 0; i < 1000; i++) {
         const rng = createSeededRng(i);
@@ -546,7 +563,7 @@ describe('production-elements', () => {
         const serialized = JSON.stringify(result);
         uniqueDescriptors.add(serialized);
       }
-      
+
       // With 30,600 possible combinations, we should easily get 900+ unique in 1000 tries
       expect(uniqueDescriptors.size).toBeGreaterThanOrEqual(900);
     });
@@ -554,13 +571,13 @@ describe('production-elements', () => {
     it('production descriptors are suitable for Suno V5 prompts', () => {
       const rng = createSeededRng(42);
       const result = buildProductionDescriptorMulti(rng);
-      
+
       // All tags should be lowercase (Suno requirement)
       expect(result.reverb).toBe(result.reverb.toLowerCase());
       expect(result.texture).toBe(result.texture.toLowerCase());
       expect(result.stereo).toBe(result.stereo.toLowerCase());
       expect(result.dynamic).toBe(result.dynamic.toLowerCase());
-      
+
       // All tags should be non-empty
       expect(result.reverb.length).toBeGreaterThan(0);
       expect(result.texture.length).toBeGreaterThan(0);

@@ -135,21 +135,21 @@ export const CULTURAL_SCALES: Record<CulturalRegion, string> = {
  * Maps alternative names to canonical CulturalRegion values.
  */
 const REGION_ALIASES: Readonly<Record<string, CulturalRegion>> = {
-  'brazilian': 'brazil',
-  'japanese': 'japan',
-  'celtic': 'celtic',
-  'irish': 'celtic',
-  'scottish': 'celtic',
-  'indian': 'india',
-  'hindustani': 'india',
-  'carnatic': 'india',
+  brazilian: 'brazil',
+  japanese: 'japan',
+  celtic: 'celtic',
+  irish: 'celtic',
+  scottish: 'celtic',
+  indian: 'india',
+  hindustani: 'india',
+  carnatic: 'india',
   'middle east': 'middle-east',
   'middle eastern': 'middle-east',
-  'middleeast': 'middle-east',
-  'arabic': 'middle-east',
-  'persian': 'middle-east',
-  'turkish': 'middle-east',
-  'african': 'africa',
+  middleeast: 'middle-east',
+  arabic: 'middle-east',
+  persian: 'middle-east',
+  turkish: 'middle-east',
+  african: 'africa',
   'west african': 'africa',
 };
 
@@ -239,7 +239,7 @@ export function getCulturalScale(region: string): string | undefined {
 export function selectCulturalInstruments(
   region: string,
   count = 2,
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): string[] {
   const instruments = getCulturalInstruments(region);
   if (instruments.length === 0) return [];

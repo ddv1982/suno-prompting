@@ -3,14 +3,29 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const BLUES_GENRE: GenreDefinition = {
   name: 'Blues',
   keywords: [
-    'blues', 'electric blues', 'blues rock', 'delta blues', 'chicago blues',
-    'jazz blues', 'slow blues', 'blues shuffle', 'psychedelic blues',
+    'blues',
+    'electric blues',
+    'blues rock',
+    'delta blues',
+    'chicago blues',
+    'jazz blues',
+    'slow blues',
+    'blues shuffle',
+    'psychedelic blues',
   ],
-  description: 'Expressive, soulful music built on 12-bar structures with bending guitar lines and heartfelt vocals',
+  description:
+    'Expressive, soulful music built on 12-bar structures with bending guitar lines and heartfelt vocals',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
-      instruments: ['hollowbody guitar', 'guitar', 'grand piano', 'slide guitar', 'dobro', 'lap steel guitar'],
+      instruments: [
+        'hollowbody guitar',
+        'guitar',
+        'grand piano',
+        'slide guitar',
+        'dobro',
+        'lap steel guitar',
+      ],
     },
     color: {
       pick: { min: 0, max: 1 },
@@ -39,5 +54,15 @@ export const BLUES_GENRE: GenreDefinition = {
     ['slide guitar', 'lap steel guitar'],
   ],
   bpm: { min: 68, max: 132, typical: 88 },
-  moods: ['Smoky', 'Soulful', 'Gritty', 'Emotional', 'Laid Back', 'Mournful', 'Raw', 'Hypnotic', 'Groovy'],
+  moods: [
+    'Smoky',
+    'Soulful',
+    'Gritty',
+    'Emotional',
+    'Laid Back',
+    'Mournful',
+    'Raw',
+    'Hypnotic',
+    'Groovy',
+  ],
 };

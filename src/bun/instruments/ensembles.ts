@@ -110,9 +110,7 @@ export function expandEnsemble(ensembleName: string): string[] {
  */
 export function getEnsemblesForGenre(genre: string): EnsemblePreset[] {
   const normalizedGenre = genre.toLowerCase();
-  return ENSEMBLE_PRESETS.filter((p) =>
-    p.genres.some((g) => g.toLowerCase() === normalizedGenre),
-  );
+  return ENSEMBLE_PRESETS.filter((p) => p.genres.some((g) => g.toLowerCase() === normalizedGenre));
 }
 
 /**
@@ -146,7 +144,7 @@ export function getEnsemble(name: string): EnsemblePreset | undefined {
  */
 export function selectEnsembleForGenre(
   genre: string,
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): EnsemblePreset | undefined {
   const matching = getEnsemblesForGenre(genre);
   if (matching.length === 0) {

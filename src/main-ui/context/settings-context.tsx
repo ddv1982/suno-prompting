@@ -1,4 +1,13 @@
-import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from 'react';
 
 import { createLogger } from '@/lib/logger';
 import { rpcClient } from '@/services/rpc-client';
@@ -49,7 +58,7 @@ interface SettingsLoaderReturn {
 
 /** Hook to manage settings state loading from RPC */
 function useSettingsLoader(): SettingsLoaderReturn {
-  const [currentModel, setCurrentModel] = useState("");
+  const [currentModel, setCurrentModel] = useState('');
   const [maxMode, setMaxMode] = useState(false);
   const [lyricsMode, setLyricsMode] = useState(false);
   const [storyMode, setStoryMode] = useState(false);
@@ -68,54 +77,63 @@ function useSettingsLoader(): SettingsLoaderReturn {
         setApiKeys(result.value.apiKeys);
       }
     } catch (error: unknown) {
-      log.error("loadAllSettings:failed", error);
+      log.error('loadAllSettings:failed', error);
     }
   }, []);
 
+  const maxModeRef = useRef(maxMode);
+  maxModeRef.current = maxMode;
+
   const handleSetMaxMode = useCallback(async (mode: boolean) => {
-    const previousMode = maxMode;
+    const previousMode = maxModeRef.current;
     setMaxMode(mode);
     try {
       const result = await rpcClient.setMaxMode({ maxMode: mode });
       if (!result.ok) {
-        log.error("setMaxMode:failed", result.error);
+        log.error('setMaxMode:failed', result.error);
         setMaxMode(previousMode);
       }
     } catch (error: unknown) {
-      log.error("setMaxMode:failed", error);
+      log.error('setMaxMode:failed', error);
       setMaxMode(previousMode);
     }
-  }, [maxMode]);
+  }, []);
+
+  const lyricsModeRef = useRef(lyricsMode);
+  lyricsModeRef.current = lyricsMode;
 
   const handleSetLyricsMode = useCallback(async (mode: boolean) => {
-    const previousMode = lyricsMode;
+    const previousMode = lyricsModeRef.current;
     setLyricsMode(mode);
     try {
       const result = await rpcClient.setLyricsMode({ lyricsMode: mode });
       if (!result.ok) {
-        log.error("setLyricsMode:failed", result.error);
+        log.error('setLyricsMode:failed', result.error);
         setLyricsMode(previousMode);
       }
     } catch (error: unknown) {
-      log.error("setLyricsMode:failed", error);
+      log.error('setLyricsMode:failed', error);
       setLyricsMode(previousMode);
     }
-  }, [lyricsMode]);
+  }, []);
+
+  const storyModeRef = useRef(storyMode);
+  storyModeRef.current = storyMode;
 
   const handleSetStoryMode = useCallback(async (mode: boolean) => {
-    const previousMode = storyMode;
+    const previousMode = storyModeRef.current;
     setStoryMode(mode);
     try {
       const result = await rpcClient.setStoryMode({ storyMode: mode });
       if (!result.ok) {
-        log.error("setStoryMode:failed", result.error);
+        log.error('setStoryMode:failed', result.error);
         setStoryMode(previousMode);
       }
     } catch (error: unknown) {
-      log.error("setStoryMode:catch", error);
+      log.error('setStoryMode:catch', error);
       setStoryMode(previousMode);
     }
-  }, [storyMode]);
+  }, []);
 
   return {
     currentModel,
@@ -166,25 +184,24 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
   );
   const isLLMAvailable = settings.useLocalLLM || hasAnyApiKey;
 
-  const contextValue = useMemo<SettingsContextType>(() => ({
-    currentModel: settings.currentModel,
-    maxMode: settings.maxMode,
-    lyricsMode: settings.lyricsMode,
-    storyMode: settings.storyMode,
-    useLocalLLM: settings.useLocalLLM,
-    settingsOpen,
-    isLLMAvailable,
-    setSettingsOpen,
-    setMaxMode: settings.setMaxMode,
-    setLyricsMode: settings.setLyricsMode,
-    setStoryMode: settings.setStoryMode,
-    reloadSettings: settings.reloadSettings,
-    openSettings,
-  }), [settings, settingsOpen, isLLMAvailable, openSettings]);
-
-  return (
-    <SettingsContext.Provider value={contextValue}>
-      {children}
-    </SettingsContext.Provider>
+  const contextValue = useMemo<SettingsContextType>(
+    () => ({
+      currentModel: settings.currentModel,
+      maxMode: settings.maxMode,
+      lyricsMode: settings.lyricsMode,
+      storyMode: settings.storyMode,
+      useLocalLLM: settings.useLocalLLM,
+      settingsOpen,
+      isLLMAvailable,
+      setSettingsOpen,
+      setMaxMode: settings.setMaxMode,
+      setLyricsMode: settings.setLyricsMode,
+      setStoryMode: settings.setStoryMode,
+      reloadSettings: settings.reloadSettings,
+      openSettings,
+    }),
+    [settings, settingsOpen, isLLMAvailable, openSettings]
   );
+
+  return <SettingsContext.Provider value={contextValue}>{children}</SettingsContext.Provider>;
 };

@@ -1,10 +1,10 @@
-import { describe, expect, test, beforeEach, afterEach } from "bun:test";
-import { rm, mkdir } from "fs/promises";
-import { tmpdir } from "os";
-import { join } from "path";
+import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
+import { rm, mkdir } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
-import { APP_CONSTANTS } from "@shared/constants";
-import { type PromptSession } from "@shared/types";
+import { APP_CONSTANTS } from '@shared/constants';
+import { type PromptSession } from '@shared/types';
 
 // Create a testable version of StorageManager with custom paths
 class TestableStorageManager {
@@ -14,8 +14,8 @@ class TestableStorageManager {
 
   constructor(baseDir: string) {
     this.baseDir = baseDir;
-    this.historyPath = join(this.baseDir, "history.json");
-    this.configPath = join(this.baseDir, "config.json");
+    this.historyPath = join(this.baseDir, 'history.json');
+    this.configPath = join(this.baseDir, 'config.json');
   }
 
   async initialize() {
@@ -77,7 +77,7 @@ class TestableStorageManager {
         debugMode: false,
         maxMode: false,
         lyricsMode: false,
-        promptMode: "full",
+        promptMode: 'full',
       };
     }
   }
@@ -98,7 +98,7 @@ const makeSession = (id: string, updatedAt: string): PromptSession => ({
   updatedAt,
 });
 
-describe("StorageManager", () => {
+describe('StorageManager', () => {
   let testDir: string;
   let storage: TestableStorageManager;
 
@@ -116,74 +116,74 @@ describe("StorageManager", () => {
     }
   });
 
-  describe("history operations", () => {
-    test("getHistory returns empty array when no history exists", async () => {
+  describe('history operations', () => {
+    test('getHistory returns empty array when no history exists', async () => {
       const history = await storage.getHistory();
       expect(history).toEqual([]);
     });
 
-    test("saveSession adds a new session", async () => {
-      const session = makeSession("s1", "2026-01-01T00:00:00Z");
+    test('saveSession adds a new session', async () => {
+      const session = makeSession('s1', '2026-01-01T00:00:00Z');
       await storage.saveSession(session);
 
       const history = await storage.getHistory();
       expect(history).toHaveLength(1);
-      expect(history[0]?.id).toBe("s1");
+      expect(history[0]?.id).toBe('s1');
     });
 
-    test("saveSession updates existing session", async () => {
-      const session1 = makeSession("s1", "2026-01-01T00:00:00Z");
+    test('saveSession updates existing session', async () => {
+      const session1 = makeSession('s1', '2026-01-01T00:00:00Z');
       await storage.saveSession(session1);
 
-      const updated = { ...session1, currentPrompt: "updated prompt" };
+      const updated = { ...session1, currentPrompt: 'updated prompt' };
       await storage.saveSession(updated);
 
       const history = await storage.getHistory();
       expect(history).toHaveLength(1);
-      expect(history[0]?.currentPrompt).toBe("updated prompt");
+      expect(history[0]?.currentPrompt).toBe('updated prompt');
     });
 
-    test("deleteSession removes session by id", async () => {
-      await storage.saveSession(makeSession("s1", "2026-01-01T00:00:00Z"));
-      await storage.saveSession(makeSession("s2", "2026-01-02T00:00:00Z"));
+    test('deleteSession removes session by id', async () => {
+      await storage.saveSession(makeSession('s1', '2026-01-01T00:00:00Z'));
+      await storage.saveSession(makeSession('s2', '2026-01-02T00:00:00Z'));
 
-      await storage.deleteSession("s1");
+      await storage.deleteSession('s1');
 
       const history = await storage.getHistory();
       expect(history).toHaveLength(1);
-      expect(history[0]?.id).toBe("s2");
+      expect(history[0]?.id).toBe('s2');
     });
 
-    test("deleteSession handles non-existent id gracefully", async () => {
-      await storage.saveSession(makeSession("s1", "2026-01-01T00:00:00Z"));
-      await storage.deleteSession("nonexistent");
+    test('deleteSession handles non-existent id gracefully', async () => {
+      await storage.saveSession(makeSession('s1', '2026-01-01T00:00:00Z'));
+      await storage.deleteSession('nonexistent');
 
       const history = await storage.getHistory();
       expect(history).toHaveLength(1);
     });
   });
 
-  describe("config operations", () => {
-    test("getConfig returns defaults when no config exists", async () => {
+  describe('config operations', () => {
+    test('getConfig returns defaults when no config exists', async () => {
       const config = await storage.getConfig();
       expect(config.provider).toBe(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
       expect(config.model).toBe(APP_CONSTANTS.AI.DEFAULT_MODEL);
     });
 
-    test("saveConfig persists settings", async () => {
-      await storage.saveConfig({ model: "test-model", debugMode: true });
+    test('saveConfig persists settings', async () => {
+      await storage.saveConfig({ model: 'test-model', debugMode: true });
 
       const config = await storage.getConfig();
-      expect(config.model).toBe("test-model");
+      expect(config.model).toBe('test-model');
       expect(config.debugMode).toBe(true);
     });
 
-    test("saveConfig merges with existing config", async () => {
-      await storage.saveConfig({ model: "model-1" });
+    test('saveConfig merges with existing config', async () => {
+      await storage.saveConfig({ model: 'model-1' });
       await storage.saveConfig({ debugMode: true });
 
       const config = await storage.getConfig();
-      expect(config.model).toBe("model-1");
+      expect(config.model).toBe('model-1');
       expect(config.debugMode).toBe(true);
     });
   });
@@ -192,22 +192,22 @@ describe("StorageManager", () => {
   // Task 5.2: Story Mode Storage Persistence Tests
   // ============================================================================
 
-  describe("storyMode persistence", () => {
-    test("getConfig returns storyMode: false by default when not set", async () => {
+  describe('storyMode persistence', () => {
+    test('getConfig returns storyMode: false by default when not set', async () => {
       const config = await storage.getConfig();
 
       // If storyMode doesn't exist in storage, it should default to false (or undefined, but logic should treat as false)
       expect(config.storyMode ?? false).toBe(false);
     });
 
-    test("saveConfig persists storyMode: true", async () => {
+    test('saveConfig persists storyMode: true', async () => {
       await storage.saveConfig({ storyMode: true });
 
       const config = await storage.getConfig();
       expect(config.storyMode).toBe(true);
     });
 
-    test("saveConfig persists storyMode: false", async () => {
+    test('saveConfig persists storyMode: false', async () => {
       // First set to true
       await storage.saveConfig({ storyMode: true });
 
@@ -218,7 +218,7 @@ describe("StorageManager", () => {
       expect(config.storyMode).toBe(false);
     });
 
-    test("storyMode persists independently of other settings", async () => {
+    test('storyMode persists independently of other settings', async () => {
       // Set storyMode
       await storage.saveConfig({ storyMode: true });
 
@@ -235,19 +235,19 @@ describe("StorageManager", () => {
       expect(config.debugMode).toBe(true);
     });
 
-    test("storyMode survives multiple config updates", async () => {
+    test('storyMode survives multiple config updates', async () => {
       // Set initial config including storyMode
-      await storage.saveConfig({ storyMode: true, model: "initial-model" });
+      await storage.saveConfig({ storyMode: true, model: 'initial-model' });
 
       // Update model multiple times
-      await storage.saveConfig({ model: "model-v1" });
-      await storage.saveConfig({ model: "model-v2" });
-      await storage.saveConfig({ model: "model-v3" });
+      await storage.saveConfig({ model: 'model-v1' });
+      await storage.saveConfig({ model: 'model-v2' });
+      await storage.saveConfig({ model: 'model-v3' });
 
       // storyMode should still be true
       const config = await storage.getConfig();
       expect(config.storyMode).toBe(true);
-      expect(config.model).toBe("model-v3");
+      expect(config.model).toBe('model-v3');
     });
   });
 });

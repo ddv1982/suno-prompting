@@ -25,8 +25,12 @@ export interface TraceCollector {
   readonly capturedAt: string;
 
   addRunEvent: (type: 'run.start' | 'run.end', summary: string) => void;
-  addDecisionEvent: (event: Omit<TraceDecisionEvent, keyof TraceDecisionEvent & ('id' | 'ts' | 'tMs' | 'type')>) => void;
-  addLLMCallEvent: (event: Omit<TraceLLMCallEvent, keyof TraceLLMCallEvent & ('id' | 'ts' | 'tMs' | 'type')>) => void;
+  addDecisionEvent: (
+    event: Omit<TraceDecisionEvent, keyof TraceDecisionEvent & ('id' | 'ts' | 'tMs' | 'type')>
+  ) => void;
+  addLLMCallEvent: (
+    event: Omit<TraceLLMCallEvent, keyof TraceLLMCallEvent & ('id' | 'ts' | 'tMs' | 'type')>
+  ) => void;
   addErrorEvent: (error: TraceErrorEvent['error']) => void;
 
   finalize: () => TraceRun;

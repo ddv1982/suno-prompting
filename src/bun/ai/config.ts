@@ -17,7 +17,8 @@ const createProviderRegistrySafe = (
 ): ProviderRegistry => {
   const creator =
     aiSdk.createProviderRegistry ??
-    (aiSdk as { experimental_createProviderRegistry?: typeof aiSdk.createProviderRegistry }).experimental_createProviderRegistry;
+    (aiSdk as { experimental_createProviderRegistry?: typeof aiSdk.createProviderRegistry })
+      .experimental_createProviderRegistry;
 
   if (!creator) {
     throw new Error('AI SDK missing createProviderRegistry export. Please upgrade the ai package.');
@@ -118,17 +119,19 @@ export class AIConfig {
     if (config.maxMode !== undefined) this.maxMode = config.maxMode;
     if (config.lyricsMode !== undefined) this.lyricsMode = config.lyricsMode;
     if (config.storyMode !== undefined) this.storyMode = config.storyMode;
-    
+
     // Smart default: use local LLM if no API keys are configured
     if (config.useLocalLLM !== undefined) {
       this.useLocalLLM = config.useLocalLLM;
     } else {
       // Auto-enable local LLM if no API keys exist
       const apiKeyValues = Object.values(this.apiKeys) as (string | null)[];
-      const hasAnyKey = apiKeyValues.some((key): key is string => key !== null && key.trim() !== '');
+      const hasAnyKey = apiKeyValues.some(
+        (key): key is string => key !== null && key.trim() !== ''
+      );
       this.useLocalLLM = !hasAnyKey;
     }
-    
+
     if (config.ollamaConfig) {
       this.ollamaConfig = { ...this.ollamaConfig, ...config.ollamaConfig };
     }

@@ -1,7 +1,12 @@
 import { useMemo } from 'react';
 
 import type { MoodCategory } from '@bun/mood';
-import type { AdvancedSelection, RefinementType, StyleChanges, OriginalAdvancedSelection } from '@shared/types';
+import type {
+  AdvancedSelection,
+  RefinementType,
+  StyleChanges,
+  OriginalAdvancedSelection,
+} from '@shared/types';
 
 /**
  * Input for useRefinementType hook.
@@ -134,7 +139,14 @@ function detectStyleChanges(
  * ```
  */
 export function useRefinementType(input: UseRefinementTypeInput): UseRefinementTypeResult {
-  const { currentSelection, originalSelection, feedbackText, lyricsMode, hasCurrentPrompt, moodCategory } = input;
+  const {
+    currentSelection,
+    originalSelection,
+    feedbackText,
+    lyricsMode,
+    hasCurrentPrompt,
+    moodCategory,
+  } = input;
 
   return useMemo((): UseRefinementTypeResult => {
     // Not in refine mode - no refinement possible
@@ -166,5 +178,12 @@ export function useRefinementType(input: UseRefinementTypeInput): UseRefinementT
     // If none of the above, refinementType remains 'none'
 
     return { refinementType, styleChanges };
-  }, [currentSelection, originalSelection, feedbackText, lyricsMode, hasCurrentPrompt, moodCategory]);
+  }, [
+    currentSelection,
+    originalSelection,
+    feedbackText,
+    lyricsMode,
+    hasCurrentPrompt,
+    moodCategory,
+  ]);
 }

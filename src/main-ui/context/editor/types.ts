@@ -1,5 +1,12 @@
 import { type MoodCategory } from '@bun/mood';
-import { type EditorMode, type AdvancedSelection, type QuickVibesInput, type PromptMode, type CreativeBoostInput, type CreativeBoostMode } from '@shared/types';
+import {
+  type EditorMode,
+  type AdvancedSelection,
+  type QuickVibesInput,
+  type PromptMode,
+  type CreativeBoostInput,
+  type CreativeBoostMode,
+} from '@shared/types';
 
 /**
  * Editor state - the data/values in the editor context.
@@ -37,7 +44,9 @@ export interface EditorActionsContextType {
   setLyricsTopic: (topic: string) => void;
   setMoodCategory: (category: MoodCategory | null) => void;
   setQuickVibesInput: (input: QuickVibesInput) => void;
-  setCreativeBoostInput: (input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)) => void;
+  setCreativeBoostInput: (
+    input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)
+  ) => void;
   updateCreativeBoostInput: (updates: Partial<CreativeBoostInput>) => void;
   resetCreativeBoostInput: () => void;
   getEffectiveLockedPhrase: () => string | undefined;

@@ -1,13 +1,13 @@
-import { ChevronDown, Loader2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { ChevronDown, Loader2 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { SectionLabel } from "@/components/ui/section-label";
-import { type ChatMessage } from "@/lib/chat-utils";
-import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { SectionLabel } from '@/components/ui/section-label';
+import { type ChatMessage } from '@/lib/chat-utils';
+import { cn } from '@/lib/utils';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface ChatHistorySectionProps {
   chatMessages: ChatMessage[];
@@ -31,19 +31,23 @@ export function ChatHistorySection({
   }, [chatMessages]);
 
   return (
-    <Collapsible open={expanded} onOpenChange={onExpandedChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+    <Collapsible
+      open={expanded}
+      onOpenChange={onExpandedChange}
+      className="flex-1 flex flex-col min-h-0 overflow-hidden"
+    >
       <CollapsibleTrigger asChild>
         <button className="flex items-center gap-2 w-full text-left mb-3 group">
           <SectionLabel>Chat History</SectionLabel>
           {chatMessages.length > 0 && (
-            <span className="text-micro text-muted-foreground">
-              ({chatMessages.length})
-            </span>
+            <span className="text-micro text-muted-foreground">({chatMessages.length})</span>
           )}
-          <ChevronDown className={cn(
-            "w-4 h-4 text-muted-foreground transition-transform ml-auto",
-            expanded && "rotate-180"
-          )} />
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 text-muted-foreground transition-transform ml-auto',
+              expanded && 'rotate-180'
+            )}
+          />
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="flex-1 overflow-hidden">
@@ -70,20 +74,29 @@ export function ChatHistorySection({
   );
 }
 
-function ChatMessageBubble({ role, content }: { role: "user" | "ai"; content: string }): ReactElement {
+function ChatMessageBubble({
+  role,
+  content,
+}: {
+  role: 'user' | 'ai';
+  content: string;
+}): ReactElement {
   return (
-    <div className={cn("flex w-full mb-3 animate-fade-in", role === "user" ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        'flex w-full mb-3 animate-fade-in',
+        role === 'user' ? 'justify-end' : 'justify-start'
+      )}
+    >
       <div
         className={cn(
-          "max-w-[85%] rounded-xl px-4 py-2.5 text-body shadow-soft",
-          role === "user"
-            ? "bg-primary text-primary-foreground rounded-tr-sm shadow-panel"
-            : "bg-surface text-foreground rounded-tl-sm border"
+          'max-w-[85%] rounded-xl px-4 py-2.5 text-body shadow-soft',
+          role === 'user'
+            ? 'bg-primary text-primary-foreground rounded-tr-sm shadow-panel'
+            : 'bg-surface text-foreground rounded-tl-sm border'
         )}
       >
-        <div className="ui-label mb-1">
-          {role === "user" ? "You" : "Assistant"}
-        </div>
+        <div className="ui-label mb-1">{role === 'user' ? 'You' : 'Assistant'}</div>
         <div className="leading-relaxed whitespace-pre-wrap">{content}</div>
       </div>
     </div>

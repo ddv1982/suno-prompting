@@ -3,10 +3,16 @@ import { describe, test, expect } from 'bun:test';
 import { FullPromptRefineSchema } from '@shared/schemas/submit-validation';
 
 // Helper function that wraps the schema for backward-compatible test syntax
-const canRefineFullPrompt = (input: Parameters<typeof FullPromptRefineSchema.safeParse>[0]): boolean =>
-  FullPromptRefineSchema.safeParse(input).success;
+const canRefineFullPrompt = (
+  input: Parameters<typeof FullPromptRefineSchema.safeParse>[0]
+): boolean => FullPromptRefineSchema.safeParse(input).success;
 
-import type { RefinementType, StyleChanges, AdvancedSelection, OriginalAdvancedSelection } from '@shared/types';
+import type {
+  RefinementType,
+  StyleChanges,
+  AdvancedSelection,
+  OriginalAdvancedSelection,
+} from '@shared/types';
 
 /**
  * Integration tests for FullPromptInputPanel button state logic.
@@ -136,7 +142,17 @@ function createDefaultOriginalSelection(): OriginalAdvancedSelection {
  * canSubmit = !isGenerating && !inputOverLimit && !lyricsTopicOverLimit && lockedPhraseValidation.isValid && (currentPrompt ? canRefine : canSubmitContent)
  */
 function calculateButtonEnabled(state: ComponentState): boolean {
-  const { currentPrompt, pendingInput, advancedSelection, originalSelection, lyricsMode, isGenerating, inputOverLimit, lyricsTopicOverLimit, lockedPhraseValidation } = state;
+  const {
+    currentPrompt,
+    pendingInput,
+    advancedSelection,
+    originalSelection,
+    lyricsMode,
+    isGenerating,
+    inputOverLimit,
+    lyricsTopicOverLimit,
+    lockedPhraseValidation,
+  } = state;
 
   // Basic validation checks
   if (isGenerating) return false;

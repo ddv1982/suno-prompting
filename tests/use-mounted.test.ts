@@ -23,7 +23,7 @@ describe('useMounted hook', () => {
     test('returns MutableRefObject interface', () => {
       // Type-level verification that the return shape is correct
       // The hook should return React.MutableRefObject<boolean>
-      
+
       // This validates the exported function exists and has the correct signature
       const hookFn = useMountedModule.useMounted;
       expect(hookFn).toBeDefined();
@@ -35,9 +35,9 @@ describe('useMounted hook', () => {
     test('is imported and used by useAsyncAction hook', async () => {
       // Verify the hook is actually being used in the codebase
       const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-      
-      expect(asyncActionSource).toContain("import { useMounted }");
-      expect(asyncActionSource).toContain("const mountedRef = useMounted()");
+
+      expect(asyncActionSource).toContain('import { useMounted }');
+      expect(asyncActionSource).toContain('const mountedRef = useMounted()');
     });
   });
 });

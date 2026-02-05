@@ -13,7 +13,6 @@ import { enforceMaxLength } from './length';
 import type { PostProcessParams } from '@bun/ai/creative-boost/types';
 import type { GenerationResult } from '@bun/ai/types';
 
-
 /**
  * Post-process a parsed creative boost response.
  */
@@ -21,12 +20,30 @@ export async function postProcessCreativeBoostResponse(
   parsed: { style: string; title: string },
   params: PostProcessParams
 ): Promise<GenerationResult> {
-  const { maxMode, seedGenres, sunoStyles, lyricsTopic, description, withLyrics, config, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange } = params;
+  const {
+    maxMode,
+    seedGenres,
+    sunoStyles,
+    lyricsTopic,
+    description,
+    withLyrics,
+    config,
+    performanceInstruments,
+    performanceVocalStyle,
+    chordProgression,
+    bpmRange,
+  } = params;
 
   const ollamaEndpoint = config.getOllamaEndpoint?.();
-  const { styleResult } = await applyMaxModeConversion(
-    parsed.style, maxMode, config.getModel, { seedGenres, sunoStyles, performanceInstruments, performanceVocalStyle, chordProgression, bpmRange, ollamaEndpoint }
-  );
+  const { styleResult } = await applyMaxModeConversion(parsed.style, maxMode, config.getModel, {
+    seedGenres,
+    sunoStyles,
+    performanceInstruments,
+    performanceVocalStyle,
+    chordProgression,
+    bpmRange,
+    ollamaEndpoint,
+  });
 
   const processedStyle = await enforceMaxLength(styleResult, config.getModel, ollamaEndpoint);
 

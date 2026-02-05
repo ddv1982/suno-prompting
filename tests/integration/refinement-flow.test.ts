@@ -29,16 +29,20 @@ type ApiRefinementType = 'style' | 'lyrics' | 'combined';
  */
 function createMockAIEngine() {
   return {
-    generateInitial: mock(() => Promise.resolve({ 
-      text: 'Generated prompt', 
-      title: 'Title', 
-      lyrics: 'Lyrics' 
-    })),
-    refinePrompt: mock(() => Promise.resolve({ 
-      text: 'Refined prompt', 
-      title: 'Refined Title', 
-      lyrics: 'Refined Lyrics' 
-    })),
+    generateInitial: mock(() =>
+      Promise.resolve({
+        text: 'Generated prompt',
+        title: 'Title',
+        lyrics: 'Lyrics',
+      })
+    ),
+    refinePrompt: mock(() =>
+      Promise.resolve({
+        text: 'Refined prompt',
+        title: 'Refined Title',
+        lyrics: 'Refined Lyrics',
+      })
+    ),
     remixInstruments: mock(() => Promise.resolve({ text: 'Remixed instruments' })),
     remixGenre: mock(() => Promise.resolve({ text: 'Remixed genre' })),
     remixMood: mock(() => Promise.resolve({ text: 'Remixed mood' })),
@@ -48,16 +52,20 @@ function createMockAIEngine() {
     remixLyrics: mock(() => Promise.resolve({ lyrics: 'New Lyrics' })),
     generateQuickVibes: mock(() => Promise.resolve({ text: 'Quick vibes prompt' })),
     refineQuickVibes: mock(() => Promise.resolve({ text: 'Refined quick vibes' })),
-    generateCreativeBoost: mock(() => Promise.resolve({ 
-      text: 'Creative boost prompt', 
-      title: 'Creative Title', 
-      lyrics: 'Creative lyrics' 
-    })),
-    refineCreativeBoost: mock(() => Promise.resolve({ 
-      text: 'Refined creative boost', 
-      title: 'Refined Title', 
-      lyrics: 'Refined lyrics' 
-    })),
+    generateCreativeBoost: mock(() =>
+      Promise.resolve({
+        text: 'Creative boost prompt',
+        title: 'Creative Title',
+        lyrics: 'Creative lyrics',
+      })
+    ),
+    refineCreativeBoost: mock(() =>
+      Promise.resolve({
+        text: 'Refined creative boost',
+        title: 'Refined Title',
+        lyrics: 'Refined lyrics',
+      })
+    ),
     setProvider: mock(() => {}),
     setApiKey: mock(() => {}),
     setModel: mock(() => {}),
@@ -66,7 +74,7 @@ function createMockAIEngine() {
     setMaxMode: mock(() => {}),
     setUseLocalLLM: mock(() => {}),
     setLyricsMode: mock(() => {}),
-    getModel: mock(() => ({} as any)),
+    getModel: mock(() => ({}) as any),
     isDebugMode: mock(() => false),
   };
 }
@@ -93,12 +101,12 @@ function createMockStorage() {
   return {
     getHistory: mock(() => Promise.resolve(sessions)),
     saveSession: mock((session: PromptSession) => {
-      sessions = sessions.filter(s => s.id !== session.id);
+      sessions = sessions.filter((s) => s.id !== session.id);
       sessions.unshift(session);
       return Promise.resolve();
     }),
     deleteSession: mock((id: string) => {
-      sessions = sessions.filter(s => s.id !== id);
+      sessions = sessions.filter((s) => s.id !== id);
       return Promise.resolve();
     }),
     getConfig: mock(() => Promise.resolve(config)),
@@ -300,7 +308,7 @@ describe('Refinement Flow Integration', () => {
         genreOverride: 'alternative',
         // sunoStyles omitted as it's mutually exclusive with genreOverride
         refinementType: 'combined' as ApiRefinementType,
-        styleChanges: { 
+        styleChanges: {
           seedGenres: ['alternative'],
         },
       };
@@ -361,7 +369,9 @@ describe('Refinement Flow Integration', () => {
       };
 
       // Act & Assert
-      await expect(handlers.refinePrompt(refineParams)).rejects.toThrow('Combined refinement failed');
+      await expect(handlers.refinePrompt(refineParams)).rejects.toThrow(
+        'Combined refinement failed'
+      );
     });
   });
 

@@ -36,7 +36,9 @@ export function TimelineEvent({ event }: TimelineEventProps): ReactElement {
       </div>
 
       {/* Timestamp */}
-      <div className="text-xs text-muted-foreground font-mono mb-1">{formatTimestamp(event.tMs)}</div>
+      <div className="text-xs text-muted-foreground font-mono mb-1">
+        {formatTimestamp(event.tMs)}
+      </div>
 
       {/* Event card */}
       <div className="pb-4">

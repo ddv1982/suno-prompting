@@ -26,7 +26,10 @@ export function traceDecision(trace: TraceCollector | undefined, input: TraceDec
   if (!trace) return;
 
   const key = truncateTextWithMarker(input.key, LIMITS.keyChars).text;
-  const branchTaken = truncateTextWithMarker(redactSecretsInText(input.branchTaken), LIMITS.branchTakenChars).text;
+  const branchTaken = truncateTextWithMarker(
+    redactSecretsInText(input.branchTaken),
+    LIMITS.branchTakenChars
+  ).text;
   const why = truncateTextWithMarker(redactSecretsInText(input.why), LIMITS.whyChars).text;
 
   const selection = input.selection

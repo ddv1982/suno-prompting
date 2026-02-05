@@ -10,13 +10,9 @@ let mockGenerateWithOllama: ReturnType<typeof mock>;
 let mockGenerateText: ReturnType<typeof mock>;
 
 beforeEach(async () => {
-  mockCheckOllamaAvailable = mock(() =>
-    Promise.resolve({ available: true, hasGemma: true })
-  );
+  mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: true, hasGemma: true }));
   mockInvalidateOllamaCache = mock(() => {});
-  mockGenerateWithOllama = mock(() =>
-    Promise.resolve('[Verse]\nRefined lyrics from Ollama')
-  );
+  mockGenerateWithOllama = mock(() => Promise.resolve('[Verse]\nRefined lyrics from Ollama'));
   mockGenerateText = mock(() =>
     Promise.resolve({
       text: JSON.stringify({
@@ -46,7 +42,7 @@ afterEach(() => {
 
 function createMockConfig(overrides: Partial<RefinementConfig> = {}): RefinementConfig {
   return {
-    getModel: () => ({} as any),
+    getModel: () => ({}) as any,
     isDebugMode: () => false,
     isMaxMode: () => false,
     isLyricsMode: () => false,
@@ -228,7 +224,7 @@ instruments: "piano"`;
     expect(result.text).toContain('style tags:');
     expect(result.text).not.toContain('old tags, outdated');
     expect(result.lyrics).toBeUndefined();
-    
+
     // Should NOT call Ollama for style refinement
     expect(mockGenerateWithOllama).not.toHaveBeenCalled();
     // Should NOT call cloud generateText either
@@ -262,7 +258,7 @@ instruments: "piano"`;
     expect(result.text).not.toContain('old tags, outdated');
     expect(result.lyrics).toBeDefined();
     expect(result.lyrics).toContain('Refined lyrics from Ollama');
-    
+
     // Should call Ollama exactly once - for lyrics only
     expect(mockGenerateWithOllama).toHaveBeenCalledTimes(1);
     // Should NOT call cloud generateText
@@ -296,7 +292,7 @@ instruments: "guitar"`;
     expect(result.text).not.toContain('old tags, outdated');
     expect(result.title).toBe('Rock Ballad'); // Title preserved (not from LLM)
     expect(result.lyrics).toBeDefined();
-    
+
     // Should call cloud generateText for lyrics only
     expect(mockGenerateText).toHaveBeenCalled();
     // Should NOT use Ollama client for cloud mode
@@ -326,7 +322,7 @@ instruments: "guitar"`;
     expect(result.title).toBe('Jazz Vibes');
     expect(result.lyrics).toBeDefined();
     expect(result.lyrics).toContain('Refined lyrics from Ollama');
-    
+
     // Should call Ollama for lyrics bootstrap
     expect(mockGenerateWithOllama).toHaveBeenCalled();
   });

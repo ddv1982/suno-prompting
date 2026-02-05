@@ -10,9 +10,7 @@ export const AppProvider = ({ children }: { children: ReactNode }): ReactNode =>
     <SettingsProvider>
       <SessionProvider>
         <EditorProvider>
-          <GenerationProvider>
-            {children}
-          </GenerationProvider>
+          <GenerationProvider>{children}</GenerationProvider>
         </EditorProvider>
       </SessionProvider>
     </SettingsProvider>

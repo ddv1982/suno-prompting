@@ -84,10 +84,7 @@ const GENRE_MOOD_AFFINITIES: Record<string, readonly CompoundMood[]> = {
  * selectCompoundMood('unknown-genre');
  * // Random selection from all compound moods
  */
-export function selectCompoundMood(
-  genre: string,
-  rng: () => number = Math.random,
-): CompoundMood {
+export function selectCompoundMood(genre: string, rng: () => number = Math.random): CompoundMood {
   const normalizedGenre = genre.toLowerCase().replace(/[^a-z]/g, '');
 
   // Check for genre-specific affinities

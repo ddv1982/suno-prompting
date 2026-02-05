@@ -11,7 +11,15 @@ export const FUNK_GENRE: GenreDefinition = {
     },
     color: {
       pick: { min: 1, max: 2 },
-      instruments: ['slap bass', 'wah guitar', 'low brass', 'trumpet', 'tenor sax', 'trombone', 'talkbox'],
+      instruments: [
+        'slap bass',
+        'wah guitar',
+        'low brass',
+        'trumpet',
+        'tenor sax',
+        'trombone',
+        'talkbox',
+      ],
     },
     movement: {
       pick: { min: 1, max: 2 },
@@ -32,5 +40,14 @@ export const FUNK_GENRE: GenreDefinition = {
     ['talkbox', 'vocoder'],
   ],
   bpm: { min: 95, max: 115, typical: 105 },
-  moods: ['Groovy', 'Tight', 'Syncopated', 'Danceable', 'Raw', 'Soulful', 'Energetic', 'Swaggering'],
+  moods: [
+    'Groovy',
+    'Tight',
+    'Syncopated',
+    'Danceable',
+    'Raw',
+    'Soulful',
+    'Energetic',
+    'Swaggering',
+  ],
 };

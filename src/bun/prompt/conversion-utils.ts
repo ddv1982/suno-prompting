@@ -34,40 +34,40 @@ export function extractFirstGenre(genre: string): string {
 export const GENRE_ALIASES: Record<string, string> = {
   'hip hop': 'trap',
   'hip-hop': 'trap',
-  'hiphop': 'trap',
-  'rnb': 'rnb',
+  hiphop: 'trap',
+  rnb: 'rnb',
   'r&b': 'rnb',
   'r and b': 'rnb',
-  'lofi': 'lofi',
+  lofi: 'lofi',
   'lo-fi': 'lofi',
   'lo fi': 'lofi',
-  'edm': 'electronic',
-  'dance': 'house',
-  'dnb': 'electronic',
+  edm: 'electronic',
+  dance: 'house',
+  dnb: 'electronic',
   'drum and bass': 'electronic',
-  'orchestral': 'cinematic',
+  orchestral: 'cinematic',
   'film score': 'cinematic',
-  'soundtrack': 'cinematic',
-  'acoustic': 'folk',
+  soundtrack: 'cinematic',
+  acoustic: 'folk',
   'singer-songwriter': 'folk',
   'singer songwriter': 'folk',
   'r&b/soul': 'rnb',
   'progressive rock': 'rock',
   'prog rock': 'rock',
-  'alternative': 'indie',
+  alternative: 'indie',
   'alt rock': 'indie',
   'hard rock': 'rock',
   'classic rock': 'rock',
   'nu metal': 'metal',
   'heavy metal': 'metal',
-  'thrash': 'metal',
+  thrash: 'metal',
   'neo soul': 'soul',
   'neo-soul': 'soul',
   'bossa nova': 'jazz',
-  'bossa': 'jazz',
+  bossa: 'jazz',
   'smooth jazz': 'jazz',
-  'bebop': 'jazz',
-  'fusion': 'jazz',
+  bebop: 'jazz',
+  fusion: 'jazz',
 };
 
 /**
@@ -109,7 +109,7 @@ export function inferBpm(genre: string | null, useAliases = true): number {
 
   const firstGenre = extractFirstGenre(genre);
   const lookupGenre = useAliases ? normalizeGenre(firstGenre) : firstGenre;
-  
+
   if (lookupGenre && lookupGenre in GENRE_REGISTRY) {
     const genreDef = GENRE_REGISTRY[lookupGenre as GenreType];
     if (genreDef?.bpm) {
@@ -138,14 +138,14 @@ export function enhanceInstruments(
   performanceInstruments?: string[]
 ): string {
   let instrumentList = instruments;
-  
+
   // Priority: parsed > performance guidance > genre fallback
   if (instrumentList.length === 0 && performanceInstruments?.length) {
     instrumentList = performanceInstruments;
   } else if (instrumentList.length === 0) {
     const firstGenre = genre ? extractFirstGenre(genre) : null;
     const normalizedGenre = firstGenre ? normalizeGenre(firstGenre) : null;
-    
+
     if (normalizedGenre && normalizedGenre in GENRE_REGISTRY) {
       instrumentList = selectInstrumentsForGenre(normalizedGenre as GenreType, { maxTags: 3 });
     } else {
@@ -165,8 +165,8 @@ export function enhanceInstruments(
 // ============================================================================
 
 export interface ResolvedGenre {
-  forOutput: string;   // Display string for the output
-  forLookup: string;   // Key for BPM/instrument lookups
+  forOutput: string; // Display string for the output
+  forLookup: string; // Key for BPM/instrument lookups
 }
 
 /**
@@ -187,7 +187,7 @@ export function resolveGenre(
       forLookup: extractBaseGenre(sunoStyles[0] ?? '') || DEFAULT_GENRE,
     };
   }
-  
+
   if (seedGenres?.length) {
     // Seed genres: format using display names
     return {
@@ -195,7 +195,7 @@ export function resolveGenre(
       forLookup: seedGenres[0] || DEFAULT_GENRE,
     };
   }
-  
+
   // Detected from text (fallback)
   return {
     forOutput: detected || DEFAULT_GENRE,

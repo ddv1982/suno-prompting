@@ -12,7 +12,11 @@
 import { describe, test, expect } from 'bun:test';
 
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import { getCompatibilityScore, canFuse, getCompatibleGenres } from '@bun/instruments/genres/compatibility';
+import {
+  getCompatibilityScore,
+  canFuse,
+  getCompatibleGenres,
+} from '@bun/instruments/genres/compatibility';
 import { assembleStyleTags } from '@bun/prompt/deterministic/styles';
 import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes';
 import { QUICK_VIBES_TEMPLATES } from '@bun/prompt/quick-vibes/templates';
@@ -116,9 +120,12 @@ describe('v3.0 Performance: Genre Registry', () => {
 
     // Test each genre individually
     for (const genre of allGenres) {
-      const stats = benchmark(() => {
-        assembleStyleTags([genre], createSeededRng(Math.random() * 1000000));
-      }, Math.ceil(ITERATIONS / allGenres.length) + 5);
+      const stats = benchmark(
+        () => {
+          assembleStyleTags([genre], createSeededRng(Math.random() * 1000000));
+        },
+        Math.ceil(ITERATIONS / allGenres.length) + 5
+      );
 
       genreTimes.push({ genre, avg: stats.average, max: stats.max });
     }
@@ -145,15 +152,35 @@ describe('v3.0 Performance: Genre Registry', () => {
   test('should generate tags for new v3.0 genres in <1ms average', () => {
     const newGenres: GenreType[] = [
       // Electronic subgenres
-      'dubstep', 'drumandbass', 'idm', 'breakbeat', 'jungle', 'hardstyle', 'ukgarage',
+      'dubstep',
+      'drumandbass',
+      'idm',
+      'breakbeat',
+      'jungle',
+      'hardstyle',
+      'ukgarage',
       // Rock/Alt subgenres
-      'shoegaze', 'postpunk', 'emo', 'grunge', 'stonerrock', 'mathrock',
+      'shoegaze',
+      'postpunk',
+      'emo',
+      'grunge',
+      'stonerrock',
+      'mathrock',
       // Synth subgenres
-      'darksynth', 'outrun', 'synthpop',
+      'darksynth',
+      'outrun',
+      'synthpop',
       // World genres
-      'celtic', 'balkan', 'middleeastern', 'afrocuban', 'bossanova',
+      'celtic',
+      'balkan',
+      'middleeastern',
+      'afrocuban',
+      'bossanova',
       // Other genres
-      'gospel', 'bluegrass', 'ska', 'dancehall',
+      'gospel',
+      'bluegrass',
+      'ska',
+      'dancehall',
     ];
 
     const times: number[] = [];

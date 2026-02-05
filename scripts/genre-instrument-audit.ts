@@ -24,14 +24,15 @@ function uniqLower(items: readonly string[]): string[] {
 
 function listGenreInstruments(genre: GenreDefinition): string[] {
   const orderedPools = genre.poolOrder
-    .map(key => genre.pools[key])
+    .map((key) => genre.pools[key])
     .filter((p): p is InstrumentPool => Boolean(p));
-  return uniqLower(orderedPools.flatMap(p => p.instruments));
+  return uniqLower(orderedPools.flatMap((p) => p.instruments));
 }
 
 function listGenreSpecificInstruments(genre: GenreDefinition): string[] {
   return listGenreInstruments(genre).filter(
-    i => !isFoundationalInstrument(i) && !isMultiGenreInstrument(i) && !isOrchestralColorInstrument(i)
+    (i) =>
+      !isFoundationalInstrument(i) && !isMultiGenreInstrument(i) && !isOrchestralColorInstrument(i)
   );
 }
 
@@ -58,7 +59,7 @@ function main(): void {
     .sort((a, b) => b.count - a.count);
 
   const genreSpecificCounts = genres
-    .map(g => ({ genre: g.name, count: listGenreSpecificInstruments(g).length }))
+    .map((g) => ({ genre: g.name, count: listGenreSpecificInstruments(g).length }))
     .sort((a, b) => b.count - a.count);
 
   const overlap = [...instrumentToGenres.entries()]
@@ -98,8 +99,8 @@ function main(): void {
 
   console.log('\n=== Ambient-only instruments ===');
   const ambientOnly = overlap
-    .filter(r => r.count === 1 && r.genres[0] === 'Ambient')
-    .map(r => r.instrument)
+    .filter((r) => r.count === 1 && r.genres[0] === 'Ambient')
+    .map((r) => r.instrument)
     .sort();
   console.log(ambientOnly.join(', '));
 }

@@ -134,13 +134,7 @@ export const QUESTION_WORDS: readonly string[] = [
  * Maps pattern category to available pattern templates
  */
 export const EXTENDED_PATTERNS: Record<string, readonly string[]> = {
-  number: [
-    '{number}',
-    'Track {number}',
-    '{number} Miles',
-    '{number} Days',
-    'Room {number}',
-  ],
+  number: ['{number}', 'Track {number}', '{number} Miles', '{number} Days', 'Room {number}'],
   place: [
     '{place}',
     'Nights in {place}',
@@ -149,10 +143,6 @@ export const EXTENDED_PATTERNS: Record<string, readonly string[]> = {
     '{place} Sunset',
     'Lost in {place}',
   ],
-  single: [
-    '{single}',
-  ],
-  question: [
-    '{question}',
-  ],
+  single: ['{single}'],
+  question: ['{question}'],
 };

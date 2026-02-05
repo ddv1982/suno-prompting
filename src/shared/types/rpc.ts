@@ -86,12 +86,16 @@ export interface RPCHandlers {
   saveAllSettings: (params: SaveAllSettingsParams) => Promise<{ success: boolean }>;
   getPromptMode: (params: Record<string, never>) => Promise<{ promptMode: PromptMode }>;
   setPromptMode: (params: SetPromptModeParams) => Promise<{ success: boolean }>;
-  getCreativeBoostMode: (params: Record<string, never>) => Promise<{ creativeBoostMode: CreativeBoostMode }>;
+  getCreativeBoostMode: (
+    params: Record<string, never>
+  ) => Promise<{ creativeBoostMode: CreativeBoostMode }>;
   setCreativeBoostMode: (params: SetCreativeBoostModeParams) => Promise<{ success: boolean }>;
   generateQuickVibes: (params: GenerateQuickVibesParams) => Promise<GenerateQuickVibesResponse>;
   refineQuickVibes: (params: RefineQuickVibesParams) => Promise<RefineQuickVibesResponse>;
   convertToMaxFormat: (params: ConvertToMaxFormatParams) => Promise<ConvertToMaxFormatResponse>;
-  generateCreativeBoost: (params: GenerateCreativeBoostParams) => Promise<GenerateCreativeBoostResponse>;
+  generateCreativeBoost: (
+    params: GenerateCreativeBoostParams
+  ) => Promise<GenerateCreativeBoostResponse>;
   refineCreativeBoost: (params: RefineCreativeBoostParams) => Promise<RefineCreativeBoostResponse>;
   // Ollama handlers
   checkOllamaStatus: (params: Record<string, never>) => Promise<CheckOllamaStatusResponse>;

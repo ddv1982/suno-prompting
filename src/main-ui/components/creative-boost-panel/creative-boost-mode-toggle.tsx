@@ -1,9 +1,9 @@
-import { Settings2 } from "lucide-react";
+import { Settings2 } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
-import type { CreativeBoostMode } from "@shared/types";
-import type { ReactElement } from "react";
+import type { CreativeBoostMode } from '@shared/types';
+import type { ReactElement } from 'react';
 
 interface CreativeBoostModeToggleProps {
   mode: CreativeBoostMode;
@@ -21,7 +21,9 @@ export function CreativeBoostModeToggle({
       <Button
         variant={mode === 'simple' ? 'default' : 'outline'}
         size="xs"
-        onClick={() => { onModeChange('simple'); }}
+        onClick={() => {
+          onModeChange('simple');
+        }}
         autoDisable
         className="font-semibold"
       >
@@ -30,7 +32,9 @@ export function CreativeBoostModeToggle({
       <Button
         variant={mode === 'advanced' ? 'default' : 'outline'}
         size="xs"
-        onClick={() => { onModeChange('advanced'); }}
+        onClick={() => {
+          onModeChange('advanced');
+        }}
         autoDisable
         className="font-semibold"
       >
@@ -38,9 +42,7 @@ export function CreativeBoostModeToggle({
         Advanced
       </Button>
       {mode === 'simple' && !isDirectMode && (
-        <span className="ui-helper ml-2 hidden sm:inline">
-          AI auto-selects genres and styles
-        </span>
+        <span className="ui-helper ml-2 hidden sm:inline">AI auto-selects genres and styles</span>
       )}
     </div>
   );

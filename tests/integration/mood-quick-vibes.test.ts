@@ -7,11 +7,7 @@
 
 import { beforeAll, describe, expect, test } from 'bun:test';
 
-import {
-  initializeMoodMappings,
-  MOOD_CATEGORIES,
-  type MoodCategory,
-} from '@bun/mood';
+import { initializeMoodMappings, MOOD_CATEGORIES, type MoodCategory } from '@bun/mood';
 import {
   buildDeterministicQuickVibes,
   QUICK_VIBES_TEMPLATES,
@@ -74,7 +70,11 @@ describe('Quick Vibes with mood category integration', () => {
         const rng = createFixedRng(0.5);
 
         // Act
-        const result = buildDeterministicQuickVibes(category, true, { maxMode: true, moodCategory, rng });
+        const result = buildDeterministicQuickVibes(category, true, {
+          maxMode: true,
+          moodCategory,
+          rng,
+        });
 
         // Assert
         expect(containsMoodFromCategory(result.text, moodCategory)).toBe(true);
@@ -102,7 +102,11 @@ describe('Quick Vibes with mood category integration', () => {
     const rng = createFixedRng(0.3);
 
     // Act
-    const result = buildDeterministicQuickVibes(category, true, { maxMode: true, moodCategory: undefined, rng });
+    const result = buildDeterministicQuickVibes(category, true, {
+      maxMode: true,
+      moodCategory: undefined,
+      rng,
+    });
 
     // Assert
     expect(containsMoodFromTemplate(result.text, template)).toBe(true);
@@ -125,7 +129,11 @@ describe('Quick Vibes with mood category integration', () => {
         const rng = createFixedRng(0.5);
 
         // Act
-        const result = buildDeterministicQuickVibes(category, true, { maxMode: true, moodCategory, rng });
+        const result = buildDeterministicQuickVibes(category, true, {
+          maxMode: true,
+          moodCategory,
+          rng,
+        });
 
         // Assert
         expect(result.text).toBeDefined();
@@ -142,12 +150,14 @@ describe('Quick Vibes with mood category integration', () => {
     const moodCategory: MoodCategory = 'calm';
 
     // Act - generate twice with same RNG
-    const result1 = buildDeterministicQuickVibes(category, true, { maxMode: true,
+    const result1 = buildDeterministicQuickVibes(category, true, {
+      maxMode: true,
       moodCategory,
       rng: createFixedRng(0.5),
     });
 
-    const result2 = buildDeterministicQuickVibes(category, true, { maxMode: true,
+    const result2 = buildDeterministicQuickVibes(category, true, {
+      maxMode: true,
       moodCategory,
       rng: createFixedRng(0.5),
     });
@@ -162,12 +172,14 @@ describe('Quick Vibes with mood category integration', () => {
     const category: QuickVibesCategory = 'lofi-study';
 
     // Act
-    const calmResult = buildDeterministicQuickVibes(category, true, { maxMode: true,
+    const calmResult = buildDeterministicQuickVibes(category, true, {
+      maxMode: true,
       moodCategory: 'calm',
       rng: createFixedRng(0.5),
     });
 
-    const energeticResult = buildDeterministicQuickVibes(category, true, { maxMode: true,
+    const energeticResult = buildDeterministicQuickVibes(category, true, {
+      maxMode: true,
       moodCategory: 'energetic',
       rng: createFixedRng(0.5),
     });
@@ -183,7 +195,8 @@ describe('Quick Vibes with mood category integration', () => {
     const moodCategory: MoodCategory = 'playful';
 
     // Act
-    const result = buildDeterministicQuickVibes(category, true, { maxMode: true,
+    const result = buildDeterministicQuickVibes(category, true, {
+      maxMode: true,
       moodCategory,
       rng: createFixedRng(0.5),
     });

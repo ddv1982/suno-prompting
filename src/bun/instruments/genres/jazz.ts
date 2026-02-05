@@ -12,9 +12,18 @@ export const JAZZ_GENRE: GenreDefinition = {
     color: {
       pick: { min: 1, max: 2 },
       instruments: [
-        'saxophone', 'tenor sax', 'alto sax', 'soprano sax', 'baritone saxophone',
-        'trumpet', 'muted trumpet', 'flugelhorn', 'trombone',
-        'vibraphone', 'clarinet', 'flute',
+        'saxophone',
+        'tenor sax',
+        'alto sax',
+        'soprano sax',
+        'baritone saxophone',
+        'trumpet',
+        'muted trumpet',
+        'flugelhorn',
+        'trombone',
+        'vibraphone',
+        'clarinet',
+        'flute',
       ],
     },
     movement: {
@@ -48,5 +57,15 @@ export const JAZZ_GENRE: GenreDefinition = {
     ['trumpet', 'flugelhorn'],
   ],
   bpm: { min: 80, max: 160, typical: 110 },
-  moods: ['Smooth', 'Warm', 'Sophisticated', 'Intimate', 'Late Night', 'Elegant', 'Groovy', 'Laid Back', 'Cool'],
+  moods: [
+    'Smooth',
+    'Warm',
+    'Sophisticated',
+    'Intimate',
+    'Late Night',
+    'Elegant',
+    'Groovy',
+    'Laid Back',
+    'Cool',
+  ],
 };

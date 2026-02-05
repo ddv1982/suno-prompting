@@ -1,6 +1,6 @@
 /**
  * Tests for trace and rng support in deterministic remix operations.
- * 
+ *
  * IMPORTANT: These tests may be skipped when run alongside tests that mock
  * @bun/prompt/deterministic (like ai-refinement.test.ts). Run this file
  * individually for full coverage: `bun test tests/remix-trace.test.ts`
@@ -30,7 +30,7 @@ function checkIfMocked(): boolean {
   const prompt = 'genre: "pop"\nmood: "happy"\nstyle tags: "test"';
   remixStyleTags(prompt, trace);
   const finalized = trace.finalize();
-  return !finalized.events.some(e => e.type === 'decision');
+  return !finalized.events.some((e) => e.type === 'decision');
 }
 
 // Wrapper that skips test if module is mocked

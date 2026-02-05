@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const BOSSANOVA_GENRE: GenreDefinition = {
   name: 'Bossa Nova',
   keywords: ['bossa nova', 'brazilian jazz', 'mpb', 'tropicalia', 'brazilian'],
-  description: 'Smooth Brazilian jazz with gentle rhythms, intimate vocals, and sophisticated harmonies',
+  description:
+    'Smooth Brazilian jazz with gentle rhythms, intimate vocals, and sophisticated harmonies',
   pools: {
     guitar: {
       pick: { min: 1, max: 1 },

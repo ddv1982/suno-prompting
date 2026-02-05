@@ -1,11 +1,11 @@
 /**
  * Performance benchmark tests for deterministic style tag generation.
- * 
+ *
  * Critical requirement: assembleStyleTags must complete in <50ms for real-time UI responsiveness.
- * 
+ *
  * This test suite validates that the tag selection system maintains
  * the required performance threshold across various genres and usage patterns.
- * 
+ *
  * @see droidz/specs/2026-01-11/tasks.md - Task Group 1.5
  */
 
@@ -216,7 +216,10 @@ describe('Performance: assembleStyleTags', () => {
 
     test('synthwave electronic hybrid should generate tags in <50ms (avg and p95)', () => {
       const stats = benchmark(() => {
-        assembleStyleTags(['synthwave' as GenreType, 'electronic'], createSeededRng(Math.random() * 1000000));
+        assembleStyleTags(
+          ['synthwave' as GenreType, 'electronic'],
+          createSeededRng(Math.random() * 1000000)
+        );
       }, ITERATIONS);
 
       console.info(formatStats(stats, 'synthwave electronic'));
@@ -227,7 +230,10 @@ describe('Performance: assembleStyleTags', () => {
 
     test('4-genre blend should generate tags in <50ms (avg and p95)', () => {
       const stats = benchmark(() => {
-        assembleStyleTags(['jazz', 'rock', 'blues', 'funk'], createSeededRng(Math.random() * 1000000));
+        assembleStyleTags(
+          ['jazz', 'rock', 'blues', 'funk'],
+          createSeededRng(Math.random() * 1000000)
+        );
       }, ITERATIONS);
 
       console.info(formatStats(stats, 'jazz rock blues funk'));
@@ -365,7 +371,7 @@ describe('Performance: assembleStyleTags', () => {
 describe('Performance: regression detection', () => {
   test('baseline performance comparison (document current performance)', () => {
     const BASELINE_ITERATIONS = 2000;
-    
+
     const stats = benchmark(() => {
       assembleStyleTags(['pop'], createSeededRng(Math.random() * 1000000));
     }, BASELINE_ITERATIONS);

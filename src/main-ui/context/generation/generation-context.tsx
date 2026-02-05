@@ -9,8 +9,14 @@ import { useQuickVibesActions } from '@/hooks/use-quick-vibes-actions';
 import { useRemixActions } from '@/hooks/use-remix-actions';
 
 import { GenerationStateProvider, useGenerationStateContext } from './generation-state-context';
-import { SessionOperationsProvider, useSessionOperationsContext } from './session-operations-context';
-import { StandardGenerationProvider, useStandardGenerationContext } from './standard-generation-context';
+import {
+  SessionOperationsProvider,
+  useSessionOperationsContext,
+} from './session-operations-context';
+import {
+  StandardGenerationProvider,
+  useStandardGenerationContext,
+} from './standard-generation-context';
 
 import type { GenerationContextType } from './types';
 
@@ -32,33 +38,36 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
   const sessionOps = useSessionOperationsContext();
   const stdGeneration = useStandardGenerationContext();
 
-  const baseDeps = useMemo(() => ({
-    isGenerating: stateCtx.isGenerating,
-    currentSession,
-    generateId,
-    saveSession,
-    setGeneratingAction: stateCtx.setGeneratingAction,
-    setDebugTrace: stateCtx.setDebugTrace,
-    setChatMessages: stateCtx.setChatMessages,
-    setValidation: stateCtx.setValidation,
-    showToast,
-    startOptimistic: stateCtx.startOptimistic,
-    completeOptimistic: stateCtx.completeOptimistic,
-    errorOptimistic: stateCtx.errorOptimistic,
-  }), [
-    stateCtx.isGenerating,
-    currentSession,
-    generateId,
-    saveSession,
-    stateCtx.setGeneratingAction,
-    stateCtx.setDebugTrace,
-    stateCtx.setChatMessages,
-    stateCtx.setValidation,
-    showToast,
-    stateCtx.startOptimistic,
-    stateCtx.completeOptimistic,
-    stateCtx.errorOptimistic,
-  ]);
+  const baseDeps = useMemo(
+    () => ({
+      isGenerating: stateCtx.isGenerating,
+      currentSession,
+      generateId,
+      saveSession,
+      setGeneratingAction: stateCtx.setGeneratingAction,
+      setDebugTrace: stateCtx.setDebugTrace,
+      setChatMessages: stateCtx.setChatMessages,
+      setValidation: stateCtx.setValidation,
+      showToast,
+      startOptimistic: stateCtx.startOptimistic,
+      completeOptimistic: stateCtx.completeOptimistic,
+      errorOptimistic: stateCtx.errorOptimistic,
+    }),
+    [
+      stateCtx.isGenerating,
+      currentSession,
+      generateId,
+      saveSession,
+      stateCtx.setGeneratingAction,
+      stateCtx.setDebugTrace,
+      stateCtx.setChatMessages,
+      stateCtx.setValidation,
+      showToast,
+      stateCtx.startOptimistic,
+      stateCtx.completeOptimistic,
+      stateCtx.errorOptimistic,
+    ]
+  );
 
   const remixActions = useRemixActions(baseDeps);
   const quickVibesActions = useQuickVibesActions({
@@ -74,16 +83,26 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
     lyricsMode,
   });
 
-  const contextValue = useMemo<GenerationContextType>(() => ({
-    ...stateCtx, ...sessionOps, ...stdGeneration,
-    handleRemixInstruments: remixActions.handleRemixInstruments, handleRemixGenre: remixActions.handleRemixGenre,
-    handleRemixMood: remixActions.handleRemixMood, handleRemixStyleTags: remixActions.handleRemixStyleTags,
-    handleRemixRecording: remixActions.handleRemixRecording, handleRemixTitle: remixActions.handleRemixTitle,
-    handleRemixLyrics: remixActions.handleRemixLyrics, handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
-    handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes, handleRefineQuickVibes: quickVibesActions.handleRefineQuickVibes,
-    handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
-    handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
-  }), [stateCtx, sessionOps, stdGeneration, remixActions, quickVibesActions, creativeBoostActions]);
+  const contextValue = useMemo<GenerationContextType>(
+    () => ({
+      ...stateCtx,
+      ...sessionOps,
+      ...stdGeneration,
+      handleRemixInstruments: remixActions.handleRemixInstruments,
+      handleRemixGenre: remixActions.handleRemixGenre,
+      handleRemixMood: remixActions.handleRemixMood,
+      handleRemixStyleTags: remixActions.handleRemixStyleTags,
+      handleRemixRecording: remixActions.handleRemixRecording,
+      handleRemixTitle: remixActions.handleRemixTitle,
+      handleRemixLyrics: remixActions.handleRemixLyrics,
+      handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
+      handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
+      handleRefineQuickVibes: quickVibesActions.handleRefineQuickVibes,
+      handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
+      handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
+    }),
+    [stateCtx, sessionOps, stdGeneration, remixActions, quickVibesActions, creativeBoostActions]
+  );
 
   return <GenerationContext.Provider value={contextValue}>{children}</GenerationContext.Provider>;
 }

@@ -25,20 +25,8 @@ const ERA_PRODUCTION_TAGS: Record<Era, readonly string[]> = {
     'lo-fi crackle',
     'warm distortion',
   ],
-  '70s': [
-    'analog warmth',
-    'tape saturation',
-    'wide stereo',
-    'warm bass',
-    'natural room sound',
-  ],
-  '80s': [
-    'gated reverb',
-    'digital clarity',
-    'synth pads',
-    'bright highs',
-    'punchy drums',
-  ],
+  '70s': ['analog warmth', 'tape saturation', 'wide stereo', 'warm bass', 'natural room sound'],
+  '80s': ['gated reverb', 'digital clarity', 'synth pads', 'bright highs', 'punchy drums'],
   '90s': [
     'compressed drums',
     'lo-fi aesthetic',

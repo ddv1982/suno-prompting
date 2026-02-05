@@ -3,10 +3,19 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const PUNK_GENRE: GenreDefinition = {
   name: 'Punk',
   keywords: [
-    'punk', 'pop punk', 'emo', 'emo pop', 'punk rock', 'hardcore',
-    'y2k pop punk', 'indie pop punk', 'skate punk', 'melodic punk',
+    'punk',
+    'pop punk',
+    'emo',
+    'emo pop',
+    'punk rock',
+    'hardcore',
+    'y2k pop punk',
+    'indie pop punk',
+    'skate punk',
+    'melodic punk',
   ],
-  description: 'Fast, energetic music with distorted guitars, driving rhythms, and raw emotional vocals',
+  description:
+    'Fast, energetic music with distorted guitars, driving rhythms, and raw emotional vocals',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -29,5 +38,15 @@ export const PUNK_GENRE: GenreDefinition = {
     ['distorted guitar', 'guitar'],
   ],
   bpm: { min: 160, max: 200, typical: 175 },
-  moods: ['Energetic', 'Rebellious', 'Raw', 'Youthful', 'Urgent', 'Cathartic', 'Defiant', 'Emotional', 'Driving'],
+  moods: [
+    'Energetic',
+    'Rebellious',
+    'Raw',
+    'Youthful',
+    'Urgent',
+    'Cathartic',
+    'Defiant',
+    'Emotional',
+    'Driving',
+  ],
 };

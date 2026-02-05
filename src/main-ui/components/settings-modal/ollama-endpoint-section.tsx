@@ -1,9 +1,9 @@
-import { Server } from "lucide-react";
+import { Server } from 'lucide-react';
 
-import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/section-label";
+import { Input } from '@/components/ui/input';
+import { SectionLabel } from '@/components/ui/section-label';
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface OllamaEndpointSectionProps {
   endpoint: string;
@@ -23,7 +23,9 @@ export function OllamaEndpointSection({
       <Input
         type="url"
         value={endpoint}
-        onChange={(e) => { onChange(e.target.value); }}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
         placeholder="http://127.0.0.1:11434"
         className="font-mono text-sm"
       />

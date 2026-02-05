@@ -22,9 +22,7 @@ import type { APIKeys } from '@shared/types';
  */
 function computeIsLLMAvailable(useLocalLLM: boolean, apiKeys: APIKeys): boolean {
   const hasAnyApiKey = Boolean(
-    apiKeys.groq?.trim() ||
-    apiKeys.openai?.trim() ||
-    apiKeys.anthropic?.trim()
+    apiKeys.groq?.trim() || apiKeys.openai?.trim() || apiKeys.anthropic?.trim()
   );
   return useLocalLLM || hasAnyApiKey;
 }

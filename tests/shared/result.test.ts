@@ -255,7 +255,7 @@ describe('Try-catch wrappers', () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error).toBeInstanceOf(Error);
-        expect((result.error).message).toBe('test error');
+        expect(result.error.message).toBe('test error');
       }
     });
 
@@ -300,7 +300,7 @@ describe('Try-catch wrappers', () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error).toBeInstanceOf(Error);
-        expect((result.error).message).toBe('async error');
+        expect(result.error.message).toBe('async error');
       }
     });
 

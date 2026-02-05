@@ -36,7 +36,14 @@ export {
   buildScaleChords,
   formatChordWithNotes,
 } from '@bun/instruments/modes/scale-chords';
-export type { Note, NoteFlatVariant, AnyNote, ChordQuality, ScaleChord, ScaleDefinition } from '@bun/instruments/modes/scale-chords';
+export type {
+  Note,
+  NoteFlatVariant,
+  AnyNote,
+  ChordQuality,
+  ScaleChord,
+  ScaleDefinition,
+} from '@bun/instruments/modes/scale-chords';
 
 export {
   MODE_PALETTES,
@@ -51,4 +58,8 @@ export {
   WITHIN_MODE_COMBINATIONS,
   ALL_COMBINATIONS,
 } from '@bun/instruments/modes/combinations';
-export type { CombinationType, CrossModeCombination, WithinModeCombination } from '@bun/instruments/modes/combinations';
+export type {
+  CombinationType,
+  CrossModeCombination,
+  WithinModeCombination,
+} from '@bun/instruments/modes/combinations';

@@ -17,7 +17,7 @@ describe('RNG (seeded) utilities', () => {
     const b = Array.from({ length: 10 }, () => rngB());
 
     expect(a).toEqual(b);
-    expect(a.some(v => v !== 0)).toBe(true);
+    expect(a.some((v) => v !== 0)).toBe(true);
   });
 
   test('pickRandom is deterministic under a seeded rng', () => {
@@ -57,6 +57,6 @@ describe('RNG (seeded) utilities', () => {
     const b = Array.from({ length: 25 }, () => randomIntInclusive(1, 6, rngB));
 
     expect(a).toEqual(b);
-    expect(a.every(v => v >= 1 && v <= 6)).toBe(true);
+    expect(a.every((v) => v >= 1 && v <= 6)).toBe(true);
   });
 });

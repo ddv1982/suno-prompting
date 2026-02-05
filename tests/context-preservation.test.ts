@@ -234,25 +234,17 @@ describe('formatPreBuiltMaxOutput', () => {
   });
 
   test('formats each field on its own line', () => {
-    const result = formatPreBuiltMaxOutput(
-      samplePreFormatted,
-      'chill',
-      'studio'
-    );
+    const result = formatPreBuiltMaxOutput(samplePreFormatted, 'chill', 'studio');
     const lines = result.split('\n');
-    expect(lines.some(l => l.startsWith('genre:'))).toBe(true);
-    expect(lines.some(l => l.startsWith('bpm:'))).toBe(true);
-    expect(lines.some(l => l.startsWith('instruments:'))).toBe(true);
-    expect(lines.some(l => l.startsWith('style tags:'))).toBe(true);
-    expect(lines.some(l => l.startsWith('recording:'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('genre:'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('bpm:'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('instruments:'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('style tags:'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('recording:'))).toBe(true);
   });
 
   test('properly quotes field values', () => {
-    const result = formatPreBuiltMaxOutput(
-      samplePreFormatted,
-      'test style',
-      'test recording'
-    );
+    const result = formatPreBuiltMaxOutput(samplePreFormatted, 'test style', 'test recording');
     expect(result).toMatch(/genre: "jazz"/);
     expect(result).toMatch(/style tags: "test style"/);
   });

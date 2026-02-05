@@ -2,7 +2,16 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 
 export const CINEMATIC_GENRE: GenreDefinition = {
   name: 'Cinematic',
-  keywords: ['cinematic', 'epic', 'trailer', 'film score', 'soundtrack', 'orchestral', 'dramatic', 'hybrid orchestral'],
+  keywords: [
+    'cinematic',
+    'epic',
+    'trailer',
+    'film score',
+    'soundtrack',
+    'orchestral',
+    'dramatic',
+    'hybrid orchestral',
+  ],
   description: 'Epic, dramatic music designed to evoke powerful emotions and visual imagery',
   pools: {
     harmonic: {
@@ -37,12 +46,29 @@ export const CINEMATIC_GENRE: GenreDefinition = {
     },
     movement: {
       pick: { min: 1, max: 2 },
-      instruments: ['taiko drums', 'percussion', 'toms', 'timpani', 'orchestral bass drum', 'tam tam', 'suspended cymbal'],
+      instruments: [
+        'taiko drums',
+        'percussion',
+        'toms',
+        'timpani',
+        'orchestral bass drum',
+        'tam tam',
+        'suspended cymbal',
+      ],
     },
     rare: {
       pick: { min: 0, max: 1 },
       chanceToInclude: 0.4,
-      instruments: ['braams', 'impacts', 'FX risers', 'sub-bass', 'ondes Martenot', 'col legno', 'sul ponticello', 'crotales'],
+      instruments: [
+        'braams',
+        'impacts',
+        'FX risers',
+        'sub-bass',
+        'ondes Martenot',
+        'col legno',
+        'sul ponticello',
+        'crotales',
+      ],
     },
   },
   poolOrder: ['harmonic', 'color', 'movement', 'rare'],
@@ -55,5 +81,15 @@ export const CINEMATIC_GENRE: GenreDefinition = {
     ['french horn', 'low brass'],
   ],
   bpm: { min: 80, max: 140, typical: 110 },
-  moods: ['Epic', 'Dramatic', 'Triumphant', 'Tense', 'Majestic', 'Heroic', 'Suspenseful', 'Powerful', 'Emotional'],
+  moods: [
+    'Epic',
+    'Dramatic',
+    'Triumphant',
+    'Tense',
+    'Majestic',
+    'Heroic',
+    'Suspenseful',
+    'Powerful',
+    'Emotional',
+  ],
 };

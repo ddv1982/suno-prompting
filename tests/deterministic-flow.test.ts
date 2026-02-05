@@ -136,10 +136,7 @@ describe('Deterministic Generation Flow', () => {
     });
 
     test('generates quick vibes in max mode format', () => {
-      const result = buildDeterministicQuickVibes(
-        'lofi-study',
-        true
-      );
+      const result = buildDeterministicQuickVibes('lofi-study', true);
 
       // MAX mode uses lowercase field names with quoted values
       expect(result.text).toContain('genre:');
@@ -147,10 +144,7 @@ describe('Deterministic Generation Flow', () => {
     });
 
     test('generates quick vibes in standard mode format', () => {
-      const result = buildDeterministicQuickVibes(
-        'lofi-study',
-        false
-      );
+      const result = buildDeterministicQuickVibes('lofi-study', false);
 
       expect(result.text).toContain('Instruments:');
       expect(result.text).not.toContain('genre: "'); // No quoted genre in standard mode

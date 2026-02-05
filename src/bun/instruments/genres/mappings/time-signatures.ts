@@ -13,7 +13,6 @@ import type { GenreType } from '@bun/instruments/genres';
 import type { TimeSignatureType } from '@bun/instruments/rhythms';
 import type { Rng } from '@bun/instruments/services/random';
 
-
 /**
  * Weight given to the top half of time signatures when selecting.
  * Higher value = more preference for common signatures across genres.
@@ -163,9 +162,7 @@ export function getBlendedTimeSignature(
   }
 
   // Get signatures sorted by frequency (prefer common ones)
-  const sorted = [...frequency.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([sig]) => sig);
+  const sorted = [...frequency.entries()].sort((a, b) => b[1] - a[1]).map(([sig]) => sig);
 
   if (sorted.length === 0) return null;
 

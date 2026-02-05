@@ -35,7 +35,7 @@ export function buildDeterministicCreativeBoost(
   creativityLevel: number,
   seedGenres: string[],
   maxMode: boolean,
-  rngOrOptions: (() => number) | BuildCreativeBoostOptions = Math.random,
+  rngOrOptions: (() => number) | BuildCreativeBoostOptions = Math.random
 ): { text: string; title: string; genre: string } {
   // Handle both old function signature and new options object
   const options: BuildCreativeBoostOptions =
@@ -65,10 +65,7 @@ export function buildDeterministicCreativeBoost(
   }
 
   // Standard mode
-  const lines = [
-    `${mood} ${genre}`,
-    `Instruments: ${instruments.join(', ')}`,
-  ];
+  const lines = [`${mood} ${genre}`, `Instruments: ${instruments.join(', ')}`];
   return {
     text: lines.join('\n'),
     title,

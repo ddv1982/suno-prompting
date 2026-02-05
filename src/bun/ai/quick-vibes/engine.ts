@@ -14,15 +14,10 @@ import {
   prependMaxHeaders,
 } from '@bun/ai/story-generator';
 import { createLogger } from '@bun/logger';
-import {
-  buildDeterministicQuickVibes,
-} from '@bun/prompt/quick-vibes';
-import {
-  applyQuickVibesMaxMode,
-} from '@bun/prompt/quick-vibes-builder';
+import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes';
+import { applyQuickVibesMaxMode } from '@bun/prompt/quick-vibes-builder';
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
-
 
 import type { GenerateQuickVibesOptions } from './types';
 import type { TraceRuntime } from '@bun/ai/generation/types';
@@ -65,7 +60,9 @@ async function applyStoryModeTransformation(
     why: 'Story Mode enabled, attempting narrative generation',
   });
 
-  const storyInput = extractStructuredDataForStory(deterministicResult, null, { description: customDescription });
+  const storyInput = extractStructuredDataForStory(deterministicResult, null, {
+    description: customDescription,
+  });
 
   const storyResult = await generateStoryNarrativeWithTimeout({
     input: storyInput,
@@ -130,12 +127,19 @@ export async function generateQuickVibes(
     throw new ValidationError('Maximum 4 Suno V5 styles allowed', 'sunoStyles');
   }
   if (category !== null && sunoStyles.length > 0) {
-    throw new ValidationError('Cannot use both Category and Suno V5 Styles. Please select only one.', 'category');
+    throw new ValidationError(
+      'Cannot use both Category and Suno V5 Styles. Please select only one.',
+      'category'
+    );
   }
 
   // Direct Mode: styles preserved as-is, prompt enriched
   if (isDirectMode(sunoStyles)) {
-    log.info('generateQuickVibes:directMode', { stylesCount: sunoStyles.length, hasDescription: !!customDescription, maxMode: config.isMaxMode() });
+    log.info('generateQuickVibes:directMode', {
+      stylesCount: sunoStyles.length,
+      hasDescription: !!customDescription,
+      maxMode: config.isMaxMode(),
+    });
     return generateDirectModeResult(
       { sunoStyles, description: customDescription, maxMode: config.isMaxMode() },
       config,
@@ -146,17 +150,21 @@ export async function generateQuickVibes(
   // Category-based generation: fully deterministic (no LLM)
   if (category) {
     log.info('generateQuickVibes:deterministic', { category });
-    const { text, title } = buildDeterministicQuickVibes(
-      category,
-      config.isMaxMode(),
-      { maxMode: config.isMaxMode(), rng, trace: runtime?.trace }
-    );
+    const { text, title } = buildDeterministicQuickVibes(category, config.isMaxMode(), {
+      maxMode: config.isMaxMode(),
+      rng,
+      trace: runtime?.trace,
+    });
 
     const deterministicResult = applyQuickVibesMaxMode(text, config.isMaxMode());
 
     // Try Story Mode transformation (returns null if not applicable)
     const storyResult = await applyStoryModeTransformation(
-      deterministicResult, title, customDescription, config, runtime
+      deterministicResult,
+      title,
+      customDescription,
+      config,
+      runtime
     );
     if (storyResult) {
       return storyResult;

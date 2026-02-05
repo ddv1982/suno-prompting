@@ -11,7 +11,10 @@ type QuickVibesHandlers = Pick<RPCHandlers, 'generateQuickVibes' | 'refineQuickV
 export function createQuickVibesHandlers(aiEngine: AIEngine): QuickVibesHandlers {
   return {
     generateQuickVibes: async (params) => {
-      const { category, customDescription, sunoStyles } = validate(GenerateQuickVibesSchema, params);
+      const { category, customDescription, sunoStyles } = validate(
+        GenerateQuickVibesSchema,
+        params
+      );
 
       return createHandlerRunner(
         aiEngine,
@@ -23,7 +26,10 @@ export function createQuickVibesHandlers(aiEngine: AIEngine): QuickVibesHandlers
       );
     },
     refineQuickVibes: async (params) => {
-      const { currentPrompt, currentTitle, description, feedback, category, sunoStyles } = validate(RefineQuickVibesSchema, params);
+      const { currentPrompt, currentTitle, description, feedback, category, sunoStyles } = validate(
+        RefineQuickVibesSchema,
+        params
+      );
 
       return createHandlerRunner(
         aiEngine,
@@ -31,14 +37,18 @@ export function createQuickVibesHandlers(aiEngine: AIEngine): QuickVibesHandlers
         'generate.quickVibes',
         'quickVibes',
         { feedback, category, sunoStylesCount: sunoStyles.length },
-        (runtime) => aiEngine.refineQuickVibes({
-          currentPrompt,
-          currentTitle,
-          description,
-          feedback,
-          category,
-          sunoStyles,
-        }, runtime)
+        (runtime) =>
+          aiEngine.refineQuickVibes(
+            {
+              currentPrompt,
+              currentTitle,
+              description,
+              feedback,
+              category,
+              sunoStyles,
+            },
+            runtime
+          )
       );
     },
   };

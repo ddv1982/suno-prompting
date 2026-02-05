@@ -1,2 +1,3 @@
 bun run readme:check
+bun run format:check
 bun run validate

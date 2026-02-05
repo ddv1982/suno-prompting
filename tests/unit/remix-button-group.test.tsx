@@ -70,14 +70,18 @@ interface ButtonVisibility {
 /**
  * Compute button visibility using content-aware approach.
  * Mirrors the logic in remix-button-group.tsx:
- * 
+ *
  * hideFieldButtons = storyMode || isStoryModeFormat(currentPrompt)
  * fields = detectRemixableFields(currentPrompt)
- * 
+ *
  * - When storyMode UI toggle is ON: always hide field buttons
  * - When storyMode UI toggle is OFF: show buttons based on detected fields
  */
-function computeButtonVisibility(storyMode: boolean, currentPrompt: string, _maxMode: boolean): ButtonVisibility {
+function computeButtonVisibility(
+  storyMode: boolean,
+  currentPrompt: string,
+  _maxMode: boolean
+): ButtonVisibility {
   const hideFieldButtons = storyMode || isStoryModeFormat(currentPrompt);
   const fields = detectRemixableFields(currentPrompt);
   return {
@@ -125,10 +129,18 @@ describe('isStoryModeFormat utility', () => {
   });
 
   test('is inverse of isStructuredPrompt for non-empty content', () => {
-    expect(isStoryModeFormat(STRUCTURED_PROMPT_STANDARD)).toBe(!isStructuredPrompt(STRUCTURED_PROMPT_STANDARD));
-    expect(isStoryModeFormat(NARRATIVE_PROSE_PROMPT)).toBe(!isStructuredPrompt(NARRATIVE_PROSE_PROMPT));
-    expect(isStoryModeFormat(MAX_HEADER_WITH_NARRATIVE)).toBe(!isStructuredPrompt(MAX_HEADER_WITH_NARRATIVE));
-    expect(isStoryModeFormat(MAX_HEADER_WITH_STRUCTURED)).toBe(!isStructuredPrompt(MAX_HEADER_WITH_STRUCTURED));
+    expect(isStoryModeFormat(STRUCTURED_PROMPT_STANDARD)).toBe(
+      !isStructuredPrompt(STRUCTURED_PROMPT_STANDARD)
+    );
+    expect(isStoryModeFormat(NARRATIVE_PROSE_PROMPT)).toBe(
+      !isStructuredPrompt(NARRATIVE_PROSE_PROMPT)
+    );
+    expect(isStoryModeFormat(MAX_HEADER_WITH_NARRATIVE)).toBe(
+      !isStructuredPrompt(MAX_HEADER_WITH_NARRATIVE)
+    );
+    expect(isStoryModeFormat(MAX_HEADER_WITH_STRUCTURED)).toBe(
+      !isStructuredPrompt(MAX_HEADER_WITH_STRUCTURED)
+    );
   });
 });
 
@@ -497,7 +509,10 @@ describe('RemixButtonGroup source verification', () => {
 
   test('component imports detectRemixableFields, isStoryModeFormat, and DetectedFields', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain("import { detectRemixableFields, isStoryModeFormat, type DetectedFields } from");
+    expect(source).toContain('detectRemixableFields');
+    expect(source).toContain('isStoryModeFormat');
+    expect(source).toContain('type DetectedFields');
+    expect(source).toContain("from '@shared/prompt-utils'");
   });
 
   test('component uses hybrid visibility logic', async () => {
@@ -512,27 +527,30 @@ describe('RemixButtonGroup source verification', () => {
 
   test('FieldButtons component renders GENRE button', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('<ShuffleBtn label="GENRE"');
+    expect(source).toContain('label="GENRE"');
   });
 
   test('FieldButtons component conditionally renders MOOD button based on fields.hasMood', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('{fields.hasMood && <ShuffleBtn label="MOOD"');
+    expect(source).toContain('{fields.hasMood && (');
+    expect(source).toContain('label="MOOD"');
   });
 
   test('FieldButtons component renders INSTRUMENTS button', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('<ShuffleBtn label="INSTRUMENTS"');
+    expect(source).toContain('label="INSTRUMENTS"');
   });
 
   test('FieldButtons component conditionally renders STYLE button based on fields.hasStyleTags', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('{fields.hasStyleTags && <ShuffleBtn label="STYLE"');
+    expect(source).toContain('{fields.hasStyleTags && (');
+    expect(source).toContain('label="STYLE"');
   });
 
   test('FieldButtons component conditionally renders RECORDING button based on fields.hasRecording', async () => {
     const source = await Bun.file('src/main-ui/components/remix-button-group.tsx').text();
-    expect(source).toContain('{fields.hasRecording && <ShuffleBtn label="RECORDING"');
+    expect(source).toContain('{fields.hasRecording && (');
+    expect(source).toContain('label="RECORDING"');
   });
 
   test('FieldButtons are wrapped with hideFieldButtons condition', async () => {

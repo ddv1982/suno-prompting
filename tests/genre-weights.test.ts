@@ -63,7 +63,13 @@ describe('Genre Tag Weights', () => {
       // Act
       for (const genre of ALL_GENRE_KEYS) {
         const weights = getTagWeightsForGenre(genre);
-        const fields: (keyof typeof weights)[] = ['vocal', 'spatial', 'harmonic', 'dynamic', 'temporal'];
+        const fields: (keyof typeof weights)[] = [
+          'vocal',
+          'spatial',
+          'harmonic',
+          'dynamic',
+          'temporal',
+        ];
 
         for (const field of fields) {
           const value = weights[field];
@@ -84,7 +90,13 @@ describe('Genre Tag Weights', () => {
       // Act
       for (const genre of ALL_GENRE_KEYS) {
         const weights = getTagWeightsForGenre(genre);
-        const fields: (keyof typeof weights)[] = ['vocal', 'spatial', 'harmonic', 'dynamic', 'temporal'];
+        const fields: (keyof typeof weights)[] = [
+          'vocal',
+          'spatial',
+          'harmonic',
+          'dynamic',
+          'temporal',
+        ];
 
         for (const field of fields) {
           if (weights[field] === 0) {
@@ -201,7 +213,7 @@ describe('Genre Tag Weights', () => {
       // Arrange
       // TypeScript won't let us pass an invalid genre, so we test the fallback
       // by verifying DEFAULT_TAG_WEIGHTS matches expected structure
-      
+
       // Act & Assert
       expect(DEFAULT_TAG_WEIGHTS.vocal).toBe(0.6);
       expect(DEFAULT_TAG_WEIGHTS.spatial).toBe(0.5);
@@ -257,7 +269,9 @@ describe('Genre Tag Weights', () => {
       }
 
       // Assert - Each range should have some genres
-      console.info(`Vocal weight distribution - High: ${ranges.high.length}, Medium: ${ranges.medium.length}, Low: ${ranges.low.length}`);
+      console.info(
+        `Vocal weight distribution - High: ${ranges.high.length}, Medium: ${ranges.medium.length}, Low: ${ranges.low.length}`
+      );
       expect(ranges.high.length).toBeGreaterThan(0);
       expect(ranges.medium.length).toBeGreaterThan(0);
       expect(ranges.low.length).toBeGreaterThan(0);
@@ -284,7 +298,9 @@ describe('Genre Tag Weights', () => {
       }
 
       // Assert
-      console.info(`Spatial weight distribution - High: ${ranges.high.length}, Medium: ${ranges.medium.length}, Low: ${ranges.low.length}`);
+      console.info(
+        `Spatial weight distribution - High: ${ranges.high.length}, Medium: ${ranges.medium.length}, Low: ${ranges.low.length}`
+      );
       expect(ranges.high.length).toBeGreaterThan(0);
       expect(ranges.medium.length).toBeGreaterThan(0);
       expect(ranges.low.length).toBeGreaterThan(0);

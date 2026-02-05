@@ -27,10 +27,21 @@ import type { RPCHandlers, TraceRun, TraceRunAction } from '@shared/types';
 
 type RemixHandlers = Pick<
   RPCHandlers,
-  'remixInstruments' | 'remixGenre' | 'remixMood' | 'remixStyleTags' | 'remixRecording' | 'remixTitle' | 'remixLyrics'
+  | 'remixInstruments'
+  | 'remixGenre'
+  | 'remixMood'
+  | 'remixStyleTags'
+  | 'remixRecording'
+  | 'remixTitle'
+  | 'remixLyrics'
 >;
 
-interface RemixActionResult { prompt: string; versionId: string; validation: ReturnType<typeof validatePrompt>; debugTrace?: TraceRun }
+interface RemixActionResult {
+  prompt: string;
+  versionId: string;
+  validation: ReturnType<typeof validatePrompt>;
+  debugTrace?: TraceRun;
+}
 
 async function runRemixAction(
   aiEngine: AIEngine,
@@ -98,10 +109,17 @@ export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
         const runtime = createTraceRuntime(aiEngine, versionId, 'remix.title', 'full');
 
         runtime.trace?.addRunEvent('run.start', 'remix.title');
-        const result = await aiEngine.remixTitle(currentPrompt, originalInput, currentLyrics, runtime);
+        const result = await aiEngine.remixTitle(
+          currentPrompt,
+          originalInput,
+          currentLyrics,
+          runtime
+        );
         runtime.trace?.addRunEvent('run.end', 'success');
 
-        const debugTrace = runtime.trace ? enforceTraceSizeCap(runtime.trace.finalize()) : undefined;
+        const debugTrace = runtime.trace
+          ? enforceTraceSizeCap(runtime.trace.finalize())
+          : undefined;
         return { title: result.title, debugTrace };
       });
     },

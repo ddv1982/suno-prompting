@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-import { createLogger } from "@/lib/logger";
-import { rpcClient } from "@/services/rpc-client";
+import { createLogger } from '@/lib/logger';
+import { rpcClient } from '@/services/rpc-client';
 
-const log = createLogger("OllamaSettings");
+const log = createLogger('OllamaSettings');
 
 export interface OllamaSettingsState {
   endpoint: string;
@@ -21,7 +21,7 @@ export interface UseOllamaSettingsReturn {
 }
 
 const DEFAULT_SETTINGS: OllamaSettingsState = {
-  endpoint: "http://127.0.0.1:11434",
+  endpoint: 'http://127.0.0.1:11434',
   temperature: 0.7,
   maxTokens: 2000,
   contextLength: 4096,
@@ -39,7 +39,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
       const result = await rpcClient.getOllamaSettings({});
       setSettings(result.ok ? result.value : DEFAULT_SETTINGS);
     } catch (error: unknown) {
-      log.error("loadSettings:failed", error);
+      log.error('loadSettings:failed', error);
     }
   }, []);
 
@@ -52,7 +52,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
     try {
       await rpcClient.setOllamaSettings({ endpoint: value });
     } catch (error: unknown) {
-      log.error("setEndpoint:failed", error);
+      log.error('setEndpoint:failed', error);
     }
   }, []);
 
@@ -61,7 +61,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
     try {
       await rpcClient.setOllamaSettings({ temperature: value });
     } catch (error: unknown) {
-      log.error("setTemperature:failed", error);
+      log.error('setTemperature:failed', error);
     }
   }, []);
 
@@ -70,7 +70,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
     try {
       await rpcClient.setOllamaSettings({ maxTokens: value });
     } catch (error: unknown) {
-      log.error("setMaxTokens:failed", error);
+      log.error('setMaxTokens:failed', error);
     }
   }, []);
 
@@ -79,7 +79,7 @@ export function useOllamaSettings(): UseOllamaSettingsReturn {
     try {
       await rpcClient.setOllamaSettings({ contextLength: value });
     } catch (error: unknown) {
-      log.error("setContextLength:failed", error);
+      log.error('setContextLength:failed', error);
     }
   }, []);
 

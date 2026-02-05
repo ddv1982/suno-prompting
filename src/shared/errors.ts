@@ -3,17 +3,13 @@
  * Provides consistent error structure with code and cause properties.
  */
 export class AppError extends Error {
-    public readonly code: string;
+  public readonly code: string;
 
-    constructor(
-        message: string,
-        code: string,
-        cause?: Error
-    ) {
-        super(message, { cause });
-        this.name = 'AppError';
-        this.code = code;
-    }
+  constructor(message: string, code: string, cause?: Error) {
+    super(message, { cause });
+    this.name = 'AppError';
+    this.code = code;
+  }
 }
 
 /**
@@ -21,14 +17,14 @@ export class AppError extends Error {
  * Includes optional field name for form error display.
  */
 export class ValidationError extends AppError {
-    constructor(
-        message: string,
-        public readonly field?: string,
-        cause?: Error
-    ) {
-        super(message, 'VALIDATION_ERROR', cause);
-        this.name = 'ValidationError';
-    }
+  constructor(
+    message: string,
+    public readonly field?: string,
+    cause?: Error
+  ) {
+    super(message, 'VALIDATION_ERROR', cause);
+    this.name = 'ValidationError';
+  }
 }
 
 /**
@@ -36,10 +32,10 @@ export class ValidationError extends AppError {
  * Used for LLM API failures, empty responses, parsing errors, etc.
  */
 export class AIGenerationError extends AppError {
-    constructor(message: string, cause?: Error) {
-        super(message, 'AI_GENERATION_ERROR', cause);
-        this.name = 'AIGenerationError';
-    }
+  constructor(message: string, cause?: Error) {
+    super(message, 'AI_GENERATION_ERROR', cause);
+    this.name = 'AIGenerationError';
+  }
 }
 
 /**
@@ -47,14 +43,14 @@ export class AIGenerationError extends AppError {
  * Includes the specific operation that failed for debugging.
  */
 export class StorageError extends AppError {
-    constructor(
-        message: string,
-        public readonly operation: 'read' | 'write' | 'decrypt' | 'encrypt',
-        cause?: Error
-    ) {
-        super(message, 'STORAGE_ERROR', cause);
-        this.name = 'StorageError';
-    }
+  constructor(
+    message: string,
+    public readonly operation: 'read' | 'write' | 'decrypt' | 'encrypt',
+    cause?: Error
+  ) {
+    super(message, 'STORAGE_ERROR', cause);
+    this.name = 'StorageError';
+  }
 }
 
 /**
@@ -67,10 +63,10 @@ export class StorageError extends AppError {
  * }
  */
 export class InvariantError extends AppError {
-    constructor(message: string, cause?: Error) {
-        super(message, 'INVARIANT_VIOLATION', cause);
-        this.name = 'InvariantError';
-    }
+  constructor(message: string, cause?: Error) {
+    super(message, 'INVARIANT_VIOLATION', cause);
+    this.name = 'InvariantError';
+  }
 }
 
 /**
@@ -78,14 +74,14 @@ export class InvariantError extends AppError {
  * Indicates that Ollama needs to be started.
  */
 export class OllamaUnavailableError extends AppError {
-    constructor(endpoint: string, cause?: Error) {
-        super(
-            `Ollama server not reachable at ${endpoint}. Please ensure Ollama is running.`,
-            'OLLAMA_UNAVAILABLE',
-            cause
-        );
-        this.name = 'OllamaUnavailableError';
-    }
+  constructor(endpoint: string, cause?: Error) {
+    super(
+      `Ollama server not reachable at ${endpoint}. Please ensure Ollama is running.`,
+      'OLLAMA_UNAVAILABLE',
+      cause
+    );
+    this.name = 'OllamaUnavailableError';
+  }
 }
 
 /**
@@ -93,13 +89,13 @@ export class OllamaUnavailableError extends AppError {
  * Includes installation instructions for the user.
  */
 export class OllamaModelMissingError extends AppError {
-    constructor(model = 'gemma3:4b') {
-        super(
-            `Model ${model} not found. Run 'ollama pull ${model}' to install it.`,
-            'OLLAMA_MODEL_MISSING'
-        );
-        this.name = 'OllamaModelMissingError';
-    }
+  constructor(model = 'gemma3:4b') {
+    super(
+      `Model ${model} not found. Run 'ollama pull ${model}' to install it.`,
+      'OLLAMA_MODEL_MISSING'
+    );
+    this.name = 'OllamaModelMissingError';
+  }
 }
 
 /**
@@ -107,14 +103,14 @@ export class OllamaModelMissingError extends AppError {
  * Used when local generation exceeds the configured timeout.
  */
 export class OllamaTimeoutError extends AppError {
-    constructor(timeoutMs: number, cause?: Error) {
-        super(
-            `Ollama generation timed out after ${timeoutMs / 1000} seconds.`,
-            'OLLAMA_TIMEOUT',
-            cause
-        );
-        this.name = 'OllamaTimeoutError';
-    }
+  constructor(timeoutMs: number, cause?: Error) {
+    super(
+      `Ollama generation timed out after ${timeoutMs / 1000} seconds.`,
+      'OLLAMA_TIMEOUT',
+      cause
+    );
+    this.name = 'OllamaTimeoutError';
+  }
 }
 
 /**
@@ -122,13 +118,10 @@ export class OllamaTimeoutError extends AppError {
  * Prevents SSRF attacks by restricting to localhost only.
  */
 export class InvalidOllamaEndpointError extends ValidationError {
-    constructor(endpoint: string) {
-        super(
-            `Ollama endpoint must be localhost only. Received: ${endpoint}`,
-            'endpoint'
-        );
-        this.name = 'InvalidOllamaEndpointError';
-    }
+  constructor(message = 'Ollama endpoint must be localhost only.') {
+    super(message, 'endpoint');
+    this.name = 'InvalidOllamaEndpointError';
+  }
 }
 
 /**
@@ -139,25 +132,25 @@ export class InvalidOllamaEndpointError extends ValidationError {
  * @returns true if hostname is localhost
  */
 function isValidLocalhostHostname(hostname: string): boolean {
-    const isLocalhost =
-        // IPv4 localhost
-        hostname === '127.0.0.1' ||
-        hostname === 'localhost' ||
-        // IPv6 localhost variations
-        hostname === '::1' ||
-        hostname === '[::1]' ||
-        // IPv4-mapped IPv6 addresses (common bypass technique)
-        hostname === '::ffff:127.0.0.1' ||
-        hostname === '0:0:0:0:ffff:127.0.0.1' ||
-        hostname === '0:0:0:0:ffff:7f00:1' ||
-        // Bracket-wrapped IPv6 variations
-        hostname === '[::ffff:127.0.0.1]' ||
-        hostname === '[0:0:0:0:ffff:127.0.0.1]' ||
-        hostname === '[0:0:0:0:ffff:7f00:1]' ||
-        // IPv4-mapped IPv6 in hex
-        hostname === '::ffff:7f00:1';
+  const isLocalhost =
+    // IPv4 localhost
+    hostname === '127.0.0.1' ||
+    hostname === 'localhost' ||
+    // IPv6 localhost variations
+    hostname === '::1' ||
+    hostname === '[::1]' ||
+    // IPv4-mapped IPv6 addresses (common bypass technique)
+    hostname === '::ffff:127.0.0.1' ||
+    hostname === '0:0:0:0:ffff:127.0.0.1' ||
+    hostname === '0:0:0:0:ffff:7f00:1' ||
+    // Bracket-wrapped IPv6 variations
+    hostname === '[::ffff:127.0.0.1]' ||
+    hostname === '[0:0:0:0:ffff:127.0.0.1]' ||
+    hostname === '[0:0:0:0:ffff:7f00:1]' ||
+    // IPv4-mapped IPv6 in hex
+    hostname === '::ffff:7f00:1';
 
-    return isLocalhost;
+  return isLocalhost;
 }
 
 /**
@@ -175,39 +168,39 @@ function isValidLocalhostHostname(hostname: string): boolean {
  * @returns void if endpoint is valid
  */
 export function validateOllamaEndpoint(endpoint: string): void {
-    try {
-        const url = new URL(endpoint);
-        const hostname = url.hostname.toLowerCase();
+  try {
+    const url = new URL(endpoint);
+    const hostname = url.hostname.toLowerCase();
 
-        // Validate protocol - only allow http to prevent protocol confusion attacks
-        const allowedProtocols = ['http:'];
-        if (!allowedProtocols.includes(url.protocol)) {
-            throw new InvalidOllamaEndpointError(
-                `Invalid protocol: ${url.protocol}. Only http is allowed.`
-            );
-        }
-
-        // Validate hostname is localhost
-        if (!isValidLocalhostHostname(hostname)) {
-            throw new InvalidOllamaEndpointError(endpoint);
-        }
-
-        // Validate port range (non-privileged ports only: 1024-65535)
-        // Note: URL parser returns empty string for default ports (80 for http, 443 for https)
-        const defaultPort = url.protocol === 'https:' ? 443 : 80;
-        const port = url.port ? parseInt(url.port, 10) : defaultPort;
-        if (port < 1024 || port > 65535) {
-            throw new ValidationError(
-                `Port must be between 1024 and 65535. Received: ${port}`,
-                'endpoint'
-            );
-        }
-    } catch (error) {
-        if (error instanceof InvalidOllamaEndpointError || error instanceof ValidationError) {
-            throw error;
-        }
-        throw new ValidationError(`Invalid Ollama endpoint format: ${endpoint}`, 'endpoint');
+    // Validate protocol - only allow http to prevent protocol confusion attacks
+    const allowedProtocols = ['http:'];
+    if (!allowedProtocols.includes(url.protocol)) {
+      throw new InvalidOllamaEndpointError(
+        `Invalid protocol: ${url.protocol}. Only http is allowed.`
+      );
     }
+
+    // Validate hostname is localhost
+    if (!isValidLocalhostHostname(hostname)) {
+      throw new InvalidOllamaEndpointError();
+    }
+
+    // Validate port range (non-privileged ports only: 1024-65535)
+    // Note: URL parser returns empty string for default ports (80 for http, 443 for https)
+    const defaultPort = url.protocol === 'https:' ? 443 : 80;
+    const port = url.port ? parseInt(url.port, 10) : defaultPort;
+    if (Number.isNaN(port) || port < 1024 || port > 65535) {
+      throw new ValidationError(
+        `Port must be between 1024 and 65535. Received: ${port}`,
+        'endpoint'
+      );
+    }
+  } catch (error) {
+    if (error instanceof InvalidOllamaEndpointError || error instanceof ValidationError) {
+      throw error;
+    }
+    throw new ValidationError(`Invalid Ollama endpoint format: ${endpoint}`, 'endpoint');
+  }
 }
 
 /**
@@ -215,11 +208,11 @@ export function validateOllamaEndpoint(endpoint: string): void {
  * Use this instead of repeating `error instanceof Error ? error.message : fallback` pattern.
  */
 export function getErrorMessage(error: unknown, fallback = 'Unknown error'): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === 'string') {
-        return error;
-    }
-    return fallback;
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return fallback;
 }

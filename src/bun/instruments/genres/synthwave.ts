@@ -32,5 +32,15 @@ export const SYNTHWAVE_GENRE: GenreDefinition = {
     ['drums', 'Linn drum'],
   ],
   bpm: { min: 100, max: 130, typical: 115 },
-  moods: ['Nostalgic', 'Neon', 'Driving', 'Futuristic', 'Dark', 'Cool', 'Retro', 'Cyberpunk', 'Dreamy'],
+  moods: [
+    'Nostalgic',
+    'Neon',
+    'Driving',
+    'Futuristic',
+    'Dark',
+    'Cool',
+    'Retro',
+    'Cyberpunk',
+    'Dreamy',
+  ],
 };

@@ -89,10 +89,7 @@ export function formatBpmRange(result: BpmRangeResult): string {
  * Get a random BPM within the blended range.
  * Uses new multi-genre blending but returns single value for backward compatibility.
  */
-export function getRandomBpmFromRange(
-  genre: string,
-  rng: Rng = Math.random
-): number | null {
+export function getRandomBpmFromRange(genre: string, rng: Rng = Math.random): number | null {
   const range = getBlendedBpmRange(genre);
   if (!range) return null;
 

@@ -42,12 +42,14 @@ describe('Keyword Extraction for Topic-Aware Titles', () => {
     });
 
     test('extracts multiple categories from complex description', () => {
-      const result = extractKeywords('A midnight walk by the ocean, feeling lost and alone, searching for peace');
+      const result = extractKeywords(
+        'A midnight walk by the ocean, feeling lost and alone, searching for peace'
+      );
       expect(result.time).toBeDefined();
       expect(result.nature).toBeDefined();
       expect(result.emotion).toBeDefined();
       expect(result.abstract).toBeDefined();
-      
+
       expect(result.time).toContain('Midnight');
       expect(result.nature).toContain('Ocean');
       expect(result.emotion).toContain('Lost');

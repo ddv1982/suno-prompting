@@ -27,11 +27,25 @@ export interface RemixExecutorDeps {
 export async function executePromptRemix(
   deps: RemixExecutorDeps,
   action: Exclude<GeneratingAction, 'none' | 'generate' | 'remix'>,
-  apiCall: () => Promise<{ prompt: string; versionId: string; validation: ValidationResult; debugTrace?: TraceRun }>,
+  apiCall: () => Promise<{
+    prompt: string;
+    versionId: string;
+    validation: ValidationResult;
+    debugTrace?: TraceRun;
+  }>,
   feedbackLabel: string,
   successMessage: string
 ): Promise<void> {
-  const { isGenerating, currentSession, saveSession, setGeneratingAction, setDebugTrace, setChatMessages, setValidation, showToast } = deps;
+  const {
+    isGenerating,
+    currentSession,
+    saveSession,
+    setGeneratingAction,
+    setDebugTrace,
+    setChatMessages,
+    setValidation,
+    showToast,
+  } = deps;
 
   if (isGenerating || !currentSession?.currentPrompt) return;
 
@@ -60,7 +74,7 @@ export async function executePromptRemix(
       updatedAt: nowISO(),
     };
 
-    setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
+    setChatMessages((prev) => [...prev, { role: 'ai', content: successMessage }]);
     setValidation(result.validation);
     await saveSession(updatedSession);
   } catch (error: unknown) {
@@ -73,7 +87,9 @@ export async function executePromptRemix(
 /**
  * Executes a single-field remix action (title or lyrics only, prompt unchanged)
  */
-export async function executeSingleFieldRemix<T extends { title?: string; lyrics?: string; debugTrace?: TraceRun }>(
+export async function executeSingleFieldRemix<
+  T extends { title?: string; lyrics?: string; debugTrace?: TraceRun },
+>(
   deps: RemixExecutorDeps,
   action: 'remixTitle' | 'remixLyrics',
   apiCall: () => Promise<T>,
@@ -81,7 +97,16 @@ export async function executeSingleFieldRemix<T extends { title?: string; lyrics
   label: string,
   successMessage: string
 ): Promise<void> {
-  const { isGenerating, currentSession, generateId, saveSession, setGeneratingAction, setDebugTrace, setChatMessages, showToast } = deps;
+  const {
+    isGenerating,
+    currentSession,
+    generateId,
+    saveSession,
+    setGeneratingAction,
+    setDebugTrace,
+    setChatMessages,
+    showToast,
+  } = deps;
 
   if (isGenerating || !currentSession) return;
 
@@ -90,18 +115,21 @@ export async function executeSingleFieldRemix<T extends { title?: string; lyrics
     setDebugTrace(undefined);
     const result = await apiCall();
     const update = getUpdate(result);
-    
+
     // Update debug trace if available (e.g., from title remix with debug mode)
     if (result.debugTrace) {
       setDebugTrace(result.debugTrace);
     }
-    
-    const newVersion = createVersion({
-      prompt: currentSession.currentPrompt,
-      versionId: generateId(),
-      title: update.currentTitle ?? currentSession.currentTitle,
-      lyrics: update.currentLyrics ?? currentSession.currentLyrics,
-    }, `[${label}]`);
+
+    const newVersion = createVersion(
+      {
+        prompt: currentSession.currentPrompt,
+        versionId: generateId(),
+        title: update.currentTitle ?? currentSession.currentTitle,
+        lyrics: update.currentLyrics ?? currentSession.currentLyrics,
+      },
+      `[${label}]`
+    );
 
     const updatedSession: PromptSession = {
       ...currentSession,
@@ -110,7 +138,7 @@ export async function executeSingleFieldRemix<T extends { title?: string; lyrics
       updatedAt: nowISO(),
     };
 
-    setChatMessages((prev) => [...prev, { role: "ai", content: successMessage }]);
+    setChatMessages((prev) => [...prev, { role: 'ai', content: successMessage }]);
     await saveSession(updatedSession);
   } catch (error: unknown) {
     handleGenerationError(error, label, setChatMessages, showToast, log);

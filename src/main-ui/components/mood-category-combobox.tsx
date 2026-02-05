@@ -1,11 +1,11 @@
-import { Palette } from "lucide-react";
+import { Palette } from 'lucide-react';
 
-import { Combobox } from "@/components/ui/combobox";
-import { FormLabel } from "@/components/ui/form-label";
-import { getMoodCategoryOptions } from "@bun/mood";
+import { Combobox } from '@/components/ui/combobox';
+import { FormLabel } from '@/components/ui/form-label';
+import { getMoodCategoryOptions } from '@bun/mood';
 
-import type { MoodCategory } from "@bun/mood";
-import type { ReactElement } from "react";
+import type { MoodCategory } from '@bun/mood';
+import type { ReactElement } from 'react';
 
 interface MoodCategoryComboboxProps {
   value: MoodCategory | null;
@@ -24,11 +24,11 @@ interface MoodCategoryComboboxProps {
 
 /**
  * Combobox for selecting a mood category.
- * 
+ *
  * Displays "None (Auto)" when no value is selected, allowing the system
  * to automatically determine the mood. Otherwise displays the selected
  * mood category name.
- * 
+ *
  * @example
  * <MoodCategoryCombobox
  *   value={moodCategory}
@@ -41,15 +41,15 @@ export function MoodCategoryCombobox({
   onChange,
   disabled,
   autoDisable = true,
-  label = "Mood",
+  label = 'Mood',
   helperText,
-  badgeText = "optional",
+  badgeText = 'optional',
 }: MoodCategoryComboboxProps): ReactElement {
   const options = getMoodCategoryOptions();
 
   const handleChange = (newValue: string | null): void => {
     // Convert empty string to null for "None/Auto" selection
-    onChange(newValue === "" || newValue === null ? null : (newValue as MoodCategory));
+    onChange(newValue === '' || newValue === null ? null : (newValue as MoodCategory));
   };
 
   return (
@@ -59,7 +59,7 @@ export function MoodCategoryCombobox({
       </FormLabel>
       <Combobox
         options={options}
-        value={value ?? ""}
+        value={value ?? ''}
         onValueChange={handleChange}
         placeholder="None (Auto)"
         searchPlaceholder="Search moods..."

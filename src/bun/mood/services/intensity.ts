@@ -34,7 +34,7 @@ import type { IntensifiedMood, MoodCategory, MoodIntensity } from '@bun/mood/typ
 export function selectMoodWithIntensity(
   category: MoodCategory,
   intensity: MoodIntensity = 'moderate',
-  rng: () => number = Math.random,
+  rng: () => number = Math.random
 ): IntensifiedMood {
   const definition = MOOD_CATEGORIES[category];
 
@@ -93,7 +93,7 @@ export function moodHasIntensityVariants(mood: string): boolean {
  */
 export function applyIntensityToMoods(
   moods: readonly string[],
-  intensity: MoodIntensity,
+  intensity: MoodIntensity
 ): string[] {
-  return moods.map(mood => getIntensityVariant(mood, intensity));
+  return moods.map((mood) => getIntensityVariant(mood, intensity));
 }

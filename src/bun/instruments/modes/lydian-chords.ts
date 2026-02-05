@@ -41,7 +41,7 @@ function buildExtendedChords(scaleNotes: Note[]): ExtendedChord[] {
   scaleNotes.forEach((root, degree) => {
     const extendedQualities: ChordQuality[] = ['sus2', 'sus4', '6', 'add9', '5'];
 
-    extendedQualities.forEach(quality => {
+    extendedQualities.forEach((quality) => {
       let notes: Note[];
       if (['sus2', 'sus4', '5'].includes(quality)) {
         notes = getTriadNotes(root, quality);
@@ -93,13 +93,13 @@ export function formatLydianChordSummary(chords: LydianScaleChords): string {
   lines.push(`${chords.root} Lydian Scale: ${chords.scaleNotes.join(' - ')}`);
   lines.push('');
   lines.push('Triads:');
-  chords.triads.forEach(chord => {
+  chords.triads.forEach((chord) => {
     lines.push(`  ${formatChordWithNotes(chord)}`);
   });
 
   lines.push('');
   lines.push('Seventh Chords:');
-  chords.sevenths.forEach(chord => {
+  chords.sevenths.forEach((chord) => {
     lines.push(`  ${formatChordWithNotes(chord)}`);
   });
 
@@ -108,7 +108,10 @@ export function formatLydianChordSummary(chords: LydianScaleChords): string {
 
 export const LYDIAN_CHORD_DESCRIPTIONS = {
   I: { role: 'Tonic', character: 'Bright, stable home base with dreamy #11 available' },
-  II: { role: 'Subdominant', character: 'Major II creates floating, unresolved beauty (signature Lydian sound)' },
+  II: {
+    role: 'Subdominant',
+    character: 'Major II creates floating, unresolved beauty (signature Lydian sound)',
+  },
   iii: { role: 'Mediant', character: 'Minor color, softer emotional moment' },
   'iv°': { role: 'Subdominant', character: 'Diminished - tension and instability' },
   V: { role: 'Dominant', character: 'Strong resolution tendency back to I' },
@@ -117,9 +120,21 @@ export const LYDIAN_CHORD_DESCRIPTIONS = {
 } as const;
 
 export const LYDIAN_PROGRESSION_TEMPLATES = [
-  { name: 'Classic Lydian Float', chords: ['I', 'II'], description: 'The quintessential Lydian sound' },
-  { name: 'Dream Resolution', chords: ['Imaj7', 'II', 'vii', 'I'], description: 'Floating then landing' },
-  { name: 'Cinematic Wonder', chords: ['Imaj7#11', 'II/I', 'V', 'I'], description: 'Film score staple' },
+  {
+    name: 'Classic Lydian Float',
+    chords: ['I', 'II'],
+    description: 'The quintessential Lydian sound',
+  },
+  {
+    name: 'Dream Resolution',
+    chords: ['Imaj7', 'II', 'vii', 'I'],
+    description: 'Floating then landing',
+  },
+  {
+    name: 'Cinematic Wonder',
+    chords: ['Imaj7#11', 'II/I', 'V', 'I'],
+    description: 'Film score staple',
+  },
   { name: 'Lydian Cycle', chords: ['I', 'II', 'iii', 'II'], description: 'Circular dreamy motion' },
   { name: 'Modal Jazz', chords: ['Imaj7', 'II7', 'Imaj7'], description: 'Jazz fusion approach' },
 ] as const;

@@ -21,14 +21,14 @@ describe('useAsyncAction module', () => {
 
     test('AsyncActionResult interface has required properties', () => {
       type ExpectedInterface = asyncActionModule.AsyncActionResult<unknown[], unknown>;
-      
+
       const _typeCheck: ExpectedInterface = {
         isLoading: false,
         error: null,
         execute: async () => undefined,
         clearError: () => {},
       };
-      
+
       expect(_typeCheck.isLoading).toBe(false);
       expect(_typeCheck.error).toBe(null);
       expect(typeof _typeCheck.execute).toBe('function');
@@ -69,7 +69,7 @@ describe('useAsyncAction integration patterns', () => {
 
     isLoading = true;
     error = null;
-    
+
     try {
       result = await action();
       isLoading = false;
@@ -94,7 +94,7 @@ describe('useAsyncAction integration patterns', () => {
 
     isLoading = true;
     error = null;
-    
+
     try {
       await action();
       isLoading = false;
@@ -110,13 +110,13 @@ describe('useAsyncAction integration patterns', () => {
 
   test('clearError pattern resets error state', () => {
     let error: string | null = 'Previous error';
-    
+
     const clearError = () => {
       error = null;
     };
-    
+
     clearError();
-    
+
     expect(error).toBeNull();
   });
 });
@@ -124,19 +124,19 @@ describe('useAsyncAction integration patterns', () => {
 describe('useAsyncAction + useMounted integration', () => {
   test('useAsyncAction imports and uses useMounted for memory leak prevention', async () => {
     const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-    
+
     expect(
       asyncActionSource.includes("import { useMounted } from './use-mounted'") ||
-      asyncActionSource.includes("import { useMounted } from '@/hooks/use-mounted'")
+        asyncActionSource.includes("import { useMounted } from '@/hooks/use-mounted'")
     ).toBe(true);
-    
+
     expect(asyncActionSource).toContain('const mountedRef = useMounted()');
     expect(asyncActionSource).toContain('if (mountedRef.current)');
   });
 
   test('both useAsyncAction and useAsyncActionSafe use useMounted', async () => {
     const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-    
+
     const useMountedCalls = asyncActionSource.match(/const mountedRef = useMounted\(\)/g);
     expect(useMountedCalls).toBeDefined();
     expect(useMountedCalls?.length).toBe(2);
@@ -144,17 +144,17 @@ describe('useAsyncAction + useMounted integration', () => {
 
   test('mount checking pattern is used consistently', async () => {
     const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-    
+
     const mountCheckPattern = /if \(mountedRef\.current\)/g;
     const matches = asyncActionSource.match(mountCheckPattern);
-    
+
     expect(matches).toBeDefined();
     expect(matches!.length).toBeGreaterThan(0);
   });
 
   test('mountedRef is included in useCallback dependencies', async () => {
     const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-    
+
     expect(asyncActionSource).toContain('[action, mountedRef]');
   });
 });

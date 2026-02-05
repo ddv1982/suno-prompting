@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 interface LogoMarkProps {
   size?: number;
@@ -20,20 +20,48 @@ export function LogoMark({ size = 32, className }: LogoMarkProps): ReactElement 
           <stop stopColor="#0F111A" />
           <stop offset="1" stopColor="#05060A" />
         </linearGradient>
-        <radialGradient id="bgGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 420) rotate(90) scale(520 520)">
+        <radialGradient
+          id="bgGlow"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
+          gradientTransform="translate(512 420) rotate(90) scale(520 520)"
+        >
           <stop stopColor="#242B3D" stopOpacity="0.9" />
           <stop offset="1" stopColor="#05060A" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="stroke" x1="280" y1="240" x2="780" y2="780" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="stroke"
+          x1="280"
+          y1="240"
+          x2="780"
+          y2="780"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#00FFFF" />
           <stop offset="1" stopColor="#FF00CC" />
         </linearGradient>
-        <linearGradient id="strokeHighlight" x1="300" y1="200" x2="720" y2="720" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="strokeHighlight"
+          x1="300"
+          y1="200"
+          x2="720"
+          y2="720"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#B2FFFF" />
           <stop offset="0.5" stopColor="#00FFFF" stopOpacity="0.3" />
           <stop offset="1" stopColor="#FFB2EE" stopOpacity="0.1" />
         </linearGradient>
-        <radialGradient id="orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 500) rotate(90) scale(180 180)">
+        <radialGradient
+          id="orb"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
+          gradientTransform="translate(512 500) rotate(90) scale(180 180)"
+        >
           <stop stopColor="#FFFFFF" />
           <stop offset="0.2" stopColor="#70FFFF" />
           <stop offset="0.6" stopColor="#00D9FF" />
@@ -70,4 +98,3 @@ export function LogoMark({ size = 32, className }: LogoMarkProps): ReactElement 
     </svg>
   );
 }
-

@@ -1,9 +1,9 @@
 /**
  * Statistical Variety Validation Tests (Task Group 3.6)
- * 
+ *
  * Validates that deterministic prompt generation achieves sufficient variety
  * across multiple runs to ensure unique, non-repetitive prompts.
- * 
+ *
  * Goals:
  * - ≥70% unique combinations in 1000 runs
  * - Recording contexts show variety across runs
@@ -86,24 +86,26 @@ describe('Statistical Variety Validation', () => {
   test('achieves ≥70% unique combinations in 1000 runs', () => {
     const iterations = 1000;
     const combinations = new Set<string>();
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['pop'], seedRng(i));
       const combo = [...result.tags].sort().join('|');
       combinations.add(combo);
     }
-    
+
     const uniquePercentage = (combinations.size / iterations) * 100;
-    console.info(`Unique combinations: ${combinations.size}/${iterations} (${uniquePercentage.toFixed(1)}%)`);
-    
+    console.info(
+      `Unique combinations: ${combinations.size}/${iterations} (${uniquePercentage.toFixed(1)}%)`
+    );
+
     expect(combinations.size).toBeGreaterThanOrEqual(700); // ≥70%
   });
-  
+
   test('recording contexts show variety across runs', () => {
     const iterations = 100;
     const contexts = new Set<string>();
     const jazzContexts = GENRE_RECORDING_CONTEXTS.jazz ?? [];
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['jazz'], seedRng(i));
       for (const tag of result.tags) {
@@ -112,7 +114,7 @@ describe('Statistical Variety Validation', () => {
         }
       }
     }
-    
+
     console.info(`Unique jazz contexts seen: ${contexts.size}/${jazzContexts.length}`);
     expect(contexts.size).toBeGreaterThan(3); // At least 3 different contexts
   });
@@ -121,7 +123,7 @@ describe('Statistical Variety Validation', () => {
     const iterations = 100;
     const contexts = new Set<string>();
     const rockContexts = GENRE_RECORDING_CONTEXTS.rock ?? [];
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['rock'], seedRng(i));
       for (const tag of result.tags) {
@@ -130,7 +132,7 @@ describe('Statistical Variety Validation', () => {
         }
       }
     }
-    
+
     console.info(`Unique rock contexts seen: ${contexts.size}/${rockContexts.length}`);
     expect(contexts.size).toBeGreaterThan(3); // At least 3 different contexts
   });
@@ -139,7 +141,7 @@ describe('Statistical Variety Validation', () => {
     const iterations = 100;
     const contexts = new Set<string>();
     const electronicContexts = GENRE_RECORDING_CONTEXTS.electronic ?? [];
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['electronic'], seedRng(i));
       for (const tag of result.tags) {
@@ -148,7 +150,7 @@ describe('Statistical Variety Validation', () => {
         }
       }
     }
-    
+
     console.info(`Unique electronic contexts seen: ${contexts.size}/${electronicContexts.length}`);
     expect(contexts.size).toBeGreaterThan(3); // At least 3 different contexts
   });
@@ -157,7 +159,7 @@ describe('Statistical Variety Validation', () => {
     const genres = ['jazz', 'rock', 'pop', 'electronic'];
     const iterations = 250; // 250 per genre = 1000 total
     const allCombinations = new Set<string>();
-    
+
     for (const genre of genres) {
       for (let i = 0; i < iterations; i++) {
         const result = assembleStyleTags([genre as any], seedRng(i * 1000 + genre.charCodeAt(0)));
@@ -165,11 +167,13 @@ describe('Statistical Variety Validation', () => {
         allCombinations.add(combo);
       }
     }
-    
+
     const totalRuns = genres.length * iterations;
     const uniquePercentage = (allCombinations.size / totalRuns) * 100;
-    console.info(`Total unique combinations across genres: ${allCombinations.size}/${totalRuns} (${uniquePercentage.toFixed(1)}%)`);
-    
+    console.info(
+      `Total unique combinations across genres: ${allCombinations.size}/${totalRuns} (${uniquePercentage.toFixed(1)}%)`
+    );
+
     // Expect ≥70% unique across all genres
     expect(allCombinations.size).toBeGreaterThanOrEqual(totalRuns * 0.7);
   });
@@ -177,18 +181,18 @@ describe('Statistical Variety Validation', () => {
   test('tag count consistency (8-15 tags per prompt)', () => {
     const iterations = 100;
     const tagCounts: number[] = [];
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['pop'], seedRng(i));
       tagCounts.push(result.tags.length);
     }
-    
+
     const minTags = Math.min(...tagCounts);
     const maxTags = Math.max(...tagCounts);
     const avgTags = tagCounts.reduce((sum, count) => sum + count, 0) / tagCounts.length;
-    
+
     console.info(`Tag counts - Min: ${minTags}, Max: ${maxTags}, Avg: ${avgTags.toFixed(1)}`);
-    
+
     // Verify tags are within expected range (6-15 based on assembleStyleTags implementation with increased limit)
     expect(minTags).toBeGreaterThanOrEqual(6);
     expect(maxTags).toBeLessThanOrEqual(15);
@@ -196,11 +200,11 @@ describe('Statistical Variety Validation', () => {
 
   test('no duplicate tags within single prompt', () => {
     const iterations = 100;
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['jazz'], seedRng(i));
       const uniqueTags = new Set(result.tags);
-      
+
       // Every prompt should have no duplicate tags
       expect(result.tags.length).toBe(uniqueTags.size);
     }
@@ -209,20 +213,20 @@ describe('Statistical Variety Validation', () => {
   test('recording contexts appear in final tag output', () => {
     const iterations = 100;
     let appearanceCount = 0;
-    
+
     for (let i = 0; i < iterations; i++) {
       const result = assembleStyleTags(['jazz'], seedRng(i));
       const jazzContexts = GENRE_RECORDING_CONTEXTS.jazz ?? [];
-      
-      const hasContext = result.tags.some(tag => jazzContexts.includes(tag));
+
+      const hasContext = result.tags.some((tag) => jazzContexts.includes(tag));
       if (hasContext) {
         appearanceCount++;
       }
     }
-    
+
     const appearanceRate = (appearanceCount / iterations) * 100;
     console.info(`Recording context appearance rate: ${appearanceRate.toFixed(1)}%`);
-    
+
     // Recording contexts should appear in reasonable number of prompts (≥15%)
     // Due to probabilistic tag selection and 10-tag limit, 15-30% is expected
     expect(appearanceCount).toBeGreaterThanOrEqual(iterations * 0.15);

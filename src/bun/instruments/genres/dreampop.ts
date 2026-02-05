@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const DREAMPOP_GENRE: GenreDefinition = {
   name: 'Dream Pop',
   keywords: ['dream pop', 'dreampop', 'shoegaze', 'ethereal', 'dreamy', 'hazy'],
-  description: 'Ethereal, atmospheric rock with lush textures, reverb-drenched guitars, and dreamy vocals',
+  description:
+    'Ethereal, atmospheric rock with lush textures, reverb-drenched guitars, and dreamy vocals',
   pools: {
     harmonic: {
       pick: { min: 1, max: 2 },
@@ -25,9 +26,16 @@ export const DREAMPOP_GENRE: GenreDefinition = {
   },
   poolOrder: ['pad', 'harmonic', 'color', 'movement'],
   maxTags: 4,
-  exclusionRules: [
-    ['guitar', 'tremolo guitar'],
-  ],
+  exclusionRules: [['guitar', 'tremolo guitar']],
   bpm: { min: 80, max: 120, typical: 100 },
-  moods: ['Dreamy', 'Ethereal', 'Hazy', 'Nostalgic', 'Melancholic', 'Atmospheric', 'Lush', 'Wistful'],
+  moods: [
+    'Dreamy',
+    'Ethereal',
+    'Hazy',
+    'Nostalgic',
+    'Melancholic',
+    'Atmospheric',
+    'Lush',
+    'Wistful',
+  ],
 };

@@ -56,28 +56,31 @@ function buildQuickVibesUserPrompt(
 export function postProcessQuickVibes(text: string): string {
   // Trim whitespace
   let result = text.trim();
-  
+
   // Remove any markdown code blocks
   result = result.replace(/```[^`]*```/g, '').trim();
-  
+
   // Remove any leaked meta-lines (lines starting with Category:, Keywords:, etc.)
-  result = result.split('\n')
-    .filter(line => !(/^(Category|Keywords|Example|User's|Note|Output):/i.exec(line)))
+  result = result
+    .split('\n')
+    .filter((line) => !/^(Category|Keywords|Example|User's|Note|Output):/i.exec(line))
     .join(' ')
     .trim();
-  
+
   // Remove any section tags
   result = result.replace(/\[(INTRO|VERSE|CHORUS|BRIDGE|OUTRO|HOOK|PRE-CHORUS)\]/gi, '').trim();
-  
+
   // Remove double spaces
   result = result.replace(/\s+/g, ' ').trim();
-  
+
   // Remove surrounding quotes if present
-  if ((result.startsWith('"') && result.endsWith('"')) || 
-      (result.startsWith("'") && result.endsWith("'"))) {
+  if (
+    (result.startsWith('"') && result.endsWith('"')) ||
+    (result.startsWith("'") && result.endsWith("'"))
+  ) {
     result = result.slice(1, -1).trim();
   }
-  
+
   // Enforce max length - truncate gracefully at word boundary if needed
   if (result.length > APP_CONSTANTS.QUICK_VIBES_GENERATION_LIMIT) {
     // Find last space before limit
@@ -89,7 +92,7 @@ export function postProcessQuickVibes(text: string): string {
       result = truncated.trim();
     }
   }
-  
+
   return result;
 }
 
@@ -106,7 +109,7 @@ export function applyQuickVibesMaxMode(prompt: string, maxMode: boolean): string
  */
 export function buildQuickVibesRefineSystemPrompt(): string {
   const basePrompt = buildQuickVibesSystemPrompt();
-  
+
   return `${basePrompt}
 
 You are REFINING an existing Quick Vibes prompt based on user feedback.
@@ -117,7 +120,7 @@ Keep the same general vibe but apply the requested changes.`;
  * Builds the user prompt for Quick Vibes refinement
  */
 export function buildQuickVibesRefineUserPrompt(
-  currentPrompt: string, 
+  currentPrompt: string,
   feedback: string,
   category?: QuickVibesCategory | null
 ): string {

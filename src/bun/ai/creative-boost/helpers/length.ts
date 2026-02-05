@@ -29,7 +29,9 @@ export async function enforceMaxLength(
     return text;
   }
   log.info('enforceMaxLength:processing', { originalLength: text.length, maxChars: MAX_CHARS });
-  const result = await enforceLengthLimit(text, MAX_CHARS, (t) => condense(t, getModel, ollamaEndpoint));
+  const result = await enforceLengthLimit(text, MAX_CHARS, (t) =>
+    condense(t, getModel, ollamaEndpoint)
+  );
   if (result.length < text.length) {
     log.info('enforceMaxLength:reduced', { newLength: result.length });
   }

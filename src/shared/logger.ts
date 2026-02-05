@@ -25,10 +25,10 @@ const loggerCache = new Map<string, Logger>();
 /**
  * Creates a namespaced logger instance.
  * Caches instances for reuse to avoid unnecessary object creation.
- * 
+ *
  * @param namespace - The namespace/module name for log prefixing
  * @returns A logger instance with info, warn, and error methods
- * 
+ *
  * @example
  * const log = createLogger('Storage');
  * log.info('save:start', { id: '123' });

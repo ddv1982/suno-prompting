@@ -32,7 +32,8 @@ export interface RpcError {
 }
 
 // Use centralized constants from APP_CONSTANTS.RPC
-const { MAX_TEXT_LEN, MAX_DETAILS_TEXT_LEN, MAX_FIELD_ERRORS, MAX_FIELD_ERROR_TEXT } = APP_CONSTANTS.RPC;
+const { MAX_TEXT_LEN, MAX_DETAILS_TEXT_LEN, MAX_FIELD_ERRORS, MAX_FIELD_ERROR_TEXT } =
+  APP_CONSTANTS.RPC;
 
 export function redactAndTruncateText(input: unknown, maxLen: number = MAX_TEXT_LEN): string {
   const raw =
@@ -147,7 +148,9 @@ function statusFromUnknown(error: unknown): number | undefined {
   return undefined;
 }
 
-function sanitizeDetails(details: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+function sanitizeDetails(
+  details: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
   if (!details) return undefined;
   const allowlist = ['method', 'requestId', 'status', 'fieldErrors', 'hint'];
   const out: Record<string, unknown> = {};
@@ -210,7 +213,11 @@ function tryMapZodError(error: unknown, context?: { method?: string }): RpcError
 
   const tree = z.treeifyError(error);
   const fieldErrors: Record<string, unknown> =
-    tree && typeof tree === 'object' && 'properties' in tree && typeof tree.properties === 'object' && tree.properties !== null
+    tree &&
+    typeof tree === 'object' &&
+    'properties' in tree &&
+    typeof tree.properties === 'object' &&
+    tree.properties !== null
       ? (tree.properties as Record<string, unknown>)
       : {};
 
@@ -228,7 +235,10 @@ function tryMapZodError(error: unknown, context?: { method?: string }): RpcError
   };
 }
 
-function tryMapInferredFieldErrors(error: unknown, context?: { method?: string }): RpcError | undefined {
+function tryMapInferredFieldErrors(
+  error: unknown,
+  context?: { method?: string }
+): RpcError | undefined {
   const inferredFieldErrors = fieldErrorsFromUnknown(error);
   if (!inferredFieldErrors) return undefined;
   return {
@@ -259,19 +269,39 @@ function tryMapUnavailable(error: unknown, context?: { method?: string }): RpcEr
 function tryMapStatus(error: unknown, context?: { method?: string }): RpcError | undefined {
   const status = statusFromUnknown(error);
   if (status === 401) {
-    return { code: 'RPC_UNAUTHORIZED', message: safeRpcMessage('RPC_UNAUTHORIZED'), details: sanitizeDetails({ method: context?.method, status }) };
+    return {
+      code: 'RPC_UNAUTHORIZED',
+      message: safeRpcMessage('RPC_UNAUTHORIZED'),
+      details: sanitizeDetails({ method: context?.method, status }),
+    };
   }
   if (status === 403) {
-    return { code: 'RPC_FORBIDDEN', message: safeRpcMessage('RPC_FORBIDDEN'), details: sanitizeDetails({ method: context?.method, status }) };
+    return {
+      code: 'RPC_FORBIDDEN',
+      message: safeRpcMessage('RPC_FORBIDDEN'),
+      details: sanitizeDetails({ method: context?.method, status }),
+    };
   }
   if (status === 404) {
-    return { code: 'RPC_NOT_FOUND', message: safeRpcMessage('RPC_NOT_FOUND'), details: sanitizeDetails({ method: context?.method, status }) };
+    return {
+      code: 'RPC_NOT_FOUND',
+      message: safeRpcMessage('RPC_NOT_FOUND'),
+      details: sanitizeDetails({ method: context?.method, status }),
+    };
   }
   if (status === 409) {
-    return { code: 'RPC_CONFLICT', message: safeRpcMessage('RPC_CONFLICT'), details: sanitizeDetails({ method: context?.method, status }) };
+    return {
+      code: 'RPC_CONFLICT',
+      message: safeRpcMessage('RPC_CONFLICT'),
+      details: sanitizeDetails({ method: context?.method, status }),
+    };
   }
   if (status === 429) {
-    return { code: 'RPC_RATE_LIMITED', message: safeRpcMessage('RPC_RATE_LIMITED'), details: sanitizeDetails({ method: context?.method, status }) };
+    return {
+      code: 'RPC_RATE_LIMITED',
+      message: safeRpcMessage('RPC_RATE_LIMITED'),
+      details: sanitizeDetails({ method: context?.method, status }),
+    };
   }
   return undefined;
 }
@@ -281,7 +311,11 @@ function fallbackUnknown(error: unknown, context?: { method?: string }): RpcErro
   return {
     code: 'UNKNOWN',
     message: safeRpcMessage('UNKNOWN'),
-    details: sanitizeDetails({ method: context?.method, status, hint: redactAndTruncateText(error) }),
+    details: sanitizeDetails({
+      method: context?.method,
+      status,
+      hint: redactAndTruncateText(error),
+    }),
   };
 }
 

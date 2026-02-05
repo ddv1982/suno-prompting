@@ -1,6 +1,6 @@
 /**
  * Re-exports Quick Vibes category definitions for backend use.
- * 
+ *
  * For QUICK_VIBES_MAX_CHARS and QUICK_VIBES_GENERATION_LIMIT,
  * import directly from APP_CONSTANTS instead.
  */

@@ -245,13 +245,22 @@ describe('Genre Instrument Selection', () => {
 
   test('synthwave genre contains synth instruments', () => {
     const result = getGenreInstruments('synthwave');
-    const hasSynth = result.includes('synth') || result.includes('arpeggiator') || result.includes('808');
+    const hasSynth =
+      result.includes('synth') || result.includes('arpeggiator') || result.includes('808');
     expect(hasSynth).toBe(true);
   });
 
   test('classical genre contains orchestral instruments', () => {
     const result = getGenreInstruments('classical');
-    const hasOrchestral = ['strings', 'violin', 'cello', 'flute', 'oboe', 'clarinet', 'felt piano'].some(i => result.includes(i));
+    const hasOrchestral = [
+      'strings',
+      'violin',
+      'cello',
+      'flute',
+      'oboe',
+      'clarinet',
+      'felt piano',
+    ].some((i) => result.includes(i));
     expect(hasOrchestral).toBe(true);
   });
 
@@ -261,7 +270,7 @@ describe('Genre Instrument Selection', () => {
     // 2) pick count to choose max (near-1)
     const sequence = [0, 0.999, 0, 0.999, 0, 0.999];
     let idx = 0;
-    const rng = () => sequence[(idx++) % sequence.length]!;
+    const rng = () => sequence[idx++ % sequence.length]!;
 
     const result = getGenreInstruments('folk', {
       rng,
@@ -270,7 +279,7 @@ describe('Genre Instrument Selection', () => {
     });
     // Folk rare pool: mandolin, banjo, hurdy gurdy, jaw harp, nyckelharpa
     const folkRareInstruments = ['mandolin', 'banjo', 'hurdy gurdy', 'jaw harp', 'nyckelharpa'];
-    const hasRare = folkRareInstruments.some(i => result.includes(i));
+    const hasRare = folkRareInstruments.some((i) => result.includes(i));
     expect(hasRare).toBe(true);
   });
 

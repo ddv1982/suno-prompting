@@ -3,7 +3,8 @@ import type { GenreDefinition } from '@bun/instruments/genres/types';
 export const CELTIC_GENRE: GenreDefinition = {
   name: 'Celtic',
   keywords: ['celtic', 'irish', 'scottish', 'gaelic', 'celtic folk', 'traditional irish'],
-  description: 'Traditional Celtic music with folk instruments, jigs, reels, and evocative melodies',
+  description:
+    'Traditional Celtic music with folk instruments, jigs, reels, and evocative melodies',
   pools: {
     melody: {
       pick: { min: 1, max: 2 },

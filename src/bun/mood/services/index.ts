@@ -21,7 +21,11 @@ export {
 } from './filter';
 
 // Intensity services
-export { selectMoodWithIntensity, moodHasIntensityVariants, applyIntensityToMoods } from './intensity';
+export {
+  selectMoodWithIntensity,
+  moodHasIntensityVariants,
+  applyIntensityToMoods,
+} from './intensity';
 
 // Compound mood services
 export { selectCompoundMood, getCompoundMoodsForGenre } from './compound';

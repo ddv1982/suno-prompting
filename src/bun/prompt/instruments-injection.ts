@@ -34,7 +34,10 @@ function isVocalStyleItem(item: string): boolean {
   return false;
 }
 
-function capItemsPreservingVocalStyleAndLeadingInstruments(items: string[], maxItems: number): string[] {
+function capItemsPreservingVocalStyleAndLeadingInstruments(
+  items: string[],
+  maxItems: number
+): string[] {
   if (items.length <= maxItems) return items;
 
   const vocalItems: string[] = [];
@@ -99,18 +102,24 @@ export function injectInstrumentTags(
   const maxItems = options?.maxItems ?? DEFAULT_MAX_ITEMS;
 
   // Max format: instruments: "piano, bass"
-  const quotedMatch = /^(instruments:\s*")([^"]*)"/mi.exec(prompt);
+  const quotedMatch = /^(instruments:\s*")([^"]*)"/im.exec(prompt);
   if (quotedMatch) {
     const existingValue = (quotedMatch[2] ?? '').trim();
-    const merged = mergeInstrumentTagsIntoCsv(existingValue, tags, { maxItems, stripVocalStyleItems: true });
-    return prompt.replace(/^(instruments:\s*")[^"]*"/mi, `$1${merged}"`);
+    const merged = mergeInstrumentTagsIntoCsv(existingValue, tags, {
+      maxItems,
+      stripVocalStyleItems: true,
+    });
+    return prompt.replace(/^(instruments:\s*")[^"]*"/im, `$1${merged}"`);
   }
 
   // Non-max format: Instruments: piano, bass
   const unquotedMatch = /^(Instruments:[^\S\n]*)([^\n]*)$/m.exec(prompt);
   if (unquotedMatch) {
     const existingValue = (unquotedMatch[2] ?? '').trim();
-    const merged = mergeInstrumentTagsIntoCsv(existingValue, tags, { maxItems, stripVocalStyleItems: true });
+    const merged = mergeInstrumentTagsIntoCsv(existingValue, tags, {
+      maxItems,
+      stripVocalStyleItems: true,
+    });
     return prompt.replace(/^(Instruments:[^\S\n]*)([^\n]*)$/m, `$1${merged}`);
   }
 
@@ -120,7 +129,11 @@ export function injectInstrumentTags(
   if (maxMode) {
     const bpmIdx = lines.findIndex((l) => /^bpm:\s*"/i.test(l));
     const insertAt = bpmIdx >= 0 ? bpmIdx + 1 : 0;
-    lines.splice(insertAt, 0, `instruments: "${mergeInstrumentTagsIntoCsv('', tags, { maxItems })}"`);
+    lines.splice(
+      insertAt,
+      0,
+      `instruments: "${mergeInstrumentTagsIntoCsv('', tags, { maxItems })}"`
+    );
     return lines.join('\n');
   }
 

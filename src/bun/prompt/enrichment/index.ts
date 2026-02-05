@@ -25,8 +25,4 @@ export {
 } from './formatters';
 
 // Types
-export type {
-  EnrichmentResult,
-  EnrichmentOptions,
-  EnrichedSunoStyleResult,
-} from './types';
+export type { EnrichmentResult, EnrichmentOptions, EnrichedSunoStyleResult } from './types';

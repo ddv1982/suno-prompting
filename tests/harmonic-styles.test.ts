@@ -129,10 +129,7 @@ describe('getBlendedHarmonicStyle', () => {
 
     expect(result).not.toBeNull();
     // Result should be from either jazz or rock pool
-    const combinedPool = [
-      ...GENRE_HARMONIC_STYLES.jazz!,
-      ...GENRE_HARMONIC_STYLES.rock!,
-    ];
+    const combinedPool = [...GENRE_HARMONIC_STYLES.jazz!, ...GENRE_HARMONIC_STYLES.rock!];
     expect(combinedPool).toContain(result!);
   });
 
@@ -140,10 +137,7 @@ describe('getBlendedHarmonicStyle', () => {
     const result = getBlendedHarmonicStyle('jazz, rock');
 
     expect(result).not.toBeNull();
-    const combinedPool = [
-      ...GENRE_HARMONIC_STYLES.jazz!,
-      ...GENRE_HARMONIC_STYLES.rock!,
-    ];
+    const combinedPool = [...GENRE_HARMONIC_STYLES.jazz!, ...GENRE_HARMONIC_STYLES.rock!];
     expect(combinedPool).toContain(result!);
   });
 

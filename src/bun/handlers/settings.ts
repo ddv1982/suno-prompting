@@ -10,21 +10,35 @@ import type { RPCHandlers } from '@shared/types';
 
 type SettingsHandlers = Pick<
   RPCHandlers,
-  | 'getApiKey' | 'setApiKey'
-  | 'getModel' | 'setModel'
-  | 'getSunoTags' | 'setSunoTags'
-  | 'getDebugMode' | 'setDebugMode'
-  | 'getAllSettings' | 'saveAllSettings'
-  | 'getMaxMode' | 'setMaxMode'
-  | 'getLyricsMode' | 'setLyricsMode'
-  | 'getStoryMode' | 'setStoryMode'
-  | 'getPromptMode' | 'setPromptMode'
-  | 'getCreativeBoostMode' | 'setCreativeBoostMode'
-  | 'getUseLocalLLM' | 'setUseLocalLLM'
+  | 'getApiKey'
+  | 'setApiKey'
+  | 'getModel'
+  | 'setModel'
+  | 'getSunoTags'
+  | 'setSunoTags'
+  | 'getDebugMode'
+  | 'setDebugMode'
+  | 'getAllSettings'
+  | 'saveAllSettings'
+  | 'getMaxMode'
+  | 'setMaxMode'
+  | 'getLyricsMode'
+  | 'setLyricsMode'
+  | 'getStoryMode'
+  | 'setStoryMode'
+  | 'getPromptMode'
+  | 'setPromptMode'
+  | 'getCreativeBoostMode'
+  | 'setCreativeBoostMode'
+  | 'getUseLocalLLM'
+  | 'setUseLocalLLM'
 >;
 
 /** API key and model handlers */
-function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getApiKey' | 'setApiKey' | 'getModel' | 'setModel'> {
+function createCoreHandlers(
+  aiEngine: AIEngine,
+  storage: StorageManager
+): Pick<SettingsHandlers, 'getApiKey' | 'setApiKey' | 'getModel' | 'setModel'> {
   return {
     getApiKey: async () => {
       log.info('getApiKey');
@@ -56,7 +70,24 @@ function createCoreHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
 }
 
 /** Boolean mode handlers (suno tags, debug, max, lyrics, story, useLocalLLM) */
-function createModeHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getSunoTags' | 'setSunoTags' | 'getDebugMode' | 'setDebugMode' | 'getMaxMode' | 'setMaxMode' | 'getLyricsMode' | 'setLyricsMode' | 'getStoryMode' | 'setStoryMode' | 'getUseLocalLLM' | 'setUseLocalLLM'> {
+function createModeHandlers(
+  aiEngine: AIEngine,
+  storage: StorageManager
+): Pick<
+  SettingsHandlers,
+  | 'getSunoTags'
+  | 'setSunoTags'
+  | 'getDebugMode'
+  | 'setDebugMode'
+  | 'getMaxMode'
+  | 'setMaxMode'
+  | 'getLyricsMode'
+  | 'setLyricsMode'
+  | 'getStoryMode'
+  | 'setStoryMode'
+  | 'getUseLocalLLM'
+  | 'setUseLocalLLM'
+> {
   return {
     getSunoTags: async () => ({ useSunoTags: (await storage.getConfig()).useSunoTags }),
     setSunoTags: async ({ useSunoTags }: { useSunoTags: boolean }) => {
@@ -96,24 +127,37 @@ function createModeHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
     },
     setUseLocalLLM: async (params) => {
       const { useLocalLLM } = validate(SetUseLocalLLMSchema, params);
-      return withErrorHandling('setUseLocalLLM', async () => {
-        await storage.saveConfig({ useLocalLLM });
-        aiEngine.setUseLocalLLM(useLocalLLM);
-        return { success: true };
-      }, { useLocalLLM });
+      return withErrorHandling(
+        'setUseLocalLLM',
+        async () => {
+          await storage.saveConfig({ useLocalLLM });
+          aiEngine.setUseLocalLLM(useLocalLLM);
+          return { success: true };
+        },
+        { useLocalLLM }
+      );
     },
   };
 }
 
 /** Prompt mode handlers */
-function createPromptModeHandlers(storage: StorageManager): Pick<SettingsHandlers, 'getPromptMode' | 'setPromptMode' | 'getCreativeBoostMode' | 'setCreativeBoostMode'> {
+function createPromptModeHandlers(
+  storage: StorageManager
+): Pick<
+  SettingsHandlers,
+  'getPromptMode' | 'setPromptMode' | 'getCreativeBoostMode' | 'setCreativeBoostMode'
+> {
   return {
     getPromptMode: async () => ({ promptMode: (await storage.getConfig()).promptMode ?? 'full' }),
     setPromptMode: async ({ promptMode }: { promptMode: string }) => {
-      await storage.saveConfig({ promptMode: promptMode as 'full' | 'quickVibes' | 'creativeBoost' });
+      await storage.saveConfig({
+        promptMode: promptMode as 'full' | 'quickVibes' | 'creativeBoost',
+      });
       return { success: true };
     },
-    getCreativeBoostMode: async () => ({ creativeBoostMode: (await storage.getConfig()).creativeBoostMode ?? 'simple' }),
+    getCreativeBoostMode: async () => ({
+      creativeBoostMode: (await storage.getConfig()).creativeBoostMode ?? 'simple',
+    }),
     setCreativeBoostMode: async ({ creativeBoostMode }: { creativeBoostMode: string }) => {
       await storage.saveConfig({ creativeBoostMode: creativeBoostMode as 'simple' | 'advanced' });
       return { success: true };
@@ -122,7 +166,10 @@ function createPromptModeHandlers(storage: StorageManager): Pick<SettingsHandler
 }
 
 /** Bulk settings handlers */
-function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<SettingsHandlers, 'getAllSettings' | 'saveAllSettings'> {
+function createBulkHandlers(
+  aiEngine: AIEngine,
+  storage: StorageManager
+): Pick<SettingsHandlers, 'getAllSettings' | 'saveAllSettings'> {
   return {
     getAllSettings: async () => {
       const config = await storage.getConfig();
@@ -135,45 +182,61 @@ function createBulkHandlers(aiEngine: AIEngine, storage: StorageManager): Pick<S
         maxMode: config.maxMode,
         lyricsMode: config.lyricsMode,
         storyMode: config.storyMode,
-        useLocalLLM: config.useLocalLLM
+        useLocalLLM: config.useLocalLLM,
       };
     },
     saveAllSettings: async (params) => {
-      const { provider, apiKeys, model, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, useLocalLLM } = 
-        validate(SaveAllSettingsSchema, params);
-      
-      return withErrorHandling('saveAllSettings', async () => {
-        await storage.saveConfig({ 
-          provider, 
-          apiKeys, 
-          model, 
-          useSunoTags, 
-          debugMode, 
-          maxMode, 
-          lyricsMode, 
-          storyMode,
-          useLocalLLM 
-        });
-        
-        aiEngine.setProvider(provider);
-        for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
-          if (apiKeys[p]) aiEngine.setApiKey(p, apiKeys[p]);
-        }
-        aiEngine.setModel(model);
-        aiEngine.setUseSunoTags(useSunoTags);
-        aiEngine.setDebugMode(debugMode);
-        aiEngine.setMaxMode(maxMode);
-        aiEngine.setLyricsMode(lyricsMode);
-        aiEngine.setStoryMode(storyMode);
-        aiEngine.setUseLocalLLM(useLocalLLM);
-        
-        return { success: true };
-      }, { provider, useLocalLLM });
+      const {
+        provider,
+        apiKeys,
+        model,
+        useSunoTags,
+        debugMode,
+        maxMode,
+        lyricsMode,
+        storyMode,
+        useLocalLLM,
+      } = validate(SaveAllSettingsSchema, params);
+
+      return withErrorHandling(
+        'saveAllSettings',
+        async () => {
+          await storage.saveConfig({
+            provider,
+            apiKeys,
+            model,
+            useSunoTags,
+            debugMode,
+            maxMode,
+            lyricsMode,
+            storyMode,
+            useLocalLLM,
+          });
+
+          aiEngine.setProvider(provider);
+          for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
+            if (apiKeys[p]) aiEngine.setApiKey(p, apiKeys[p]);
+          }
+          aiEngine.setModel(model);
+          aiEngine.setUseSunoTags(useSunoTags);
+          aiEngine.setDebugMode(debugMode);
+          aiEngine.setMaxMode(maxMode);
+          aiEngine.setLyricsMode(lyricsMode);
+          aiEngine.setStoryMode(storyMode);
+          aiEngine.setUseLocalLLM(useLocalLLM);
+
+          return { success: true };
+        },
+        { provider, useLocalLLM }
+      );
     },
   };
 }
 
-export function createSettingsHandlers(aiEngine: AIEngine, storage: StorageManager): SettingsHandlers {
+export function createSettingsHandlers(
+  aiEngine: AIEngine,
+  storage: StorageManager
+): SettingsHandlers {
   return {
     ...createCoreHandlers(aiEngine, storage),
     ...createModeHandlers(aiEngine, storage),

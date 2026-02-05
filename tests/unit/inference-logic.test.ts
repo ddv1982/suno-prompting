@@ -94,7 +94,11 @@ describe('selectRecordingContextWithScene', () => {
   describe('scene keyword "bedroom" returns bedroom production context', () => {
     it('matches "bedroom" in scene description', () => {
       const rng = createFixedRng(0);
-      const result = selectRecordingContextWithScene('electronic', rng, 'making beats in my bedroom');
+      const result = selectRecordingContextWithScene(
+        'electronic',
+        rng,
+        'making beats in my bedroom'
+      );
       expect(result).toBe('bedroom production');
     });
 
@@ -420,7 +424,9 @@ describe('extractHarmonicComplexity', () => {
     });
 
     it('returns 1.8 for multiple indicators', () => {
-      const result = extractHarmonicComplexity('a jazz progressive modal piece with extended chords');
+      const result = extractHarmonicComplexity(
+        'a jazz progressive modal piece with extended chords'
+      );
       expect(result).toBe(1.8);
     });
   });
