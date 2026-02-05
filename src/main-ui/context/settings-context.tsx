@@ -72,8 +72,11 @@ function useSettingsLoader(): SettingsLoaderReturn {
     }
   }, []);
 
+  const maxModeRef = useRef(maxMode);
+  maxModeRef.current = maxMode;
+
   const handleSetMaxMode = useCallback(async (mode: boolean) => {
-    const previousMode = maxMode;
+    const previousMode = maxModeRef.current;
     setMaxMode(mode);
     try {
       const result = await rpcClient.setMaxMode({ maxMode: mode });
@@ -85,10 +88,13 @@ function useSettingsLoader(): SettingsLoaderReturn {
       log.error("setMaxMode:failed", error);
       setMaxMode(previousMode);
     }
-  }, [maxMode]);
+  }, []);
+
+  const lyricsModeRef = useRef(lyricsMode);
+  lyricsModeRef.current = lyricsMode;
 
   const handleSetLyricsMode = useCallback(async (mode: boolean) => {
-    const previousMode = lyricsMode;
+    const previousMode = lyricsModeRef.current;
     setLyricsMode(mode);
     try {
       const result = await rpcClient.setLyricsMode({ lyricsMode: mode });
@@ -100,10 +106,13 @@ function useSettingsLoader(): SettingsLoaderReturn {
       log.error("setLyricsMode:failed", error);
       setLyricsMode(previousMode);
     }
-  }, [lyricsMode]);
+  }, []);
+
+  const storyModeRef = useRef(storyMode);
+  storyModeRef.current = storyMode;
 
   const handleSetStoryMode = useCallback(async (mode: boolean) => {
-    const previousMode = storyMode;
+    const previousMode = storyModeRef.current;
     setStoryMode(mode);
     try {
       const result = await rpcClient.setStoryMode({ storyMode: mode });
@@ -115,7 +124,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
       log.error("setStoryMode:catch", error);
       setStoryMode(previousMode);
     }
-  }, [storyMode]);
+  }, []);
 
   return {
     currentModel,

@@ -67,7 +67,7 @@ async function loadOrCreateSecret(operation: 'encrypt' | 'decrypt'): Promise<str
                 throw new StorageError(
                     'Secure key store unavailable. Cannot encrypt/decrypt in this environment.',
                     operation,
-                    error as Error
+                    error instanceof Error ? error : undefined
                 );
             }
             const secret = createRandomSecret();
@@ -92,7 +92,7 @@ async function loadOrCreateSecret(operation: 'encrypt' | 'decrypt'): Promise<str
                 throw new StorageError(
                     'Secure key store unavailable. Cannot encrypt/decrypt in this environment.',
                     operation,
-                    error as Error
+                    error instanceof Error ? error : undefined
                 );
             }
         } else {
@@ -104,7 +104,7 @@ async function loadOrCreateSecret(operation: 'encrypt' | 'decrypt'): Promise<str
 }
 
 async function deriveKey(secret: string): Promise<CryptoKey> {
-    if (cachedKey) return cachedKey;
+    if (cachedKey && secret === cachedSecret) return cachedKey;
 
     const encoder = new TextEncoder();
     const data = encoder.encode(secret);
@@ -159,7 +159,7 @@ export async function encrypt(text: string): Promise<string> {
     } catch (error: unknown) {
         log.error('encrypt:failed', error);
         if (error instanceof StorageError) throw error;
-        throw new StorageError('Failed to encrypt sensitive data', 'encrypt', error as Error);
+        throw new StorageError('Failed to encrypt sensitive data', 'encrypt', error instanceof Error ? error : undefined);
     }
 }
 
@@ -173,7 +173,7 @@ export async function decrypt(encryptedBase64: string): Promise<string> {
         throw new StorageError(
             'Failed to decrypt sensitive data. The key might have been encrypted on a different machine.',
             'decrypt',
-            error as Error
+            error instanceof Error ? error : undefined
         );
     }
 }

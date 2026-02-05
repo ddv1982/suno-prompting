@@ -196,7 +196,7 @@ export function validateOllamaEndpoint(endpoint: string): void {
         // Note: URL parser returns empty string for default ports (80 for http, 443 for https)
         const defaultPort = url.protocol === 'https:' ? 443 : 80;
         const port = url.port ? parseInt(url.port, 10) : defaultPort;
-        if (port < 1024 || port > 65535) {
+        if (Number.isNaN(port) || port < 1024 || port > 65535) {
             throw new ValidationError(
                 `Port must be between 1024 and 65535. Received: ${port}`,
                 'endpoint'

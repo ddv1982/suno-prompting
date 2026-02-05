@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { validateOllamaEndpoint } from '@shared/errors';
+import { getErrorMessage, validateOllamaEndpoint } from '@shared/errors';
 
 /**
  * Schema for setting Ollama configuration.
@@ -38,7 +38,7 @@ export const SetOllamaSettingsSchema = z.object({
         // Add the actual error message as a Zod issue
         ctx.addIssue({
           code: "custom",
-          message: (error as Error).message,
+          message: getErrorMessage(error),
           path: ['endpoint'],
         });
         return z.NEVER;
