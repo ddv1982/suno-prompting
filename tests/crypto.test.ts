@@ -1,6 +1,7 @@
 import { expect, test, describe } from 'bun:test';
 
 import { encrypt, decrypt } from '@bun/crypto';
+import { StorageError } from '@shared/errors';
 
 describe('Crypto module', () => {
   test('encrypt and decrypt round-trip preserves original text', async () => {
@@ -77,5 +78,36 @@ describe('Crypto module', () => {
 
   test('decrypting invalid base64 throws error', async () => {
     await expect(decrypt('not_valid_base64!!!')).rejects.toThrow();
+  });
+
+  test('decrypting tampered data wraps cause in StorageError', async () => {
+    const encrypted = await encrypt('test');
+    const tamperedBuffer = Buffer.from(encrypted, 'base64');
+    tamperedBuffer[tamperedBuffer.length - 1] =
+      (tamperedBuffer[tamperedBuffer.length - 1] ?? 0) ^ 0xff;
+    const tampered = tamperedBuffer.toString('base64');
+
+    try {
+      await decrypt(tampered);
+      expect.unreachable('should have thrown');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(StorageError);
+      // The cause should be an Error (or undefined), never an unsafe cast
+      if (error instanceof StorageError && error.cause !== undefined) {
+        expect(error.cause).toBeInstanceOf(Error);
+      }
+    }
+  });
+
+  test('decrypting too-short data wraps cause in StorageError', async () => {
+    // Only 4 bytes — too short for IV (12 bytes) + ciphertext
+    const tooShort = Buffer.from([1, 2, 3, 4]).toString('base64');
+
+    try {
+      await decrypt(tooShort);
+      expect.unreachable('should have thrown');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(StorageError);
+    }
   });
 });

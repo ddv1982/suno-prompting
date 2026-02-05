@@ -127,6 +127,10 @@ describe('SSRF Prevention: validateOllamaEndpoint', () => {
       expect(() => validateOllamaEndpoint('http://127.0.0.1:70000')).toThrow(ValidationError);
     });
 
+    test('should reject non-numeric port (NaN bypass)', () => {
+      expect(() => validateOllamaEndpoint('http://127.0.0.1:abc')).toThrow(ValidationError);
+    });
+
     test('should reject port 0', () => {
       expect(() => validateOllamaEndpoint('http://127.0.0.1:0')).toThrow(ValidationError);
     });
