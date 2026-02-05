@@ -43,7 +43,8 @@
     "eslint-plugin-react-hooks": "7.0.1",
     "husky": "^9.1.7",
     "knip": "^5.83.0",
-    "typescript-eslint": "^8.51.0"
+    "typescript-eslint": "^8.51.0",
+    "@tailwindcss/cli": "^4.1.18"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
@@ -59,7 +60,6 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@tailwindcss/cli": "^4.1.18",
     "ai": "^6.0.48",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

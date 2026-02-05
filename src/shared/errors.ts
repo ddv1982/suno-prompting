@@ -122,9 +122,9 @@ export class OllamaTimeoutError extends AppError {
  * Prevents SSRF attacks by restricting to localhost only.
  */
 export class InvalidOllamaEndpointError extends ValidationError {
-    constructor(endpoint: string) {
+    constructor(message = 'Ollama endpoint must be localhost only.') {
         super(
-            `Ollama endpoint must be localhost only. Received: ${endpoint}`,
+            message,
             'endpoint'
         );
         this.name = 'InvalidOllamaEndpointError';
@@ -189,7 +189,7 @@ export function validateOllamaEndpoint(endpoint: string): void {
 
         // Validate hostname is localhost
         if (!isValidLocalhostHostname(hostname)) {
-            throw new InvalidOllamaEndpointError(endpoint);
+            throw new InvalidOllamaEndpointError();
         }
 
         // Validate port range (non-privileged ports only: 1024-65535)

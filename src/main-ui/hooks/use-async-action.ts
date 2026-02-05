@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 
 import { useMounted } from '@/hooks/use-mounted';
+import { getErrorMessage } from '@shared/errors';
 
 /**
  * Result type for useAsyncAction hook.
@@ -61,7 +62,7 @@ export function useAsyncAction<TArgs extends unknown[], TReturn>(
       }
       return result;
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'An unexpected error occurred';
+      const message = getErrorMessage(e, 'An unexpected error occurred');
       if (mountedRef.current) {
         setError(message);
         setIsLoading(false);
@@ -124,7 +125,7 @@ export function useAsyncActionSafe<TArgs extends unknown[], TReturn>(
       }
       return result;
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'An unexpected error occurred';
+      const message = getErrorMessage(e, 'An unexpected error occurred');
       if (mountedRef.current) {
         setError(message);
         setIsLoading(false);

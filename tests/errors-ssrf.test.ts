@@ -192,8 +192,8 @@ describe("Zod Schema: SetOllamaSettingsSchema", () => {
       expect(result.success).toBe(false);
       if (!result.success && result.error?.issues?.[0]) {
         expect(result.error.issues[0].path).toContain("endpoint");
-        // Error should include the specific endpoint
-        expect(result.error.issues[0].message).toContain("example.com");
+        // Error should not leak the endpoint URL
+        expect(result.error.issues[0].message).toContain("localhost only");
       }
     });
 
@@ -204,7 +204,7 @@ describe("Zod Schema: SetOllamaSettingsSchema", () => {
       expect(result.success).toBe(false);
       if (!result.success && result.error?.issues?.[0]) {
         expect(result.error.issues[0].path).toContain("endpoint");
-        expect(result.error.issues[0].message).toContain("::ffff");
+        expect(result.error.issues[0].message).toContain("localhost only");
       }
     });
 
