@@ -29,22 +29,26 @@
     "lint:fix": "eslint . --fix",
     "knip": "knip -t tsconfig.typecheck.json --no-exit-code --include files,dependencies,unlisted",
     "bundle:report": "bun run scripts/report-bundle-size.ts",
+    "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.ts'",
     "validate": "bun run typecheck && bun run lint && bun run test:coverage",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
     "@types/bun": "^1.3.5",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "7.0.1",
     "husky": "^9.1.7",
     "knip": "^5.83.0",
-    "typescript-eslint": "^8.51.0",
-    "@tailwindcss/cli": "^4.1.18"
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.51.0"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

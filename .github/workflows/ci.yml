@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  checks:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +17,25 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.5"
+      - run: bun install --frozen-lockfile
       - run: bun test --max-concurrency=1
       - run: bun run knip
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.5"
+      - run: bun install --frozen-lockfile
       - run: bun run build:linux
       - run: bun run bundle:report
