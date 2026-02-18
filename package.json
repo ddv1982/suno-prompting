@@ -21,6 +21,7 @@
     "start": "bun build:css && electrobun dev",
     "readme:sync": "bun run scripts/generate-readme-genre-table.ts",
     "readme:check": "bun run scripts/generate-readme-genre-table.ts --check",
+    "docs:check": "bun run scripts/check-docs-consistency.ts",
     "test": "bun test",
     "test:coverage": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov",
     "test:precommit": "bun test",
@@ -35,7 +36,7 @@
     "bundle:report": "bun run scripts/report-bundle-size.ts",
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.ts'",
-    "validate": "bun run typecheck && bun run lint && bun run test:coverage && bun run coverage:check && bun run audit:policy",
+    "validate": "bun run docs:check && bun run typecheck && bun run lint && bun run test:coverage && bun run coverage:check && bun run audit:policy",
     "prepare": "husky"
   },
   "devDependencies": {

@@ -13,20 +13,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `validateOllamaEndpoint()` function to enforce localhost-only access
 - `InvalidOllamaEndpointError` error class for endpoint validation failures
 - Session ID UUID format validation with `DeleteSessionSchema`
+- `createMenuBootstrap()` startup controller for bounded macOS menu resilience
+- `docs/desktop-menu.md` guidance for deterministic install + bounded retry/focus policy
+- Behavior-test harness using `react-test-renderer` for non-DOM hook/component tests
 
 ### Changed
 - Refactored all RPC handlers to use `createHandlerRunner()` pattern
 - Updated Ollama client and availability check to validate endpoints
 - Enhanced SetOllamaSettingsSchema with localhost whitelist validation
 - Updated `validate` script to use `test:coverage` instead of `test:precommit`
+- Main-process menu startup now installs early and applies bounded macOS retries/reapply rules
+- CI release-blocking jobs now run on both Linux and macOS (validate/test/build matrix)
+- Coverage policy now fails when tracked files are missing from `lcov.info`
 
 ### Removed
 - DOMPurify dependency (unused in codebase)
 - @types/dompurify dev dependency
 
+### Fixed
+- Intermittent missing macOS Edit menu after launch by restoring controlled reapply behavior
+- Test flake risk from non-awaited `mock.module()` registration in dynamic-import tests
+
 ### Security
 - Added localhost whitelist validation for Ollama endpoints to prevent SSRF attacks
 - Added UUID format validation for session IDs to prevent invalid storage operations
+- Hardened audit policy to fail closed on unexpected `bun audit --json` payload shapes
 
 ## [0.1.0] - 2025-01-27
 

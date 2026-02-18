@@ -637,7 +637,7 @@ If Story Mode generation fails (LLM unavailable, timeout, or error):
 
 The app builds prompts using pre-built databases instead of generating them with AI:
 
-- **Instant** - Generates prompts in 0.03-0.04ms (100x faster than AI)
+- **Instant** - Deterministic assembly runs in sub-millisecond benchmark runs and stays under the project latency budget
 - **Predictable** - Same inputs always produce the same outputs
 - **Offline-capable** - Works without internet connection
 - **Consistent** - No AI randomness or hallucinations
@@ -1091,21 +1091,21 @@ TOTAL: 2-4 seconds
 
 **Deterministic Approach:**
 ```
-Genre lookup .................. 0.01ms
-Instrument selection .......... 0.01ms
-Mood selection ................ 0.01ms
-Prompt assembly ............... 0.01ms
-TOTAL: 0.03-0.04ms (100x faster!)
+Genre lookup .................. Local in-memory registry read
+Instrument selection .......... Deterministic rule-based selection
+Mood selection ................ Deterministic rule-based selection
+Prompt assembly ............... Structured template assembly
+TOTAL: Sub-millisecond deterministic assembly in benchmark runs
 ```
 
 ### Benchmark Results
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Average | <50ms | 0.03ms | 1,600x better |
-| 95th percentile | <50ms | 0.05ms | 1,000x better |
-| 99th percentile | <50ms | 0.06ms | 830x better |
-| Maximum | <50ms | 0.15ms | 330x better |
+| Metric | Target | Observed | Status |
+|--------|--------|----------|--------|
+| Average | <50ms | Sub-millisecond | Within budget |
+| 95th percentile | <50ms | Sub-millisecond | Within budget |
+| 99th percentile | <50ms | Sub-millisecond | Within budget |
+| Maximum | <50ms | Sub-millisecond | Within budget |
 
 ---
 
@@ -1142,7 +1142,7 @@ All choices come from carefully curated, tested databases:
 
 **All data is:**
 - Reviewed by developers
-- Tested in 4,448 automated tests
+- Covered by automated tests and CI quality gates
 - Validated for musical coherence
 - Regularly updated and expanded
 
@@ -1268,14 +1268,14 @@ Tags: "raw performance energy, live venue capture, warm analog console"
 
 ### Automated Testing
 
-- **4,448 tests** verify all combinations work correctly
-- **100% pass rate** maintained across all refactoring
+- Automated suites cover deterministic generation, enrichment, and integration paths
+- CI quality gates block regressions (typecheck, lint, coverage thresholds, and audit policy)
 
 ### Test Categories
 
 1. **Unit tests** - Each module tested independently
 2. **Integration tests** - Systems work together correctly
-3. **Performance tests** - Generation stays under 50ms (actual: 0.03ms)
+3. **Performance tests** - Generation stays under the project latency target (<50ms)
 4. **Variety tests** - Outputs show appropriate diversity
 5. **Regression tests** - Prevent breaking changes
 
@@ -1301,12 +1301,12 @@ Tags: "raw performance energy, live venue capture, warm analog console"
 
 The deterministic generation system provides:
 
-- **Speed** - 100x faster than AI (0.03ms vs 2-4 seconds)
+- **Speed** - Deterministic assembly is sub-millisecond in benchmark runs and remains well below the latency budget
 - **Precision** - Same inputs = same outputs
 - **Quality** - Curated data, tested combinations
 - **Variety** - Controlled randomness from quality pools
 - **Reliability** - Works offline, no API failures
-- **Tested** - 4,448 tests validate correctness
+- **Tested** - Automated suites plus coverage/audit policy checks validate correctness
 - **Topic-Aware** - 220+ keywords map descriptions to relevant titles
 - **Rich Vocabulary** - 269 words × 200 patterns = 50,000+ unique titles
 - **Smart Aliases** - 90+ genre mappings for flexible input

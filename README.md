@@ -452,7 +452,7 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 </details>
 
 <details>
-<summary><strong>Mood Categories (20 categories, ~150 moods)</strong></summary>
+<summary><strong>Mood Categories (20 categories, ~200 unique moods)</strong></summary>
 
 Optional mood category selector available in Full Mode, Quick Vibes, and Creative Boost. Select a category to guide mood selection, or leave as "None (Auto)" for genre-based defaults.
 
