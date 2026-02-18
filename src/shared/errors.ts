@@ -199,7 +199,7 @@ export function validateOllamaEndpoint(endpoint: string): void {
     if (error instanceof InvalidOllamaEndpointError || error instanceof ValidationError) {
       throw error;
     }
-    throw new ValidationError(`Invalid Ollama endpoint format: ${endpoint}`, 'endpoint');
+    throw new ValidationError('Invalid Ollama endpoint format.', 'endpoint');
   }
 }
 

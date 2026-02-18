@@ -1,60 +1,16 @@
-import { BrowserWindow, BrowserView, ApplicationMenu } from 'electrobun/bun';
+import { BrowserWindow, BrowserView } from 'electrobun/bun';
 
 import { AIEngine } from '@bun/ai';
 import { createHandlers } from '@bun/handlers';
 import { createLogger } from '@bun/logger';
+import { createMenuBootstrap } from '@bun/menu-bootstrap';
 import { StorageManager } from '@bun/storage';
 import { APP_CONSTANTS } from '@shared/constants';
-import { getErrorMessage } from '@shared/errors';
 import { type SunoRPCSchema } from '@shared/types';
 
 const log = createLogger('Main');
-
-// Menu configuration - defined once, used in both module-level and delayed setup
-// Note: accelerator property is required for shortcuts to work (see Electrobun GitHub issue #28)
-const MENU_CONFIG = [
-  // App Menu - label required for packaged builds
-  {
-    label: 'Suno Prompting App',
-    submenu: [
-      { role: 'hide', accelerator: 'h' },
-      { role: 'hideOthers' },
-      { role: 'showAll' },
-      { type: 'separator' },
-      { label: 'Quit', role: 'quit', accelerator: 'q' },
-    ],
-  },
-  // Edit Menu
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo', accelerator: 'z' },
-      { role: 'redo', accelerator: 'Z' },
-      { type: 'separator' },
-      { role: 'cut', accelerator: 'x' },
-      { role: 'copy', accelerator: 'c' },
-      { role: 'paste', accelerator: 'v' },
-      { role: 'pasteAndMatchStyle', accelerator: 'V' },
-      { role: 'delete' },
-      { type: 'separator' },
-      { role: 'selectAll', accelerator: 'a' },
-    ],
-  },
-  // Window Menu
-  {
-    label: 'Window',
-    submenu: [
-      { role: 'minimize', accelerator: 'm' },
-      { role: 'zoom' },
-      { type: 'separator' },
-      { role: 'close', accelerator: 'w' },
-      { role: 'bringAllToFront' },
-    ],
-  },
-];
-
-// Set menu at module level (works in dev mode)
-ApplicationMenu.setApplicationMenu(MENU_CONFIG);
+const APP_NAME = 'Suno Prompting App';
+const menuBootstrap = createMenuBootstrap(APP_NAME);
 
 const aiEngine = new AIEngine();
 const storage = new StorageManager();
@@ -119,10 +75,11 @@ async function initializeApp(): Promise<void> {
   aiEngine.initialize(config);
   log.info('init:complete');
 
-  new BrowserWindow({
-    title: 'Suno Prompting App',
+  const mainWindow = new BrowserWindow({
+    title: APP_NAME,
     url: 'views://main-ui/index.html',
     rpc,
+    titleBarStyle: 'default',
     frame: {
       width: 1100,
       height: 800,
@@ -131,12 +88,11 @@ async function initializeApp(): Promise<void> {
     },
   });
 
-  // Re-set menu after window creation with delay (for packaged builds)
-  setTimeout(() => {
-    ApplicationMenu.setApplicationMenu(MENU_CONFIG);
-  }, 100);
+  menuBootstrap.attachWindow(mainWindow);
 }
+menuBootstrap.installInitial();
 
 initializeApp().catch((error: unknown) => {
-  log.error('init:failed', { error: getErrorMessage(error) });
+  menuBootstrap.dispose();
+  log.error('init:failed', error);
 });

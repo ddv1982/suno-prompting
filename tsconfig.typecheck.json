@@ -4,10 +4,7 @@
     "paths": {
       "@/*": ["./src/main-ui/*"],
       "@shared/*": ["./src/shared/*"],
-      "@bun/*": ["./src/bun/*"],
-      "electrobun": ["./src/types/electrobun/index.d.ts"],
-      "electrobun/bun": ["./src/types/electrobun/bun.d.ts"],
-      "electrobun/view": ["./src/types/electrobun/view.d.ts"]
+      "@bun/*": ["./src/bun/*"]
     }
   }
 }

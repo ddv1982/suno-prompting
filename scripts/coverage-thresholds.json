@@ -1,0 +1,24 @@
+{
+  "global": {
+    "lines": 85.9,
+    "functions": 85.2
+  },
+  "files": {
+    "src/main-ui/hooks/use-async-action.ts": {
+      "lines": 75,
+      "functions": 100
+    },
+    "src/main-ui/hooks/use-original-selection.ts": {
+      "lines": 80,
+      "functions": 100
+    },
+    "src/main-ui/components/prompt-editor/debug-drawer/debug-drawer.tsx": {
+      "lines": 65,
+      "functions": 100
+    },
+    "src/main-ui/components/settings-modal/settings-modal.tsx": {
+      "lines": 70,
+      "functions": 100
+    }
+  }
+}

@@ -1,160 +1,142 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, expect, mock, test } from 'bun:test';
+import { createElement } from 'react';
+import { act } from 'react-test-renderer';
 
-import * as asyncActionModule from '@/hooks/use-async-action';
+import { useAsyncAction, useAsyncActionSafe } from '@/hooks/use-async-action';
 
-describe('useAsyncAction module', () => {
-  describe('exports', () => {
-    test('exports useAsyncAction function', () => {
-      expect(typeof asyncActionModule.useAsyncAction).toBe('function');
-    });
+import { renderWithAct, unmountWithAct } from '../helpers/react-test-renderer';
 
-    test('exports useAsyncActionSafe function', () => {
-      expect(typeof asyncActionModule.useAsyncActionSafe).toBe('function');
-    });
+import type { AsyncActionResult } from '@/hooks/use-async-action';
+import type { ReactElement } from 'react';
+import type { ReactTestRenderer } from 'react-test-renderer';
+
+type HookResult = AsyncActionResult<[string], string>;
+type AsyncActionFn = (...args: [string]) => Promise<string>;
+
+interface HarnessHandle {
+  renderer: ReactTestRenderer;
+  latest: { current: HookResult | null };
+}
+
+interface DeferredPromise<T> {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (error?: unknown) => void;
+}
+
+function createDeferredPromise<T>(): DeferredPromise<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (error?: unknown) => void;
+
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
   });
 
-  describe('useAsyncAction behavior contract', () => {
-    test('returns expected interface shape', () => {
-      const hookFn = asyncActionModule.useAsyncAction;
-      expect(hookFn.length).toBe(1);
+  return { promise, resolve, reject };
+}
+
+function renderHarness(action: AsyncActionFn, safe = false): HarnessHandle {
+  const latest: { current: HookResult | null } = { current: null };
+
+  function Harness(): ReactElement | null {
+    latest.current = safe ? useAsyncActionSafe(action) : useAsyncAction(action);
+    return null;
+  }
+
+  const renderer = renderWithAct(createElement(Harness));
+  return { renderer, latest };
+}
+
+describe('useAsyncAction', () => {
+  test('sets loading while pending and returns the resolved value', async () => {
+    const deferred = createDeferredPromise<string>();
+    const action = mock((_input: string) => deferred.promise) as AsyncActionFn;
+    const { latest } = renderHarness(action);
+
+    let pendingExecution!: Promise<string | undefined>;
+    act(() => {
+      pendingExecution = latest.current!.execute('alpha');
     });
 
-    test('AsyncActionResult interface has required properties', () => {
-      type ExpectedInterface = asyncActionModule.AsyncActionResult<unknown[], unknown>;
+    expect(latest.current?.isLoading).toBe(true);
+    expect(latest.current?.error).toBeNull();
 
-      const _typeCheck: ExpectedInterface = {
-        isLoading: false,
-        error: null,
-        execute: async () => undefined,
-        clearError: () => {},
-      };
-
-      expect(_typeCheck.isLoading).toBe(false);
-      expect(_typeCheck.error).toBe(null);
-      expect(typeof _typeCheck.execute).toBe('function');
-      expect(typeof _typeCheck.clearError).toBe('function');
+    let resolvedValue: string | undefined;
+    await act(async () => {
+      deferred.resolve('resolved-value');
+      resolvedValue = await pendingExecution;
     });
+
+    expect(resolvedValue).toBe('resolved-value');
+    expect(latest.current?.isLoading).toBe(false);
+    expect(latest.current?.error).toBeNull();
+    expect(action).toHaveBeenCalledWith('alpha');
+  });
+
+  test('rethrows failures and clearError resets error state', async () => {
+    const action = mock(async () => {
+      throw new Error('operation failed');
+    }) as AsyncActionFn;
+    const { latest } = renderHarness(action);
+
+    await act(async () => {
+      await expect(latest.current!.execute('beta')).rejects.toThrow('operation failed');
+    });
+
+    expect(latest.current?.isLoading).toBe(false);
+    expect(latest.current?.error).toContain('operation failed');
+
+    act(() => {
+      latest.current!.clearError();
+    });
+
+    expect(latest.current?.error).toBeNull();
   });
 });
 
-describe('async action error handling pattern', () => {
-  test('extracts error message from Error object', () => {
-    const error: unknown = new Error('Test error message');
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-    expect(message).toBe('Test error message');
-  });
+describe('useAsyncActionSafe', () => {
+  test('captures failure in state and returns undefined without throwing', async () => {
+    const action = mock(async () => {
+      throw new Error('safe failure');
+    }) as AsyncActionFn;
+    const { latest } = renderHarness(action, true);
 
-  test('handles non-Error objects gracefully', () => {
-    const error: unknown = 'String error';
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-    expect(message).toBe('An unexpected error occurred');
-  });
-
-  test('handles null/undefined errors', () => {
-    const error: unknown = null;
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-    expect(message).toBe('An unexpected error occurred');
-  });
-});
-
-describe('useAsyncAction integration patterns', () => {
-  test('successful async action pattern', async () => {
-    let isLoading = false;
-    let error: string | null = null;
     let result: string | undefined;
+    await act(async () => {
+      result = await latest.current!.execute('gamma');
+    });
 
-    const action = async () => {
-      return 'success';
-    };
+    expect(result).toBeUndefined();
+    expect(latest.current?.isLoading).toBe(false);
+    expect(latest.current?.error).toContain('safe failure');
 
-    isLoading = true;
-    error = null;
+    act(() => {
+      latest.current!.clearError();
+    });
 
-    try {
-      result = await action();
-      isLoading = false;
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'An unexpected error occurred';
-      error = message;
-      isLoading = false;
-    }
-
-    expect(isLoading).toBe(false);
-    expect(error).toBe(null);
-    expect(result).toBe('success');
+    expect(latest.current?.error).toBeNull();
   });
 
-  test('failed async action pattern', async () => {
-    let isLoading = false;
-    let error: string | null = null;
+  test('does not attempt state updates after unmount while action is in-flight', async () => {
+    const deferred = createDeferredPromise<string>();
+    const action = mock((_input: string) => deferred.promise) as AsyncActionFn;
+    const { renderer, latest } = renderHarness(action, true);
 
-    const action = async () => {
-      throw new Error('Operation failed');
-    };
+    let pendingExecution!: Promise<string | undefined>;
+    act(() => {
+      pendingExecution = latest.current!.execute('delta');
+    });
 
-    isLoading = true;
-    error = null;
+    expect(latest.current?.isLoading).toBe(true);
 
-    try {
-      await action();
-      isLoading = false;
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'An unexpected error occurred';
-      error = message;
-      isLoading = false;
-    }
+    await unmountWithAct(renderer);
 
-    expect(isLoading).toBe(false);
-    expect(error).toBe('Operation failed');
-  });
+    await act(async () => {
+      deferred.resolve('late-result');
+      await expect(pendingExecution).resolves.toBe('late-result');
+    });
 
-  test('clearError pattern resets error state', () => {
-    let error: string | null = 'Previous error';
-
-    const clearError = () => {
-      error = null;
-    };
-
-    clearError();
-
-    expect(error).toBeNull();
-  });
-});
-
-describe('useAsyncAction + useMounted integration', () => {
-  test('useAsyncAction imports and uses useMounted for memory leak prevention', async () => {
-    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-
-    expect(
-      asyncActionSource.includes("import { useMounted } from './use-mounted'") ||
-        asyncActionSource.includes("import { useMounted } from '@/hooks/use-mounted'")
-    ).toBe(true);
-
-    expect(asyncActionSource).toContain('const mountedRef = useMounted()');
-    expect(asyncActionSource).toContain('if (mountedRef.current)');
-  });
-
-  test('both useAsyncAction and useAsyncActionSafe use useMounted', async () => {
-    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-
-    const useMountedCalls = asyncActionSource.match(/const mountedRef = useMounted\(\)/g);
-    expect(useMountedCalls).toBeDefined();
-    expect(useMountedCalls?.length).toBe(2);
-  });
-
-  test('mount checking pattern is used consistently', async () => {
-    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-
-    const mountCheckPattern = /if \(mountedRef\.current\)/g;
-    const matches = asyncActionSource.match(mountCheckPattern);
-
-    expect(matches).toBeDefined();
-    expect(matches!.length).toBeGreaterThan(0);
-  });
-
-  test('mountedRef is included in useCallback dependencies', async () => {
-    const asyncActionSource = await Bun.file('src/main-ui/hooks/use-async-action.ts').text();
-
-    expect(asyncActionSource).toContain('[action, mountedRef]');
+    expect(action).toHaveBeenCalledWith('delta');
   });
 });

@@ -28,19 +28,11 @@ export async function request<M extends RequestMethod>(
   params: ParamsOf<M>
 ): Promise<Result<ResponseOf<M>, RpcError>> {
   try {
-    // Electrobun RPC is dynamically keyed: rpc.request[method](params)
-    const fn = (rpc.request as Record<string, (p: unknown) => Promise<unknown>>)[method as string];
-
-    if (typeof fn !== 'function') {
-      return Err(
-        mapToRpcError(
-          { status: 404, message: 'RPC method not found' },
-          { method: method as string }
-        )
-      );
-    }
-
-    const response = (await fn(params)) as ResponseOf<M>;
+    const invoke = rpc.request as unknown as (
+      method: M,
+      params: ParamsOf<M>
+    ) => Promise<ResponseOf<M>>;
+    const response = await invoke(method, params);
     return Ok(response);
   } catch (error) {
     return Err(mapToRpcError(error, { method: method as string }));

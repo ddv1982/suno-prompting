@@ -674,4 +674,4 @@ flowchart TB
 - **UI:** React 19 + shadcn/ui + Tailwind CSS v4
 - **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Ollama (local inference)
 - **Validation:** Zod
-- **Testing:** Bun test (4,448 tests, 70% coverage threshold)
+- **Testing & Quality:** Bun test + coverage/audit policy gates via `bun run validate`
