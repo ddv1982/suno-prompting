@@ -30,6 +30,7 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
     setQuickVibesInput,
     resetQuickVibesInput,
     setCreativeBoostInput,
+    resetCreativeBoostInput,
   } = useEditorContext();
   const { setChatMessages, setValidation, setDebugTrace } = useGenerationStateContext();
 
@@ -43,13 +44,17 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
 
       if (session.promptMode === 'quickVibes' && session.quickVibesInput) {
         setQuickVibesInput(session.quickVibesInput);
+        resetCreativeBoostInput();
       } else if (session.promptMode === 'creativeBoost' && session.creativeBoostInput) {
         setCreativeBoostInput(session.creativeBoostInput);
+        resetQuickVibesInput();
       } else {
         resetQuickVibesInput();
+        resetCreativeBoostInput();
       }
     },
     [
+      resetCreativeBoostInput,
       resetQuickVibesInput,
       setChatMessages,
       setCreativeBoostInput,

@@ -1,8 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { formatRpcError } from '@/lib/rpc-utils';
-import { rpcClient } from '@/services/rpc-client';
+import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 import { type MoodCategory } from '@bun/mood';
 import { type QuickVibesInput, type QuickVibesCategory } from '@shared/types';
 
@@ -54,14 +53,14 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
         {
           action: 'quickVibes',
           apiCall: async () => {
-            const result = await rpcClient.generateQuickVibes({
-              category,
-              customDescription,
-              sunoStyles,
-              moodCategory,
-            });
-            if (!result.ok) throw new Error(formatRpcError(result.error));
-            return result.value;
+            return unwrapOrThrowResult(
+              await rpcClient.generateQuickVibes({
+                category,
+                customDescription,
+                sunoStyles,
+                moodCategory,
+              })
+            );
           },
           originalInput,
           promptMode: 'quickVibes',
@@ -101,16 +100,16 @@ export function useQuickVibesActions(config: QuickVibesActionsConfig): QuickVibe
         {
           action: 'quickVibes',
           apiCall: async () => {
-            const result = await rpcClient.refineQuickVibes({
-              currentPrompt: currentSession.currentPrompt,
-              currentTitle: currentSession.currentTitle,
-              description: uiInput.customDescription,
-              feedback: input,
-              category: uiInput.category,
-              sunoStyles: uiInput.sunoStyles,
-            });
-            if (!result.ok) throw new Error(formatRpcError(result.error));
-            return result.value;
+            return unwrapOrThrowResult(
+              await rpcClient.refineQuickVibes({
+                currentPrompt: currentSession.currentPrompt,
+                currentTitle: currentSession.currentTitle,
+                description: uiInput.customDescription,
+                feedback: input,
+                category: uiInput.category,
+                sunoStyles: uiInput.sunoStyles,
+              })
+            );
           },
           originalInput: currentSession.originalInput || '',
           promptMode: 'quickVibes',

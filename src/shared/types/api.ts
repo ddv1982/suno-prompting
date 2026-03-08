@@ -1,7 +1,7 @@
 // API Request/Response types
 
 import type { MoodCategory } from '@bun/mood';
-import type { AIProvider, APIKeys } from '@shared/types/config';
+import type { AIProvider, APIKeys, OllamaConfig } from '@shared/types/config';
 import type {
   PromptSession,
   PromptMode,
@@ -160,6 +160,10 @@ export interface SaveAllSettingsParams {
   lyricsMode: boolean;
   storyMode: boolean;
   useLocalLLM?: boolean; // Optional for backwards compatibility
+  promptMode?: PromptMode;
+  creativeBoostMode?: CreativeBoostMode;
+  ollamaConfig?: OllamaConfig;
+  ollamaModel?: string;
 }
 
 export interface GetAllSettingsResponse {
@@ -172,6 +176,10 @@ export interface GetAllSettingsResponse {
   lyricsMode: boolean;
   storyMode: boolean;
   useLocalLLM: boolean;
+  promptMode: PromptMode;
+  creativeBoostMode: CreativeBoostMode;
+  ollamaConfig?: OllamaConfig;
+  ollamaModel?: string;
 }
 
 // Session endpoints
@@ -187,7 +195,7 @@ export interface DeleteSessionParams {
 
 // Simple settings endpoints
 export interface SetApiKeyParams {
-  apiKey: string;
+  apiKey: string | null;
 }
 export interface SetModelParams {
   model: string;

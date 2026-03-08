@@ -8,6 +8,7 @@
 import { describe, test, expect, beforeEach, mock } from 'bun:test';
 
 import { handleGenerationError, getErrorToastType } from '@/lib/session-helpers';
+import { RpcClientError } from '@/services/rpc-shim-error';
 import {
   ValidationError,
   OllamaTimeoutError,
@@ -157,6 +158,26 @@ describe('Error Toast Integration', () => {
       expect(type).toBe('warning');
     });
 
+    test('should show warning toast for RpcClientError validation failures', () => {
+      const error = new RpcClientError({
+        code: 'RPC_VALIDATION',
+        message: 'Invalid refinement payload.',
+      });
+
+      handleGenerationError(
+        error,
+        'refine prompt',
+        setChatMessages as any,
+        showToast as any,
+        logger
+      );
+
+      expect(showToast).toHaveBeenCalledTimes(1);
+      const [message, type] = showToast.mock.calls[0] as [string, string];
+      expect(message).toContain('Invalid refinement payload.');
+      expect(type).toBe('warning');
+    });
+
     test('should show toast and chat message simultaneously', () => {
       const error = new AIGenerationError('Generation failed');
 
@@ -223,6 +244,11 @@ describe('Error Toast Integration', () => {
       // Warnings (should deduplicate separately from errors)
       expect(getErrorToastType(new ValidationError('test'))).toBe('warning');
       expect(getErrorToastType(new OllamaTimeoutError(30000))).toBe('warning');
+      expect(
+        getErrorToastType(
+          new RpcClientError({ code: 'RPC_VALIDATION', message: 'Invalid request.' })
+        )
+      ).toBe('warning');
 
       // Critical errors
       expect(getErrorToastType(new AIGenerationError('test'))).toBe('error');

@@ -3,20 +3,23 @@ import type { PromptMode } from '@shared/types/domain';
 
 export type TraceVersion = 1;
 
-export type TraceRunAction =
-  | 'generate.full'
-  | 'generate.quickVibes'
-  | 'generate.creativeBoost'
-  | 'refine'
-  | 'remix'
-  | 'remix.title'
-  | 'remix.genre'
-  | 'remix.instruments'
-  | 'remix.mood'
-  | 'remix.styleTags'
-  | 'remix.recording'
-  | 'convert.max'
-  | 'convert.nonMax';
+export const TRACE_RUN_ACTIONS = [
+  'generate.full',
+  'generate.quickVibes',
+  'generate.creativeBoost',
+  'refine',
+  'remix',
+  'remix.title',
+  'remix.genre',
+  'remix.instruments',
+  'remix.mood',
+  'remix.styleTags',
+  'remix.recording',
+  'convert.max',
+  'convert.nonMax',
+] as const;
+
+export type TraceRunAction = (typeof TRACE_RUN_ACTIONS)[number];
 
 export interface TraceRun {
   readonly version: TraceVersion;

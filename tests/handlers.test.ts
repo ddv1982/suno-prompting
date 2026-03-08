@@ -219,7 +219,7 @@ describe('RPC Handlers', () => {
       const handlers = createHandlers(aiEngine as any, storage as any);
 
       const session: PromptSession = {
-        id: 'test-id',
+        id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc001',
         originalInput: 'test',
         currentPrompt: 'prompt',
         versionHistory: [],
@@ -231,6 +231,177 @@ describe('RPC Handlers', () => {
 
       expect(result.success).toBe(true);
       expect(storage.saveSession).toHaveBeenCalledWith(session);
+    });
+
+    test('saveSession rejects invalid payloads', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.saveSession({
+          session: {
+            id: 'invalid-session-id',
+            originalInput: 'test',
+            currentPrompt: 'prompt',
+            versionHistory: [],
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          } as PromptSession,
+        })
+      ).rejects.toThrow('valid UUID');
+      expect(storage.saveSession).not.toHaveBeenCalled();
+    });
+
+    test('saveSession rejects invalid quick vibes category values', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.saveSession({
+          session: {
+            id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc010',
+            originalInput: 'test',
+            currentPrompt: 'prompt',
+            versionHistory: [],
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+            quickVibesInput: {
+              category: 'not-a-real-category',
+              customDescription: '',
+              sunoStyles: [],
+              moodCategory: null,
+            },
+          } as unknown as PromptSession,
+        })
+      ).rejects.toThrow('Invalid option');
+      expect(storage.saveSession).not.toHaveBeenCalled();
+    });
+
+    test('saveSession rejects malformed debug traces', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.saveSession({
+          session: {
+            id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc011',
+            originalInput: 'test',
+            currentPrompt: 'prompt',
+            versionHistory: [
+              {
+                id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc012',
+                content: 'prompt',
+                timestamp: '2026-01-01T00:00:00Z',
+                debugTrace: { invalid: true },
+              },
+            ],
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          } as unknown as PromptSession,
+        })
+      ).rejects.toThrow();
+      expect(storage.saveSession).not.toHaveBeenCalled();
+    });
+
+    test('saveSession accepts debug traces for specific remix actions', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.saveSession({
+        session: {
+          id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc015',
+          originalInput: 'test',
+          currentPrompt: 'prompt',
+          versionHistory: [
+            {
+              id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc016',
+              content: 'prompt',
+              timestamp: '2026-01-01T00:00:00Z',
+              debugTrace: {
+                version: 1,
+                runId: 'trace-run-1',
+                capturedAt: '2026-01-01T00:00:00Z',
+                action: 'remix.genre',
+                promptMode: 'full',
+                rng: { seed: 123, algorithm: 'mulberry32' },
+                stats: {
+                  eventCount: 0,
+                  llmCallCount: 0,
+                  decisionCount: 0,
+                  hadErrors: false,
+                  persistedBytes: 0,
+                  truncatedForCap: false,
+                },
+                events: [],
+              },
+            },
+          ],
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+        },
+      });
+
+      expect(result.success).toBe(true);
+      expect(storage.saveSession).toHaveBeenCalledTimes(1);
+    });
+
+    test('saveSession rejects invalid prompt modes and mood categories', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.saveSession({
+          session: {
+            id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc013',
+            originalInput: 'test',
+            currentPrompt: 'prompt',
+            versionHistory: [],
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+            promptMode: 'broken-mode',
+            quickVibesInput: {
+              category: null,
+              customDescription: '',
+              sunoStyles: [],
+              moodCategory: 'broken-mood',
+            },
+          } as unknown as PromptSession,
+        })
+      ).rejects.toThrow('Invalid option');
+      expect(storage.saveSession).not.toHaveBeenCalled();
+    });
+
+    test('saveSession rejects invalid creative boost input values', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.saveSession({
+          session: {
+            id: '0f4f1b4b-737b-4f2c-bf3f-72aa0d6bc014',
+            originalInput: 'test',
+            currentPrompt: 'prompt',
+            versionHistory: [],
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+            creativeBoostInput: {
+              creativityLevel: 10,
+              seedGenres: [],
+              sunoStyles: [],
+              description: '',
+              lyricsTopic: '',
+              moodCategory: null,
+            },
+          } as unknown as PromptSession,
+        })
+      ).rejects.toThrow('Invalid input');
+      expect(storage.saveSession).not.toHaveBeenCalled();
     });
 
     test('deleteSession calls storage.deleteSession', async () => {
@@ -293,6 +464,30 @@ describe('RPC Handlers', () => {
       expect(aiEngine.setModel).toHaveBeenCalledWith('new-model');
     });
 
+    test('setModel rejects empty model names', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.setModel({ model: '   ' })).rejects.toThrow('Too small');
+      expect(storage.saveConfig).not.toHaveBeenCalled();
+      expect(aiEngine.setModel).not.toHaveBeenCalled();
+    });
+
+    test('setApiKey clears engine state when API key is removed', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      const result = await handlers.setApiKey({ apiKey: null });
+
+      expect(result.success).toBe(true);
+      expect(storage.saveConfig).toHaveBeenCalledWith({
+        apiKeys: { groq: null, openai: null, anthropic: null },
+      });
+      expect(aiEngine.setApiKey).toHaveBeenCalledWith('groq', null);
+    });
+
     test('getAllSettings returns all config values', async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
@@ -304,6 +499,8 @@ describe('RPC Handlers', () => {
       expect(result.model).toBe(APP_CONSTANTS.AI.DEFAULT_MODEL);
       expect(result.useSunoTags).toBe(true);
       expect(result.debugMode).toBe(false);
+      expect(result.promptMode).toBe('full');
+      expect(result.creativeBoostMode).toBe('simple');
     });
 
     test('saveAllSettings updates config and engine', async () => {
@@ -333,6 +530,67 @@ describe('RPC Handlers', () => {
       expect(aiEngine.setStoryMode).toHaveBeenCalledWith(false);
       expect(aiEngine.setUseLocalLLM).toHaveBeenCalledWith(false);
     });
+
+    test('saveAllSettings clears removed API keys in engine state', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await handlers.saveAllSettings({
+        provider: 'openai',
+        apiKeys: { groq: null, openai: 'sk-test', anthropic: null },
+        model: 'gpt-5',
+        useSunoTags: false,
+        debugMode: true,
+        maxMode: false,
+        lyricsMode: false,
+        storyMode: false,
+        useLocalLLM: false,
+      });
+
+      expect(aiEngine.setApiKey).toHaveBeenCalledWith('groq', null);
+      expect(aiEngine.setApiKey).toHaveBeenCalledWith('openai', 'sk-test');
+      expect(aiEngine.setApiKey).toHaveBeenCalledWith('anthropic', null);
+    });
+
+    test('saveAllSettings preserves non-core settings when omitted from the payload', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      await storage.saveConfig({
+        promptMode: 'creativeBoost',
+        creativeBoostMode: 'advanced',
+        ollamaConfig: {
+          endpoint: 'http://127.0.0.1:11434',
+          temperature: 0.2,
+          maxTokens: 1000,
+          contextLength: 4096,
+        },
+        ollamaModel: 'llama3:8b',
+      });
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await handlers.saveAllSettings({
+        provider: 'openai',
+        apiKeys: { groq: null, openai: 'sk-test', anthropic: null },
+        model: 'gpt-5',
+        useSunoTags: false,
+        debugMode: true,
+        maxMode: false,
+        lyricsMode: false,
+        storyMode: false,
+        useLocalLLM: false,
+      });
+
+      expect(storage._getConfig().promptMode).toBe('creativeBoost');
+      expect(storage._getConfig().creativeBoostMode).toBe('advanced');
+      expect(storage._getConfig().ollamaConfig).toEqual({
+        endpoint: 'http://127.0.0.1:11434',
+        temperature: 0.2,
+        maxTokens: 1000,
+        contextLength: 4096,
+      });
+      expect(storage._getConfig().ollamaModel).toBe('llama3:8b');
+    });
   });
 
   // ============================================================================
@@ -361,6 +619,17 @@ describe('RPC Handlers', () => {
       expect(storage.saveConfig).toHaveBeenCalledWith({ creativeBoostMode: 'advanced' });
     });
 
+    test('setCreativeBoostMode rejects invalid values', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.setCreativeBoostMode({ creativeBoostMode: 'invalid' as any })
+      ).rejects.toThrow('Invalid option');
+      expect(storage.saveConfig).not.toHaveBeenCalled();
+    });
+
     test('getCreativeBoostMode returns persisted value after set', async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();
@@ -373,6 +642,17 @@ describe('RPC Handlers', () => {
       const result = await handlers.getCreativeBoostMode({});
 
       expect(result.creativeBoostMode).toBe('advanced');
+    });
+
+    test('setPromptMode rejects invalid values', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.setPromptMode({ promptMode: 'invalid' as any })).rejects.toThrow(
+        'Invalid option'
+      );
+      expect(storage.saveConfig).not.toHaveBeenCalled();
     });
 
     test("setCreativeBoostMode to 'simple' persists correctly", async () => {

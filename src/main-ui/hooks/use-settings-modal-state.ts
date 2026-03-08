@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { rpcClient } from '@/services/rpc-client';
+import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 import { APP_CONSTANTS } from '@shared/constants';
 import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from '@shared/types';
 
@@ -122,21 +122,23 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
       setSaving(true);
       setError(null);
       try {
-        await rpcClient.saveAllSettings({
-          provider,
-          model,
-          useSunoTags,
-          debugMode,
-          maxMode,
-          lyricsMode,
-          storyMode,
-          useLocalLLM,
-          apiKeys: {
-            groq: apiKeys.groq?.trim() || null,
-            openai: apiKeys.openai?.trim() || null,
-            anthropic: apiKeys.anthropic?.trim() || null,
-          },
-        });
+        unwrapOrThrowResult(
+          await rpcClient.saveAllSettings({
+            provider,
+            model,
+            useSunoTags,
+            debugMode,
+            maxMode,
+            lyricsMode,
+            storyMode,
+            useLocalLLM,
+            apiKeys: {
+              groq: apiKeys.groq?.trim() || null,
+              openai: apiKeys.openai?.trim() || null,
+              anthropic: apiKeys.anthropic?.trim() || null,
+            },
+          })
+        );
         onClose();
       } catch (e: unknown) {
         log.error('saveSettings:failed', e);

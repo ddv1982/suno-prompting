@@ -1,20 +1,10 @@
-import { z } from 'zod';
-
 import { type StorageManager } from '@bun/storage';
+import { DeleteSessionSchema, SaveSessionSchema } from '@shared/schemas';
 
 import { log } from './utils';
 import { validate } from './validated';
 
 import type { RPCHandlers } from '@shared/types';
-
-const DeleteSessionSchema = z.object({
-  id: z
-    .string()
-    .regex(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      'Session ID must be a valid UUID'
-    ),
-});
 
 type SessionHandlers = Pick<RPCHandlers, 'getHistory' | 'saveSession' | 'deleteSession'>;
 
@@ -26,7 +16,8 @@ export function createSessionHandlers(storage: StorageManager): SessionHandlers 
       log.info('getHistory:complete', { count: sessions.length });
       return { sessions };
     },
-    saveSession: async ({ session }) => {
+    saveSession: async (params) => {
+      const { session } = validate(SaveSessionSchema, params);
       log.info('saveSession', { id: session.id });
       await storage.saveSession(session);
       return { success: true };

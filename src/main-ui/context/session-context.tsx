@@ -20,6 +20,42 @@ function generateId(): string {
   return crypto.randomUUID();
 }
 
+async function delayRetry(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, APP_CONSTANTS.UI.RETRY_DELAY_MS));
+}
+
+function upsertSessions(prev: PromptSession[], session: PromptSession): PromptSession[] {
+  const filtered = prev.filter((s) => s.id !== session.id);
+  return [session, ...filtered];
+}
+
+function buildNewSession(
+  originalInput: string,
+  prompt: string,
+  title?: string,
+  lyrics?: string
+): PromptSession {
+  const now = nowISO();
+  return {
+    id: generateId(),
+    originalInput,
+    currentPrompt: prompt,
+    currentTitle: title,
+    currentLyrics: lyrics,
+    versionHistory: [
+      {
+        id: generateId(),
+        content: prompt,
+        title,
+        lyrics,
+        timestamp: now,
+      },
+    ],
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 export interface SessionContextType {
   sessions: PromptSession[];
   currentSession: PromptSession | null;
@@ -51,24 +87,38 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
   const loadHistory = useCallback(async (retries = 1) => {
     try {
       const result = await rpcClient.getHistory({});
-      setSessions(result.ok ? result.value.sessions : []);
+      if (result.ok) {
+        setSessions(result.value.sessions);
+        return;
+      }
+
+      if (retries > 0) {
+        await delayRetry();
+        await loadHistory(retries - 1);
+        return;
+      }
+
+      log.error('loadHistory:failed', result.error);
     } catch (error: unknown) {
       if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, APP_CONSTANTS.UI.RETRY_DELAY_MS));
-        return loadHistory(retries - 1);
+        await delayRetry();
+        await loadHistory(retries - 1);
+        return;
       }
       log.error('loadHistory:failed', error);
     }
   }, []);
 
   const saveSession = useCallback(async (session: PromptSession) => {
-    setSessions((prev) => {
-      const filtered = prev.filter((s) => s.id !== session.id);
-      return [session, ...filtered];
-    });
-    setCurrentSession(session);
     try {
-      await rpcClient.saveSession({ session });
+      const result = await rpcClient.saveSession({ session });
+      if (!result.ok) {
+        log.error('saveSession:failed', result.error);
+        return;
+      }
+
+      setSessions((prev) => upsertSessions(prev, session));
+      setCurrentSession(session);
     } catch (error: unknown) {
       log.error('saveSession:failed', error);
     }
@@ -77,7 +127,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
   const deleteSession = useCallback(
     async (id: string) => {
       try {
-        await rpcClient.deleteSession({ id });
+        const result = await rpcClient.deleteSession({ id });
+        if (!result.ok) {
+          log.error('deleteSession:failed', result.error);
+          return;
+        }
+
         setSessions((prev) => prev.filter((s) => s.id !== id));
         if (currentSession?.id === id) {
           setCurrentSession(null);
@@ -90,27 +145,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }): ReactNod
   );
 
   const createNewSession = useCallback(
-    (originalInput: string, prompt: string, title?: string, lyrics?: string): PromptSession => {
-      const now = nowISO();
-      return {
-        id: generateId(),
-        originalInput,
-        currentPrompt: prompt,
-        currentTitle: title,
-        currentLyrics: lyrics,
-        versionHistory: [
-          {
-            id: generateId(),
-            content: prompt,
-            title,
-            lyrics,
-            timestamp: now,
-          },
-        ],
-        createdAt: now,
-        updatedAt: now,
-      };
-    },
+    (originalInput: string, prompt: string, title?: string, lyrics?: string): PromptSession =>
+      buildNewSession(originalInput, prompt, title, lyrics),
     []
   );
 

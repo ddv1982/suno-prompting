@@ -57,7 +57,7 @@ export class AIConfig {
     this.provider = provider;
   }
 
-  setApiKey(provider: AIProvider, key: string): void {
+  setApiKey(provider: AIProvider, key: string | null): void {
     this.apiKeys[provider] = key;
     this.invalidateRegistry();
   }

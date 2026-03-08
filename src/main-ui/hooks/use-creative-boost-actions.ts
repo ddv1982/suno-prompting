@@ -1,8 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { createLogger } from '@/lib/logger';
-import { formatRpcError } from '@/lib/rpc-utils';
-import { rpcClient } from '@/services/rpc-client';
+import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 import { type CreativeBoostInput } from '@shared/types';
 
 import {
@@ -63,17 +62,17 @@ export function useCreativeBoostActions(
       {
         action: 'creativeBoost',
         apiCall: async () => {
-          const result = await rpcClient.generateCreativeBoost({
-            creativityLevel: creativeBoostInput.creativityLevel,
-            seedGenres: creativeBoostInput.seedGenres,
-            sunoStyles: creativeBoostInput.sunoStyles,
-            description: creativeBoostInput.description,
-            lyricsTopic: creativeBoostInput.lyricsTopic,
-            maxMode,
-            withLyrics: lyricsMode,
-          });
-          if (!result.ok) throw new Error(formatRpcError(result.error));
-          return result.value;
+          return unwrapOrThrowResult(
+            await rpcClient.generateCreativeBoost({
+              creativityLevel: creativeBoostInput.creativityLevel,
+              seedGenres: creativeBoostInput.seedGenres,
+              sunoStyles: creativeBoostInput.sunoStyles,
+              description: creativeBoostInput.description,
+              lyricsTopic: creativeBoostInput.lyricsTopic,
+              maxMode,
+              withLyrics: lyricsMode,
+            })
+          );
         },
         originalInput,
         promptMode: 'creativeBoost',
@@ -105,21 +104,21 @@ export function useCreativeBoostActions(
         {
           action: 'creativeBoost',
           apiCall: async () => {
-            const result = await rpcClient.refineCreativeBoost({
-              currentPrompt,
-              currentTitle,
-              currentLyrics,
-              feedback,
-              lyricsTopic: creativeBoostInput.lyricsTopic,
-              description: creativeBoostInput.description,
-              seedGenres: creativeBoostInput.seedGenres,
-              sunoStyles: creativeBoostInput.sunoStyles,
-              maxMode,
-              withLyrics: lyricsMode,
-              targetGenreCount,
-            });
-            if (!result.ok) throw new Error(formatRpcError(result.error));
-            return result.value;
+            return unwrapOrThrowResult(
+              await rpcClient.refineCreativeBoost({
+                currentPrompt,
+                currentTitle,
+                currentLyrics,
+                feedback,
+                lyricsTopic: creativeBoostInput.lyricsTopic,
+                description: creativeBoostInput.description,
+                seedGenres: creativeBoostInput.seedGenres,
+                sunoStyles: creativeBoostInput.sunoStyles,
+                maxMode,
+                withLyrics: lyricsMode,
+                targetGenreCount,
+              })
+            );
           },
           originalInput: currentSession.originalInput || '',
           promptMode: 'creativeBoost',

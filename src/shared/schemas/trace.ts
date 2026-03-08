@@ -1,16 +1,10 @@
 import { z } from 'zod';
 
+import { TRACE_RUN_ACTIONS } from '@shared/types/trace';
+
 const TraceVersionSchema = z.literal(1);
 
-const TraceRunActionSchema = z.enum([
-  'generate.full',
-  'generate.quickVibes',
-  'generate.creativeBoost',
-  'refine',
-  'remix',
-  'convert.max',
-  'convert.nonMax',
-]);
+const TraceRunActionSchema = z.enum(TRACE_RUN_ACTIONS);
 
 const TraceProviderIdSchema = z.enum(['groq', 'openai', 'anthropic', 'ollama']);
 

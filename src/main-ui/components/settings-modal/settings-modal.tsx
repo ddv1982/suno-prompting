@@ -25,7 +25,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
   const [state, actions] = useSettingsModalState(isOpen);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-106.25 bg-card border shadow-panel">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

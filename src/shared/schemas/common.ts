@@ -74,6 +74,29 @@ export const QUICK_VIBES_CATEGORY_VALUES = [
   'party-night',
 ] as const;
 
+export const MOOD_CATEGORY_VALUES = [
+  'energetic',
+  'calm',
+  'dark',
+  'emotional',
+  'playful',
+  'intense',
+  'atmospheric',
+  'seasonal',
+  'social',
+  'sophisticated',
+  'gritty',
+  'epic',
+  'vulnerable',
+  'tense',
+  'groove',
+  'spiritual',
+  'eclectic',
+  'attitude',
+  'texture',
+  'movement',
+] as const;
+
 /**
  * Schema for Quick Vibes category values (non-nullable).
  * Used for indexing into category-keyed objects.
@@ -86,6 +109,9 @@ export const QuickVibesCategoryValueSchema = z.enum(QUICK_VIBES_CATEGORY_VALUES)
  */
 export const QuickVibesCategorySchema = QuickVibesCategoryValueSchema.nullable();
 
+export const MoodCategoryValueSchema = z.enum(MOOD_CATEGORY_VALUES);
+export const MoodCategorySchema = MoodCategoryValueSchema.nullable();
+
 /**
  * Non-nullable Quick Vibes category type - for indexing into objects.
  * Derived from schema to ensure type and schema stay in sync.
@@ -97,3 +123,5 @@ export type QuickVibesCategory = z.infer<typeof QuickVibesCategoryValueSchema>;
  * Allows null when using custom description or Suno styles.
  */
 export type QuickVibesCategoryNullable = z.infer<typeof QuickVibesCategorySchema>;
+export type MoodCategory = z.infer<typeof MoodCategoryValueSchema>;
+export type MoodCategoryNullable = z.infer<typeof MoodCategorySchema>;

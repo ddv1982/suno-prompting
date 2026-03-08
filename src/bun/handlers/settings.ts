@@ -1,7 +1,14 @@
 import { type AIEngine } from '@bun/ai';
 import { type StorageManager } from '@bun/storage';
 import { APP_CONSTANTS } from '@shared/constants';
-import { SetUseLocalLLMSchema, SaveAllSettingsSchema } from '@shared/schemas';
+import {
+  SaveAllSettingsSchema,
+  SetApiKeySchema,
+  SetCreativeBoostModeSchema,
+  SetModelSchema,
+  SetPromptModeSchema,
+  SetUseLocalLLMSchema,
+} from '@shared/schemas';
 
 import { withErrorHandling, log } from './utils';
 import { validate } from './validated';
@@ -45,11 +52,12 @@ function createCoreHandlers(
       const config = await storage.getConfig();
       return { apiKey: config.apiKeys[config.provider] };
     },
-    setApiKey: async ({ apiKey }: { apiKey: string | null }) => {
+    setApiKey: async (params) => {
+      const { apiKey } = validate(SetApiKeySchema, params);
       log.info('setApiKey');
       const config = await storage.getConfig();
       await storage.saveConfig({ apiKeys: { ...config.apiKeys, [config.provider]: apiKey } });
-      if (apiKey) aiEngine.setApiKey(config.provider, apiKey);
+      aiEngine.setApiKey(config.provider, apiKey);
       return { success: true };
     },
     getModel: async () => {
@@ -60,7 +68,8 @@ function createCoreHandlers(
       }
       return { model: config.model };
     },
-    setModel: async ({ model }: { model: string }) => {
+    setModel: async (params) => {
+      const { model } = validate(SetModelSchema, params);
       log.info('setModel', { model });
       await storage.saveConfig({ model });
       aiEngine.setModel(model);
@@ -149,17 +158,19 @@ function createPromptModeHandlers(
 > {
   return {
     getPromptMode: async () => ({ promptMode: (await storage.getConfig()).promptMode ?? 'full' }),
-    setPromptMode: async ({ promptMode }: { promptMode: string }) => {
+    setPromptMode: async (params) => {
+      const { promptMode } = validate(SetPromptModeSchema, params);
       await storage.saveConfig({
-        promptMode: promptMode as 'full' | 'quickVibes' | 'creativeBoost',
+        promptMode,
       });
       return { success: true };
     },
     getCreativeBoostMode: async () => ({
       creativeBoostMode: (await storage.getConfig()).creativeBoostMode ?? 'simple',
     }),
-    setCreativeBoostMode: async ({ creativeBoostMode }: { creativeBoostMode: string }) => {
-      await storage.saveConfig({ creativeBoostMode: creativeBoostMode as 'simple' | 'advanced' });
+    setCreativeBoostMode: async (params) => {
+      const { creativeBoostMode } = validate(SetCreativeBoostModeSchema, params);
+      await storage.saveConfig({ creativeBoostMode });
       return { success: true };
     },
   };
@@ -183,6 +194,10 @@ function createBulkHandlers(
         lyricsMode: config.lyricsMode,
         storyMode: config.storyMode,
         useLocalLLM: config.useLocalLLM,
+        promptMode: config.promptMode,
+        creativeBoostMode: config.creativeBoostMode,
+        ollamaConfig: config.ollamaConfig,
+        ollamaModel: config.ollamaModel,
       };
     },
     saveAllSettings: async (params) => {
@@ -196,6 +211,10 @@ function createBulkHandlers(
         lyricsMode,
         storyMode,
         useLocalLLM,
+        promptMode,
+        creativeBoostMode,
+        ollamaConfig,
+        ollamaModel,
       } = validate(SaveAllSettingsSchema, params);
 
       return withErrorHandling(
@@ -211,11 +230,15 @@ function createBulkHandlers(
             lyricsMode,
             storyMode,
             useLocalLLM,
+            ...(promptMode !== undefined ? { promptMode } : {}),
+            ...(creativeBoostMode !== undefined ? { creativeBoostMode } : {}),
+            ...(ollamaConfig !== undefined ? { ollamaConfig } : {}),
+            ...(ollamaModel !== undefined ? { ollamaModel } : {}),
           });
 
           aiEngine.setProvider(provider);
           for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
-            if (apiKeys[p]) aiEngine.setApiKey(p, apiKeys[p]);
+            aiEngine.setApiKey(p, apiKeys[p]);
           }
           aiEngine.setModel(model);
           aiEngine.setUseSunoTags(useSunoTags);

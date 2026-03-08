@@ -7,8 +7,15 @@ import { OllamaModelSection } from './ollama-model-section';
 import type { ReactElement } from 'react';
 
 export function OllamaSettings(): ReactElement {
-  const { settings, updateEndpoint, updateTemperature, updateMaxTokens, updateContextLength } =
-    useOllamaSettings();
+  const {
+    settings,
+    error,
+    isSaving,
+    updateEndpoint,
+    updateTemperature,
+    updateMaxTokens,
+    updateContextLength,
+  } = useOllamaSettings();
 
   return (
     <div className="space-y-6">
@@ -24,6 +31,10 @@ export function OllamaSettings(): ReactElement {
         onMaxTokensChange={updateMaxTokens}
         onContextLengthChange={updateContextLength}
       />
+
+      {isSaving ? <p className="text-xs text-muted-foreground">Saving Ollama settings…</p> : null}
+
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

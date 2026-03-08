@@ -130,7 +130,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
         setStoryMode(previousMode);
       }
     } catch (error: unknown) {
-      log.error('setStoryMode:catch', error);
+      log.error('setStoryMode:failed', error);
       setStoryMode(previousMode);
     }
   }, []);

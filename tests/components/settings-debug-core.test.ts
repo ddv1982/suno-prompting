@@ -17,6 +17,12 @@ interface RpcClientShape {
   setOllamaSettings: (params: unknown) => Promise<RpcResult<unknown>>;
 }
 
+interface Deferred<T> {
+  promise: Promise<T>;
+  reject: (reason?: unknown) => void;
+  resolve: (value: T | PromiseLike<T>) => void;
+}
+
 const onCloseMock = mock(() => {});
 const getAllSettingsMock = mock((_params: Record<string, never>) => {});
 const saveAllSettingsMock = mock((_params: unknown) => {});
@@ -24,6 +30,8 @@ const getOllamaSettingsMock = mock((_params: Record<string, never>) => {});
 const setOllamaSettingsMock = mock((_params: unknown) => {});
 const copyJsonMock = mock(async (_value: string) => {});
 const copyTextMock = mock(async (_value: string) => {});
+let saveAllSettingsResult: RpcResult<unknown> = { ok: true, value: { success: true } };
+let setOllamaSettingsResult: RpcResult<unknown> = { ok: true, value: { success: true } };
 
 const apiKeys: APIKeys = {
   groq: 'groq-key',
@@ -37,6 +45,22 @@ let originalSaveAllSettings: RpcClientShape['saveAllSettings'] | null = null;
 let originalGetOllamaSettings: RpcClientShape['getOllamaSettings'] | null = null;
 let originalSetOllamaSettings: RpcClientShape['setOllamaSettings'] | null = null;
 
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: Deferred<T>['resolve'];
+  let reject!: Deferred<T>['reject'];
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+async function waitForOllamaDebounce(ms = 300): Promise<void> {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+  });
+}
+
 function resetAllMocks(): void {
   onCloseMock.mockReset();
   getAllSettingsMock.mockReset();
@@ -45,6 +69,8 @@ function resetAllMocks(): void {
   setOllamaSettingsMock.mockReset();
   copyJsonMock.mockReset();
   copyTextMock.mockReset();
+  saveAllSettingsResult = { ok: true, value: { success: true } };
+  setOllamaSettingsResult = { ok: true, value: { success: true } };
 }
 
 async function mockDialogAndButtonPrimitives(): Promise<void> {
@@ -54,7 +80,15 @@ async function mockDialogAndButtonPrimitives(): Promise<void> {
     .href;
 
   const dialogFactory = () => ({
-    Dialog: ({ children }: { children: ReactNode }) => createElement('div', null, children),
+    Dialog: ({
+      children,
+      open,
+      onOpenChange,
+    }: {
+      children: ReactNode;
+      open?: boolean;
+      onOpenChange?: (open: boolean) => void;
+    }) => createElement('div', { 'data-dialog-root': true, open, onOpenChange }, children),
     DialogContent: ({ children }: { children: ReactNode }) => createElement('div', null, children),
     DialogFooter: ({ children }: { children: ReactNode }) => createElement('div', null, children),
     DialogHeader: ({ children }: { children: ReactNode }) => createElement('div', null, children),
@@ -198,7 +232,7 @@ async function loadSettingsModalModule() {
 
   rpcClient.saveAllSettings = async (params: unknown) => {
     saveAllSettingsMock(params);
-    return { ok: true, value: { success: true } };
+    return saveAllSettingsResult;
   };
 
   rpcClient.getOllamaSettings = async (params: Record<string, never>) => {
@@ -216,7 +250,7 @@ async function loadSettingsModalModule() {
 
   rpcClient.setOllamaSettings = async (params: unknown) => {
     setOllamaSettingsMock(params);
-    return { ok: true, value: { success: true } };
+    return setOllamaSettingsResult;
   };
 
   const moduleUrl = new URL(
@@ -385,6 +419,217 @@ describe('settings modal behavior wiring', () => {
       },
     });
     expect(onCloseMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('keeps the modal open and surfaces an error when settings save fails', async () => {
+    saveAllSettingsResult = {
+      ok: false,
+      error: { code: 'internal_error', message: 'save failed' },
+    };
+
+    const { SettingsModal } = await loadSettingsModalModule();
+    const renderer = renderWithAct(
+      createElement(SettingsModal, { isOpen: true, onClose: onCloseMock })
+    );
+
+    await flushMicrotasks(3);
+
+    const saveButton = renderer.root.find(
+      (node) => node.type === 'button' && hasText(node, 'Save Changes')
+    );
+
+    await act(async () => {
+      await saveButton.props.onClick();
+    });
+    await flushMicrotasks(2);
+
+    expect(saveAllSettingsMock).toHaveBeenCalledTimes(1);
+    expect(onCloseMock).not.toHaveBeenCalled();
+    expect(
+      renderer.root.findAll(
+        (node) =>
+          node.type === 'p' &&
+          extractNodeText(node).includes('Failed to save settings. Please try again.')
+      ).length
+    ).toBeGreaterThan(0);
+  });
+
+  test('only closes the modal when Dialog reports a closed state', async () => {
+    const { SettingsModal } = await loadSettingsModalModule();
+    const renderer = renderWithAct(
+      createElement(SettingsModal, { isOpen: true, onClose: onCloseMock })
+    );
+
+    await flushMicrotasks(3);
+
+    const dialogRoot = renderer.root.find(
+      (node) => node.type === 'div' && node.props['data-dialog-root'] === true
+    );
+
+    act(() => {
+      dialogRoot.props.onOpenChange(true);
+    });
+    expect(onCloseMock).not.toHaveBeenCalled();
+
+    act(() => {
+      dialogRoot.props.onOpenChange(false);
+    });
+    expect(onCloseMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('reverts the Ollama endpoint when persistence fails', async () => {
+    setOllamaSettingsResult = {
+      ok: false,
+      error: { code: 'validation_error', message: 'invalid endpoint' },
+    };
+
+    const { SettingsModal } = await loadSettingsModalModule();
+    const renderer = renderWithAct(
+      createElement(SettingsModal, { isOpen: true, onClose: onCloseMock })
+    );
+
+    await flushMicrotasks(3);
+
+    const endpointInput = renderer.root.find(
+      (node) => node.type === 'input' && node.props.type === 'url'
+    );
+
+    await act(async () => {
+      endpointInput.props.onChange({ target: { value: 'http://localhost:99999' } });
+    });
+
+    expect(
+      renderer.root.findAll(
+        (node) => node.type === 'p' && extractNodeText(node).includes('Saving Ollama settings…')
+      ).length
+    ).toBeGreaterThan(0);
+
+    await waitForOllamaDebounce();
+    await flushMicrotasks(2);
+
+    const refreshedInput = renderer.root.find(
+      (node) => node.type === 'input' && node.props.type === 'url'
+    );
+
+    expect(setOllamaSettingsMock).toHaveBeenCalledWith({ endpoint: 'http://localhost:99999' });
+    expect(refreshedInput.props.value).toBe('http://127.0.0.1:11434');
+    expect(
+      renderer.root.findAll(
+        (node) => node.type === 'p' && extractNodeText(node).includes('invalid endpoint')
+      ).length
+    ).toBeGreaterThan(0);
+  });
+
+  test('ignores stale Ollama endpoint failures after a newer save succeeds', async () => {
+    const firstRequest = createDeferred<RpcResult<unknown>>();
+    const secondRequest = createDeferred<RpcResult<unknown>>();
+    let callCount = 0;
+    setOllamaSettingsResult = { ok: true, value: { success: true } };
+
+    const { SettingsModal } = await loadSettingsModalModule();
+    if (!patchedRpcClient) {
+      throw new Error('RPC client not patched');
+    }
+
+    patchedRpcClient.setOllamaSettings = async (params: unknown) => {
+      setOllamaSettingsMock(params);
+      callCount += 1;
+      return callCount === 1 ? firstRequest.promise : secondRequest.promise;
+    };
+
+    const renderer = renderWithAct(
+      createElement(SettingsModal, { isOpen: true, onClose: onCloseMock })
+    );
+
+    await flushMicrotasks(3);
+
+    const endpointInput = () =>
+      renderer.root.find((node) => node.type === 'input' && node.props.type === 'url');
+
+    await act(async () => {
+      endpointInput().props.onChange({ target: { value: 'http://127.0.0.1:11435' } });
+    });
+    await waitForOllamaDebounce();
+    await act(async () => {
+      endpointInput().props.onChange({ target: { value: 'http://127.0.0.1:11436' } });
+    });
+    await waitForOllamaDebounce();
+
+    await act(async () => {
+      secondRequest.resolve({ ok: true, value: { success: true } });
+    });
+    await flushMicrotasks(2);
+
+    expect(endpointInput().props.value).toBe('http://127.0.0.1:11436');
+
+    await act(async () => {
+      firstRequest.resolve({
+        ok: false,
+        error: { code: 'validation_error', message: 'stale invalid endpoint' },
+      });
+    });
+    await flushMicrotasks(2);
+
+    expect(endpointInput().props.value).toBe('http://127.0.0.1:11436');
+  });
+
+  test('ignores stale Ollama temperature failures after a newer save succeeds', async () => {
+    const firstRequest = createDeferred<RpcResult<unknown>>();
+    const secondRequest = createDeferred<RpcResult<unknown>>();
+    let callCount = 0;
+
+    const { SettingsModal } = await loadSettingsModalModule();
+    if (!patchedRpcClient) {
+      throw new Error('RPC client not patched');
+    }
+
+    patchedRpcClient.setOllamaSettings = async (params: unknown) => {
+      setOllamaSettingsMock(params);
+      callCount += 1;
+      return callCount === 1 ? firstRequest.promise : secondRequest.promise;
+    };
+
+    const renderer = renderWithAct(
+      createElement(SettingsModal, { isOpen: true, onClose: onCloseMock })
+    );
+
+    await flushMicrotasks(3);
+
+    const temperatureInput = () => {
+      const input = renderer.root.findAll(
+        (node) => node.type === 'input' && node.props.type === 'range'
+      )[0];
+      if (!input) {
+        throw new Error('Temperature slider not found');
+      }
+      return input;
+    };
+
+    await act(async () => {
+      temperatureInput().props.onChange({ target: { value: '0.8' } });
+    });
+    await waitForOllamaDebounce();
+    await act(async () => {
+      temperatureInput().props.onChange({ target: { value: '0.9' } });
+    });
+    await waitForOllamaDebounce();
+
+    await act(async () => {
+      secondRequest.resolve({ ok: true, value: { success: true } });
+    });
+    await flushMicrotasks(2);
+
+    expect(temperatureInput().props.value).toBe(0.9);
+
+    await act(async () => {
+      firstRequest.resolve({
+        ok: false,
+        error: { code: 'validation_error', message: 'stale invalid temperature' },
+      });
+    });
+    await flushMicrotasks(2);
+
+    expect(temperatureInput().props.value).toBe(0.9);
   });
 });
 

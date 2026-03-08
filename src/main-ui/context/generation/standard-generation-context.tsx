@@ -6,14 +6,13 @@ import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
 import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
-import { formatRpcError } from '@/lib/rpc-utils';
 import {
   handleGenerationError,
   addUserMessage,
   buildFullPromptOriginalInput,
   completeSessionUpdate,
 } from '@/lib/session-helpers';
-import { rpcClient } from '@/services/rpc-client';
+import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 
 import { useGenerationStateContext } from './generation-state-context';
 import { useSessionOperationsContext } from './session-operations-context';
@@ -88,18 +87,14 @@ async function callGenerateApi(
   lyrics?: string;
 }> {
   if (isInitial) {
-    return rpcClient
-      .generateInitial({
-        description: p.input,
-        lockedPhrase: p.lockedPhrase,
-        lyricsTopic: p.topic,
-        genreOverride: p.genre,
-        sunoStyles: p.sunoStyles,
-      })
-      .then((r) => {
-        if (!r.ok) throw new Error(formatRpcError(r.error));
-        return r.value;
-      });
+    const result = await rpcClient.generateInitial({
+      description: p.input,
+      lockedPhrase: p.lockedPhrase,
+      lyricsTopic: p.topic,
+      genreOverride: p.genre,
+      sunoStyles: p.sunoStyles,
+    });
+    return unwrapOrThrowResult(result);
   }
   const rp = p as RefineParams & { sunoStyles?: string[] };
   // Determine refinement type for API call:
@@ -107,23 +102,19 @@ async function callGenerateApi(
   // - Default to 'combined' for backwards compatibility and as a safety fallback
   const refinementType =
     rp.refinementType && rp.refinementType !== 'none' ? rp.refinementType : 'combined';
-  return rpcClient
-    .refinePrompt({
-      currentPrompt: rp.currentPrompt,
-      feedback: rp.input || undefined,
-      lockedPhrase: rp.lockedPhrase,
-      currentTitle: rp.currentTitle,
-      currentLyrics: rp.currentLyrics,
-      lyricsTopic: rp.topic,
-      genreOverride: rp.genre,
-      sunoStyles: rp.sunoStyles,
-      refinementType,
-      styleChanges: rp.styleChanges,
-    })
-    .then((r) => {
-      if (!r.ok) throw new Error(formatRpcError(r.error));
-      return r.value;
-    });
+  const result = await rpcClient.refinePrompt({
+    currentPrompt: rp.currentPrompt,
+    feedback: rp.input || undefined,
+    lockedPhrase: rp.lockedPhrase,
+    currentTitle: rp.currentTitle,
+    currentLyrics: rp.currentLyrics,
+    lyricsTopic: rp.topic,
+    genreOverride: rp.genre,
+    sunoStyles: rp.sunoStyles,
+    refinementType,
+    styleChanges: rp.styleChanges,
+  });
+  return unwrapOrThrowResult(result);
 }
 
 function addUserMessageIfRefine(
@@ -286,18 +277,15 @@ export function StandardGenerationProvider({ children }: { children: ReactNode }
     try {
       const sunoStyles =
         advancedSelection.sunoStyles.length > 0 ? advancedSelection.sunoStyles : undefined;
-      const result = await rpcClient
-        .generateInitial({
+      const result = unwrapOrThrowResult(
+        await rpcClient.generateInitial({
           description: currentSession.originalInput,
           lockedPhrase: getEffectiveLockedPhrase(),
           lyricsTopic: currentSession.lyricsTopic,
           genreOverride: advancedSelection.seedGenres[0],
           sunoStyles,
         })
-        .then((r) => {
-          if (!r.ok) throw new Error(formatRpcError(r.error));
-          return r.value;
-        });
+      );
       if (!result?.prompt) throw new Error('Invalid result received from remix');
       await completeSessionUpdate(
         deps,

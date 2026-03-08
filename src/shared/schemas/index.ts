@@ -2,11 +2,16 @@
 export {
   MAX_SEED_GENRES,
   MAX_SUNO_STYLES,
+  MOOD_CATEGORY_VALUES,
   QUICK_VIBES_CATEGORY_VALUES,
+  MoodCategorySchema,
+  MoodCategoryValueSchema,
   QuickVibesCategorySchema,
   QuickVibesCategoryValueSchema,
   SeedGenresSchema,
   SunoStylesSchema,
+  type MoodCategory,
+  type MoodCategoryNullable,
   type QuickVibesCategory,
   type QuickVibesCategoryNullable,
 } from './common';
@@ -43,8 +48,18 @@ export {
 
 // Settings schemas
 export {
+  SetApiKeySchema,
+  SetModelSchema,
+  PromptModeSchema,
+  CreativeBoostModeSchema,
+  SetPromptModeSchema,
+  SetCreativeBoostModeSchema,
   SetUseLocalLLMSchema,
   SaveAllSettingsSchema,
+  type SetApiKeyInput,
+  type SetModelInput,
+  type SetPromptModeInput,
+  type SetCreativeBoostModeInput,
   type SetUseLocalLLMInput,
   type SaveAllSettingsInput,
 } from './settings';
@@ -71,6 +86,17 @@ export { SetOllamaSettingsSchema, type SetOllamaSettingsInput } from './ollama';
 
 // Trace schemas
 export { TraceRunSchema } from './trace';
+
+// Session schemas
+export {
+  DeleteSessionSchema,
+  PromptVersionSchema,
+  QuickVibesInputSchema,
+  CreativeBoostInputSchema,
+  SaveSessionSchema,
+  type DeleteSessionInput,
+  type SaveSessionInput,
+} from './session';
 
 // Thematic context schemas
 export { ThematicContextSchema, type ThematicContext } from './thematic-context';

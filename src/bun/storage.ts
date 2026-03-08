@@ -1,6 +1,6 @@
 import { mkdir } from 'fs/promises';
 import { homedir } from 'os';
-import { join } from 'path';
+import { basename, join } from 'path';
 
 import { decrypt, encrypt } from '@bun/crypto';
 import { createLogger } from '@bun/logger';
@@ -57,11 +57,70 @@ export class StorageManager {
   private baseDir: string;
   private historyPath: string;
   private configPath: string;
+  private configWriteQueue: Promise<void> = Promise.resolve();
 
-  constructor() {
-    this.baseDir = join(homedir(), APP_CONSTANTS.STORAGE_DIR);
+  constructor(baseDir = join(homedir(), APP_CONSTANTS.STORAGE_DIR)) {
+    this.baseDir = baseDir;
     this.historyPath = join(this.baseDir, 'history.json');
     this.configPath = join(this.baseDir, 'config.json');
+  }
+
+  private async readJsonFile(path: string, label: string): Promise<unknown> {
+    const file = Bun.file(path);
+    if (!(await file.exists())) {
+      return null;
+    }
+
+    const raw = await file.text();
+    try {
+      return JSON.parse(raw) as unknown;
+    } catch (error: unknown) {
+      const backupPath = join(
+        this.baseDir,
+        `${basename(path, '.json')}.corrupt-${Date.now().toString()}.json`
+      );
+
+      try {
+        await Bun.write(backupPath, raw);
+      } catch (backupError: unknown) {
+        log.warn('backupCorruptFile:failed', {
+          path,
+          backupPath,
+          error: getErrorMessage(backupError),
+        });
+      }
+
+      throw new StorageError(
+        `Failed to parse ${label}. A backup was written to ${backupPath}.`,
+        'read',
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  private async readHistoryForWrite(): Promise<PromptSession[]> {
+    const raw = await this.readJsonFile(this.historyPath, 'history file');
+    if (raw === null) {
+      return [];
+    }
+    if (!Array.isArray(raw)) {
+      throw new StorageError('History file has invalid structure.', 'read');
+    }
+    return sanitizeDebugTracesInHistory(raw);
+  }
+
+  private async readConfigForWrite(): Promise<AppConfig> {
+    const raw = await this.readJsonFile(this.configPath, 'config file');
+    if (raw === null) {
+      return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
+    }
+    if (!isRecord(raw)) {
+      throw new StorageError('Config file has invalid structure.', 'read');
+    }
+
+    const config = raw as StoredConfig;
+    const apiKeys = await this.decryptApiKeys(config.apiKeys);
+    return this.buildConfigWithDefaults(config, apiKeys);
   }
 
   async initialize(): Promise<void> {
@@ -75,21 +134,8 @@ export class StorageManager {
   }
 
   async getHistory(): Promise<PromptSession[]> {
-    try {
-      const file = Bun.file(this.historyPath);
-      if (!(await file.exists())) {
-        return [];
-      }
-      const raw = (await file.json()) as unknown;
-      const sessions = sanitizeDebugTracesInHistory(raw);
-      return sortByUpdated(sessions);
-    } catch (error: unknown) {
-      const message = getErrorMessage(error);
-      log.error('getHistory:failed', { error: message });
-      // For read errors on history, return empty array to allow app to function
-      // but log the error for debugging
-      return [];
-    }
+    const sessions = await this.readHistoryForWrite();
+    return sortByUpdated(sessions);
   }
 
   async saveHistory(sessions: PromptSession[]): Promise<void> {
@@ -103,13 +149,13 @@ export class StorageManager {
   }
 
   async saveSession(session: PromptSession): Promise<void> {
-    const history = await this.getHistory();
+    const history = await this.readHistoryForWrite();
     const updated = upsertSessionList(history, session);
     await this.saveHistory(updated);
   }
 
   async deleteSession(id: string): Promise<void> {
-    const history = await this.getHistory();
+    const history = await this.readHistoryForWrite();
     const filtered = removeSessionById(history, id);
     await this.saveHistory(filtered);
   }
@@ -187,31 +233,25 @@ export class StorageManager {
   }
 
   async getConfig(): Promise<AppConfig> {
-    try {
-      const file = Bun.file(this.configPath);
-      if (!(await file.exists())) {
-        return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
-      }
-      const config = (await file.json()) as StoredConfig;
-      const apiKeys = await this.decryptApiKeys(config.apiKeys);
-      return this.buildConfigWithDefaults(config, apiKeys);
-    } catch (error) {
-      log.error('getConfig:failed', { error: getErrorMessage(error) });
-      return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
-    }
+    return this.readConfigForWrite();
   }
 
   async saveConfig(config: Partial<AppConfig>): Promise<void> {
-    try {
-      const existing = await this.getConfig();
-      const toSave = { ...existing, ...config };
-      await this.persistConfig(toSave);
-    } catch (error: unknown) {
-      if (error instanceof StorageError) throw error;
-      const message = getErrorMessage(error);
-      log.error('saveConfig:failed', { error: message });
-      throw new StorageError(`Failed to save config: ${message}`, 'write');
-    }
+    const writeTask = this.configWriteQueue.then(async () => {
+      try {
+        const existing = await this.readConfigForWrite();
+        const toSave = { ...existing, ...config };
+        await this.persistConfig(toSave);
+      } catch (error: unknown) {
+        if (error instanceof StorageError) throw error;
+        const message = getErrorMessage(error);
+        log.error('saveConfig:failed', { error: message });
+        throw new StorageError(`Failed to save config: ${message}`, 'write');
+      }
+    });
+
+    this.configWriteQueue = writeTask.catch(() => undefined);
+    return writeTask;
   }
 }
 

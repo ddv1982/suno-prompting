@@ -1,4 +1,5 @@
 import { buildChatMessages, type ChatMessage } from '@/lib/chat-utils';
+import { RpcClientError } from '@/services/rpc-shim-error';
 import {
   getErrorMessage,
   ValidationError,
@@ -51,6 +52,13 @@ export function buildFullPromptOriginalInput(
  * Warnings → 'warning' (orange toast)
  */
 export function getErrorToastType(error: unknown): 'error' | 'warning' {
+  if (error instanceof RpcClientError) {
+    if (error.code === 'RPC_VALIDATION') return 'warning';
+    if (error.code === 'RPC_TIMEOUT') return 'warning';
+    if (error.code === 'RPC_RATE_LIMITED') return 'warning';
+    return 'error';
+  }
+
   // Warnings (recoverable, user-fixable)
   if (error instanceof ValidationError) return 'warning';
   if (error instanceof OllamaTimeoutError) return 'warning';

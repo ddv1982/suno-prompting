@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { buildFullPromptOriginalInput, getErrorToastType } from '@/lib/session-helpers';
+import { RpcClientError } from '@/services/rpc-shim-error';
 import {
   ValidationError,
   OllamaTimeoutError,
@@ -114,6 +115,33 @@ describe('getErrorToastType', () => {
 
   test("should map generic Error to 'error'", () => {
     const error = new Error('Generic error');
+    const type = getErrorToastType(error);
+    expect(type).toBe('error');
+  });
+
+  test("should map RpcClientError validation code to 'warning'", () => {
+    const error = new RpcClientError({
+      code: 'RPC_VALIDATION',
+      message: 'Invalid request payload.',
+    });
+    const type = getErrorToastType(error);
+    expect(type).toBe('warning');
+  });
+
+  test("should map RpcClientError timeout code to 'warning'", () => {
+    const error = new RpcClientError({
+      code: 'RPC_TIMEOUT',
+      message: 'Request timed out.',
+    });
+    const type = getErrorToastType(error);
+    expect(type).toBe('warning');
+  });
+
+  test("should map RpcClientError unavailable code to 'error'", () => {
+    const error = new RpcClientError({
+      code: 'RPC_UNAVAILABLE',
+      message: 'Service unavailable.',
+    });
     const type = getErrorToastType(error);
     expect(type).toBe('error');
   });
