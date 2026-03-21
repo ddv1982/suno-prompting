@@ -11,6 +11,7 @@ import {
   type RemixHandlers,
   type EditorHandlers,
   type EditorConfig,
+  type PromptEditorProps,
 } from '@/components/prompt-editor/types';
 import { useEditorContext } from '@/context/editor-context';
 import { useGenerationContext } from '@/context/generation';
@@ -20,77 +21,10 @@ import { APP_CONSTANTS } from '@shared/constants';
 
 import type { ReactElement } from 'react';
 
-// eslint-disable-next-line max-lines-per-function
-export function PromptEditorContainer(): ReactElement {
-  // -- Session State --
-  const { currentSession } = useSessionContext();
-
-  // -- Settings --
-  const {
-    currentModel,
-    maxMode,
-    lyricsMode,
-    storyMode,
-    useLocalLLM,
-    setMaxMode,
-    setLyricsMode,
-    setStoryMode,
-  } = useSettingsContext();
-
-  // -- Editor State & Handlers --
-  const {
-    editorMode,
-    promptMode,
-    creativeBoostMode,
-    advancedSelection,
-    lockedPhrase,
-    pendingInput,
-    lyricsTopic,
-    moodCategory,
-    computedMusicPhrase,
-    quickVibesInput,
-    creativeBoostInput,
-    setEditorMode,
-    setPromptMode,
-    setCreativeBoostMode,
-    updateAdvancedSelection,
-    clearAdvancedSelection,
-    setLockedPhrase,
-    setPendingInput,
-    setLyricsTopic,
-    setMoodCategory,
-    setQuickVibesInput,
-    setCreativeBoostInput,
-  } = useEditorContext();
-
-  // -- Generation State & Handlers --
-  const {
-    isGenerating,
-    generatingAction,
-    chatMessages,
-    validation,
-    debugTrace,
-    isOptimistic,
-    showSkeleton,
-    handleGenerate,
-    handleRemix,
-    handleRemixInstruments,
-    handleRemixGenre,
-    handleRemixMood,
-    handleRemixStyleTags,
-    handleRemixRecording,
-    handleRemixTitle,
-    handleRemixLyrics,
-    handleGenerateQuickVibes,
-    handleRemixQuickVibes,
-    handleRefineQuickVibes,
-    handleConversionComplete,
-    handleGenerateCreativeBoost,
-    handleRefineCreativeBoost,
-  } = useGenerationContext();
-
-  // -- Memoized Prop Groups --
-  const output: OutputState = useMemo(
+function usePromptEditorOutputState(
+  currentSession: ReturnType<typeof useSessionContext>['currentSession']
+): OutputState {
+  return useMemo(
     () => ({
       currentPrompt: currentSession?.currentPrompt || '',
       currentTitle: currentSession?.currentTitle,
@@ -98,8 +32,24 @@ export function PromptEditorContainer(): ReactElement {
     }),
     [currentSession?.currentPrompt, currentSession?.currentTitle, currentSession?.currentLyrics]
   );
+}
 
-  const input: InputState = useMemo(
+function usePromptEditorInputState({
+  pendingInput,
+  lockedPhrase,
+  lyricsTopic,
+  advancedSelection,
+  computedMusicPhrase,
+  moodCategory,
+}: {
+  pendingInput: InputState['pendingInput'];
+  lockedPhrase: InputState['lockedPhrase'];
+  lyricsTopic: InputState['lyricsTopic'];
+  advancedSelection: InputState['advancedSelection'];
+  computedMusicPhrase: InputState['computedMusicPhrase'];
+  moodCategory: InputState['moodCategory'];
+}): InputState {
+  return useMemo(
     () => ({
       pendingInput,
       lockedPhrase,
@@ -110,8 +60,22 @@ export function PromptEditorContainer(): ReactElement {
     }),
     [pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase, moodCategory]
   );
+}
 
-  const generation: GenerationState = useMemo(
+function usePromptEditorGenerationState(
+  generationContext: ReturnType<typeof useGenerationContext>
+): GenerationState {
+  const {
+    isGenerating,
+    generatingAction,
+    validation,
+    debugTrace,
+    chatMessages,
+    isOptimistic,
+    showSkeleton,
+  } = generationContext;
+
+  return useMemo(
     () => ({
       isGenerating,
       generatingAction,
@@ -131,8 +95,16 @@ export function PromptEditorContainer(): ReactElement {
       showSkeleton,
     ]
   );
+}
 
-  const modes: ModeState = useMemo(
+function usePromptEditorModeState(
+  settings: Pick<ModeState, 'maxMode' | 'lyricsMode' | 'storyMode'>,
+  editor: Pick<ModeState, 'editorMode' | 'promptMode' | 'creativeBoostMode'>
+): ModeState {
+  const { maxMode, lyricsMode, storyMode } = settings;
+  const { editorMode, promptMode, creativeBoostMode } = editor;
+
+  return useMemo(
     () => ({
       maxMode,
       lyricsMode,
@@ -143,23 +115,55 @@ export function PromptEditorContainer(): ReactElement {
     }),
     [maxMode, lyricsMode, storyMode, editorMode, promptMode, creativeBoostMode]
   );
+}
 
-  const quickVibes: QuickVibesState = useMemo(
+function usePromptEditorQuickVibesState(
+  quickVibesInput: ReturnType<typeof useEditorContext>['quickVibesInput'],
+  currentSession: ReturnType<typeof useSessionContext>['currentSession']
+): QuickVibesState {
+  return useMemo(
     () => ({
       input: quickVibesInput,
       originalInput: currentSession?.quickVibesInput,
     }),
     [quickVibesInput, currentSession?.quickVibesInput]
   );
+}
 
-  const creativeBoost: CreativeBoostState = useMemo(
+function usePromptEditorCreativeBoostState(
+  creativeBoostInput: ReturnType<typeof useEditorContext>['creativeBoostInput']
+): CreativeBoostState {
+  return useMemo(
     () => ({
       input: creativeBoostInput,
     }),
     [creativeBoostInput]
   );
+}
 
-  const remix: RemixHandlers = useMemo(
+function usePromptEditorRemixHandlers({
+  handleRemix,
+  handleRemixQuickVibes,
+  handleRemixInstruments,
+  handleRemixGenre,
+  handleRemixMood,
+  handleRemixStyleTags,
+  handleRemixRecording,
+  handleRemixTitle,
+  handleRemixLyrics,
+}: Pick<
+  ReturnType<typeof useGenerationContext>,
+  | 'handleRemix'
+  | 'handleRemixQuickVibes'
+  | 'handleRemixInstruments'
+  | 'handleRemixGenre'
+  | 'handleRemixMood'
+  | 'handleRemixStyleTags'
+  | 'handleRemixRecording'
+  | 'handleRemixTitle'
+  | 'handleRemixLyrics'
+>): RemixHandlers {
+  return useMemo(
     () => ({
       onRemix: handleRemix,
       onRemixQuickVibes: handleRemixQuickVibes,
@@ -183,8 +187,61 @@ export function PromptEditorContainer(): ReactElement {
       handleRemixLyrics,
     ]
   );
+}
 
-  const handlers: EditorHandlers = useMemo(
+function usePromptEditorHandlers(
+  editorContext: Pick<
+    ReturnType<typeof useEditorContext>,
+    | 'setPendingInput'
+    | 'setLockedPhrase'
+    | 'setLyricsTopic'
+    | 'setMoodCategory'
+    | 'setEditorMode'
+    | 'updateAdvancedSelection'
+    | 'clearAdvancedSelection'
+    | 'setPromptMode'
+    | 'setCreativeBoostMode'
+    | 'setQuickVibesInput'
+    | 'setCreativeBoostInput'
+  >,
+  settingsContext: Pick<
+    ReturnType<typeof useSettingsContext>,
+    'setMaxMode' | 'setLyricsMode' | 'setStoryMode'
+  >,
+  generationContext: Pick<
+    ReturnType<typeof useGenerationContext>,
+    | 'handleGenerate'
+    | 'handleGenerateQuickVibes'
+    | 'handleRefineQuickVibes'
+    | 'handleGenerateCreativeBoost'
+    | 'handleRefineCreativeBoost'
+    | 'handleConversionComplete'
+  >
+): EditorHandlers {
+  const {
+    setPendingInput,
+    setLockedPhrase,
+    setLyricsTopic,
+    setMoodCategory,
+    setEditorMode,
+    updateAdvancedSelection,
+    clearAdvancedSelection,
+    setPromptMode,
+    setCreativeBoostMode,
+    setQuickVibesInput,
+    setCreativeBoostInput,
+  } = editorContext;
+  const { setMaxMode, setLyricsMode, setStoryMode } = settingsContext;
+  const {
+    handleGenerate,
+    handleGenerateQuickVibes,
+    handleRefineQuickVibes,
+    handleGenerateCreativeBoost,
+    handleRefineCreativeBoost,
+    handleConversionComplete,
+  } = generationContext;
+
+  return useMemo(
     () => ({
       onPendingInputChange: setPendingInput,
       onLockedPhraseChange: setLockedPhrase,
@@ -230,7 +287,80 @@ export function PromptEditorContainer(): ReactElement {
       handleConversionComplete,
     ]
   );
+}
 
+function usePromptEditorProps(): PromptEditorProps {
+  const { currentSession } = useSessionContext();
+  const settings = useSettingsContext();
+  const editor = useEditorContext();
+  const generationContext = useGenerationContext();
+  const { currentModel, maxMode, lyricsMode, storyMode, useLocalLLM } = settings;
+  const {
+    editorMode,
+    promptMode,
+    creativeBoostMode,
+    advancedSelection,
+    lockedPhrase,
+    pendingInput,
+    lyricsTopic,
+    moodCategory,
+    computedMusicPhrase,
+    quickVibesInput,
+    creativeBoostInput,
+  } = editor;
+  const {
+    handleRemix,
+    handleRemixQuickVibes,
+    handleRemixInstruments,
+    handleRemixGenre,
+    handleRemixMood,
+    handleRemixStyleTags,
+    handleRemixRecording,
+    handleRemixTitle,
+    handleRemixLyrics,
+    handleGenerate,
+    handleGenerateQuickVibes,
+    handleRefineQuickVibes,
+    handleGenerateCreativeBoost,
+    handleRefineCreativeBoost,
+    handleConversionComplete,
+  } = generationContext;
+
+  const output = usePromptEditorOutputState(currentSession);
+  const input = usePromptEditorInputState({
+    pendingInput,
+    lockedPhrase,
+    lyricsTopic,
+    advancedSelection,
+    computedMusicPhrase,
+    moodCategory,
+  });
+  const generation = usePromptEditorGenerationState(generationContext);
+  const modes = usePromptEditorModeState(
+    { maxMode, lyricsMode, storyMode },
+    { editorMode, promptMode, creativeBoostMode }
+  );
+  const quickVibes = usePromptEditorQuickVibesState(quickVibesInput, currentSession);
+  const creativeBoost = usePromptEditorCreativeBoostState(creativeBoostInput);
+  const remix = usePromptEditorRemixHandlers({
+    handleRemix,
+    handleRemixQuickVibes,
+    handleRemixInstruments,
+    handleRemixGenre,
+    handleRemixMood,
+    handleRemixStyleTags,
+    handleRemixRecording,
+    handleRemixTitle,
+    handleRemixLyrics,
+  });
+  const handlers = usePromptEditorHandlers(editor, settings, {
+    handleGenerate,
+    handleGenerateQuickVibes,
+    handleRefineQuickVibes,
+    handleGenerateCreativeBoost,
+    handleRefineCreativeBoost,
+    handleConversionComplete,
+  });
   const config: EditorConfig = useMemo(
     () => ({
       maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS,
@@ -239,6 +369,23 @@ export function PromptEditorContainer(): ReactElement {
     }),
     [currentModel, useLocalLLM]
   );
+
+  return {
+    output,
+    input,
+    generation,
+    modes,
+    quickVibes,
+    creativeBoost,
+    remix,
+    handlers,
+    config,
+  };
+}
+
+export function PromptEditorContainer(): ReactElement {
+  const { output, input, generation, modes, quickVibes, creativeBoost, remix, handlers, config } =
+    usePromptEditorProps();
 
   return (
     <PromptEditor
