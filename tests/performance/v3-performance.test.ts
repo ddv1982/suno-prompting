@@ -6,7 +6,6 @@
  * - Genre fusion/compatibility lookup
  * - Quick Vibes generation (16 categories)
  *
- * @see droidz/specs/2026-01-12/deterministic-v3/spec.md - Section 1.3 Success Criteria
  */
 
 import { describe, test, expect } from 'bun:test';

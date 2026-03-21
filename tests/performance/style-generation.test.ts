@@ -6,7 +6,6 @@
  * This test suite validates that the tag selection system maintains
  * the required performance threshold across various genres and usage patterns.
  *
- * @see droidz/specs/2026-01-11/tasks.md - Task Group 1.5
  */
 
 import { describe, test, expect } from 'bun:test';
