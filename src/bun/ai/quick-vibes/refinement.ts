@@ -8,7 +8,7 @@
  */
 
 import { isDirectMode, generateDirectModeResult } from '@bun/ai/direct-mode';
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
 import {
   extractStructuredDataForStory,
   generateStoryNarrativeWithTimeout,
@@ -237,7 +237,7 @@ export async function refineQuickVibes(
   // Get Ollama endpoint for local LLM mode (bypasses Bun fetch bug)
   const ollamaEndpoint = config.getOllamaEndpoint?.();
 
-  const rawResponse = await callLLM({
+  const rawResponse = await runAIRequest({
     getModel: config.getModel,
     systemPrompt,
     userPrompt,

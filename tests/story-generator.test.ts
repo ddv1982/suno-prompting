@@ -18,7 +18,7 @@ import { setAiGenerateTextMock } from './helpers/ai-mock';
 import type { StoryGenerationInput, StoryGenerationOptions } from '@bun/ai/story-generator';
 import type { ThematicContext } from '@shared/schemas/thematic-context';
 // ============================================
-// Mock AI SDK (generateText) - NOT @bun/ai/llm-utils
+// Mock AI SDK (generateText) directly
 // This avoids module mock conflicts with llm-utils.test.ts
 // ============================================
 
@@ -398,7 +398,7 @@ describe('generateStoryNarrative', () => {
 
     const result = await generateStoryNarrative(options);
 
-    // When ollamaEndpoint is set, callLLM uses Ollama instead of cloud
+    // When ollamaEndpoint is set, runAIRequest uses Ollama instead of cloud
     // The test verifies the function accepts this option without error
     expect(result.success).toBe(true);
   });

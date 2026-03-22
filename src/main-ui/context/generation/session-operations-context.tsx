@@ -1,12 +1,8 @@
-import { createContext, useContext, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { useEditorActions } from '@/context/editor-context';
 import { useSessionContext } from '@/context/session-context';
-import { buildChatMessages } from '@/lib/chat-utils';
-import { createVersion, updateChatMessagesAfterGeneration } from '@/lib/session-helpers';
-import { type PromptSession, type TraceRun } from '@shared/types';
-import { nowISO } from '@shared/utils';
-import { EMPTY_VALIDATION } from '@shared/validation';
+import { createSessionOperationsService } from '@/services/session-operations-service';
 
 import { useGenerationStateContext } from './generation-state-context';
 
@@ -33,93 +29,44 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
     resetCreativeBoostInput,
   } = useEditorActions();
   const { setChatMessages, setValidation, setDebugTrace } = useGenerationStateContext();
-
-  const selectSession = useCallback(
-    (session: PromptSession) => {
-      setCurrentSession(session);
-      setChatMessages(buildChatMessages(session));
-      setValidation({ ...EMPTY_VALIDATION });
-      setLyricsTopic(session.lyricsTopic || '');
-      setPromptMode(session.promptMode ?? 'full');
-
-      if (session.promptMode === 'quickVibes' && session.quickVibesInput) {
-        setQuickVibesInput(session.quickVibesInput);
-        resetCreativeBoostInput();
-      } else if (session.promptMode === 'creativeBoost' && session.creativeBoostInput) {
-        setCreativeBoostInput(session.creativeBoostInput);
-        resetQuickVibesInput();
-      } else {
-        resetQuickVibesInput();
-        resetCreativeBoostInput();
-      }
-    },
+  const service = useMemo(
+    () =>
+      createSessionOperationsService({
+        currentSession,
+        setCurrentSession,
+        saveSession,
+        generateId,
+        resetEditor,
+        setLyricsTopic,
+        setPromptMode,
+        setQuickVibesInput,
+        resetQuickVibesInput,
+        setCreativeBoostInput,
+        resetCreativeBoostInput,
+        setChatMessages,
+        setValidation,
+        setDebugTrace,
+      }),
     [
-      resetCreativeBoostInput,
-      resetQuickVibesInput,
-      setChatMessages,
-      setCreativeBoostInput,
+      currentSession,
       setCurrentSession,
+      saveSession,
+      generateId,
+      resetEditor,
       setLyricsTopic,
       setPromptMode,
       setQuickVibesInput,
+      resetQuickVibesInput,
+      setCreativeBoostInput,
+      resetCreativeBoostInput,
+      setChatMessages,
       setValidation,
+      setDebugTrace,
     ]
   );
 
-  const newProject = useCallback(() => {
-    setCurrentSession(null);
-    setChatMessages([]);
-    setValidation({ ...EMPTY_VALIDATION });
-    resetEditor();
-  }, [setCurrentSession, setChatMessages, setValidation, resetEditor]);
-
-  const createConversionSession = useCallback(
-    async (
-      originalInput: string,
-      convertedPrompt: string,
-      versionId: string,
-      conversionDebugTrace?: TraceRun
-    ): Promise<void> => {
-      setDebugTrace(conversionDebugTrace);
-      const now = nowISO();
-      const newVersion = createVersion(
-        { prompt: convertedPrompt, versionId, debugTrace: conversionDebugTrace },
-        '[auto-converted to max format]'
-      );
-      const isNewSession = !currentSession;
-
-      const updatedSession: PromptSession = isNewSession
-        ? {
-            id: generateId(),
-            originalInput,
-            currentPrompt: convertedPrompt,
-            versionHistory: [newVersion],
-            createdAt: now,
-            updatedAt: now,
-          }
-        : {
-            ...currentSession,
-            currentPrompt: convertedPrompt,
-            versionHistory: [...currentSession.versionHistory, newVersion],
-            updatedAt: now,
-          };
-
-      updateChatMessagesAfterGeneration(
-        setChatMessages,
-        updatedSession,
-        isNewSession,
-        'Converted to Max Mode format.'
-      );
-      setValidation({ ...EMPTY_VALIDATION });
-      await saveSession(updatedSession);
-    },
-    [currentSession, generateId, saveSession, setDebugTrace, setChatMessages, setValidation]
-  );
-
   return (
-    <SessionOperationsContext.Provider
-      value={{ selectSession, newProject, createConversionSession }}
-    >
+    <SessionOperationsContext.Provider value={service}>
       {children}
     </SessionOperationsContext.Provider>
   );

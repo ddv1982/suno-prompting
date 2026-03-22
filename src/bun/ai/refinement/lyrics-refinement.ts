@@ -7,7 +7,7 @@
  * @module ai/refinement/lyrics-refinement
  */
 
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
 import { cleanLyrics } from '@bun/ai/utils';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
@@ -120,7 +120,7 @@ export async function refineLyricsWithFeedback(
   const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags(), maxMode);
   const userPrompt = `Current lyrics:\n${currentLyrics}\n\nFeedback to apply:\n${feedback}${lyricsTopic ? `\n\nTopic/theme: ${lyricsTopic}` : ''}`;
 
-  const refinedLyrics = await callLLM({
+  const refinedLyrics = await runAIRequest({
     getModel: config.getModel,
     systemPrompt,
     userPrompt,

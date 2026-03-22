@@ -1,4 +1,4 @@
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
 import { createLogger } from '@bun/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
@@ -16,7 +16,7 @@ export async function condenseWithDedup(
   ollamaEndpoint?: string
 ): Promise<string> {
   try {
-    const condensed = await callLLM({
+    const condensed = await runAIRequest({
       getModel,
       systemPrompt: [
         'Rewrite the given music prompt to remove word repetition while preserving meaning and musical quality.',
@@ -44,7 +44,7 @@ export async function condense(
   const targetChars = MAX_CHARS - 50;
 
   try {
-    const condensed = await callLLM({
+    const condensed = await runAIRequest({
       getModel,
       systemPrompt: [
         `Rewrite the given music prompt to be under ${targetChars} characters while preserving musical quality and key details.`,
@@ -70,7 +70,7 @@ export async function rewriteWithoutMeta(
   ollamaEndpoint?: string
 ): Promise<string> {
   try {
-    const rewritten = await callLLM({
+    const rewritten = await runAIRequest({
       getModel,
       systemPrompt: [
         'Rewrite the given music prompt text.',

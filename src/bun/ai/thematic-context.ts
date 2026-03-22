@@ -7,7 +7,7 @@
  * @module ai/thematic-context
  */
 
-import { callLLM } from '@bun/ai/llm-utils';
+import { generateStructuredOutput } from '@bun/ai/structured-output';
 import { createLogger } from '@bun/logger';
 import { traceDecision, traceError } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
@@ -244,18 +244,6 @@ function buildUserPrompt(description: string): string {
 }
 
 /**
- * Strip markdown code fences from LLM response.
- * LLMs often wrap JSON in ```json ... ``` despite instructions.
- */
-function stripMarkdownFence(text: string): string {
-  return text.replace(/^```(?:json)?\n?|\n?```$/g, '').trim();
-}
-
-/**
- * Parses and validates the LLM response as ThematicContext.
- * Returns null if parsing or validation fails.
- */
-/**
  * Normalize themes to exactly 3 elements.
  * If fewer than 3, pad with the first theme; if more, take first 3.
  */
@@ -269,23 +257,15 @@ function normalizeThemes(themes: string[]): [string, string, string] {
   return [first, second, third];
 }
 
-function parseThematicResponse(rawResponse: string): ThematicContext | null {
-  try {
-    const cleaned = stripMarkdownFence(rawResponse);
-    const parsed: unknown = JSON.parse(cleaned);
-    const validated = ThematicContextSchema.parse(parsed);
-    // Normalize themes to exactly 3
-    const normalized: ThematicContext = {
-      ...validated,
-      themes: normalizeThemes(validated.themes),
-    };
-    return normalized;
-  } catch (error: unknown) {
-    log.warn('parseThematicResponse:failed', {
-      error: getErrorMessage(error, 'Unknown parse error'),
-    });
-    return null;
-  }
+function normalizeThematicContext(
+  validated: {
+    themes: string[];
+  } & Omit<ThematicContext, 'themes'>
+): ThematicContext {
+  return {
+    ...validated,
+    themes: normalizeThemes(validated.themes),
+  };
 }
 
 /**
@@ -344,30 +324,21 @@ export async function extractThematicContext(
   const userPrompt = buildUserPrompt(trimmed);
 
   try {
-    // Use callLLM which handles cloud/Ollama routing, tracing, and error handling
-    const rawResponse = await callLLM({
-      getModel,
-      systemPrompt: THEMATIC_EXTRACTION_SYSTEM_PROMPT,
-      userPrompt,
-      errorContext: 'thematic extraction',
-      ollamaEndpoint,
-      maxRetries: 1, // One retry for transient failures
-      trace,
-      traceLabel: 'thematic.extraction',
-    });
-
-    // Parse and validate JSON response
-    const validated = parseThematicResponse(rawResponse);
-
-    if (!validated) {
-      traceDecision(trace, {
-        domain: 'other',
-        key: 'thematic.extraction.fallback',
-        branchTaken: 'malformed-json',
-        why: 'LLM returned malformed JSON, falling back to deterministic',
-      });
-      return null;
-    }
+    const validated = normalizeThematicContext(
+      await generateStructuredOutput({
+        schema: ThematicContextSchema,
+        request: {
+          getModel,
+          systemPrompt: THEMATIC_EXTRACTION_SYSTEM_PROMPT,
+          userPrompt,
+          errorContext: 'thematic extraction',
+          ollamaEndpoint,
+          maxRetries: 1,
+          trace,
+          traceLabel: 'thematic.extraction',
+        },
+      })
+    );
 
     // Cache the result
     if (thematicCache.size >= MAX_CACHE_SIZE) {

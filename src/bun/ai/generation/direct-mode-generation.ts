@@ -10,7 +10,7 @@
 
 import { generateLyrics } from '@bun/ai/content-generator';
 import { buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
-import { generateDirectModeTitle } from '@bun/ai/llm-utils';
+import { generateDirectModeTitle } from '@bun/ai/direct-mode-title';
 import { tryStoryMode, type StoryGenerationInput } from '@bun/ai/story-generator';
 import { cleanLyrics } from '@bun/ai/utils';
 import { generateDeterministicTitle } from '@bun/prompt/title';

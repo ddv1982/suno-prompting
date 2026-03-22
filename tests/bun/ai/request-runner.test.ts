@@ -1,7 +1,5 @@
 /**
- * Tests for llm-utils.ts refactored helper functions
- *
- * Tests wrapAIError and the split callLLM paths
+ * Tests for request-runner.ts
  */
 
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
@@ -10,7 +8,7 @@ import { AIGenerationError } from '@shared/errors';
 
 import { setAiGenerateTextMock } from '../../helpers/ai-mock';
 
-// Mock the AI SDK before importing callLLM
+// Mock the AI SDK before importing runAIRequest
 const mockGenerateText = mock(async (_options?: unknown) => ({
   text: 'generated response',
   response: { modelId: 'gpt-4' },
@@ -33,7 +31,7 @@ afterEach(() => {
   mock.restore();
 });
 
-describe('callLLM', () => {
+describe('runAIRequest', () => {
   beforeEach(() => {
     mockGenerateText.mockClear();
     mockGenerateWithOllama.mockClear();
@@ -48,9 +46,9 @@ describe('callLLM', () => {
 
   describe('without trace (fast path)', () => {
     test('calls cloud provider when no ollamaEndpoint', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
-      const result = await callLLM({
+      const result = await runAIRequest({
         getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -63,9 +61,9 @@ describe('callLLM', () => {
     });
 
     test('calls Ollama when ollamaEndpoint provided', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
-      const result = await callLLM({
+      const result = await runAIRequest({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -85,10 +83,10 @@ describe('callLLM', () => {
         finishReason: 'stop',
         usage: { inputTokens: 10, outputTokens: 0 },
       });
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
       await expect(
-        callLLM({
+        runAIRequest({
           getModel: () => ({}) as any,
           systemPrompt: 'system',
           userPrompt: 'user',
@@ -99,10 +97,10 @@ describe('callLLM', () => {
 
     test('wraps non-AIGenerationError errors', async () => {
       mockGenerateText.mockRejectedValue(new Error('network error'));
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
       await expect(
-        callLLM({
+        runAIRequest({
           getModel: () => ({}) as any,
           systemPrompt: 'system',
           userPrompt: 'user',
@@ -114,10 +112,10 @@ describe('callLLM', () => {
     test('preserves AIGenerationError errors', async () => {
       const originalError = new AIGenerationError('original message');
       mockGenerateText.mockRejectedValue(originalError);
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
       await expect(
-        callLLM({
+        runAIRequest({
           getModel: () => ({}) as any,
           systemPrompt: 'system',
           userPrompt: 'user',
@@ -149,7 +147,7 @@ describe('callLLM', () => {
         };
       });
 
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
       const { createTraceCollector } = await import('@bun/trace');
 
       const trace = createTraceCollector({
@@ -159,7 +157,7 @@ describe('callLLM', () => {
         rng: { seed: 1, algorithm: 'mulberry32' },
       });
 
-      const result = await callLLM({
+      const result = await runAIRequest({
         getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
         systemPrompt: 'system prompt',
         userPrompt: 'user prompt',
@@ -177,7 +175,7 @@ describe('callLLM', () => {
 
     test('records error event on failure', async () => {
       mockGenerateText.mockRejectedValue(new AIGenerationError('test failure'));
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
       const { createTraceCollector } = await import('@bun/trace');
 
       const trace = createTraceCollector({
@@ -188,7 +186,7 @@ describe('callLLM', () => {
       });
 
       await expect(
-        callLLM({
+        runAIRequest({
           getModel: () => ({}) as any,
           systemPrompt: 'system',
           userPrompt: 'user',
@@ -203,49 +201,6 @@ describe('callLLM', () => {
   });
 });
 
-describe('generateDirectModeTitle', () => {
-  beforeEach(() => {
-    mockGenerateText.mockClear();
-    mockGenerateText.mockResolvedValue({
-      text: 'Generated Title',
-      response: { modelId: 'gpt-4' },
-      finishReason: 'stop',
-      usage: { inputTokens: 10, outputTokens: 5 },
-    });
-  });
-
-  test('returns title from generateTitle', async () => {
-    const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
-
-    const title = await generateDirectModeTitle(
-      'my description',
-      ['rock', 'indie'],
-      () => ({}) as any
-    );
-
-    expect(title).toBe('Generated Title');
-  });
-
-  test('returns Untitled on error', async () => {
-    mockGenerateText.mockRejectedValue(new Error('failed'));
-    const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
-
-    const title = await generateDirectModeTitle('my description', ['rock'], () => ({}) as any);
-
-    expect(title).toBe('Untitled');
-  });
-
-  test('infers mood from styles', async () => {
-    const { generateDirectModeTitle } = await import('@bun/ai/llm-utils');
-
-    // Test dark mood inference
-    await generateDirectModeTitle('desc', ['dark metal'], () => ({}) as any);
-
-    // The mood should be inferred as 'dark' based on the styles
-    expect(mockGenerateText).toHaveBeenCalled();
-  });
-});
-
 describe('ollamaOptions threading', () => {
   beforeEach(() => {
     mockGenerateText.mockClear();
@@ -255,7 +210,7 @@ describe('ollamaOptions threading', () => {
 
   describe('without trace (fast path)', () => {
     test('passes ollamaOptions to generateWithOllama', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
       const ollamaOptions = {
         temperature: 0.8,
@@ -263,7 +218,7 @@ describe('ollamaOptions threading', () => {
         contextLength: 6144,
       };
 
-      await callLLM({
+      await runAIRequest({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -284,9 +239,9 @@ describe('ollamaOptions threading', () => {
     });
 
     test('works without ollamaOptions (backward compatible)', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
-      await callLLM({
+      await runAIRequest({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -304,14 +259,14 @@ describe('ollamaOptions threading', () => {
     });
 
     test('passes partial ollamaOptions correctly', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
       const ollamaOptions = {
         temperature: 0.5,
         // maxTokens and contextLength intentionally omitted
       };
 
-      await callLLM({
+      await runAIRequest({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -330,7 +285,7 @@ describe('ollamaOptions threading', () => {
 
   describe('with trace (traced path)', () => {
     test('passes ollamaOptions through traced path', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
       const { createTraceCollector } = await import('@bun/trace');
 
       const trace = createTraceCollector({
@@ -346,7 +301,7 @@ describe('ollamaOptions threading', () => {
         contextLength: 4096,
       };
 
-      await callLLM({
+      await runAIRequest({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -364,7 +319,7 @@ describe('ollamaOptions threading', () => {
     });
 
     test('traced path works without ollamaOptions (backward compatible)', async () => {
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
       const { createTraceCollector } = await import('@bun/trace');
 
       const trace = createTraceCollector({
@@ -374,7 +329,7 @@ describe('ollamaOptions threading', () => {
         rng: { seed: 1, algorithm: 'mulberry32' },
       });
 
-      await callLLM({
+      await runAIRequest({
         getModel: () => ({}) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -401,10 +356,10 @@ describe('ollamaOptions threading', () => {
         usage: { inputTokens: 10, outputTokens: 20 },
       });
 
-      const { callLLM } = await import('@bun/ai/llm-utils');
+      const { runAIRequest } = await import('@bun/ai/request-runner');
 
       // Call with ollamaOptions but without ollamaEndpoint (cloud path)
-      await callLLM({
+      await runAIRequest({
         getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
         systemPrompt: 'system',
         userPrompt: 'user',
@@ -454,9 +409,9 @@ describe('onFinish callback behavior', () => {
       };
     });
 
-    const { callLLM } = await import('@bun/ai/llm-utils');
+    const { runAIRequest } = await import('@bun/ai/request-runner');
 
-    await callLLM({
+    await runAIRequest({
       getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
       systemPrompt: 'system',
       userPrompt: 'user',
@@ -488,7 +443,7 @@ describe('onFinish callback behavior', () => {
       };
     });
 
-    const { callLLM } = await import('@bun/ai/llm-utils');
+    const { runAIRequest } = await import('@bun/ai/request-runner');
     const { createTraceCollector } = await import('@bun/trace');
 
     const trace = createTraceCollector({
@@ -498,7 +453,7 @@ describe('onFinish callback behavior', () => {
       rng: { seed: 1, algorithm: 'mulberry32' },
     });
 
-    await callLLM({
+    await runAIRequest({
       getModel: () => ({ provider: 'openai', modelId: 'gpt-4-turbo' }) as any,
       systemPrompt: 'system prompt',
       userPrompt: 'user prompt',
@@ -540,10 +495,10 @@ describe('onFinish callback behavior', () => {
       };
     });
 
-    const { callLLM } = await import('@bun/ai/llm-utils');
+    const { runAIRequest } = await import('@bun/ai/request-runner');
 
     // Call without trace - should not throw
-    const result = await callLLM({
+    const result = await runAIRequest({
       getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
       systemPrompt: 'system',
       userPrompt: 'user',
@@ -580,7 +535,7 @@ describe('onFinish callback behavior', () => {
       };
     });
 
-    const { callLLM } = await import('@bun/ai/llm-utils');
+    const { runAIRequest } = await import('@bun/ai/request-runner');
     const { createTraceCollector } = await import('@bun/trace');
 
     const trace = createTraceCollector({
@@ -590,7 +545,7 @@ describe('onFinish callback behavior', () => {
       rng: { seed: 1, algorithm: 'mulberry32' },
     });
 
-    await callLLM({
+    await runAIRequest({
       getModel: () => ({ provider: 'openai', modelId: 'gpt-4' }) as any,
       systemPrompt: 'system',
       userPrompt: 'user',

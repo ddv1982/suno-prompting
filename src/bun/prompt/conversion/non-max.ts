@@ -6,7 +6,7 @@
  * @module prompt/conversion/non-max
  */
 
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
 import {
   extractFirstGenre,
   inferBpm,
@@ -136,7 +136,7 @@ async function generateSectionContent(
   const systemPrompt = buildNonMaxConversionSystemPrompt();
   const userPrompt = buildNonMaxConversionUserPrompt(parsed);
 
-  const text = await callLLM({
+  const text = await runAIRequest({
     getModel,
     systemPrompt,
     userPrompt,

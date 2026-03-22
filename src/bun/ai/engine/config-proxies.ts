@@ -15,7 +15,7 @@ import { AIConfig } from '@bun/ai/config';
  * Create configuration proxy methods bound to an AIConfig instance.
  *
  * Note: When useLocalLLM is true, getModel() still returns the cloud model.
- * Local LLM routing is handled by passing ollamaEndpoint to callLLM(),
+ * Local LLM routing is handled by passing ollamaEndpoint to runAIRequest(),
  * which uses the direct HTTP client (ollama-client.ts) instead of AI SDK.
  */
 export function createConfigProxies(config: AIConfig): {
@@ -63,7 +63,7 @@ export function createConfigProxies(config: AIConfig): {
     /**
      * Get the cloud language model.
      * Note: When useLocalLLM is true, callers should pass ollamaEndpoint
-     * to callLLM() which routes to the direct HTTP client instead.
+     * to runAIRequest() which routes to the direct HTTP client instead.
      */
     getModel: config.getModel.bind(config),
   };

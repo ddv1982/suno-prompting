@@ -10,7 +10,7 @@ import {
   buildStandardModeEnrichedLines,
 } from '@bun/prompt/enrichment';
 
-import { generateDirectModeTitle } from './llm-utils';
+import { generateDirectModeTitle } from './direct-mode-title';
 
 import type { GenerationResult, EngineConfig } from './types';
 import type { Rng } from '@bun/instruments/services/random';

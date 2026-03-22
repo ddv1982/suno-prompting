@@ -1,12 +1,10 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 
 import { useToast } from '@/components/ui/toast';
 import { useEditorActions, useEditorState } from '@/context/editor-context';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
-import { useCreativeBoostActions } from '@/hooks/use-creative-boost-actions';
-import { useQuickVibesActions } from '@/hooks/use-quick-vibes-actions';
-import { useRemixActions } from '@/hooks/use-remix-actions';
+import { useGenerationFacade } from '@/services/generation-facade-service';
 
 import { GenerationStateProvider, useGenerationStateContext } from './generation-state-context';
 import {
@@ -38,72 +36,22 @@ function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
   const stateCtx = useGenerationStateContext();
   const sessionOps = useSessionOperationsContext();
   const stdGeneration = useStandardGenerationContext();
+  const optimisticDeps = {
+    startOptimistic: stateCtx.startOptimistic,
+    completeOptimistic: stateCtx.completeOptimistic,
+    errorOptimistic: stateCtx.errorOptimistic,
+  };
 
-  const baseDeps = useMemo(
-    () => ({
-      isGenerating: stateCtx.isGenerating,
-      currentSession,
-      generateId,
-      saveSession,
-      setGeneratingAction: stateCtx.setGeneratingAction,
-      setDebugTrace: stateCtx.setDebugTrace,
-      setChatMessages: stateCtx.setChatMessages,
-      setValidation: stateCtx.setValidation,
-      showToast,
-      startOptimistic: stateCtx.startOptimistic,
-      completeOptimistic: stateCtx.completeOptimistic,
-      errorOptimistic: stateCtx.errorOptimistic,
-    }),
-    [
-      stateCtx.isGenerating,
-      currentSession,
-      generateId,
-      saveSession,
-      stateCtx.setGeneratingAction,
-      stateCtx.setDebugTrace,
-      stateCtx.setChatMessages,
-      stateCtx.setValidation,
-      showToast,
-      stateCtx.startOptimistic,
-      stateCtx.completeOptimistic,
-      stateCtx.errorOptimistic,
-    ]
-  );
-
-  const remixActions = useRemixActions(baseDeps);
-  const quickVibesActions = useQuickVibesActions({
-    ...baseDeps,
-    setPendingInput,
-    getQuickVibesInput,
+  const contextValue = useGenerationFacade({
+    stateCtx,
+    sessionOps,
+    stdGeneration,
+    session: { currentSession, generateId, saveSession },
+    editor: { creativeBoostInput, getQuickVibesInput, setPendingInput },
+    settings: { maxMode, lyricsMode },
+    showToast,
+    optimisticDeps,
   });
-  const creativeBoostActions = useCreativeBoostActions({
-    ...baseDeps,
-    setPendingInput,
-    creativeBoostInput,
-    maxMode,
-    lyricsMode,
-  });
-
-  const contextValue = useMemo<GenerationContextType>(
-    () => ({
-      ...stateCtx,
-      ...sessionOps,
-      ...stdGeneration,
-      handleRemixInstruments: remixActions.handleRemixInstruments,
-      handleRemixGenre: remixActions.handleRemixGenre,
-      handleRemixMood: remixActions.handleRemixMood,
-      handleRemixStyleTags: remixActions.handleRemixStyleTags,
-      handleRemixRecording: remixActions.handleRemixRecording,
-      handleRemixTitle: remixActions.handleRemixTitle,
-      handleRemixLyrics: remixActions.handleRemixLyrics,
-      handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
-      handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
-      handleRefineQuickVibes: quickVibesActions.handleRefineQuickVibes,
-      handleGenerateCreativeBoost: creativeBoostActions.handleGenerateCreativeBoost,
-      handleRefineCreativeBoost: creativeBoostActions.handleRefineCreativeBoost,
-    }),
-    [stateCtx, sessionOps, stdGeneration, remixActions, quickVibesActions, creativeBoostActions]
-  );
 
   return <GenerationContext.Provider value={contextValue}>{children}</GenerationContext.Provider>;
 }

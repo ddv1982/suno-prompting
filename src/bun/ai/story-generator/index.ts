@@ -9,7 +9,7 @@
  * @module ai/story-generator
  */
 
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
 import { createLogger } from '@bun/logger';
 import { traceDecision, type TraceCollector } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
@@ -182,8 +182,7 @@ export async function generateStoryNarrative(
   });
 
   try {
-    // Use callLLM which handles cloud/Ollama routing, empty response checking, and tracing
-    const text = await callLLM({
+    const text = await runAIRequest({
       getModel,
       systemPrompt: STORY_GENERATION_SYSTEM_PROMPT,
       userPrompt,

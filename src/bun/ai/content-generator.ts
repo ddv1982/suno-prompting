@@ -1,4 +1,5 @@
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
+import { generateStructuredOutput } from '@bun/ai/structured-output';
 import { GENRE_REGISTRY } from '@bun/instruments';
 import { createLogger } from '@bun/logger';
 import {
@@ -9,14 +10,17 @@ import {
 } from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
+import { z } from 'zod';
 
 import type { TraceCollector } from '@bun/trace';
 import type { LanguageModel } from 'ai';
 
-const log = createLogger('ContentGenerator');
-
 /** All available genre keys from the registry */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as (keyof typeof GENRE_REGISTRY)[];
+const log = createLogger('ContentGenerator');
+const GenreSelectionSchema = z.object({
+  genre: z.enum(ALL_GENRE_KEYS as [string, ...string[]]),
+});
 
 export interface ContentDebugInfo {
   systemPrompt: string;
@@ -91,7 +95,7 @@ export async function generateTitle(options: GenerateTitleOptions): Promise<Titl
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const text = await callLLM({
+    const text = await runAIRequest({
       getModel,
       systemPrompt,
       userPrompt,
@@ -140,7 +144,7 @@ export async function generateLyrics(
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const text = await callLLM({
+    const text = await runAIRequest({
       getModel,
       systemPrompt,
       userPrompt,
@@ -188,29 +192,31 @@ AVAILABLE GENRES:
 ${genreDescriptions}
 
 RULES:
-- Return ONLY the genre key (lowercase, e.g., "jazz", "rock", "ambient")
+- Return ONLY valid JSON in this exact shape: {"genre":"genre-key"}
 - Choose the genre that best matches the emotional tone and subject matter
 - If uncertain, prefer versatile genres like "pop", "rock", or "indie"
-- Do NOT return anything except the genre key`;
+- Do NOT return anything except the JSON object`;
 
   const userPrompt = `Lyrics topic: "${lyricsTopic}"
 
-Which genre fits best? Return only the genre key.`;
+Which genre fits best? Return only the JSON object.`;
 
   try {
-    const text = await callLLM({
-      getModel,
-      systemPrompt,
-      userPrompt,
-      errorContext: 'detect genre from topic',
-      ollamaEndpoint,
-      timeoutMs,
-      trace: traceRuntime?.trace,
-      traceLabel: traceRuntime?.traceLabel,
+    const result = await generateStructuredOutput({
+      schema: GenreSelectionSchema,
+      request: {
+        getModel,
+        systemPrompt,
+        userPrompt,
+        errorContext: 'detect genre from topic',
+        ollamaEndpoint,
+        timeoutMs,
+        trace: traceRuntime?.trace,
+        traceLabel: traceRuntime?.traceLabel,
+      },
     });
 
-    const genre = text.trim().toLowerCase();
-    // Validate the returned genre exists in registry
+    const genre = result.genre.toLowerCase();
     if (ALL_GENRE_KEYS.includes(genre as keyof typeof GENRE_REGISTRY)) {
       log.info('detectGenreFromTopic:success', { lyricsTopic, genre });
       return {

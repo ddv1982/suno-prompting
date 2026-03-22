@@ -5,9 +5,11 @@ import * as aiSdk from 'ai';
 
 import { APP_CONSTANTS } from '@shared/constants';
 
+import { createGenerationRequestConfig } from './core/request-config-factory';
 import { DEFAULT_OLLAMA_CONFIG } from './ollama-provider';
 
 import type { AppConfig, AIProvider, APIKeys, OllamaConfig } from '@shared/types';
+import type { GenerationRequestConfig } from './core/request-config';
 import type { LanguageModel } from 'ai';
 
 type ProviderRegistry = ReturnType<typeof aiSdk.createProviderRegistry>;
@@ -182,14 +184,32 @@ export class AIConfig {
     return { ...this.ollamaConfig };
   }
 
+  getRequestConfig(): GenerationRequestConfig {
+    return createGenerationRequestConfig(
+      {
+        provider: this.provider,
+        apiKeys: { ...this.apiKeys },
+        model: this.model,
+        useSunoTags: this.useSunoTags,
+        debugMode: this.debugMode,
+        maxMode: this.maxMode,
+        lyricsMode: this.lyricsMode,
+        storyMode: this.storyMode,
+        useLocalLLM: this.useLocalLLM,
+        promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
+        creativeBoostMode: 'simple',
+        ollamaConfig: { ...this.ollamaConfig },
+      },
+      this.getModel.bind(this)
+    );
+  }
+
   /**
    * Check if any LLM is available for generation.
    * Returns true if local LLM is enabled OR at least one cloud API key is configured.
    */
   isLLMAvailable(): boolean {
-    if (this.useLocalLLM) return true;
-    const apiKeyValues = Object.values(this.apiKeys) as (string | null)[];
-    return apiKeyValues.some((key): key is string => key !== null && key.trim() !== '');
+    return this.getRequestConfig().policy.llmAvailable;
   }
 
   /**
@@ -197,6 +217,6 @@ export class AIConfig {
    * Centralizes the common pattern: useLocalLLM ? endpoint : undefined
    */
   getOllamaEndpointIfLocal(): string | undefined {
-    return this.useLocalLLM ? this.ollamaConfig.endpoint : undefined;
+    return this.getRequestConfig().policy.ollamaEndpoint;
   }
 }

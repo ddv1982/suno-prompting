@@ -44,19 +44,21 @@ export function createConfigFactories(
    * Get configuration for generation module.
    */
   function getGenerationConfig(): GenerationConfig {
+    const requestConfig = config.getRequestConfig();
+
     return {
-      getModel: proxies.getModel,
-      isDebugMode: config.isDebugMode.bind(config),
-      isMaxMode: config.isMaxMode.bind(config),
-      isLyricsMode: config.isLyricsMode.bind(config),
-      isStoryMode: config.isStoryMode.bind(config),
-      isUseLocalLLM: config.isUseLocalLLM.bind(config),
-      isLLMAvailable: config.isLLMAvailable.bind(config),
-      getUseSunoTags: config.getUseSunoTags.bind(config),
-      getModelName: config.getModelName.bind(config),
-      getProvider: config.getProvider.bind(config),
-      getOllamaEndpoint: config.getOllamaEndpoint.bind(config),
-      getOllamaEndpointIfLocal: config.getOllamaEndpointIfLocal.bind(config),
+      getModel: requestConfig.getModel,
+      isDebugMode: requestConfig.isDebugMode,
+      isMaxMode: requestConfig.isMaxMode,
+      isLyricsMode: requestConfig.isLyricsMode,
+      isStoryMode: requestConfig.isStoryMode,
+      isUseLocalLLM: requestConfig.isUseLocalLLM,
+      isLLMAvailable: requestConfig.isLLMAvailable,
+      getUseSunoTags: requestConfig.getUseSunoTags,
+      getModelName: requestConfig.getModelName,
+      getProvider: requestConfig.getProvider,
+      getOllamaEndpoint: requestConfig.getOllamaEndpoint,
+      getOllamaEndpointIfLocal: requestConfig.getOllamaEndpointIfLocal,
     };
   }
 

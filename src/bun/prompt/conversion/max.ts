@@ -6,7 +6,7 @@
  * @module prompt/conversion/max
  */
 
-import { callLLM } from '@bun/ai/llm-utils';
+import { runAIRequest } from '@bun/ai/request-runner';
 import { inferBpm, enhanceInstruments, resolveGenre } from '@bun/prompt/conversion-utils';
 import { injectVocalStyleIntoInstrumentsCsv } from '@bun/prompt/instruments-injection';
 import { isMaxFormat, MAX_MODE_HEADER } from '@shared/max-format';
@@ -144,7 +144,7 @@ export async function enhanceWithAI(
   const systemPrompt = buildMaxConversionSystemPrompt();
   const userPrompt = buildMaxConversionUserPrompt(parsed);
 
-  const text = await callLLM({
+  const text = await runAIRequest({
     getModel,
     systemPrompt,
     userPrompt,
