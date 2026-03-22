@@ -18,6 +18,19 @@ function extractZodError(error: z.ZodError): { field?: string; message: string }
   return { message: 'Validation failed' };
 }
 
+function extractZodFieldErrors(error: z.ZodError): Record<string, string[]> {
+  const fieldErrors: Record<string, string[]> = {};
+
+  for (const issue of error.issues) {
+    const field = issue.path.map(String).join('.');
+    if (!field) continue;
+    fieldErrors[field] ??= [];
+    fieldErrors[field].push(issue.message);
+  }
+
+  return fieldErrors;
+}
+
 /**
  * Validates input against a schema and returns the parsed result.
  * Useful for inline validation without the wrapper pattern.
@@ -28,7 +41,7 @@ export function validate<S extends z.ZodType>(schema: S, input: unknown): z.infe
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       const { field, message } = extractZodError(error);
-      throw new ValidationError(message, field);
+      throw new ValidationError(message, field, undefined, extractZodFieldErrors(error));
     }
     throw error;
   }

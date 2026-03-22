@@ -17,13 +17,17 @@ export class AppError extends Error {
  * Includes optional field name for form error display.
  */
 export class ValidationError extends AppError {
+  public readonly fieldErrors?: Record<string, string[]>;
+
   constructor(
     message: string,
     public readonly field?: string,
-    cause?: Error
+    cause?: Error,
+    fieldErrors?: Record<string, string[]>
   ) {
     super(message, 'VALIDATION_ERROR', cause);
     this.name = 'ValidationError';
+    this.fieldErrors = fieldErrors;
   }
 }
 

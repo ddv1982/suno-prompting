@@ -46,6 +46,14 @@ describe('Error classes', () => {
       expect(error.field).toBe('email');
     });
 
+    test('stores fieldErrors when provided', () => {
+      const error = new ValidationError('Invalid input', 'email', undefined, {
+        email: ['Email is required'],
+      });
+
+      expect(error.fieldErrors).toEqual({ email: ['Email is required'] });
+    });
+
     test('supports error cause chaining', () => {
       const cause = new Error('Parse failed');
       const error = new ValidationError('Invalid format', 'data', cause);

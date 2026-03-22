@@ -474,6 +474,53 @@ describe('RPC Handlers', () => {
       expect(aiEngine.setModel).not.toHaveBeenCalled();
     });
 
+    test('setModel exposes structured validation field errors', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(handlers.setModel({ model: '   ' })).rejects.toMatchObject({
+        field: 'model',
+        fieldErrors: {
+          model: ['Too small: expected string to have >=1 characters'],
+        },
+      });
+    });
+
+    test('saveAllSettings preserves nested validation paths in field errors', async () => {
+      const aiEngine = createMockAIEngine();
+      const storage = createMockStorage();
+      const handlers = createHandlers(aiEngine as any, storage as any);
+
+      await expect(
+        handlers.saveAllSettings({
+          provider: 'groq',
+          apiKeys: { groq: null, openai: null, anthropic: null },
+          model: 'gpt-test',
+          useSunoTags: true,
+          debugMode: false,
+          maxMode: false,
+          lyricsMode: false,
+          storyMode: false,
+          useLocalLLM: true,
+          promptMode: 'full',
+          creativeBoostMode: 'simple',
+          ollamaConfig: {
+            endpoint: 'http://example.com:11434',
+            temperature: 0.7,
+            maxTokens: 2048,
+            contextLength: 4096,
+          },
+          ollamaModel: 'gemma3:4b',
+        })
+      ).rejects.toMatchObject({
+        field: 'ollamaConfig.endpoint',
+        fieldErrors: {
+          'ollamaConfig.endpoint': ['Ollama endpoint must be localhost only.'],
+        },
+      });
+    });
+
     test('setApiKey clears engine state when API key is removed', async () => {
       const aiEngine = createMockAIEngine();
       const storage = createMockStorage();

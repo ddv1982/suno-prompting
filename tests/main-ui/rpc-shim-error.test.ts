@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { mapToRpcError } from '../../src/main-ui/services/rpc-client/errors';
 import { RpcClientError, unwrapOrThrowResult } from '../../src/main-ui/services/rpc-shim-error';
 
 describe('rpc shim error', () => {
@@ -24,5 +25,21 @@ describe('rpc shim error', () => {
         error: { code: 'RPC_UNAVAILABLE', message: 'Service is unavailable. Please try again.' },
       })
     ).toThrow(RpcClientError);
+  });
+
+  test('mapToRpcError preserves ValidationError fieldErrors metadata', () => {
+    const error = new Error('Too small') as Error & {
+      fieldErrors?: Record<string, string[]>;
+    };
+    error.fieldErrors = { model: ['Too small: expected string to have >=1 characters'] };
+
+    expect(mapToRpcError(error, { method: 'setModel' })).toEqual({
+      code: 'RPC_VALIDATION',
+      message: 'Some inputs are invalid. Please review and try again.',
+      details: {
+        method: 'setModel',
+        fieldErrors: { model: ['Too small: expected string to have >=1 characters'] },
+      },
+    });
   });
 });

@@ -76,6 +76,17 @@ function safeJsonStringify(value: unknown): string {
 const zFieldErrors = z.record(z.string(), z.array(z.string()));
 const zFieldErrorsContainer = z.object({ fieldErrors: zFieldErrors });
 
+function normalizeFieldErrors(fieldErrors: Record<string, string[]>): Record<string, string[]> {
+  const entries = Object.entries(fieldErrors).slice(0, MAX_FIELD_ERRORS);
+  const normalized: Record<string, string[]> = {};
+  for (const [field, messages] of entries) {
+    normalized[field] = messages
+      .slice(0, 10)
+      .map((m) => redactAndTruncateText(m, MAX_FIELD_ERROR_TEXT));
+  }
+  return normalized;
+}
+
 function fieldErrorsFromUnknown(error: unknown): Record<string, string[]> | undefined {
   if (error && typeof error === 'object') {
     // common shapes: { fieldErrors }, { errors: { fieldErrors } }, etc.
@@ -102,17 +113,23 @@ function fieldErrorsFromUnknown(error: unknown): Record<string, string[]> | unde
         : undefined;
 
     if (!fieldErrors) return undefined;
-
-    const entries = Object.entries(fieldErrors).slice(0, MAX_FIELD_ERRORS);
-    const normalized: Record<string, string[]> = {};
-    for (const [field, messages] of entries) {
-      normalized[field] = messages
-        .slice(0, 10)
-        .map((m) => redactAndTruncateText(m, MAX_FIELD_ERROR_TEXT));
-    }
-    return normalized;
+    return normalizeFieldErrors(fieldErrors);
   }
   return undefined;
+}
+
+function fieldErrorsFromZodIssues(error: z.ZodError): Record<string, string[]> | undefined {
+  const fieldErrors: Record<string, string[]> = {};
+
+  for (const issue of error.issues) {
+    const field = issue.path.map(String).join('.');
+    if (!field) continue;
+    fieldErrors[field] ??= [];
+    fieldErrors[field].push(issue.message);
+  }
+
+  if (Object.keys(fieldErrors).length === 0) return undefined;
+  return normalizeFieldErrors(fieldErrors);
 }
 
 function detectTimeout(error: unknown): boolean {
@@ -211,27 +228,12 @@ function tryMapKnownRpcShape(error: unknown, context?: { method?: string }): Rpc
 function tryMapZodError(error: unknown, context?: { method?: string }): RpcError | undefined {
   if (!(error instanceof z.ZodError)) return undefined;
 
-  const tree = z.treeifyError(error);
-  const fieldErrors: Record<string, unknown> =
-    tree &&
-    typeof tree === 'object' &&
-    'properties' in tree &&
-    typeof tree.properties === 'object' &&
-    tree.properties !== null
-      ? (tree.properties as Record<string, unknown>)
-      : {};
-
-  const normalized: Record<string, string[]> = {};
-  for (const [field, node] of Object.entries(fieldErrors).slice(0, MAX_FIELD_ERRORS)) {
-    const issues = (node as { errors?: unknown })?.errors;
-    const messages = Array.isArray(issues) ? issues : [];
-    normalized[field] = messages.map((m) => redactAndTruncateText(m, MAX_FIELD_ERROR_TEXT));
-  }
+  const fieldErrors = fieldErrorsFromZodIssues(error);
 
   return {
     code: 'RPC_VALIDATION',
     message: safeRpcMessage('RPC_VALIDATION'),
-    details: sanitizeDetails({ method: context?.method, fieldErrors: normalized }),
+    details: sanitizeDetails({ method: context?.method, fieldErrors }),
   };
 }
 

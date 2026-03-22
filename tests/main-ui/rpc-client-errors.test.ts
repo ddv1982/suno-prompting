@@ -26,12 +26,52 @@ describe('rpc-client/errors', () => {
     expect(err.details.fieldErrors).toBeDefined();
   });
 
+  test('mapToRpcError preserves nested Zod issue paths in fieldErrors', () => {
+    const schema = z.object({
+      ollamaConfig: z.object({
+        endpoint: z.string().min(1, 'Endpoint is required'),
+      }),
+    });
+    const parsed = schema.safeParse({ ollamaConfig: { endpoint: '' } });
+    expect(parsed.success).toBe(false);
+
+    const err = mapToRpcError(parsed.error, { method: 'saveAllSettings' });
+    expect(err.code).toBe('RPC_VALIDATION');
+    expect(err.details).toEqual({
+      method: 'saveAllSettings',
+      fieldErrors: {
+        'ollamaConfig.endpoint': ['Endpoint is required'],
+      },
+    });
+  });
+
   test('mapToRpcError maps explicit validation code to RPC_VALIDATION', () => {
     const err = mapToRpcError(
       { code: 'RPC_VALIDATION', message: 'bad', fieldErrors: { name: ['Required'] } },
       { method: 'm' }
     );
     expect(err.code).toBe('RPC_VALIDATION');
+  });
+
+  test('mapToRpcError sanitizes Error fieldErrors metadata', () => {
+    const error = new Error('Too small') as Error & {
+      fieldErrors?: Record<string, string[]>;
+    };
+    error.fieldErrors = {
+      email: ['contact me at test@example.com ' + 'x'.repeat(500)],
+    };
+
+    const err = mapToRpcError(error, { method: 'm' });
+    expect(err.code).toBe('RPC_VALIDATION');
+    expect(err.details).toBeDefined();
+
+    const details = err.details as { fieldErrors?: Record<string, string[]> };
+    const message = details.fieldErrors?.email?.[0];
+
+    expect(message).toBeDefined();
+    expect(message).toContain('[redacted-email]');
+    expect(message).not.toContain('test@example.com');
+    expect(message!.length).toBeLessThanOrEqual(201);
   });
 
   test('mapToRpcError maps timeout-like error to RPC_TIMEOUT', () => {
