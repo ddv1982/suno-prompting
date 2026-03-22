@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { useToast } from '@/components/ui/toast';
-import { useEditorContext } from '@/context/editor-context';
+import { useEditorActions, useEditorState } from '@/context/editor-context';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
 import { useCreativeBoostActions } from '@/hooks/use-creative-boost-actions';
@@ -30,7 +30,8 @@ export const useGenerationContext = (): GenerationContextType => {
 
 function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
   const { currentSession, generateId, saveSession } = useSessionContext();
-  const { getQuickVibesInput, setPendingInput, creativeBoostInput } = useEditorContext();
+  const { creativeBoostInput } = useEditorState();
+  const { getQuickVibesInput, setPendingInput } = useEditorActions();
   const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
 

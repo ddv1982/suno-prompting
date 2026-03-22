@@ -13,7 +13,7 @@ import {
   type EditorConfig,
   type PromptEditorProps,
 } from '@/components/prompt-editor/types';
-import { useEditorContext } from '@/context/editor-context';
+import { useEditorActions, useEditorState } from '@/context/editor-context';
 import { useGenerationContext } from '@/context/generation';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
@@ -118,7 +118,7 @@ function usePromptEditorModeState(
 }
 
 function usePromptEditorQuickVibesState(
-  quickVibesInput: ReturnType<typeof useEditorContext>['quickVibesInput'],
+  quickVibesInput: ReturnType<typeof useEditorState>['quickVibesInput'],
   currentSession: ReturnType<typeof useSessionContext>['currentSession']
 ): QuickVibesState {
   return useMemo(
@@ -131,7 +131,7 @@ function usePromptEditorQuickVibesState(
 }
 
 function usePromptEditorCreativeBoostState(
-  creativeBoostInput: ReturnType<typeof useEditorContext>['creativeBoostInput']
+  creativeBoostInput: ReturnType<typeof useEditorState>['creativeBoostInput']
 ): CreativeBoostState {
   return useMemo(
     () => ({
@@ -191,7 +191,7 @@ function usePromptEditorRemixHandlers({
 
 function usePromptEditorHandlers(
   editorContext: Pick<
-    ReturnType<typeof useEditorContext>,
+    ReturnType<typeof useEditorActions>,
     | 'setPendingInput'
     | 'setLockedPhrase'
     | 'setLyricsTopic'
@@ -292,7 +292,8 @@ function usePromptEditorHandlers(
 function usePromptEditorProps(): PromptEditorProps {
   const { currentSession } = useSessionContext();
   const settings = useSettingsContext();
-  const editor = useEditorContext();
+  const editor = useEditorState();
+  const editorActions = useEditorActions();
   const generationContext = useGenerationContext();
   const { currentModel, maxMode, lyricsMode, storyMode, useLocalLLM } = settings;
   const {
@@ -353,7 +354,7 @@ function usePromptEditorProps(): PromptEditorProps {
     handleRemixTitle,
     handleRemixLyrics,
   });
-  const handlers = usePromptEditorHandlers(editor, settings, {
+  const handlers = usePromptEditorHandlers(editorActions, settings, {
     handleGenerate,
     handleGenerateQuickVibes,
     handleRefineQuickVibes,

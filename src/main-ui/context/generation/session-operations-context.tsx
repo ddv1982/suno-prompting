@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, type ReactNode } from 'react';
 
-import { useEditorContext } from '@/context/editor-context';
+import { useEditorActions } from '@/context/editor-context';
 import { useSessionContext } from '@/context/session-context';
 import { buildChatMessages } from '@/lib/chat-utils';
 import { createVersion, updateChatMessagesAfterGeneration } from '@/lib/session-helpers';
@@ -31,7 +31,7 @@ export function SessionOperationsProvider({ children }: { children: ReactNode })
     resetQuickVibesInput,
     setCreativeBoostInput,
     resetCreativeBoostInput,
-  } = useEditorContext();
+  } = useEditorActions();
   const { setChatMessages, setValidation, setDebugTrace } = useGenerationStateContext();
 
   const selectSession = useCallback(

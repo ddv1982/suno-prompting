@@ -1,7 +1,7 @@
 import { createContext, useContext, useCallback, useMemo, type ReactNode } from 'react';
 
 import { useToast } from '@/components/ui/toast';
-import { useEditorContext } from '@/context/editor-context';
+import { useEditorActions, useEditorState } from '@/context/editor-context';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
 import { createLogger } from '@/lib/logger';
@@ -154,14 +154,8 @@ export function useStandardGenerationContext(): StandardGenerationContextValue {
 // eslint-disable-next-line max-lines-per-function
 export function StandardGenerationProvider({ children }: { children: ReactNode }): ReactNode {
   const { currentSession, saveSession, generateId } = useSessionContext();
-  const {
-    getEffectiveLockedPhrase,
-    setPendingInput,
-    lyricsTopic,
-    setLyricsTopic,
-    advancedSelection,
-    promptMode,
-  } = useEditorContext();
+  const { advancedSelection, lyricsTopic, promptMode } = useEditorState();
+  const { getEffectiveLockedPhrase, setPendingInput, setLyricsTopic } = useEditorActions();
   const { maxMode } = useSettingsContext();
   const { showToast } = useToast();
   const { isGenerating, setGeneratingAction, setChatMessages, setValidation, setDebugTrace } =
