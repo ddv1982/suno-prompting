@@ -1,4 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test';
+import { afterEach, describe, expect, mock, test } from 'bun:test';
 
 import { flushMicrotasks } from './helpers/react-test-renderer';
 
@@ -14,6 +14,11 @@ function resetHarnessState(): void {
   setApplicationMenuMock.mockReset();
   browserWindowMock.mockReset();
 }
+
+afterEach(() => {
+  mock.restore();
+  resetHarnessState();
+});
 
 async function loadMainIndexModule(): Promise<void> {
   const aiSpecifier = new URL('../src/bun/ai/index.ts', import.meta.url).href;
