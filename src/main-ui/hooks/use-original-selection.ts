@@ -27,7 +27,7 @@ export function useOriginalSelection(
   moodCategory: MoodCategory | null
 ): OriginalAdvancedSelection | null {
   const originalRef = useRef<OriginalAdvancedSelection | null>(null);
-  const prevPromptRef = useRef<string>('');
+  const prevPromptRef = useRef('');
 
   useEffect(() => {
     const hadPrompt = !!prevPromptRef.current;

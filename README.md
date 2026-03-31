@@ -2,7 +2,7 @@
 
 Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with genre/mood/instrument guidance and enforced formatting.
 
-[Quick Start](#quick-start) | [Configuration](#configuration) | [Features](#features) | [Modes](#modes) | [Genre Detection](#genre-detection) | [Reference](#reference) | [Architecture](#architecture) | [Tech Stack](#tech-stack)
+[Quick Start](#quick-start) | [Configuration](#configuration) | [Features](#features) | [Modes](#modes) | [Genre Detection](#genre-detection) | [Reference](#reference) | [Architecture](#architecture) | [Tech Stack](#tech-stack) | [License](#license)
 
 ## Quick Start
 
@@ -675,3 +675,9 @@ flowchart TB
 - **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Ollama (local inference)
 - **Validation:** Zod
 - **Testing & Quality:** Bun test + coverage/audit policy gates via `bun run validate`
+
+## License
+
+MIT License. See [`LICENSE`](./LICENSE).
+
+Copyright (c) 2026 Douwe de Vries.

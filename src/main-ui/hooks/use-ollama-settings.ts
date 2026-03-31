@@ -86,8 +86,8 @@ function useOllamaSaveScheduler(
   ) => void;
 } {
   const [isSaving, setIsSaving] = useState(false);
-  const requestIdsRef = useRef<OllamaRequestIds>({ ...DEFAULT_REQUEST_IDS });
-  const timersRef = useRef<OllamaTimers>({ ...DEFAULT_TIMERS });
+  const requestIdsRef = useRef({ ...DEFAULT_REQUEST_IDS });
+  const timersRef = useRef({ ...DEFAULT_TIMERS });
   const activeRequestsRef = useRef(0);
 
   const updateSavingState = useCallback(() => {
@@ -171,11 +171,11 @@ function useOllamaSaveScheduler(
  * Loads settings on mount and provides update functions.
  */
 export function useOllamaSettings(): UseOllamaSettingsReturn {
-  const [settings, setSettings] = useState<OllamaSettingsState>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [error, setError] = useState<string | null>(null);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
-  const persistedSettingsRef = useRef<OllamaSettingsState>(DEFAULT_SETTINGS);
+  const persistedSettingsRef = useRef(DEFAULT_SETTINGS);
 
   const { isSaving, scheduleOptimisticUpdate } = useOllamaSaveScheduler(
     setSettings,

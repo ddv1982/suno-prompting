@@ -52,17 +52,19 @@ export interface SettingsModalActions {
 // eslint-disable-next-line max-lines-per-function
 export function useSettingsModalState(isOpen: boolean): [SettingsModalState, SettingsModalActions] {
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
-  const [apiKeys, setApiKeys] = useState<APIKeys>({ ...DEFAULT_API_KEYS });
-  const [model, setModel] = useState<string>('');
-  const [useSunoTags, setUseSunoTags] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS);
-  const [debugMode, setDebugMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
-  const [maxMode, setMaxMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
-  const [lyricsMode, setLyricsMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
-  const [storyMode, setStoryMode] = useState<boolean>(APP_CONSTANTS.AI.DEFAULT_STORY_MODE);
-  const [useLocalLLM, setUseLocalLLM] = useState<boolean>(true);
-  const [showKey, setShowKey] = useState<boolean>(false);
-  const [saving, setSaving] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [apiKeys, setApiKeys] = useState({ ...DEFAULT_API_KEYS });
+  const [model, setModel] = useState('');
+  const [useSunoTags, setUseSunoTags] = useState(
+    (): boolean => APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS
+  );
+  const [debugMode, setDebugMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE);
+  const [maxMode, setMaxMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
+  const [lyricsMode, setLyricsMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
+  const [storyMode, setStoryMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_STORY_MODE);
+  const [useLocalLLM, setUseLocalLLM] = useState((): boolean => true);
+  const [showKey, setShowKey] = useState((): boolean => false);
+  const [saving, setSaving] = useState((): boolean => false);
+  const [loading, setLoading] = useState((): boolean => true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

@@ -312,9 +312,8 @@ function usePersistedModes(): PersistedModes {
 }
 
 function useQuickVibesState(): QuickVibesState {
-  const [quickVibesInput, setQuickVibesInputState] =
-    useState<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
-  const quickVibesInputRef = useRef<QuickVibesInput>(EMPTY_QUICK_VIBES_INPUT);
+  const [quickVibesInput, setQuickVibesInputState] = useState(EMPTY_QUICK_VIBES_INPUT);
+  const quickVibesInputRef = useRef(EMPTY_QUICK_VIBES_INPUT);
 
   const setQuickVibesInput = useCallback((input: QuickVibesInput) => {
     quickVibesInputRef.current = input;

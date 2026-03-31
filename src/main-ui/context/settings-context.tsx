@@ -63,7 +63,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
   const [lyricsMode, setLyricsMode] = useState(false);
   const [storyMode, setStoryMode] = useState(false);
   const [useLocalLLM, setUseLocalLLM] = useState(false);
-  const [apiKeys, setApiKeys] = useState<APIKeys>(DEFAULT_API_KEYS);
+  const [apiKeys, setApiKeys] = useState(DEFAULT_API_KEYS);
 
   const loadAllSettings = useCallback(async () => {
     try {

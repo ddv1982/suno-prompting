@@ -49,7 +49,7 @@ export interface GenerationStateResult {
 export function useGenerationState(): GenerationStateResult {
   const [generatingAction, setGeneratingAction] = useState<GeneratingAction>('none');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [validation, setValidation] = useState<ValidationResult>({ ...EMPTY_VALIDATION });
+  const [validation, setValidation] = useState({ ...EMPTY_VALIDATION });
   const [debugTrace, setDebugTrace] = useState<TraceRun | undefined>(undefined);
 
   const isGenerating = useMemo(() => generatingAction !== 'none', [generatingAction]);
