@@ -1,4 +1,7 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { mkdtemp, rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 import { flushMicrotasks } from './helpers/react-test-renderer';
 
@@ -7,6 +10,8 @@ const browserWindowMock = mock((_options: unknown) => {});
 
 let callOrder: string[] = [];
 let capturedRequests: Record<string, unknown> | null = null;
+let originalHome: string | undefined;
+let tempHomeDir: string | null = null;
 
 function resetHarnessState(): void {
   callOrder = [];
@@ -15,14 +20,32 @@ function resetHarnessState(): void {
   browserWindowMock.mockReset();
 }
 
-afterEach(() => {
+beforeEach(async () => {
+  originalHome = process.env.HOME;
+  tempHomeDir = await mkdtemp(join(tmpdir(), 'suno-rpc-wiring-home-'));
+  process.env.HOME = tempHomeDir;
+  resetHarnessState();
+});
+
+afterEach(async () => {
   mock.restore();
   resetHarnessState();
+
+  if (originalHome === undefined) {
+    delete process.env.HOME;
+  } else {
+    process.env.HOME = originalHome;
+  }
+
+  if (tempHomeDir) {
+    await rm(tempHomeDir, { recursive: true, force: true });
+  }
+
+  tempHomeDir = null;
 });
 
 async function loadMainIndexModule(): Promise<void> {
   const aiSpecifier = new URL('../src/bun/ai/index.ts', import.meta.url).href;
-  const storageSpecifier = new URL('../src/bun/storage.ts', import.meta.url).href;
 
   const aiFactory = () => ({
     AIEngine: class AIEngineMock {
@@ -32,23 +55,8 @@ async function loadMainIndexModule(): Promise<void> {
     },
   });
 
-  const storageFactory = () => ({
-    StorageManager: class StorageManagerMock {
-      async initialize(): Promise<void> {
-        callOrder.push('storage.initialize');
-      }
-
-      async getConfig(): Promise<Record<string, unknown>> {
-        callOrder.push('storage.getConfig');
-        return {};
-      }
-    },
-  });
-
   await mock.module('@bun/ai', aiFactory);
   await mock.module(aiSpecifier, aiFactory);
-  await mock.module('@bun/storage', storageFactory);
-  await mock.module(storageSpecifier, storageFactory);
 
   await mock.module('electrobun/bun', () => ({
     ApplicationMenu: {
@@ -67,17 +75,23 @@ async function loadMainIndexModule(): Promise<void> {
     BrowserWindow: function BrowserWindowMock(options: unknown) {
       callOrder.push('window.create');
       browserWindowMock(options);
+      return {
+        on: (_event: string, _handler: () => void) => {},
+      };
     },
   }));
 
   const moduleUrl = new URL('../src/bun/index.ts', import.meta.url).href;
   await import(`${moduleUrl}?wiring=${Date.now()}-${Math.random()}`);
-  await flushMicrotasks(8);
+
+  for (let attempt = 0; attempt < 20 && !callOrder.includes('window.create'); attempt += 1) {
+    await flushMicrotasks(4);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
 }
 
 describe('RPC wiring', () => {
   test('wires Story Mode endpoints and installs application menu before first BrowserWindow', async () => {
-    resetHarnessState();
     await loadMainIndexModule();
 
     expect(capturedRequests).not.toBeNull();
