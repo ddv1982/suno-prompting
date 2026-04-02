@@ -6,7 +6,7 @@
 
 import { detectGenre, detectGenreFromMood, GENRE_PRIORITY } from '@bun/instruments/detection';
 import { GENRE_REGISTRY } from '@bun/instruments/genres';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { findGenreAliasInText } from '@bun/prompt/deterministic/aliases';
 import { parseGenreComponents } from '@bun/prompt/genre-parser';
 import { traceDecision } from '@bun/trace';

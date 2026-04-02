@@ -346,12 +346,9 @@ describe('Story Mode Toggle across panels', () => {
 // ============================================
 
 describe('Story Mode Toggle source verification', () => {
-  test('quick-vibes-panel toggles-section uses correct props', async () => {
-    const source = await Bun.file(
-      'src/main-ui/components/quick-vibes-panel/toggles-section.tsx'
-    ).text();
+  test('shared panel mode toggles implement story mode availability gating', async () => {
+    const source = await Bun.file('src/main-ui/components/shared/panel-mode-toggles.tsx').text();
 
-    // Verify Story Mode toggle props
     expect(source).toContain('storyMode');
     expect(source).toContain('isLLMAvailable');
     expect(source).toContain('onStoryModeChange');
@@ -361,16 +358,28 @@ describe('Story Mode Toggle source verification', () => {
     expect(source).toContain('LLMUnavailableNotice');
   });
 
-  test('creative-boost-panel toggles-section uses correct props', async () => {
+  test('quick-vibes-panel toggles-section forwards shared toggle props', async () => {
+    const source = await Bun.file(
+      'src/main-ui/components/quick-vibes-panel/toggles-section.tsx'
+    ).text();
+
+    expect(source).toContain('PanelModeToggles');
+    expect(source).toContain('idPrefix="qv"');
+    expect(source).toContain('storyMode');
+    expect(source).toContain('isLLMAvailable');
+    expect(source).toContain('onStoryModeChange');
+  });
+
+  test('creative-boost-panel toggles-section forwards shared toggle props', async () => {
     const source = await Bun.file(
       'src/main-ui/components/creative-boost-panel/toggles-section.tsx'
     ).text();
 
-    // Verify Story Mode toggle props
+    expect(source).toContain('PanelModeToggles');
+    expect(source).toContain('idPrefix="cb"');
     expect(source).toContain('storyMode');
     expect(source).toContain('isLLMAvailable');
     expect(source).toContain('onStoryModeChange');
-    expect(source).toContain('showNaBadge={!isLLMAvailable}');
   });
 
   test('full-prompt-panel mode-toggle uses correct props', async () => {

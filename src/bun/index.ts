@@ -2,7 +2,7 @@ import { BrowserWindow, BrowserView } from 'electrobun/bun';
 
 import { AIEngine } from '@bun/ai';
 import { createHandlers } from '@bun/handlers';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { createMenuBootstrap } from '@bun/menu-bootstrap';
 import { StorageManager } from '@bun/storage';
 import { APP_CONSTANTS } from '@shared/constants';

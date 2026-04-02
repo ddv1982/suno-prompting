@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 import { APP_CONSTANTS } from '@shared/constants';
 import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from '@shared/types';

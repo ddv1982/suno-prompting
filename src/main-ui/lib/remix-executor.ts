@@ -1,6 +1,5 @@
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 import { handleGenerationError, createVersion } from '@/lib/session-helpers';
-import { nowISO } from '@shared/utils';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
 import type { ChatMessage } from '@/lib/chat-utils';
@@ -71,7 +70,7 @@ export async function executePromptRemix(
       ...currentSession,
       currentPrompt: result.prompt,
       versionHistory: [...currentSession.versionHistory, newVersion],
-      updatedAt: nowISO(),
+      updatedAt: new Date().toISOString(),
     };
 
     setChatMessages((prev) => [...prev, { role: 'ai', content: successMessage }]);
@@ -135,7 +134,7 @@ export async function executeSingleFieldRemix<
       ...currentSession,
       ...update,
       versionHistory: [...currentSession.versionHistory, newVersion],
-      updatedAt: nowISO(),
+      updatedAt: new Date().toISOString(),
     };
 
     setChatMessages((prev) => [...prev, { role: 'ai', content: successMessage }]);

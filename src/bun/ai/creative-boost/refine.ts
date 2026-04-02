@@ -15,7 +15,7 @@ import {
   generateStoryNarrativeWithTimeout,
   prependMaxHeaders,
 } from '@bun/ai/story-generator';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { formatBpmRange, getBlendedBpmRange } from '@bun/prompt/bpm';
 import { buildProgressionShort } from '@bun/prompt/chord-progressions';
 import {

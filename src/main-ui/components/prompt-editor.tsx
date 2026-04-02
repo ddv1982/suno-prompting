@@ -9,7 +9,7 @@ import { FullPromptInputPanel } from '@/components/prompt-editor/full-prompt-inp
 import { OutputPanel } from '@/components/prompt-editor/output-panel';
 import { type PromptEditorProps } from '@/components/prompt-editor/types';
 import { ValidationMessages } from '@/components/prompt-editor/validation-messages';
-import { QuickVibesPanel } from '@/components/quick-vibes-panel';
+import { QuickVibesPanel } from '@/components/quick-vibes-panel/quick-vibes-panel';
 import { Separator } from '@/components/ui/separator';
 import { GenerationDisabledProvider } from '@/context/generation-disabled-context';
 import { useSettingsContext } from '@/context/settings-context';

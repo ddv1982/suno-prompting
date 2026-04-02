@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'bun:test';
 
-import { stripLeakedMetaLines } from '@bun/prompt/postprocess';
+import { stripLeakedMetaLines } from '@bun/prompt/postprocess/index';
 import { validatePrompt } from '@shared/validation';
 
 describe('validatePrompt', () => {

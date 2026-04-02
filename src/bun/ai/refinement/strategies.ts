@@ -13,7 +13,7 @@
 
 import { buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
 import { remixLyrics } from '@bun/ai/remix';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
 

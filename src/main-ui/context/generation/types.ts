@@ -1,4 +1,5 @@
 import type { ChatMessage } from '@/lib/chat-utils';
+import type { ActiveGeneratingAction, GeneratingAction } from '@/hooks/use-generation-state';
 import type { MoodCategory } from '@bun/mood';
 import type {
   PromptSession,
@@ -9,22 +10,7 @@ import type {
 } from '@shared/types';
 import type { ValidationResult } from '@shared/validation';
 
-/** Active generation actions (excluding 'none') */
-export type ActiveGeneratingAction =
-  | 'generate'
-  | 'remix'
-  | 'remixInstruments'
-  | 'remixGenre'
-  | 'remixMood'
-  | 'remixStyleTags'
-  | 'remixRecording'
-  | 'remixTitle'
-  | 'remixLyrics'
-  | 'quickVibes'
-  | 'creativeBoost';
-
-/** All generation actions including idle state */
-export type GeneratingAction = 'none' | ActiveGeneratingAction;
+export type { ActiveGeneratingAction, GeneratingAction };
 
 /** State context - provides generation state and setters */
 export interface GenerationStateContextValue {

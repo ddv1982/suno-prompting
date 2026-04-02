@@ -1,4 +1,4 @@
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { maybeCreateTraceCollector } from '@bun/trace';
 import { enforceTraceSizeCap } from '@shared/trace';
 import { createSeededRng } from '@shared/utils/random';

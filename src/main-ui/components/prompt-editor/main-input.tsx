@@ -5,9 +5,9 @@ import { FormLabel } from '@/components/ui/form-label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { useGenerationDisabled } from '@/context/generation-disabled-context';
-import { createLogger } from '@/lib/logger';
-import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
-import { formatRpcError } from '@/lib/rpc-utils';
+import { createLogger } from '@shared/logger';
+import { isMaxFormat } from '@shared/max-format';
+import { isStructuredPrompt } from '@shared/prompt-utils';
 import { rpcClient } from '@/services/rpc-client';
 
 import type { TraceRun } from '@shared/types';
@@ -79,7 +79,7 @@ export function MainInput({
       try {
         const result = await rpcClient.convertToMaxFormat({ text: pastedText });
         if (!result.ok) {
-          showToast(formatRpcError(result.error), 'error');
+          showToast(result.error.message, 'error');
           return;
         }
 

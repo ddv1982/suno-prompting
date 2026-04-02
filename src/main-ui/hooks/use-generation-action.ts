@@ -13,7 +13,7 @@ import { type PromptSession, type PromptMode, type TraceRun } from '@shared/type
 import { type ValidationResult } from '@shared/validation';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
-import type { Logger } from '@/lib/logger';
+import type { Logger } from '@shared/logger';
 
 /**
  * Common dependencies for generation actions.

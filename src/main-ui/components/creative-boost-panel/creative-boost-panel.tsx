@@ -1,6 +1,8 @@
+import { Dice3, Zap } from 'lucide-react';
 import { type ReactElement } from 'react';
 
 import { CreativitySlider } from '@/components/creativity-slider';
+import { PanelSubmitButton } from '@/components/shared';
 import { useRefinedFeedback } from '@/hooks/use-refined-feedback';
 import { CreativeBoostSubmitSchema } from '@shared/schemas/submit-validation';
 
@@ -8,7 +10,6 @@ import { CreativeBoostModeToggle } from './creative-boost-mode-toggle';
 import { DescriptionInput } from './description-input';
 import { LyricsTopicInput } from './lyrics-topic-input';
 import { ModeSpecificInputs } from './mode-specific-inputs';
-import { SubmitButton } from './submit-button';
 import { TogglesSection } from './toggles-section';
 import { useCreativeBoostHandlers } from './use-creative-boost-handlers';
 
@@ -152,13 +153,18 @@ export function CreativeBoostPanel({
         onLyricsModeChange={handleLyricsToggleChange}
       />
 
-      <SubmitButton
+      <PanelSubmitButton
         isGenerating={isGenerating}
         isRefineMode={isRefineMode}
         isDirectMode={isDirectMode}
         canSubmit={canSubmit}
         refined={refined}
         onSubmit={handleSubmit}
+        defaultIcon={<Dice3 className="w-4 h-4" />}
+        defaultLabel="GENERATE CREATIVE BOOST"
+        directModeIcon={<Zap className="w-4 h-4" />}
+        directModeLabel="USE SELECTED STYLES"
+        refineDirectModeLabel="REFINE TITLE & LYRICS"
       />
     </div>
   );

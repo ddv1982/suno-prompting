@@ -10,7 +10,7 @@ import {
   hasExtractableGenres,
   _testHelpers,
   type EnrichmentResult,
-} from '@bun/prompt/enrichment';
+} from '@bun/prompt/enrichment/index';
 
 // Seeded RNG for deterministic tests
 const createSeededRng = (seed: number) => {

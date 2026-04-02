@@ -3,7 +3,7 @@
  * @module prompt/tags/harmonic
  */
 
-import { selectRandomN } from '@shared/utils/random';
+import { selectTagsFromPool } from './shared';
 
 /**
  * Harmonic and frequency descriptors for tonal character.
@@ -54,10 +54,5 @@ export const HARMONIC_DESCRIPTORS = {
  * selectHarmonicTags(1, seedRng(42)) // ['harmonic richness']
  */
 export function selectHarmonicTags(count: number, rng: () => number = Math.random): string[] {
-  const allTags: string[] = [];
-  for (const category of Object.values(HARMONIC_DESCRIPTORS)) {
-    allTags.push(...category);
-  }
-
-  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
+  return selectTagsFromPool(HARMONIC_DESCRIPTORS, count, rng);
 }

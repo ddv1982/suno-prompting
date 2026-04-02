@@ -1,7 +1,7 @@
 import { Shuffle, RefreshCw, Check, Copy, Bug } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { type GeneratingAction } from '@/context/app-context';
+import { type GeneratingAction } from '@/context/generation';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { cn } from '@/lib/utils';
 import {

@@ -30,7 +30,7 @@ const mockExtractThematicContext = mock<() => Promise<ThematicContext | null>>((
 // Mock Ollama availability
 const mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: false, hasGemma: false }));
 
-let generateInitial: typeof import('@bun/ai/generation').generateInitial;
+let generateInitial: typeof import('@bun/ai/generation/index').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
@@ -66,7 +66,7 @@ describe('Fallback Integration Tests', () => {
       generateWithOllama: mock(() => Promise.reject(new Error('Ollama offline'))),
     }));
 
-    ({ generateInitial } = await import('@bun/ai/generation'));
+    ({ generateInitial } = await import('@bun/ai/generation/index'));
   });
 
   afterEach(() => {

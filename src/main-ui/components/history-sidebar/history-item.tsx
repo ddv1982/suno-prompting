@@ -19,7 +19,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 import { cn } from '@/lib/utils';
 
 import type { HistoryItemProps } from './types';

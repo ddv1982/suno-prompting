@@ -20,8 +20,8 @@ export type {
 export type { AIRequestOptions } from '@bun/ai/request-runner';
 
 // Re-export generation and refinement modules for direct usage
-export { generateInitial } from '@bun/ai/generation';
-export { refinePrompt } from '@bun/ai/refinement';
+export { generateInitial } from '@bun/ai/generation/index';
+export { refinePrompt } from '@bun/ai/refinement/index';
 
 // Re-export utilities for shared use
 export { cleanLyrics, cleanTitle, postProcess } from '@bun/ai/utils';

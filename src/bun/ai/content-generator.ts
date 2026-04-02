@@ -1,7 +1,7 @@
 import { runAIRequest } from '@bun/ai/request-runner';
 import { generateStructuredOutput } from '@bun/ai/structured-output';
 import { GENRE_REGISTRY } from '@bun/instruments';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import {
   buildLyricsSystemPrompt,
   buildLyricsUserPrompt,

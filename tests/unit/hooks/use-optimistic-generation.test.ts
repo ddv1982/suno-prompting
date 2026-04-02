@@ -35,13 +35,12 @@ describe('Integration with GenerationActionDeps', () => {
   });
 });
 
-describe('Integration with GenerationStateProvider', () => {
-  test('generation state context includes optimistic state', async () => {
+describe('Integration with runtime generation state wiring', () => {
+  test('generation runtime wiring includes optimistic state', async () => {
     const source = await Bun.file(
-      'src/main-ui/context/generation/generation-state-context.tsx'
+      'src/main-ui/context/generation/generation-state-value.ts'
     ).text();
 
-    // Verify optimistic state is included
     expect(source).toContain('useOptimisticGeneration');
     expect(source).toContain('isOptimistic: optimistic.isOptimistic');
     expect(source).toContain('showSkeleton: optimistic.showSkeleton');

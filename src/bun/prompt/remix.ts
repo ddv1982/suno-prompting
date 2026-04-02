@@ -7,7 +7,7 @@
  * @module prompt/remix
  */
 
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 
 const log = createLogger('Remix');
 

@@ -9,7 +9,7 @@
 import {
   generateQuickVibes as generateQuickVibesImpl,
   refineQuickVibes as refineQuickVibesImpl,
-} from '@bun/ai/quick-vibes-engine';
+} from '@bun/ai/quick-vibes';
 
 import type { ConfigFactories } from './config-factories';
 import type { GenerationResult } from '@bun/ai/types';

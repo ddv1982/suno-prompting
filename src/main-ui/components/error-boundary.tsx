@@ -2,7 +2,7 @@ import { RefreshCcw } from 'lucide-react';
 import React, { Component, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 
 const log = createLogger('ErrorBoundary');
 

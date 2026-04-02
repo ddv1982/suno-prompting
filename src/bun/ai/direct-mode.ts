@@ -8,7 +8,7 @@ import {
   enrichSunoStyles,
   buildMaxModeEnrichedLines,
   buildStandardModeEnrichedLines,
-} from '@bun/prompt/enrichment';
+} from '@bun/prompt/enrichment/index';
 
 import { generateDirectModeTitle } from './direct-mode-title';
 

@@ -7,7 +7,7 @@ import { SectionLabel } from '@/components/ui/section-label';
 import { APP_CONSTANTS } from '@shared/constants';
 import { stripMaxModeHeader } from '@shared/prompt-utils';
 
-import type { GeneratingAction } from '@/context/app-context';
+import type { GeneratingAction } from '@/context/generation';
 import type { ReactElement } from 'react';
 
 interface QuickVibesOutputProps {

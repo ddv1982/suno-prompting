@@ -3,7 +3,7 @@ import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 import { setAiGenerateTextMock } from './helpers/ai-mock';
 
 import type { RefinementConfig } from '@bun/ai/types';
-let refinePrompt: typeof import('@bun/ai/refinement').refinePrompt;
+let refinePrompt: typeof import('@bun/ai/refinement/index').refinePrompt;
 let mockCheckOllamaAvailable: ReturnType<typeof mock>;
 let mockInvalidateOllamaCache: ReturnType<typeof mock>;
 let mockGenerateWithOllama: ReturnType<typeof mock>;
@@ -33,7 +33,7 @@ beforeEach(async () => {
     generateWithOllama: mockGenerateWithOllama,
   }));
 
-  ({ refinePrompt } = await import('@bun/ai/refinement'));
+  ({ refinePrompt } = await import('@bun/ai/refinement/index'));
 });
 
 afterEach(() => {

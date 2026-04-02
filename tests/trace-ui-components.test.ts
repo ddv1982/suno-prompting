@@ -19,7 +19,7 @@ import { describe, test, expect } from 'bun:test';
 describe('Debug Drawer Components', () => {
   describe('component exports', () => {
     test('exports DebugDrawerBody', async () => {
-      const { DebugDrawerBody } = await import('@/components/prompt-editor/debug-drawer');
+      const { DebugDrawerBody } = await import('@/components/prompt-editor/debug-drawer/index');
       expect(DebugDrawerBody).toBeDefined();
       expect(typeof DebugDrawerBody).toBe('function');
     });

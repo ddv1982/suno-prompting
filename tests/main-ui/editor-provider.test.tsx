@@ -5,7 +5,7 @@ import { act } from 'react-test-renderer';
 import { flushMicrotasks, renderWithAct } from '../helpers/react-test-renderer';
 import { installGlobalModuleMocks } from '../setup';
 
-import type { EditorContextType } from '@/context/editor-context';
+import type { EditorContextType } from '@/context/editor';
 import type { ReactNode } from 'react';
 
 type RpcResult<T> = { ok: true; value: T } | { ok: false; error: { message: string } };
@@ -83,7 +83,7 @@ async function loadEditorModule() {
   });
   rpcClient.setCreativeBoostMode = async () => ({ ok: true, value: { success: true } });
 
-  const moduleUrl = new URL('../../src/main-ui/context/editor-context.tsx', import.meta.url).href;
+  const moduleUrl = new URL('../../src/main-ui/context/editor/index.ts', import.meta.url).href;
   return import(`${moduleUrl}?editor=${Date.now()}-${Math.random()}`);
 }
 

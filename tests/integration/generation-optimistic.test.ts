@@ -109,9 +109,9 @@ describe('Generation Flow with Optimistic UI Integration', () => {
       expect(hookSource).toContain('isOptimistic: false');
       expect(hookSource).toContain('showSkeleton: false');
 
-      // Context connects hook to provider
+      // Runtime generation state wiring connects hook wiring to active path
       const contextSource = await Bun.file(
-        'src/main-ui/context/generation/generation-state-context.tsx'
+        'src/main-ui/context/generation/generation-state-value.ts'
       ).text();
       expect(contextSource).toContain('useOptimisticGeneration');
 

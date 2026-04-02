@@ -1,6 +1,5 @@
 import { buildChatMessages } from '@/lib/chat-utils';
 import { createVersion, updateChatMessagesAfterGeneration } from '@/lib/session-helpers';
-import { nowISO } from '@shared/utils';
 import { EMPTY_VALIDATION } from '@shared/validation';
 
 import type { PromptSession, TraceRun } from '@shared/types';
@@ -70,7 +69,7 @@ export function createSessionOperationsService(deps: SessionOperationsServiceDep
   ): Promise<void> => {
     const existingSession = deps.currentSession;
     deps.setDebugTrace(conversionDebugTrace);
-    const now = nowISO();
+    const now = new Date().toISOString();
     const newVersion = createVersion(
       { prompt: convertedPrompt, versionId, debugTrace: conversionDebugTrace },
       '[auto-converted to max format]'

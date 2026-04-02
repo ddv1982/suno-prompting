@@ -7,7 +7,7 @@
  * @module prompt/enrichment/enrichment
  */
 
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { selectMoodsForCategory } from '@bun/mood';
 import { getBlendedBpmRange, formatBpmRange } from '@bun/prompt/bpm';
 import { SUNO_STYLE_GENRE_MAP } from '@bun/prompt/datasets/suno-style-mappings';

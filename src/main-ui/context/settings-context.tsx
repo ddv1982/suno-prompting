@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 import { rpcClient } from '@/services/rpc-client';
 import { DEFAULT_API_KEYS } from '@shared/types';
 

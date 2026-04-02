@@ -13,7 +13,7 @@ import {
   generateStoryNarrativeWithTimeout,
   prependMaxHeaders,
 } from '@bun/ai/story-generator';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { buildDeterministicQuickVibes } from '@bun/prompt/quick-vibes';
 import { applyQuickVibesMaxMode } from '@bun/prompt/quick-vibes-builder';
 import { traceDecision } from '@bun/trace';

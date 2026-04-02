@@ -8,7 +8,7 @@
  */
 
 import { condense, condenseWithDedup, rewriteWithoutMeta } from '@bun/ai/llm-rewriter';
-import { postProcessPrompt } from '@bun/prompt/postprocess';
+import { postProcessPrompt } from '@bun/prompt/postprocess/index';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { LanguageModel } from 'ai';

@@ -3,7 +3,7 @@
  * @module prompt/tags/dynamic
  */
 
-import { selectRandomN } from '@shared/utils/random';
+import { selectTagsFromPool } from './shared';
 
 /**
  * Dynamic range and compression descriptors.
@@ -54,10 +54,5 @@ export const DYNAMIC_RANGE_TAGS = {
  * selectDynamicTags(1, seedRng(42)) // ['natural dynamics']
  */
 export function selectDynamicTags(count: number, rng: () => number = Math.random): string[] {
-  const allTags: string[] = [];
-  for (const category of Object.values(DYNAMIC_RANGE_TAGS)) {
-    allTags.push(...category);
-  }
-
-  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
+  return selectTagsFromPool(DYNAMIC_RANGE_TAGS, count, rng);
 }

@@ -1,6 +1,6 @@
 import { ApplicationMenu, type ApplicationMenuItemConfig } from 'electrobun/bun';
 
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 
 const log = createLogger('Menu');
 

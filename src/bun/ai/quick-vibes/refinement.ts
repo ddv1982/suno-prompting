@@ -14,7 +14,7 @@ import {
   generateStoryNarrativeWithTimeout,
   prependMaxHeaders,
 } from '@bun/ai/story-generator';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import {
   getQuickVibesTemplate,
   generateQuickVibesTitle,

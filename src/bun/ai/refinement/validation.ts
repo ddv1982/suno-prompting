@@ -8,7 +8,7 @@
  */
 
 import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
 const log = createLogger('RefinementValidation');
@@ -46,6 +46,6 @@ export async function applyLockedPhraseIfNeeded(
 ): Promise<string> {
   if (!lockedPhrase) return prompt;
 
-  const { injectLockedPhrase } = await import('@bun/prompt/postprocess');
+  const { injectLockedPhrase } = await import('@bun/prompt/postprocess/index');
   return injectLockedPhrase(prompt, lockedPhrase);
 }

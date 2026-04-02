@@ -10,7 +10,7 @@ import {
   dedupDeterministic,
   LEAKED_META_SUBSTRINGS,
   type PostProcessDeps,
-} from '@bun/prompt/postprocess';
+} from '@bun/prompt/postprocess/index';
 
 describe('postprocess', () => {
   describe('truncateToLimit', () => {

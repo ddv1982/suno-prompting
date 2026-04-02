@@ -15,8 +15,11 @@ import { AIConfig } from '@bun/ai/config';
 import {
   generateInitial as generateInitialImpl,
   type GenerateInitialOptions,
-} from '@bun/ai/generation';
-import { refinePrompt as refinePromptImpl, type RefinePromptOptions } from '@bun/ai/refinement';
+} from '@bun/ai/generation/index';
+import {
+  refinePrompt as refinePromptImpl,
+  type RefinePromptOptions,
+} from '@bun/ai/refinement/index';
 import { remixLyrics as remixLyricsImpl, remixTitle as remixTitleImpl } from '@bun/ai/remix';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 import { generateDeterministicTitle } from '@bun/prompt/title';

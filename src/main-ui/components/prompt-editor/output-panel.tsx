@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SectionLabel } from '@/components/ui/section-label';
 
-import type { GeneratingAction } from '@/context/app-context';
+import type { GeneratingAction } from '@/context/generation';
 import type { TraceRun } from '@shared/types';
 import type { ReactElement } from 'react';
 

@@ -3,7 +3,7 @@
  * @module prompt/tags/temporal
  */
 
-import { selectRandomN } from '@shared/utils/random';
+import { selectTagsFromPool } from './shared';
 
 /**
  * Temporal and timing descriptors for rhythmic feel.
@@ -40,10 +40,5 @@ export const TEMPORAL_EFFECT_TAGS = {
  * selectTemporalTags(1, seedRng(42)) // ['swing feel']
  */
 export function selectTemporalTags(count: number, rng: () => number = Math.random): string[] {
-  const allTags: string[] = [];
-  for (const category of Object.values(TEMPORAL_EFFECT_TAGS)) {
-    allTags.push(...category);
-  }
-
-  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
+  return selectTagsFromPool(TEMPORAL_EFFECT_TAGS, count, rng);
 }

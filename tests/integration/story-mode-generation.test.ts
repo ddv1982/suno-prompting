@@ -41,7 +41,7 @@ const mockGenerateText = mock(async () => ({
   usage: { inputTokens: 100, outputTokens: 50 },
 }));
 
-let generateInitial: typeof import('@bun/ai/generation').generateInitial;
+let generateInitial: typeof import('@bun/ai/generation/index').generateInitial;
 
 // ============================================
 // Test Helpers
@@ -92,7 +92,7 @@ describe('Story Mode Generation Integration', () => {
 
     setExtractThematicContextMock(async () => mockExtractThematicContext());
 
-    ({ generateInitial } = await import('@bun/ai/generation'));
+    ({ generateInitial } = await import('@bun/ai/generation/index'));
   });
 
   afterEach(() => {
@@ -423,7 +423,7 @@ describe('Story Mode + Lyrics Mode interaction', () => {
 
     setExtractThematicContextMock(async () => mockExtractThematicContext());
 
-    ({ generateInitial } = await import('@bun/ai/generation'));
+    ({ generateInitial } = await import('@bun/ai/generation/index'));
   });
 
   afterEach(() => {

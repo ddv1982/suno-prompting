@@ -11,7 +11,7 @@
 import { THEMATIC_EXTRACTION_TIMEOUT_MS } from '@bun/ai/generation/constants';
 import { extractThematicContext } from '@bun/ai/thematic-context';
 import { extractAllKeywords, hasKeywords } from '@bun/keywords';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { traceDecision } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
 

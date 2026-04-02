@@ -7,7 +7,7 @@
  */
 
 import { MAX_LOG_DESCRIPTION_LENGTH } from '@bun/ai/generation/constants';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { detectGenreKeywordsOnly } from '@bun/prompt/deterministic';
 import { traceDecision } from '@bun/trace';
 

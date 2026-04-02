@@ -3,7 +3,7 @@
  * @module prompt/tags/texture
  */
 
-import { selectRandomN } from '@shared/utils/random';
+import { selectTagsFromPool } from './shared';
 
 /**
  * Recording texture descriptors for overall sonic character.
@@ -52,10 +52,5 @@ export const TEXTURE_DESCRIPTORS = {
  * selectTextureTags(1, seedRng(42)) // ['polished production']
  */
 export function selectTextureTags(count: number, rng: () => number = Math.random): string[] {
-  const allTags: string[] = [];
-  for (const category of Object.values(TEXTURE_DESCRIPTORS)) {
-    allTags.push(...category);
-  }
-
-  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
+  return selectTagsFromPool(TEXTURE_DESCRIPTORS, count, rng);
 }

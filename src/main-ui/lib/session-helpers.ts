@@ -10,11 +10,10 @@ import {
   StorageError,
   InvariantError,
 } from '@shared/errors';
-import { nowISO } from '@shared/utils';
 import { EMPTY_VALIDATION, type ValidationResult } from '@shared/validation';
 
 import type { GeneratingAction } from '@/hooks/use-generation-state';
-import type { Logger } from '@/lib/logger';
+import type { Logger } from '@shared/logger';
 import type {
   PromptSession,
   PromptVersion,
@@ -111,7 +110,7 @@ export function createVersion(result: GenerationResultBase, feedback?: string): 
     title: result.title,
     lyrics: result.lyrics,
     feedback,
-    timestamp: nowISO(),
+    timestamp: new Date().toISOString(),
     debugTrace: result.debugTrace,
   };
 }
@@ -130,7 +129,7 @@ function createOrUpdateSession(
   modeInput: ModeInputUpdate,
   feedback?: string
 ): { session: PromptSession; isNew: boolean } {
-  const now = nowISO();
+  const now = new Date().toISOString();
   const newVersion = createVersion(result, feedback);
   const isNew = !currentSession;
 

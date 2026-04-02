@@ -153,7 +153,7 @@ describe('Prompt Builder Refinement', () => {
 
 describe('Deterministic Refinement (Offline Mode)', () => {
   test('uses deterministic style tag regeneration when offline and no lyrics', async () => {
-    const { refinePrompt } = await import('@bun/ai/refinement');
+    const { refinePrompt } = await import('@bun/ai/refinement/index');
 
     const mockConfig = {
       isUseLocalLLM: () => true,
@@ -207,7 +207,7 @@ BPM: 90`;
     }));
 
     // Re-import after mocking to get the mocked version
-    const { refinePrompt } = await import('@bun/ai/refinement');
+    const { refinePrompt } = await import('@bun/ai/refinement/index');
 
     const mockConfig = {
       isUseLocalLLM: () => true,
@@ -400,7 +400,7 @@ describe('Refinement Type Routing', () => {
 
   describe('style-only refinement (refinementType: "style")', () => {
     test('does not call LLM for style-only refinement', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       let llmCalled = false;
       const mockConfig = createMockConfig({
@@ -428,7 +428,7 @@ describe('Refinement Type Routing', () => {
     });
 
     test('returns updated prompt for style-only refinement', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig();
       const currentPrompt = `genre: "jazz"
@@ -454,7 +454,7 @@ instruments: "piano, bass"`;
     });
 
     test('preserves existing lyrics for style-only refinement', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig();
       const existingLyrics = '[VERSE]\nExisting lyrics content';
@@ -481,7 +481,7 @@ instruments: "piano, bass"`;
     // which has proper top-level module mocking for LLM calls.
 
     test('throws ValidationError without feedback text', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig({
         isLyricsMode: () => true,
@@ -516,7 +516,7 @@ instruments: "piano, bass"`;
     });
 
     test('throws ValidationError for whitespace-only feedback', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig({
         isLyricsMode: () => true,
@@ -543,7 +543,7 @@ instruments: "piano, bass"`;
       // Note: This test verifies the combined path is taken, but the actual
       // lyrics refinement will fail without proper LLM setup. We're testing
       // that the routing logic works correctly.
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig({
         isLyricsMode: () => false, // No lyrics mode, so only style is processed
@@ -568,7 +568,7 @@ instruments: "piano, bass"`;
 
   describe('invalid refinement type', () => {
     test('throws ValidationError for invalid refinement type', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig();
 
@@ -599,7 +599,7 @@ instruments: "piano, bass"`;
     });
 
     test('throws ValidationError for unknown refinement type', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig();
 
@@ -620,7 +620,7 @@ instruments: "piano, bass"`;
 
   describe('backwards compatibility', () => {
     test('defaults to combined when refinementType not provided', async () => {
-      const { refinePrompt } = await import('@bun/ai/refinement');
+      const { refinePrompt } = await import('@bun/ai/refinement/index');
 
       const mockConfig = createMockConfig({
         isLyricsMode: () => false,

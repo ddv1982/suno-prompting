@@ -1,7 +1,7 @@
 import { generateText } from 'ai';
 
 import { generateWithOllama } from '@bun/ai/ollama-client';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { normalizeTraceError, traceError } from '@bun/trace';
 import { APP_CONSTANTS } from '@shared/constants';
 import { AIGenerationError, getErrorMessage } from '@shared/errors';

@@ -13,7 +13,7 @@ import {
   type EditorConfig,
   type PromptEditorProps,
 } from '@/components/prompt-editor/types';
-import { useEditorActions, useEditorState } from '@/context/editor-context';
+import { useEditorActions, useEditorState } from '@/context/editor';
 import { useGenerationContext } from '@/context/generation';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
@@ -94,50 +94,6 @@ function usePromptEditorGenerationState(
       isOptimistic,
       showSkeleton,
     ]
-  );
-}
-
-function usePromptEditorModeState(
-  settings: Pick<ModeState, 'maxMode' | 'lyricsMode' | 'storyMode'>,
-  editor: Pick<ModeState, 'editorMode' | 'promptMode' | 'creativeBoostMode'>
-): ModeState {
-  const { maxMode, lyricsMode, storyMode } = settings;
-  const { editorMode, promptMode, creativeBoostMode } = editor;
-
-  return useMemo(
-    () => ({
-      maxMode,
-      lyricsMode,
-      storyMode,
-      editorMode,
-      promptMode,
-      creativeBoostMode,
-    }),
-    [maxMode, lyricsMode, storyMode, editorMode, promptMode, creativeBoostMode]
-  );
-}
-
-function usePromptEditorQuickVibesState(
-  quickVibesInput: ReturnType<typeof useEditorState>['quickVibesInput'],
-  currentSession: ReturnType<typeof useSessionContext>['currentSession']
-): QuickVibesState {
-  return useMemo(
-    () => ({
-      input: quickVibesInput,
-      originalInput: currentSession?.quickVibesInput,
-    }),
-    [quickVibesInput, currentSession?.quickVibesInput]
-  );
-}
-
-function usePromptEditorCreativeBoostState(
-  creativeBoostInput: ReturnType<typeof useEditorState>['creativeBoostInput']
-): CreativeBoostState {
-  return useMemo(
-    () => ({
-      input: creativeBoostInput,
-    }),
-    [creativeBoostInput]
   );
 }
 
@@ -337,12 +293,18 @@ function usePromptEditorProps(): PromptEditorProps {
     moodCategory,
   });
   const generation = usePromptEditorGenerationState(generationContext);
-  const modes = usePromptEditorModeState(
-    { maxMode, lyricsMode, storyMode },
-    { editorMode, promptMode, creativeBoostMode }
+  const modes = useMemo<ModeState>(
+    () => ({ maxMode, lyricsMode, storyMode, editorMode, promptMode, creativeBoostMode }),
+    [maxMode, lyricsMode, storyMode, editorMode, promptMode, creativeBoostMode]
   );
-  const quickVibes = usePromptEditorQuickVibesState(quickVibesInput, currentSession);
-  const creativeBoost = usePromptEditorCreativeBoostState(creativeBoostInput);
+  const quickVibes = useMemo<QuickVibesState>(
+    () => ({ input: quickVibesInput, originalInput: currentSession?.quickVibesInput }),
+    [quickVibesInput, currentSession?.quickVibesInput]
+  );
+  const creativeBoost = useMemo<CreativeBoostState>(
+    () => ({ input: creativeBoostInput }),
+    [creativeBoostInput]
+  );
   const remix = usePromptEditorRemixHandlers({
     handleRemix,
     handleRemixQuickVibes,
@@ -363,11 +325,7 @@ function usePromptEditorProps(): PromptEditorProps {
     handleConversionComplete,
   });
   const config: EditorConfig = useMemo(
-    () => ({
-      maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS,
-      currentModel,
-      useLocalLLM,
-    }),
+    () => ({ maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS, currentModel, useLocalLLM }),
     [currentModel, useLocalLLM]
   );
 

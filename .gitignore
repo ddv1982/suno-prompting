@@ -41,3 +41,7 @@ src/main-ui/dist.css
 
 # Factory AI
 .factory
+
+# local agent/orchestration state
+.omx/
+.codex/

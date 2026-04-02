@@ -8,13 +8,10 @@
  */
 
 // Public API - Generation
-export { generateCreativeBoost, generateDirectMode } from './generate';
+export { generateCreativeBoost } from './generate';
 
 // Public API - Refinement
 export { refineCreativeBoost } from './refine';
-
-// Public API - Helpers (exposed for testing and reuse)
-export { enforceGenreCount, DEFAULT_LYRICS_TOPIC } from './helpers';
 
 // Public API - Types
 export type {

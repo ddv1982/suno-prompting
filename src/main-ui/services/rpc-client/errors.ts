@@ -1,6 +1,15 @@
 import { z } from 'zod';
 
-import { APP_CONSTANTS } from '@shared/constants';
+import {
+  statusCodeToRpcErrorCode,
+  statusFromUnknown,
+  detectTimeout,
+  detectUnavailable,
+} from './error-classification';
+import { sanitizeDetails } from './error-details';
+import { fieldErrorsFromUnknown, fieldErrorsFromZodError } from './error-field-errors';
+import { redactAndTruncateText } from './error-text';
+export { redactAndTruncateText } from './error-text';
 
 /** Renderer-stable error codes for RPC responses. */
 export type RpcErrorCode =
@@ -29,153 +38,6 @@ export interface RpcError {
   readonly message: string;
   /** Optional, allowlisted metadata for debugging/UI decisions (size-bounded). */
   readonly details?: Record<string, unknown>;
-}
-
-// Use centralized constants from APP_CONSTANTS.RPC
-const { MAX_TEXT_LEN, MAX_DETAILS_TEXT_LEN, MAX_FIELD_ERRORS, MAX_FIELD_ERROR_TEXT } =
-  APP_CONSTANTS.RPC;
-
-export function redactAndTruncateText(input: unknown, maxLen: number = MAX_TEXT_LEN): string {
-  const raw =
-    typeof input === 'string'
-      ? input
-      : input instanceof Error
-        ? input.message
-        : input === null
-          ? 'null'
-          : input === undefined
-            ? 'undefined'
-            : typeof input === 'number' || typeof input === 'boolean' || typeof input === 'bigint'
-              ? String(input)
-              : typeof input === 'object'
-                ? safeJsonStringify(input)
-                : '[unknown]';
-
-  const redacted = raw
-    // crude redactions: keys/tokens
-    .replace(/\b(sk|rk|pk|api|token|key)[_-]?[a-z0-9]{8,}\b/gi, '[redacted]')
-    // emails
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted-email]')
-    // very long base64-ish blobs
-    .replace(/[A-Za-z0-9+/]{80,}={0,2}/g, '[redacted-blob]');
-
-  if (redacted.length <= maxLen) return redacted;
-  return redacted.slice(0, Math.max(0, maxLen - 1)).trimEnd() + '…';
-}
-
-function safeJsonStringify(value: unknown): string {
-  try {
-    const json = JSON.stringify(value);
-    if (json === '{}' || json === '[]') return '[object]';
-    return json;
-  } catch {
-    return '[unserializable]';
-  }
-}
-
-const zFieldErrors = z.record(z.string(), z.array(z.string()));
-const zFieldErrorsContainer = z.object({ fieldErrors: zFieldErrors });
-
-function normalizeFieldErrors(fieldErrors: Record<string, string[]>): Record<string, string[]> {
-  const entries = Object.entries(fieldErrors).slice(0, MAX_FIELD_ERRORS);
-  const normalized: Record<string, string[]> = {};
-  for (const [field, messages] of entries) {
-    normalized[field] = messages
-      .slice(0, 10)
-      .map((m) => redactAndTruncateText(m, MAX_FIELD_ERROR_TEXT));
-  }
-  return normalized;
-}
-
-function fieldErrorsFromUnknown(error: unknown): Record<string, string[]> | undefined {
-  if (error && typeof error === 'object') {
-    // common shapes: { fieldErrors }, { errors: { fieldErrors } }, etc.
-    const unknownBag = error as Record<string, unknown>;
-    const topLevel = unknownBag.fieldErrors;
-    const nested =
-      (unknownBag.errors && typeof unknownBag.errors === 'object'
-        ? (unknownBag.errors as Record<string, unknown>).fieldErrors
-        : undefined) ??
-      (unknownBag.details && typeof unknownBag.details === 'object'
-        ? (unknownBag.details as Record<string, unknown>).fieldErrors
-        : undefined);
-
-    // Accept either a record itself or a container like { fieldErrors: record }
-    const candidate: unknown = topLevel ?? nested;
-
-    const containerParsed = zFieldErrorsContainer.safeParse(candidate);
-    const recordParsed = zFieldErrors.safeParse(candidate);
-
-    const fieldErrors = containerParsed.success
-      ? containerParsed.data.fieldErrors
-      : recordParsed.success
-        ? recordParsed.data
-        : undefined;
-
-    if (!fieldErrors) return undefined;
-    return normalizeFieldErrors(fieldErrors);
-  }
-  return undefined;
-}
-
-function fieldErrorsFromZodIssues(error: z.ZodError): Record<string, string[]> | undefined {
-  const fieldErrors: Record<string, string[]> = {};
-
-  for (const issue of error.issues) {
-    const field = issue.path.map(String).join('.');
-    if (!field) continue;
-    fieldErrors[field] ??= [];
-    fieldErrors[field].push(issue.message);
-  }
-
-  if (Object.keys(fieldErrors).length === 0) return undefined;
-  return normalizeFieldErrors(fieldErrors);
-}
-
-function detectTimeout(error: unknown): boolean {
-  const text = redactAndTruncateText(error).toLowerCase();
-  return (
-    text.includes('timeout') ||
-    text.includes('timed out') ||
-    text.includes('time out') ||
-    text.includes('etimedout')
-  );
-}
-
-function detectUnavailable(error: unknown): boolean {
-  const text = redactAndTruncateText(error).toLowerCase();
-  return (
-    text.includes('unavailable') ||
-    text.includes('connection') ||
-    text.includes('disconnected') ||
-    text.includes('not connected') ||
-    text.includes('failed to fetch')
-  );
-}
-
-function statusFromUnknown(error: unknown): number | undefined {
-  if (!error || typeof error !== 'object') return undefined;
-  const unknownBag = error as Record<string, unknown>;
-  const status = unknownBag.status ?? unknownBag.statusCode ?? unknownBag.code;
-  if (typeof status === 'number') return status;
-  if (typeof status === 'string') {
-    const parsed = Number(status);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return undefined;
-}
-
-function sanitizeDetails(
-  details: Record<string, unknown> | undefined
-): Record<string, unknown> | undefined {
-  if (!details) return undefined;
-  const allowlist = ['method', 'requestId', 'status', 'fieldErrors', 'hint'];
-  const out: Record<string, unknown> = {};
-  for (const key of allowlist) {
-    if (key in details) out[key] = details[key];
-  }
-  if ('hint' in out) out.hint = redactAndTruncateText(out.hint, MAX_DETAILS_TEXT_LEN);
-  return Object.keys(out).length ? out : undefined;
 }
 
 export function mapToRpcError(error: unknown, context?: { method?: string }): RpcError {
@@ -228,7 +90,7 @@ function tryMapKnownRpcShape(error: unknown, context?: { method?: string }): Rpc
 function tryMapZodError(error: unknown, context?: { method?: string }): RpcError | undefined {
   if (!(error instanceof z.ZodError)) return undefined;
 
-  const fieldErrors = fieldErrorsFromZodIssues(error);
+  const fieldErrors = fieldErrorsFromZodError(error);
 
   return {
     code: 'RPC_VALIDATION',
@@ -270,42 +132,16 @@ function tryMapUnavailable(error: unknown, context?: { method?: string }): RpcEr
 
 function tryMapStatus(error: unknown, context?: { method?: string }): RpcError | undefined {
   const status = statusFromUnknown(error);
-  if (status === 401) {
-    return {
-      code: 'RPC_UNAUTHORIZED',
-      message: safeRpcMessage('RPC_UNAUTHORIZED'),
-      details: sanitizeDetails({ method: context?.method, status }),
-    };
-  }
-  if (status === 403) {
-    return {
-      code: 'RPC_FORBIDDEN',
-      message: safeRpcMessage('RPC_FORBIDDEN'),
-      details: sanitizeDetails({ method: context?.method, status }),
-    };
-  }
-  if (status === 404) {
-    return {
-      code: 'RPC_NOT_FOUND',
-      message: safeRpcMessage('RPC_NOT_FOUND'),
-      details: sanitizeDetails({ method: context?.method, status }),
-    };
-  }
-  if (status === 409) {
-    return {
-      code: 'RPC_CONFLICT',
-      message: safeRpcMessage('RPC_CONFLICT'),
-      details: sanitizeDetails({ method: context?.method, status }),
-    };
-  }
-  if (status === 429) {
-    return {
-      code: 'RPC_RATE_LIMITED',
-      message: safeRpcMessage('RPC_RATE_LIMITED'),
-      details: sanitizeDetails({ method: context?.method, status }),
-    };
-  }
-  return undefined;
+  if (status === undefined) return undefined;
+
+  const code = statusCodeToRpcErrorCode(status);
+  if (!code) return undefined;
+
+  return {
+    code,
+    message: safeRpcMessage(code),
+    details: sanitizeDetails({ method: context?.method, status }),
+  };
 }
 
 function fallbackUnknown(error: unknown, context?: { method?: string }): RpcError {

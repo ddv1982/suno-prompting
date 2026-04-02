@@ -1,8 +1,4 @@
-import { BookOpen, Zap } from 'lucide-react';
-
-import { LLMUnavailableNotice } from '@/components/shared';
-import { ToggleRow } from '@/components/ui/toggle-row';
-import { getMaxModeHelperText, getStoryModeHelperText } from '@shared/constants';
+import { PanelModeToggles } from '@/components/shared';
 
 import type { ReactElement } from 'react';
 
@@ -23,27 +19,14 @@ export function TogglesSection({
 }: TogglesSectionProps): ReactElement {
   return (
     <div className="space-y-1 border-t border-border/50 pt-[var(--space-4)]">
-      <ToggleRow
-        id="qv-max-mode"
-        icon={<Zap className="w-3.5 h-3.5" />}
-        label="Max Mode"
-        checked={maxMode}
-        onChange={onMaxModeChange}
-        autoDisable
+      <PanelModeToggles
+        idPrefix="qv"
+        maxMode={maxMode}
+        storyMode={storyMode}
+        isLLMAvailable={isLLMAvailable}
+        onMaxModeChange={onMaxModeChange}
+        onStoryModeChange={onStoryModeChange}
       />
-      <p className="ui-helper pl-6">{getMaxModeHelperText(maxMode)}</p>
-      <ToggleRow
-        id="qv-story-mode"
-        icon={<BookOpen className="w-3.5 h-3.5" />}
-        label="Story Mode"
-        checked={storyMode}
-        onChange={onStoryModeChange}
-        disabled={!isLLMAvailable}
-        autoDisable
-        showNaBadge={!isLLMAvailable}
-        rightElement={!isLLMAvailable ? <LLMUnavailableNotice /> : undefined}
-      />
-      <p className="ui-helper pl-6">{getStoryModeHelperText(storyMode, maxMode)}</p>
     </div>
   );
 }

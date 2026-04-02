@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ValidationError } from '@shared/errors';
+import { zodIssuesToFieldErrors } from '@shared/zod-field-errors';
 
 /**
  * Extracts error message from Zod error.
@@ -19,16 +20,7 @@ function extractZodError(error: z.ZodError): { field?: string; message: string }
 }
 
 function extractZodFieldErrors(error: z.ZodError): Record<string, string[]> {
-  const fieldErrors: Record<string, string[]> = {};
-
-  for (const issue of error.issues) {
-    const field = issue.path.map(String).join('.');
-    if (!field) continue;
-    fieldErrors[field] ??= [];
-    fieldErrors[field].push(issue.message);
-  }
-
-  return fieldErrors;
+  return zodIssuesToFieldErrors(error.issues) ?? {};
 }
 
 /**

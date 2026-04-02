@@ -2,7 +2,7 @@
  * Initial Prompt Generation Module
  *
  * Barrel export for generation module. Maintains backward compatibility
- * with existing imports from '@bun/ai/generation'.
+ * with existing imports from '@bun/ai/generation/index'.
  *
  * @module ai/generation
  */

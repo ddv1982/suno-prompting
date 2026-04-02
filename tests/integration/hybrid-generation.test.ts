@@ -35,7 +35,7 @@ const mockCheckOllamaAvailable = mock(() => Promise.resolve({ available: true, h
 // Track timing for parallel execution verification
 let extractionStartTime: number | null = null;
 
-let generateInitial: typeof import('@bun/ai/generation').generateInitial;
+let generateInitial: typeof import('@bun/ai/generation/index').generateInitial;
 
 function createMockConfig(overrides: Partial<GenerationConfig> = {}): GenerationConfig {
   return {
@@ -75,7 +75,7 @@ describe('Hybrid Generation Integration', () => {
       generateWithOllama: mock(() => Promise.resolve('Generated text')),
     }));
 
-    ({ generateInitial } = await import('@bun/ai/generation'));
+    ({ generateInitial } = await import('@bun/ai/generation/index'));
   });
 
   afterEach(() => {

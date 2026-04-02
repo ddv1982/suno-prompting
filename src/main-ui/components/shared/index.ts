@@ -8,4 +8,5 @@
 
 export { LLMUnavailableNotice } from './llm-unavailable-notice';
 export { PanelSubmitButton } from './panel-submit-button';
+export { PanelModeToggles } from './panel-mode-toggles';
 export type { PanelSubmitButtonProps } from './types';

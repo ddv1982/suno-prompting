@@ -1,4 +1,5 @@
-import { isMaxFormat, isStructuredPrompt } from '@/lib/max-format';
+import { isMaxFormat } from '@shared/max-format';
+import { isStructuredPrompt } from '@shared/prompt-utils';
 import {
   handleGenerationError,
   addUserMessage,
@@ -8,42 +9,11 @@ import {
 import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 
 import type { ChatMessage } from '@/lib/chat-utils';
-import type { Logger } from '@/lib/logger';
+import type { Logger } from '@shared/logger';
 import type { RefinementType, StyleChanges, TraceRun } from '@shared/types';
-
-function shouldSkipGeneration(
-  isGenerating: boolean,
-  promptMode: string,
-  hasPrompt: boolean
-): boolean {
-  return isGenerating || (promptMode === 'quickVibes' && hasPrompt);
-}
 
 function shouldAttemptMaxConversion(isInitial: boolean, maxMode: boolean, input: string): boolean {
   return isInitial && maxMode && isStructuredPrompt(input) && !isMaxFormat(input);
-}
-
-interface ConversionCallbacks {
-  createConversionSession: (o: string, c: string, v: string, d?: TraceRun) => Promise<void>;
-  setPendingInput: (v: string) => void;
-  setLyricsTopic: (v: string) => void;
-  showToast: (m: string, t: 'success' | 'error') => void;
-}
-
-async function tryMaxConversion(input: string, cb: ConversionCallbacks): Promise<boolean> {
-  const conv = await rpcClient.convertToMaxFormat({ text: input });
-  if (!conv.ok) return false;
-  if (!conv.value.convertedPrompt || !conv.value.wasConverted) return false;
-  await cb.createConversionSession(
-    input,
-    conv.value.convertedPrompt,
-    conv.value.versionId,
-    conv.value.debugTrace
-  );
-  cb.setPendingInput('');
-  cb.setLyricsTopic('');
-  cb.showToast('Converted to Max Mode format', 'success');
-  return true;
 }
 
 interface GenerateParams {
@@ -103,31 +73,11 @@ async function callGenerateApi(
   return unwrapOrThrowResult(result);
 }
 
-function addUserMessageIfRefine(
-  isInitial: boolean,
-  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  input: string
-): void {
-  if (!isInitial) addUserMessage(setChatMessages, input);
-}
-
 interface GenerateContext {
   isInitial: boolean;
   currentPrompt: string;
   currentTitle?: string;
   currentLyrics?: string;
-}
-
-function buildGenerateContext(
-  currentSession: { currentPrompt?: string; currentTitle?: string; currentLyrics?: string } | null
-): GenerateContext {
-  const currentPrompt = currentSession?.currentPrompt || '';
-  return {
-    isInitial: !currentPrompt,
-    currentPrompt,
-    currentTitle: currentSession?.currentTitle,
-    currentLyrics: currentSession?.currentLyrics,
-  };
 }
 
 export interface StandardGenerationServiceDeps {
@@ -186,18 +136,21 @@ async function executeGenerateFlow(
   refinementType?: RefinementType,
   styleChanges?: StyleChanges
 ): Promise<boolean> {
-  addUserMessageIfRefine(ctx.isInitial, deps.setChatMessages, input);
-  const conversionCallbacks = {
-    createConversionSession: deps.createConversionSession,
-    setPendingInput: deps.setPendingInput,
-    setLyricsTopic: deps.setLyricsTopic,
-    showToast: deps.showToast,
-  };
-  if (
-    shouldAttemptMaxConversion(ctx.isInitial, deps.maxMode, input) &&
-    (await tryMaxConversion(input, conversionCallbacks))
-  ) {
-    return true;
+  if (!ctx.isInitial) addUserMessage(deps.setChatMessages, input);
+  if (shouldAttemptMaxConversion(ctx.isInitial, deps.maxMode, input)) {
+    const conversion = await rpcClient.convertToMaxFormat({ text: input });
+    if (conversion.ok && conversion.value.convertedPrompt && conversion.value.wasConverted) {
+      await deps.createConversionSession(
+        input,
+        conversion.value.convertedPrompt,
+        conversion.value.versionId,
+        conversion.value.debugTrace
+      );
+      deps.setPendingInput('');
+      deps.setLyricsTopic('');
+      deps.showToast('Converted to Max Mode format', 'success');
+      return true;
+    }
   }
 
   const apiParams = buildGenerationApiParams(deps, input, ctx, refinementType, styleChanges);
@@ -259,13 +212,17 @@ export function createStandardGenerationService(deps: StandardGenerationServiceD
     refinementType?: RefinementType,
     styleChanges?: StyleChanges
   ): Promise<boolean> => {
-    if (
-      shouldSkipGeneration(deps.isGenerating, deps.promptMode, !!deps.currentSession?.currentPrompt)
-    ) {
+    const currentPrompt = deps.currentSession?.currentPrompt || '';
+    if (deps.isGenerating || (deps.promptMode === 'quickVibes' && !!currentPrompt)) {
       return false;
     }
 
-    const ctx = buildGenerateContext(deps.currentSession);
+    const ctx: GenerateContext = {
+      isInitial: !currentPrompt,
+      currentPrompt,
+      currentTitle: deps.currentSession?.currentTitle,
+      currentLyrics: deps.currentSession?.currentLyrics,
+    };
     deps.setGeneratingAction('generate');
     try {
       return await executeGenerateFlow(deps, input, ctx, refinementType, styleChanges);

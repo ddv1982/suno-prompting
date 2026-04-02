@@ -18,7 +18,7 @@ import {
   selectMoodForLevel,
   getSunoStylesForMoodCategory,
 } from '@bun/prompt/creative-boost';
-import { enrichFromGenres, enrichSunoStyles } from '@bun/prompt/enrichment';
+import { enrichFromGenres, enrichSunoStyles } from '@bun/prompt/enrichment/index';
 
 import type { GenreType } from '@bun/instruments';
 

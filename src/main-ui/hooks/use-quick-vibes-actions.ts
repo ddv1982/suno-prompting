@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 import { type MoodCategory } from '@bun/mood';
 import { type QuickVibesInput, type QuickVibesCategory } from '@shared/types';

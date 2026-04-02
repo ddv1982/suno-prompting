@@ -7,8 +7,8 @@
  */
 
 import { condense } from '@bun/ai/llm-rewriter';
-import { createLogger } from '@bun/logger';
-import { enforceLengthLimit } from '@bun/prompt/postprocess';
+import { createLogger } from '@shared/logger';
+import { enforceLengthLimit } from '@bun/prompt/postprocess/index';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { LanguageModel } from 'ai';

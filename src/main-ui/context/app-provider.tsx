@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { EditorProvider } from '@/context/editor-context';
+import { EditorProvider } from '@/context/editor';
 import { GenerationProvider } from '@/context/generation';
 import { SessionProvider } from '@/context/session-context';
 import { SettingsProvider } from '@/context/settings-context';

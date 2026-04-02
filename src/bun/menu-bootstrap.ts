@@ -1,4 +1,4 @@
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { buildApplicationMenu, installApplicationMenu } from '@bun/menu';
 
 import type { BrowserWindow } from 'electrobun/bun';

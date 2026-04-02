@@ -1,4 +1,4 @@
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { getErrorMessage } from '@shared/errors';
 
 import { generateTitle } from './content-generator';

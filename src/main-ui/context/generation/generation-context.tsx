@@ -1,22 +1,14 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
 import { useToast } from '@/components/ui/toast';
-import { useEditorActions, useEditorState } from '@/context/editor-context';
+import { useEditorActions, useEditorState } from '@/context/editor';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
-import { useGenerationFacade } from '@/services/generation-facade-service';
+import { useGenerationContextValue } from './generation-context-value';
+import { useGenerationActionDeps, useGenerationStateValue } from './generation-state-value';
+import { useSessionOperationsValue, useStandardGenerationValue } from './generation-service-values';
 
-import { GenerationStateProvider, useGenerationStateContext } from './generation-state-context';
-import {
-  SessionOperationsProvider,
-  useSessionOperationsContext,
-} from './session-operations-context';
-import {
-  StandardGenerationProvider,
-  useStandardGenerationContext,
-} from './standard-generation-context';
-
-import type { GenerationContextType } from './types';
+import type { GenerationContextType, GenerationStateContextValue } from './types';
 
 const GenerationContext = createContext<GenerationContextType | null>(null);
 
@@ -26,44 +18,97 @@ export const useGenerationContext = (): GenerationContextType => {
   return ctx;
 };
 
-function GenerationFacade({ children }: { children: ReactNode }): ReactNode {
-  const { currentSession, generateId, saveSession } = useSessionContext();
-  const { creativeBoostInput } = useEditorState();
-  const { getQuickVibesInput, setPendingInput } = useEditorActions();
+function GenerationFacade({
+  children,
+  stateCtx,
+}: {
+  children: ReactNode;
+  stateCtx: GenerationStateContextValue;
+}): ReactNode {
+  const { currentSession, generateId, saveSession, setCurrentSession } = useSessionContext();
+  const { creativeBoostInput, advancedSelection, lyricsTopic, promptMode } = useEditorState();
+  const {
+    getQuickVibesInput,
+    setPendingInput,
+    getEffectiveLockedPhrase,
+    setLyricsTopic,
+    resetEditor,
+    setPromptMode,
+    setQuickVibesInput,
+    resetQuickVibesInput,
+    setCreativeBoostInput,
+    resetCreativeBoostInput,
+  } = useEditorActions();
   const { maxMode, lyricsMode } = useSettingsContext();
   const { showToast } = useToast();
+  const sessionOps = useSessionOperationsValue({
+    currentSession,
+    generateId,
+    resetCreativeBoostInput,
+    resetEditor,
+    resetQuickVibesInput,
+    saveSession,
+    setChatMessages: stateCtx.setChatMessages,
+    setCreativeBoostInput,
+    setCurrentSession,
+    setDebugTrace: stateCtx.setDebugTrace,
+    setLyricsTopic,
+    setPromptMode,
+    setQuickVibesInput,
+    setValidation: stateCtx.setValidation,
+  });
 
-  const stateCtx = useGenerationStateContext();
-  const sessionOps = useSessionOperationsContext();
-  const stdGeneration = useStandardGenerationContext();
-  const optimisticDeps = {
+  const baseDeps = useGenerationActionDeps({
+    isGenerating: stateCtx.isGenerating,
+    currentSession,
+    generateId,
+    saveSession,
+    setGeneratingAction: stateCtx.setGeneratingAction,
+    setDebugTrace: stateCtx.setDebugTrace,
+    setChatMessages: stateCtx.setChatMessages,
+    setValidation: stateCtx.setValidation,
+    showToast,
     startOptimistic: stateCtx.startOptimistic,
     completeOptimistic: stateCtx.completeOptimistic,
     errorOptimistic: stateCtx.errorOptimistic,
-  };
+  });
 
-  const contextValue = useGenerationFacade({
+  const standardGeneration = useStandardGenerationValue({
+    advancedSelection,
+    createConversionSession: sessionOps.createConversionSession,
+    currentSession,
+    generateId,
+    getEffectiveLockedPhrase,
+    isGenerating: stateCtx.isGenerating,
+    lyricsTopic,
+    maxMode,
+    promptMode,
+    saveSession,
+    setChatMessages: stateCtx.setChatMessages,
+    setDebugTrace: stateCtx.setDebugTrace,
+    setGeneratingAction: stateCtx.setGeneratingAction,
+    setLyricsTopic,
+    setPendingInput,
+    setValidation: stateCtx.setValidation,
+    showToast,
+  });
+
+  const contextValue = useGenerationContextValue({
     stateCtx,
     sessionOps,
-    stdGeneration,
-    session: { currentSession, generateId, saveSession },
-    editor: { creativeBoostInput, getQuickVibesInput, setPendingInput },
-    settings: { maxMode, lyricsMode },
-    showToast,
-    optimisticDeps,
+    standardGeneration,
+    baseDeps,
+    setPendingInput,
+    getQuickVibesInput,
+    creativeBoostInput,
+    maxMode,
+    lyricsMode,
   });
 
   return <GenerationContext.Provider value={contextValue}>{children}</GenerationContext.Provider>;
 }
 
 export function GenerationProvider({ children }: { children: ReactNode }): ReactNode {
-  return (
-    <GenerationStateProvider>
-      <SessionOperationsProvider>
-        <StandardGenerationProvider>
-          <GenerationFacade>{children}</GenerationFacade>
-        </StandardGenerationProvider>
-      </SessionOperationsProvider>
-    </GenerationStateProvider>
-  );
+  const stateCtx = useGenerationStateValue();
+  return <GenerationFacade stateCtx={stateCtx}>{children}</GenerationFacade>;
 }

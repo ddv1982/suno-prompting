@@ -8,7 +8,7 @@
  */
 
 import { generateStructuredOutput } from '@bun/ai/structured-output';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { traceDecision, traceError } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
 import { ThematicContextSchema } from '@shared/schemas/thematic-context';

@@ -9,7 +9,7 @@
  */
 
 import { checkOllamaAvailable } from '@bun/ai/ollama-availability';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { OllamaModelMissingError, OllamaUnavailableError } from '@shared/errors';
 
 import { generateWithLyrics } from './with-lyrics';

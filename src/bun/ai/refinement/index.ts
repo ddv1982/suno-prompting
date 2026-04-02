@@ -2,7 +2,7 @@
  * Prompt Refinement Module
  *
  * Barrel export for refinement module. Maintains backward compatibility
- * with existing imports from '@bun/ai/refinement'.
+ * with existing imports from '@bun/ai/refinement/index'.
  *
  * @module ai/refinement
  */

@@ -8,11 +8,10 @@ import {
   type ReactNode,
 } from 'react';
 
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@shared/logger';
 import { rpcClient } from '@/services/rpc-client';
 import { APP_CONSTANTS } from '@shared/constants';
 import { type PromptSession } from '@shared/types';
-import { nowISO } from '@shared/utils';
 
 const log = createLogger('Session');
 
@@ -35,7 +34,7 @@ function buildNewSession(
   title?: string,
   lyrics?: string
 ): PromptSession {
-  const now = nowISO();
+  const now = new Date().toISOString();
   return {
     id: generateId(),
     originalInput,

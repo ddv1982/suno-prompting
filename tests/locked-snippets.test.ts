@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'bun:test';
 
-import { injectLockedPhrase, isValidLockedPhrase } from '@bun/prompt/postprocess';
+import { injectLockedPhrase, isValidLockedPhrase } from '@bun/prompt/postprocess/index';
 import { APP_CONSTANTS } from '@shared/constants';
 import { validateLockedPhrase } from '@shared/validation';
 

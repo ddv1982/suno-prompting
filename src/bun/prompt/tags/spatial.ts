@@ -3,7 +3,7 @@
  * @module prompt/tags/spatial
  */
 
-import { selectRandomN } from '@shared/utils/random';
+import { selectTagsFromPool } from './shared';
 
 /**
  * Spatial audio and reverb descriptors for stereo imaging.
@@ -73,10 +73,5 @@ export const SPATIAL_AUDIO_TAGS = {
  * selectSpatialTags(1, seedRng(42)) // ['wide stereo field']
  */
 export function selectSpatialTags(count: number, rng: () => number = Math.random): string[] {
-  const allTags: string[] = [];
-  for (const category of Object.values(SPATIAL_AUDIO_TAGS)) {
-    allTags.push(...category);
-  }
-
-  return selectRandomN(allTags, Math.min(count, allTags.length), rng);
+  return selectTagsFromPool(SPATIAL_AUDIO_TAGS, count, rng);
 }

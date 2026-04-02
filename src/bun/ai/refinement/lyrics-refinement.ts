@@ -9,7 +9,7 @@
 
 import { runAIRequest } from '@bun/ai/request-runner';
 import { cleanLyrics } from '@bun/ai/utils';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 
 import { validateOllamaForRefinement } from './validation';

@@ -10,7 +10,7 @@ import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
 } from '@bun/prompt/deterministic';
-import { injectLockedPhrase } from '@bun/prompt/postprocess';
+import { injectLockedPhrase } from '@bun/prompt/postprocess/index';
 
 import type { GenerationConfig } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';

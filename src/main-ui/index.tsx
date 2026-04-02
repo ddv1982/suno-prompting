@@ -3,19 +3,19 @@ import { createRoot } from 'react-dom/client';
 
 import { Header } from '@/components/app-header';
 import { ErrorBoundary } from '@/components/error-boundary';
-import { HistorySidebar } from '@/components/history-sidebar';
+import { HistorySidebar } from '@/components/history-sidebar/history-sidebar';
 import { PanelErrorBoundary } from '@/components/panel-error-boundary';
 import { PromptEditorContainer } from '@/components/prompt-editor-container';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { ToastProvider } from '@/components/ui/toast';
-import { AppProvider } from '@/context/app-context';
+import { AppProvider } from '@/context/app-provider';
 import { useGenerationContext } from '@/context/generation';
 import { useSessionContext } from '@/context/session-context';
 import { useSettingsContext } from '@/context/settings-context';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 const SettingsModal = lazy(() =>
-  import('./components/settings-modal').then((m) => ({ default: m.SettingsModal }))
+  import('./components/settings-modal/settings-modal').then((m) => ({ default: m.SettingsModal }))
 );
 
 function App(): ReactNode {

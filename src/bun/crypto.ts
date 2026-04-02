@@ -1,4 +1,4 @@
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { StorageError } from '@shared/errors';
 
 const log = createLogger('Crypto');

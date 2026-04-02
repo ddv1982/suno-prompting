@@ -11,7 +11,7 @@ const mockInvalidateOllamaCache = mock(() => {});
 // Mock Ollama client for local LLM calls
 const mockGenerateWithOllama = mock(() => Promise.resolve('Generated text from Ollama'));
 
-let generateInitial: typeof import('@bun/ai/generation').generateInitial;
+let generateInitial: typeof import('@bun/ai/generation/index').generateInitial;
 
 beforeEach(async () => {
   await mock.module('@bun/ai/ollama-availability', () => ({
@@ -23,7 +23,7 @@ beforeEach(async () => {
     generateWithOllama: mockGenerateWithOllama,
   }));
 
-  ({ generateInitial } = await import('@bun/ai/generation'));
+  ({ generateInitial } = await import('@bun/ai/generation/index'));
 });
 
 afterEach(() => {

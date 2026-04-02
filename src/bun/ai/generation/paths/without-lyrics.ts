@@ -16,14 +16,14 @@ import { generateTitle } from '@bun/ai/content-generator';
 import { extractThematicContextIfAvailable } from '@bun/ai/generation/helpers';
 import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
 import { cleanTitle } from '@bun/ai/utils';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,
   extractGenreFromPrompt,
   extractMoodFromPrompt,
 } from '@bun/prompt/deterministic';
-import { injectLockedPhrase } from '@bun/prompt/postprocess';
+import { injectLockedPhrase } from '@bun/prompt/postprocess/index';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 import { traceDecision } from '@bun/trace';
 

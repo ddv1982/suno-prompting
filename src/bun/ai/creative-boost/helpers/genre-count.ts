@@ -7,7 +7,7 @@
  */
 
 import { GENRE_REGISTRY, type GenreType } from '@bun/instruments';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { extractGenresFromPrompt } from '@bun/prompt/deterministic';
 import { replaceFieldLine } from '@bun/prompt/remix';
 import { selectRandomN } from '@shared/utils/random';

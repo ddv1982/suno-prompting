@@ -10,7 +10,7 @@
  */
 
 import { runAIRequest } from '@bun/ai/request-runner';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { traceDecision, type TraceCollector } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
 import { MAX_MODE_HEADER } from '@shared/max-format';

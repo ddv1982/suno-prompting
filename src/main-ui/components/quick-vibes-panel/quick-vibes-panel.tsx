@@ -3,6 +3,7 @@ import { useCallback, type ReactElement } from 'react';
 
 import { CategorySelector } from '@/components/category-selector';
 import { MoodCategoryCombobox } from '@/components/mood-category-combobox';
+import { PanelSubmitButton } from '@/components/shared';
 import { SunoStylesMultiSelect } from '@/components/suno-styles-multi-select';
 import { FormLabel } from '@/components/ui/form-label';
 import { useRefinedFeedback } from '@/hooks/use-refined-feedback';
@@ -10,7 +11,6 @@ import { QuickVibesSubmitSchema, QuickVibesRefineSchema } from '@shared/schemas/
 import { isSunoV5Style } from '@shared/suno-v5-styles';
 
 import { DescriptionInput } from './description-input';
-import { SubmitButton } from './submit-button';
 import { TogglesSection } from './toggles-section';
 
 import type { MoodCategory } from '@bun/mood';
@@ -235,12 +235,14 @@ function QuickVibesPanelContent({
         onStoryModeChange={onStoryModeChange}
       />
 
-      <SubmitButton
+      <PanelSubmitButton
         isGenerating={isGenerating}
         isRefineMode={isRefineMode}
         canSubmit={canSubmit}
         refined={handlers.refined}
         onSubmit={handlers.handleSubmit}
+        defaultIcon={<Sparkles className="w-4 h-4" />}
+        defaultLabel="GENERATE QUICK VIBES"
       />
     </div>
   );

@@ -20,7 +20,7 @@ import {
 } from '@shared/errors';
 
 import type { ChatMessage } from '@/lib/chat-utils';
-import type { Logger } from '@/lib/logger';
+import type { Logger } from '@shared/logger';
 
 describe('Error Toast Integration', () => {
   describe('Task 4.2: Error Toast Display', () => {

@@ -11,7 +11,7 @@
 
 import * as http from 'node:http';
 
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import {
   AIGenerationError,

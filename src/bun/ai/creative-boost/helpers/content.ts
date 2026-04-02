@@ -7,7 +7,7 @@
  */
 
 import { generateLyrics, generateTitle, detectGenreFromTopic } from '@bun/ai/content-generator';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import {
   buildDeterministicMaxPrompt,
   buildDeterministicStandardPrompt,

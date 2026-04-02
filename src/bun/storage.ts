@@ -3,7 +3,7 @@ import { homedir } from 'os';
 import { basename, join } from 'path';
 
 import { decrypt, encrypt } from '@bun/crypto';
-import { createLogger } from '@bun/logger';
+import { createLogger } from '@shared/logger';
 import { APP_CONSTANTS } from '@shared/constants';
 import { getErrorMessage, StorageError } from '@shared/errors';
 import { TraceRunSchema } from '@shared/schemas';
